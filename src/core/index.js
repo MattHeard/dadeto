@@ -850,7 +850,7 @@ export function createRunCheckSuite(defaults) {
               name,
               elapsedMs: Math.max(
                 0,
-                currentTime - (activeStartedAt.get(name) ?? currentTime)
+                currentTime - /** @type {number} */ (activeStartedAt.get(name))
               ),
             }));
             if (active.length === 0) return;

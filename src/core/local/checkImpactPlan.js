@@ -275,12 +275,11 @@ function discoverAllUnitTests(permission, deps) {
 
 /**
  * Normalize a Git-discovered test path and keep only unit-test files.
- * @param {unknown} value Jest path candidate.
+ * @param {string} value Jest path candidate.
  * @param {CheckImpactDependencies} deps Path dependencies.
  * @returns {string} Unit-test path or empty string.
  */
 function toUnitTestPath(value, deps) {
-  if (typeof value !== 'string') return '';
   const relative = deps.pathModule.isAbsolute(value)
     ? deps.pathModule.relative(deps.rootDir, value)
     : value;

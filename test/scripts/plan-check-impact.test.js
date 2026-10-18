@@ -241,7 +241,9 @@ describe('test impact runner', () => {
       selectedTests: ['test/core/from-base.test.js'],
     });
   });
+});
 
+describe('test impact runner selection fallbacks', () => {
   it('falls back to all unit tests after selector failure or no related tests', () => {
     for (const selectorResult of [
       { status: 1, stdout: '', error: new Error('selector failed') },
@@ -373,7 +375,9 @@ describe('test impact runner', () => {
     expect(result).toEqual({ exitCode: 1 });
     expect(output.report()).toMatchObject({ result: 'failed', exitStatus: 1 });
   });
+});
 
+describe('test impact runner fallback execution', () => {
   it('runs fallback unit tests in bounded no-coverage shards', () => {
     const files = [1, 2, 3, 4, 5].map(index =>
       path.resolve(`test/core/fallback-${index}.test.js`)
@@ -416,21 +420,34 @@ describe('test impact runner', () => {
   });
 
   it('fails when Git cannot list fallback unit tests', () => {
-    const { result, output } = runHandle({
-      argv: ['--unsupported'],
-      runImpl: (command, args) =>
-        command === 'git' && args.includes('--exclude-standard')
-          ? { status: 1, stdout: '', error: new Error('list failed') }
-          : { status: 0, stdout: '' },
-    });
+    const outcomes = [
+      {
+        discovery: { status: 1, stdout: '', error: new Error('list failed') },
+        failure: 'list failed',
+      },
+      {
+        discovery: { status: 1, stdout: '' },
+        failure: 'Git unit-test discovery exited with status 1.',
+      },
+    ];
 
-    expect(result).toEqual({ exitCode: 1 });
-    expect(output.report()).toMatchObject({
-      testSelection: 'all-unit',
-      fallbackFailure: 'list failed',
-      result: 'failed',
-      exitStatus: 1,
-    });
+    for (const { discovery, failure } of outcomes) {
+      const { result, output } = runHandle({
+        argv: ['--unsupported'],
+        runImpl: (command, args) =>
+          command === 'git' && args.includes('--exclude-standard')
+            ? discovery
+            : { status: 0, stdout: '' },
+      });
+
+      expect(result).toEqual({ exitCode: 1 });
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        fallbackFailure: failure,
+        result: 'failed',
+        exitStatus: 1,
+      });
+    }
   });
 
   it('omits deleted test paths from the current-worktree fallback inventory', () => {
@@ -451,5 +468,172 @@ describe('test impact runner', () => {
       selectedTests: ['test/core/present.test.js'],
       result: 'passed',
     });
+  });
+
+  it('uses safe defaults when fallback discovery returns no output', () => {
+    const { result, output } = runHandle({
+      argv: ['--unsupported'],
+      runImpl: (command, args) =>
+        command === 'git' && args.includes('--exclude-standard')
+          ? { status: 0 }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(output.report()).toMatchObject({
+      selectedTests: [],
+      fallbackFailure: 'Jest did not identify unit test files to execute.',
+      result: 'failed',
+      exitStatus: 1,
+    });
+  });
+
+  it('normalizes absolute fallback paths and rejects an invalid shard size', () => {
+    const absolutePath = path.resolve('test/core/absolute-fallback.test.js');
+    const { result, output, runCommand } = runHandle({
+      argv: ['--unsupported'],
+      impactShardSize: 0,
+      runImpl: (command, args) => {
+        if (command === 'git' && args.includes('--exclude-standard'))
+          return { status: 0, stdout: `${absolutePath}\0` };
+        return {
+          status: 0,
+          stdout: 'tests passed\n',
+          stderr: 'runner notice\n',
+        };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    const invocation = runCommand.mock.calls.find(
+      call => call[1] === process.execPath
+    );
+    expect(invocation?.[2]).toContain('test/core/absolute-fallback.test.js');
+    expect(output.chunks).toContain('runner notice\n');
+    expect(output.report()).toMatchObject({
+      selectedTests: ['test/core/absolute-fallback.test.js'],
+      result: 'passed',
+    });
+  });
+
+  it('falls back for incomplete, conflicting, and unsafe argument forms', () => {
+    const inputs = [
+      { argv: ['--files'] },
+      { argv: ['--base'] },
+      {
+        argv: ['--files', 'test/core/explicit.test.js'],
+        defaultBaseRef: 'origin/main',
+      },
+      { argv: ['--base', '-unsafe-ref'] },
+    ];
+
+    for (const input of inputs) {
+      const { result, output } = runHandle({
+        ...input,
+        runImpl: (command, args) =>
+          command === 'git' && args.includes('-co')
+            ? { status: 0, stdout: 'test/core/fallback.test.js\0' }
+            : { status: 0, stdout: '' },
+      });
+
+      expect(result).toEqual({ exitCode: 0 });
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+        result: 'passed',
+      });
+    }
+  });
+
+  it('handles missing related-test output and selector errors without messages', () => {
+    for (const selectorResult of [{ status: 0 }, { status: 1 }]) {
+      const { result, output } = runHandle({
+        argv: ['--files', 'src/core/example.js'],
+        runImpl: (command, args) => {
+          if (args.includes('--findRelatedTests')) return selectorResult;
+          if (command === 'git' && args.includes('-co'))
+            return { status: 0, stdout: 'test/core/fallback.test.js\0' };
+          return { status: 0, stdout: '' };
+        },
+      });
+
+      expect(result).toEqual({ exitCode: 0 });
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+        result: 'passed',
+      });
+    }
+  });
+
+  it('treats absent Git output as an empty clean-tree comparison', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      argv: ['--base', 'origin/main'],
+      runImpl: (command, args) => {
+        calls.push(args);
+        if (command === 'git' && args[0] === 'rev-parse')
+          return { status: 0, stdout: 'abcdef123456\n' };
+        return { status: 0 };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls).toHaveLength(5);
+    expect(output.report()).toMatchObject({
+      changedPaths: [],
+      testSelection: 'none',
+      result: 'skipped',
+    });
+  });
+
+  it('falls back when the selected Git base cannot be resolved or compared', () => {
+    const failures = [
+      { phase: 'resolve', result: { status: 1, stdout: 'abcdef123456\n' } },
+      { phase: 'resolve', result: { status: 0, stdout: '  ' } },
+      {
+        phase: 'resolve',
+        result: {
+          status: 0,
+          stdout: 'abcdef123456\n',
+          error: new Error('base lookup failed'),
+        },
+      },
+      { phase: 'compare', result: { status: 1, stdout: '' } },
+      {
+        phase: 'compare',
+        result: { status: 0, error: new Error('base diff failed') },
+      },
+    ];
+
+    for (const failure of failures) {
+      const { result, output } = runHandle({
+        argv: ['--base', 'origin/main'],
+        runImpl: (command, args) => {
+          if (command === 'git' && args[0] === 'rev-parse')
+            return failure.phase === 'resolve'
+              ? failure.result
+              : { status: 0, stdout: 'abcdef123456\n' };
+          if (
+            command === 'git' &&
+            args[0] === 'diff' &&
+            args.some(argument => argument.includes('...HEAD'))
+          )
+            return failure.phase === 'compare'
+              ? failure.result
+              : { status: 0, stdout: '' };
+          if (command === 'git' && args.includes('-co'))
+            return { status: 0, stdout: 'test/core/fallback.test.js\0' };
+          return { status: 0, stdout: '' };
+        },
+      });
+
+      expect(result).toEqual({ exitCode: 0 });
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+        result: 'passed',
+      });
+    }
   });
 });

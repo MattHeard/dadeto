@@ -337,8 +337,6 @@ function changedCoverageNote(changedPaths, fileCoverage) {
   if (missingFiles.length > 0)
     return `Changed core files are absent from the coverage summary: ${missingFiles.map(file => `\`${file}\``).join(', ')}.`;
   if (fileCoverage.length > 0) return null;
-  if (changedCoreFiles.length > 0)
-    return 'Changed core files were not present in the generated coverage summary, so changed-file coverage is unavailable.';
   if (
     changedPaths.some(file => file.startsWith('src/') && file.endsWith('.js'))
   )

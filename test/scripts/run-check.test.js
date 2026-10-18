@@ -251,6 +251,42 @@ describe('runCheckSuite', () => {
     }
   });
 
+  it('skips a progress heartbeat when no command remains active', async () => {
+    jest.useFakeTimers();
+    const children = [createChild(), createChild()];
+    const { spawnImpl } = createSpawnStub(children);
+    const stderr = createWriter();
+    const progressSuite = createRunCheckSuite({
+      defaultSpawn: spawnImpl,
+      defaultStdout: createWriter(),
+      defaultStderr: stderr,
+      defaultNow: () => Date.now(),
+      defaultProgressIntervalMs: 3000,
+    });
+
+    try {
+      const suitePromise = progressSuite({
+        commands: [
+          { name: 'duplicate', command: 'first', args: [] },
+          { name: 'duplicate', command: 'second', args: [] },
+        ],
+      });
+
+      children[0].emit('close', 0, null);
+      await jest.advanceTimersByTimeAsync(3000);
+      expect(
+        parseEvents(stderr.chunks).filter(
+          event => event.type === 'check-progress'
+        )
+      ).toEqual([]);
+
+      children[1].emit('close', 0, null);
+      await expect(suitePromise).resolves.toMatchObject({ exitCode: 0 });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('uses the default writers and clock when no overrides are supplied', async () => {
     const stdoutWrite = jest
       .spyOn(process.stdout, 'write')
