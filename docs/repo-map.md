@@ -40,6 +40,7 @@
 | `npm run check:full` | Full aggregate quality gate | Runs the previous full `npm run check` behavior: `npm test` with coverage and E2E plus all static gates.
 | `npm run test:impact` | Changed-test runner | Runs related or changed unit tests without coverage; falls back to all unit tests without coverage in bounded serial shards when selection is unsafe or fails.
 | `npm run check:impact` | Changed-test planner | Prints a plan only; it does not run tests.
+| `npm run check:impact:run` | Scoped check executor | Runs selected unit tests plus changed-file ESLint and applicable core-parse checks; when paths cannot be scoped safely, it falls back to all unit tests and reports that static gates were not assessed.
 | `npm run test:unit` | Unit/integration coverage | Runs Jest suite with coverage over `src/**` via `test/**`.
 | `npm run lint` | Quality gates + style health | ESLint/Prettier sweep with output in `reports/lint/lint.txt`.
 | `npm run build` / `npm run build:mattheard-net` | Build pipeline + static blog | Generates/copies blog output into `public/`.

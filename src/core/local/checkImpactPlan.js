@@ -161,6 +161,18 @@ export function createRunCheckImpactHandle(deps) {
 }
 
 /**
+ * Create the scoped test and static-gate executor.
+ * @param {CheckImpactDependencies} deps CLI and effect dependencies.
+ * @returns {() => {exitCode: number}} Synchronous executor handle.
+ */
+export function createRunScopedCheckImpactHandle(deps) {
+  return () =>
+    deps.bindStartupEffectBoundary(permission =>
+      runImpact(permission, deps, { includeStaticGates: true })
+    );
+}
+
+/**
  * Resolve inputs, discover related tests, and print the resulting plan.
  * @param {AllowEffects} permission Permission for process and output effects.
  * @param {CheckImpactDependencies} deps CLI and effect dependencies.
@@ -176,14 +188,22 @@ function runPlan(permission, deps) {
  * Resolve inputs, run selected or fallback tests, and print final execution evidence.
  * @param {AllowEffects} permission Permission for process and output effects.
  * @param {CheckImpactDependencies} deps CLI and effect dependencies.
+ * @param {{includeStaticGates?: boolean}} [options] Whether to execute scoped static gates.
  * @returns {{exitCode: number}} Test command exit status.
  */
-function runImpact(permission, deps) {
+function runImpact(permission, deps, { includeStaticGates = false } = {}) {
   const { plan, selectorFailure } = preparePlan(permission, deps);
   let exitCode = 0;
   let status = plan.mode === 'none' ? 'skipped' : 'passed';
   let selectedTests = plan.tests;
   let fallbackFailure = '';
+  const staticChecks = includeStaticGates
+    ? runScopedStaticGates(permission, deps, plan)
+    : undefined;
+  if (staticChecks?.some(check => check.result === 'failed')) {
+    exitCode = 1;
+    status = 'failed';
+  }
 
   if (plan.testSelection !== 'none') {
     if (plan.testSelection === 'all-unit') {
@@ -228,12 +248,106 @@ function runImpact(permission, deps) {
     fallbackReason: plan.testSelection === 'all-unit' ? plan.reason : null,
     selectorFailure,
     fallbackFailure: fallbackFailure || null,
+    ...(staticChecks ? { staticChecks } : {}),
     result: status,
     exitStatus: exitCode,
     authoritative: plan.authoritative,
   };
   deps.writeOutput(permission, `${JSON.stringify(report, null, 2)}\n`);
   return { exitCode };
+}
+
+/**
+ * Run only static gates whose scope is supported by the impact plan.
+ * @param {AllowEffects} permission Permission for process and output effects.
+ * @param {CheckImpactDependencies} deps CLI effects.
+ * @param {ReturnType<typeof createCheckImpactPlan>} plan Prepared impact plan.
+ * @returns {Array<{name: string, command: string[], result: 'passed' | 'failed' | 'not-run', exitStatus: number | null, reason?: string}>} Static-gate outcomes.
+ */
+function runScopedStaticGates(permission, deps, plan) {
+  if (plan.mode === 'none') return [];
+  if (plan.mode !== 'selected') {
+    const reason =
+      plan.reason ?? 'The changed-path selection is not safe to scope.';
+    deps.writeOutput(
+      permission,
+      `Impact static checks: not run because the path selection fell back. ${reason}\n`
+    );
+    return [
+      {
+        name: 'static-gates',
+        command: [],
+        result: 'not-run',
+        exitStatus: null,
+        reason,
+      },
+    ];
+  }
+
+  const checks = [];
+  if (plan.staticGates.includes('eslint')) {
+    const eslintCli = deps.pathModule.join(
+      deps.rootDir,
+      'node_modules',
+      'eslint',
+      'bin',
+      'eslint.js'
+    );
+    checks.push(
+      runScopedStaticGate(permission, deps, 'eslint', [
+        deps.processExecPath,
+        eslintCli,
+        '--max-warnings=0',
+        '--no-cache',
+        '--no-color',
+        ...plan.changedPaths,
+      ])
+    );
+  }
+  if (plan.staticGates.includes('core-parse')) {
+    checks.push(
+      runScopedStaticGate(permission, deps, 'core-parse', [
+        'npm',
+        'run',
+        'core-parse',
+      ])
+    );
+  }
+  return checks;
+}
+
+/**
+ * Execute one scoped static gate and capture reproducible command evidence.
+ * @param {AllowEffects} permission Permission for process and output effects.
+ * @param {CheckImpactDependencies} deps CLI effects.
+ * @param {string} name Gate name.
+ * @param {[string, ...string[]]} command Executable and its arguments.
+ * @returns {{name: string, command: string[], result: 'passed' | 'failed', exitStatus: number, reason?: string}} Gate outcome.
+ */
+function runScopedStaticGate(permission, deps, name, command) {
+  const [executable, ...args] = command;
+  deps.writeOutput(permission, `Impact checks: starting ${name}.\n`);
+  const execution = deps.runCommand(
+    permission,
+    executable,
+    args,
+    commandOptions(deps.rootDir, 10 * 60 * 1000, true)
+  );
+  if (execution.stdout) deps.writeOutput(permission, execution.stdout);
+  if (execution.stderr) deps.writeOutput(permission, execution.stderr);
+  const passed = !execution.error && execution.status === 0;
+  const exitStatus = passed ? 0 : (execution.status ?? 1);
+  deps.writeOutput(
+    permission,
+    `Impact checks: ${name} ${passed ? 'passed' : 'failed'} (exit ${exitStatus}).\n`
+  );
+  return {
+    name,
+    command,
+    result: passed ? 'passed' : 'failed',
+    exitStatus,
+    ...(execution.error ? { reason: execution.error.message } : {}),
+  };
 }
 
 /**
@@ -321,11 +435,16 @@ function resolveImpactShardSize(deps) {
  * @returns {{status: number | null, stdout?: string, stderr?: string, error?: Error}} Process outcome.
  */
 function runTestShard(permission, deps, tests) {
-  return runJestCommand(
+  return deps.runCommand(
     permission,
-    deps,
-    ['--runInBand', '--runTestsByPath', ...tests],
-    120 * 60 * 1000
+    deps.processExecPath,
+    [
+      deps.pathModule.join(deps.rootDir, JEST_RUNNER),
+      '--runInBand',
+      '--runTestsByPath',
+      ...tests,
+    ],
+    commandOptions(deps.rootDir, 120 * 60 * 1000, true)
   );
 }
 
@@ -559,13 +678,17 @@ function splitGitPaths(output) {
  * Build bounded process options for Git and Jest discovery/execution.
  * @param {string} rootDir Working directory.
  * @param {number} timeoutMs Process timeout.
- * @returns {object} Child process options.
+ * @param {boolean} [streamOutput] Whether to inherit child output streams.
+ * @returns {import('node:child_process').SpawnSyncOptionsWithStringEncoding} Child process options.
  */
-function commandOptions(rootDir, timeoutMs) {
-  return {
+function commandOptions(rootDir, timeoutMs, streamOutput = false) {
+  /** @type {import('node:child_process').SpawnSyncOptionsWithStringEncoding} */
+  const options = {
     cwd: rootDir,
     encoding: 'utf8',
     timeout: timeoutMs,
     maxBuffer: 16 * 1024 * 1024,
   };
+  if (streamOutput) options.stdio = 'inherit';
+  return options;
 }

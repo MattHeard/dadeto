@@ -5,12 +5,12 @@ import path from 'node:path';
 import {
   createPlanCheckImpactHandle,
   createRunCheckImpactHandle,
+  createRunScopedCheckImpactHandle,
 } from '../core/local/checkImpactPlan.js';
 import { bindStartupEffectBoundary } from './allow-effects.js';
 
 const rootDir = fileURLToPath(new URL('../..', import.meta.url));
-const defaultBaseRef = process.env.DADETO_CHECK_BASE ??
-  (process.env.GITHUB_BASE_REF && `origin/${process.env.GITHUB_BASE_REF}`);
+const defaultBaseRef = process.env.DADETO_CHECK_BASE ?? (process.env.GITHUB_BASE_REF && `origin/${process.env.GITHUB_BASE_REF}`);
 
 /**
  * Bind the shared effect adapters for impact planning and execution CLIs.
@@ -27,23 +27,23 @@ export function createCheckImpactCommandDependencies(argv) {
     fileExists: filePath => existsSync(filePath),
     pathModule: path,
     bindStartupEffectBoundary,
-    runCommand: (_permission, command, args, options) =>
-      spawnSync(command, args, options),
+    runCommand: (_permission, command, args, options) => spawnSync(command, args, options),
     writeOutput: (_permission, output) => process.stdout.write(output),
   };
 }
 
 /**
  * Execute one impact CLI mode and assign its exit status.
- * @param {'plan' | 'run'} mode Selected CLI mode.
+ * @param {'plan' | 'run' | 'checks'} mode Selected CLI mode.
  * @param {string[]} argv Command-line arguments.
  * @returns {void}
  */
 export function runCheckImpactCommand(mode, argv) {
-  const createHandle =
-    mode === 'plan'
-      ? createPlanCheckImpactHandle
-      : createRunCheckImpactHandle;
+  const createHandle = {
+    plan: createPlanCheckImpactHandle,
+    run: createRunCheckImpactHandle,
+    checks: createRunScopedCheckImpactHandle,
+  }[mode];
   const handle = createHandle(createCheckImpactCommandDependencies(argv));
   process.exitCode = handle().exitCode;
 }

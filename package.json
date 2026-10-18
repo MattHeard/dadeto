@@ -10,6 +10,7 @@
     "check:fast": "node src/local/run-check.js --fail-fast",
     "check:full": "node scripts/check-node-version.js && node src/local/run-check.js --full",
     "check:impact": "node src/local/plan-check-impact.js",
+    "check:impact:run": "node src/local/run-check-impact-checks.js",
     "test:impact": "node src/local/run-check-impact.js",
     "test": "node scripts/check-node-version.js && npm run test:unit && npm run test:e2e",
     "test:unit": "node --max-old-space-size=192 scripts/run-jest-with-coverage.js",

@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   createPlanCheckImpactHandle,
   createRunCheckImpactHandle,
+  createRunScopedCheckImpactHandle,
 } from '../../src/core/local/checkImpactPlan.js';
 
 /**
@@ -25,7 +26,7 @@ function captureOutput() {
 /**
  * Run an impact handler with controlled process effects.
  * @param {object} root0 Test configuration.
- * @param {typeof createPlanCheckImpactHandle | typeof createRunCheckImpactHandle} [root0.createHandle] Handler factory.
+ * @param {typeof createPlanCheckImpactHandle | typeof createRunCheckImpactHandle | typeof createRunScopedCheckImpactHandle} [root0.createHandle] Handler factory.
  * @param {string[]} [root0.argv] CLI arguments.
  * @param {(command: string, args: string[], options: object) => {status: number | null, stdout?: string, stderr?: string, error?: Error}} [root0.runImpl] Process result stub.
  * @param {string} [root0.defaultBaseRef] Optional Git comparison base.
@@ -210,8 +211,8 @@ describe('test impact runner', () => {
     const calls = [];
     const { result, runCommand, output } = runHandle({
       argv: ['--base', 'origin/main'],
-      runImpl: (command, args) => {
-        calls.push({ command, args });
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
         if (
           command === 'git' &&
           args[0] === 'diff' &&
@@ -374,6 +375,143 @@ describe('test impact runner selection fallbacks', () => {
 
     expect(result).toEqual({ exitCode: 1 });
     expect(output.report()).toMatchObject({ result: 'failed', exitStatus: 1 });
+  });
+});
+
+describe('scoped static-check impact executor', () => {
+  it('runs changed-file ESLint and core-parse before selected unit tests', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/core/related.test.js\n' };
+        if (args.some(arg => arg.endsWith('/eslint.js')))
+          return { status: 0, stdout: 'lint passed\n' };
+        if (command === 'npm')
+          return { status: 0, stdout: 'core parse passed\n' };
+        return { status: 0, stdout: 'tests passed\n' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls).toHaveLength(4);
+    expect(calls[1]).toMatchObject({
+      command: process.execPath,
+      args: [
+        expect.stringMatching(/node_modules\/eslint\/bin\/eslint\.js$/),
+        '--max-warnings=0',
+        '--no-cache',
+        '--no-color',
+        'src/core/example.js',
+      ],
+    });
+    expect(calls[2]).toMatchObject({
+      command: 'npm',
+      args: ['run', 'core-parse'],
+      options: { stdio: 'inherit' },
+    });
+    expect(calls[3].args).toContain('--runTestsByPath');
+    expect(calls[1].options).toMatchObject({ stdio: 'inherit' });
+    expect(calls[3].options).toMatchObject({ stdio: 'inherit' });
+    expect(output.report()).toMatchObject({
+      result: 'passed',
+      staticChecks: [
+        { name: 'eslint', result: 'passed', exitStatus: 0 },
+        { name: 'core-parse', result: 'passed', exitStatus: 0 },
+      ],
+    });
+    expect(output.chunks).toContain('Impact checks: starting eslint.\n');
+    expect(output.chunks).toContain(
+      'Impact checks: core-parse passed (exit 0).\n'
+    );
+  });
+
+  it('reports a failed static gate and still runs selected tests', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'test/core/changed.test.js'],
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        if (args.some(arg => arg.endsWith('/eslint.js')))
+          return {
+            status: null,
+            stderr: 'eslint could not start\n',
+            error: new Error('executable unavailable'),
+          };
+        return { status: 0, stdout: 'tests passed\n' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(calls).toHaveLength(2);
+    expect(calls[1].args).toContain('--runTestsByPath');
+    expect(calls[0].options).toMatchObject({ stdio: 'inherit' });
+    expect(calls[1].options).toMatchObject({ stdio: 'inherit' });
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      staticChecks: [
+        {
+          name: 'eslint',
+          result: 'failed',
+          exitStatus: 1,
+          reason: 'executable unavailable',
+        },
+      ],
+    });
+    expect(output.chunks).toContain('eslint could not start\n');
+  });
+
+  it('states that static gates were not assessed when test selection falls back', () => {
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'infra/main.tf'],
+      runImpl: (_command, args) => {
+        if (args.includes('--exclude-standard'))
+          return { status: 0, stdout: 'test/core/fallback.test.js\0' };
+        return { status: 0, stdout: 'fallback tests passed\n' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(output.report()).toMatchObject({
+      testSelection: 'all-unit',
+      result: 'passed',
+      staticChecks: [
+        {
+          name: 'static-gates',
+          result: 'not-run',
+          exitStatus: null,
+          reason: expect.stringContaining('Unsupported or unsafe changed path'),
+        },
+      ],
+    });
+    expect(
+      output.chunks.some(chunk =>
+        chunk.includes(
+          'Impact static checks: not run because the path selection fell back.'
+        )
+      )
+    ).toBe(true);
+  });
+
+  it('skips static gates when no changed paths are found', () => {
+    const { result, output, runCommand } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      runImpl: () => ({ status: 0, stdout: '' }),
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(output.report()).toMatchObject({
+      testSelection: 'none',
+      result: 'skipped',
+      staticChecks: [],
+    });
+    expect(runCommand).toHaveBeenCalledTimes(3);
   });
 });
 
