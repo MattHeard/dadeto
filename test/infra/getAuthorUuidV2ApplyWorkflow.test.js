@@ -38,6 +38,31 @@ describe('get-author-uuid-v2 scoped apply workflow', () => {
     expect(workflow).toContain('terraform show -json');
   });
 
+  it('requires the exact reviewed actions after the partial failed apply', () => {
+    const expected = workflow.match(/expected='([^']+)'/);
+
+    expect(expected).not.toBeNull();
+    expect(JSON.parse(expected[1])).toEqual([
+      {
+        actions: ['create'],
+        address:
+          'google_cloud_run_service_iam_member.get_author_uuid_v2_public',
+      },
+      {
+        actions: ['delete', 'create'],
+        address: 'google_cloudfunctions2_function.get_author_uuid_v2',
+      },
+      {
+        actions: ['update'],
+        address: 'google_storage_bucket_object.dendrite_static_config',
+      },
+      {
+        actions: ['delete', 'create'],
+        address: 'google_storage_bucket_object.get_author_uuid_v2_zip',
+      },
+    ]);
+  });
+
   it('applies only the checked saved plan and avoids the broad production workflow', () => {
     expect(workflow).toContain(
       'terraform apply -lock-timeout=5m -input=false -auto-approve "$RUNNER_TEMP/get-author-uuid-v2.tfplan"'
