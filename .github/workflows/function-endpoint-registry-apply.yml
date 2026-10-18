@@ -1,0 +1,109 @@
+name: function-endpoint-registry-apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_production_apply:
+        description: Set true only after reviewing the registry production plan
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: function-endpoint-registry-production-apply
+  cancel-in-progress: false
+
+jobs:
+  terraform-apply:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: infra
+    env:
+      REGION: europe-west1
+      GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      CLOUDSDK_CORE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+      ENVIRONMENT: prod
+      TF_VAR_environment: prod
+      TF_VAR_project_level_environment: prod
+      TF_VAR_database_id: production-restore-2026-07-01-08-59
+      TF_VAR_billing_enabled: ${{ vars.PROD_BILLING_ENABLED || 'false' }}
+      TF_VAR_google_oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+      TF_VAR_google_oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+      TF_VAR_production_alert_email: ${{ secrets.PRODUCTION_ALERT_EMAIL }}
+      TF_VAR_create_default_firestore_database: 'false'
+      TF_VAR_codex_vm_enabled: ${{ secrets.CODEX_ADMIN_MEMBER != '' }}
+      TF_VAR_codex_admin_member: ${{ secrets.CODEX_ADMIN_MEMBER }}
+      CONFIRM_PRODUCTION_APPLY: ${{ inputs.confirm_production_apply }}
+
+    steps:
+      - name: Require explicit apply confirmation
+        run: |
+          if [[ "$CONFIRM_PRODUCTION_APPLY" != "true" ]]; then
+            echo "::error::Set confirm_production_apply=true only after reviewing the scoped production plan."
+            exit 64
+          fi
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Build Cloud Function package
+        working-directory: ./
+        run: |
+          npm ci
+          npm run build:cloud
+
+      - name: Set up Google Cloud auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      - name: Initialize production state
+        run: terraform init -input=false
+
+      - name: Create the scoped production plan
+        run: |
+          set -euo pipefail
+          terraform plan \
+            -target=google_storage_bucket.function_endpoint_registry \
+            -target=google_storage_bucket_iam_member.function_endpoint_registry_public_reader \
+            -target=google_storage_bucket_object.function_endpoint_registry \
+            -lock-timeout=5m \
+            -input=false \
+            -var="environment=${ENVIRONMENT}" \
+            -out="$RUNNER_TEMP/function-endpoint-registry.tfplan"
+
+      - name: Require exactly the reviewed registry creates
+        run: |
+          set -euo pipefail
+          expected='[{"actions":["create"],"address":"google_storage_bucket.function_endpoint_registry[0]"},{"actions":["create"],"address":"google_storage_bucket_iam_member.function_endpoint_registry_public_reader[0]"},{"actions":["create"],"address":"google_storage_bucket_object.function_endpoint_registry[0]"}]'
+          actual="$(terraform show -json "$RUNNER_TEMP/function-endpoint-registry.tfplan" | jq -cS '[.resource_changes[]? | select(.change.actions != ["no-op"] and .change.actions != ["read"]) | {actions: .change.actions, address: .address}] | sort_by(.address)')"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::The production plan differs from the reviewed registry creates; refusing to apply."
+            printf 'Expected: %s\nActual: %s\n' "$expected" "$actual"
+            exit 1
+          fi
+          {
+            echo "### Function endpoint registry scoped production plan"
+            echo "The plan matched the three reviewed creates. No Terraform values or secrets are included."
+            printf '%s\n' "$actual" | jq -r '.[] | "- \(.actions | join(",")): \(.address)"'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Apply the verified plan
+        run: terraform apply -lock-timeout=5m -input=false -auto-approve "$RUNNER_TEMP/function-endpoint-registry.tfplan"
