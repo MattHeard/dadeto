@@ -1,6 +1,84 @@
+import {
+  copyFile as copyFileActual,
+  mkdir as mkdirActual,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { jest } from '@jest/globals';
 import { createCopyCloudHandle } from '../../../src/core/build/copy-cloud.js';
+
+const rootBrowserWrappers = [
+  {
+    name: 'admin-core.js',
+    contents: "export * from '../core/browser/admin-core.js';\n",
+  },
+  {
+    name: 'load-static-config-core.js',
+    contents: "export * from '../core/browser/load-static-config-core.js';\n",
+  },
+  {
+    name: 'logging.js',
+    contents: "export * from '../core/browser/browser-core.js';\n",
+  },
+];
+
+/**
+ * Run the cloud copy workflow against an isolated project tree.
+ * @param {{missingSource?: string}} [options] Optional source wrapper to omit.
+ * @returns {Promise<string>} Path to the temporary project root.
+ */
+async function runRootBrowserWrapperCopyFixture(options = {}) {
+  const { missingSource } = options;
+  const projectRoot = await mkdtemp(
+    path.join(tmpdir(), 'dadeto-cloud-wrapper-copy-')
+  );
+  const browserSourceDir = path.join(projectRoot, 'src/browser');
+  await mkdirActual(browserSourceDir, { recursive: true });
+
+  for (const { name, contents } of rootBrowserWrappers) {
+    if (name !== missingSource) {
+      await writeFile(path.join(browserSourceDir, name), contents);
+    }
+  }
+
+  const selectedSources = new Set(
+    rootBrowserWrappers.map(({ name }) => path.join(browserSourceDir, name))
+  );
+  const fsPromisesModule = {
+    readdir: async () => [],
+    mkdir: mkdirActual,
+    copyFile: async (source, target) => {
+      if (selectedSources.has(source)) {
+        await copyFileActual(source, target);
+      }
+    },
+    readFile: async () => {
+      const error = new Error('fixture file is absent');
+      error.code = 'ENOENT';
+      throw error;
+    },
+    writeFile: async () => undefined,
+  };
+
+  try {
+    await createCopyCloudHandle({
+      fileURLToPathFn: () =>
+        path.join(projectRoot, 'src/core/build/copy-cloud.js'),
+      dirnameFn: path.dirname,
+      pathModule: path,
+      fsPromisesModule,
+    });
+  } catch (error) {
+    await rm(projectRoot, { recursive: true, force: true });
+    throw error;
+  }
+
+  return projectRoot;
+}
 
 describe('createCopyCloudHandle', () => {
   test('runs the injected cloud copy workflow', async () => {
@@ -138,5 +216,25 @@ describe('createCopyCloudHandle', () => {
         logger,
       })
     ).rejects.toThrow('rewrite failure');
+  });
+
+  test('writes root browser wrappers into a temporary deployment tree', async () => {
+    const projectRoot = await runRootBrowserWrapperCopyFixture();
+
+    try {
+      for (const { name, contents } of rootBrowserWrappers) {
+        await expect(
+          readFile(path.join(projectRoot, 'infra', name), 'utf8')
+        ).resolves.toBe(contents);
+      }
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('fails when a root browser wrapper source is missing', async () => {
+    await expect(
+      runRootBrowserWrapperCopyFixture({ missingSource: 'logging.js' })
+    ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 });
