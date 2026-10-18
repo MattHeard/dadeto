@@ -134,6 +134,48 @@ export function createCheckImpactPlan({
 }
 
 /**
+ * Build a Jest command whose coverage scope is limited to changed core files.
+ * @param {{paths: {rootDir: string, pathModule: typeof import('node:path')}, coverageDirectory: string, selection: {tests: string[], sourceFiles: string[]}, environment: Record<string, string | undefined>}} options Command inputs.
+ * @returns {{args: string[], command: string, options: import('node:child_process').SpawnSyncOptionsWithStringEncoding}} Executable arguments and a reproduction command.
+ */
+export function createScopedCoverageCommand({
+  paths,
+  coverageDirectory,
+  selection,
+  environment,
+}) {
+  const { rootDir, pathModule } = paths;
+  const { tests, sourceFiles } = selection;
+  const threshold = JSON.stringify({
+    global: { branches: 0, functions: 0, lines: 0, statements: 0 },
+  });
+  const args = [
+    pathModule.join(rootDir, JEST_RUNNER),
+    '--runInBand',
+    '--coverage',
+    '--coverageReporters=json',
+    `--coverageThreshold=${threshold}`,
+    '--coverageDirectory',
+    coverageDirectory,
+    ...sourceFiles.map(file => `--collectCoverageFrom=${file}`),
+    '--runTestsByPath',
+    ...tests,
+  ];
+  const displayArgs = [
+    'node',
+    JEST_RUNNER,
+    ...args
+      .slice(1)
+      .map(argument =>
+        argument === coverageDirectory ? '<temporary-coverage-dir>' : argument
+      ),
+  ];
+  const options = commandOptions(rootDir, 120 * 60 * 1000, true);
+  options.env = { ...environment, DADETO_COVERAGE_SHARD: '1' };
+  return { args, command: displayArgs.map(quotePath).join(' '), options };
+}
+
+/**
  * @typedef {object} CheckImpactDependencies
  * @property {string[]} argv Command-line arguments.
  * @property {string} rootDir Repository root.
