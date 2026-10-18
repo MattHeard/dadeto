@@ -8,17 +8,11 @@ on:
       - 'src/**'
 
   workflow_dispatch:
-    inputs:
-      gcp_prod_run_id:
-        description: Successful gcp-prod run containing the endpoint artifact
-        required: true
-        type: string
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
 
     steps:
@@ -31,11 +25,10 @@ jobs:
 
       - run: npm ci
 
-      - name: Configure production rental search endpoint
+      - name: Configure production rental search endpoint from registry
         env:
-          GH_TOKEN: ${{ github.token }}
-          GCP_PROD_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.gcp_prod_run_id || '' }}
-        run: bash .github/scripts/resolve-netlify-rental-endpoint.sh
+          FUNCTION_ENDPOINT_REGISTRY_URL: https://storage.googleapis.com/irien-465710-function-endpoints/function-endpoints.json
+        run: node .github/scripts/fetch-function-endpoint-registry.js
 
       - run: npm run build:browser
 

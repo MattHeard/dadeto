@@ -26,15 +26,12 @@ describe('gcp-prod workflow database selection', () => {
     );
   });
 
-  it('uploads the deployed rental search URL for the static site build', () => {
+  it('does not publish a duplicate endpoint artifact or request writable Actions permissions', () => {
     const source = readFileSync('.github/workflows/gcp-prod.yml', 'utf8');
 
-    expect(source).toContain(
-      'terraform output -raw object_minute_rental_search_url'
-    );
-    expect(source).toContain('name: object-minute-rental-search-url');
-    expect(source).toContain('uses: actions/upload-artifact@v4');
-    expect(source).toContain('retention-days: 90');
+    expect(source).not.toContain('object-minute-rental-search-url');
+    expect(source).not.toContain('actions/upload-artifact@v4');
+    expect(source).not.toContain('actions: write');
     expect(source).not.toContain(
       'gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL'
     );
