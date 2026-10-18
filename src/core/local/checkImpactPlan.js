@@ -6,6 +6,11 @@ const UNIT_TEST_ROOT = 'test/';
 const SELECTOR_TIMEOUT_MS = 45_000;
 const JEST_RUNNER = 'scripts/run-jest.js';
 
+/** @typedef {{changedPaths: string[], tests: string[], testSelection: 'none' | 'related' | 'direct' | 'all-unit', staticGates: string[], commands: string[], authoritative: string}} CheckImpactPlanBase */
+/** @typedef {CheckImpactPlanBase & {mode: 'none' | 'fallback', reason: string}} FallbackCheckImpactPlan */
+/** @typedef {CheckImpactPlanBase & {mode: 'selected', reason?: undefined}} SelectedCheckImpactPlan */
+/** @typedef {FallbackCheckImpactPlan | SelectedCheckImpactPlan} CheckImpactPlan */
+
 /**
  * Normalize a repository-relative path for stable impact plans.
  * @param {unknown} value Path to normalize.
@@ -54,7 +59,7 @@ function quotePath(value) {
 /**
  * Build a deterministic plan for affected or fallback unit tests.
  * @param {{ changedPaths?: unknown[], relatedTestPaths?: unknown[], relatedTestsResolved?: boolean, collectionError?: string }} options Plan inputs.
- * @returns {{ mode: 'none' | 'selected' | 'fallback', changedPaths: string[], tests: string[], testSelection: 'none' | 'related' | 'direct' | 'all-unit', staticGates: string[], commands: string[], reason?: string, authoritative: string }} Impact plan.
+ * @returns {CheckImpactPlan} Impact plan.
  */
 export function createCheckImpactPlan({
   changedPaths = [],
@@ -266,9 +271,8 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
  */
 function runScopedStaticGates(permission, deps, plan) {
   if (plan.mode === 'none') return [];
-  if (plan.mode !== 'selected') {
-    const reason =
-      plan.reason ?? 'The changed-path selection is not safe to scope.';
+  if (plan.mode === 'fallback') {
+    const { reason } = plan;
     deps.writeOutput(
       permission,
       `Impact static checks: not run because the path selection fell back. ${reason}\n`
@@ -285,25 +289,23 @@ function runScopedStaticGates(permission, deps, plan) {
   }
 
   const checks = [];
-  if (plan.staticGates.includes('eslint')) {
-    const eslintCli = deps.pathModule.join(
-      deps.rootDir,
-      'node_modules',
-      'eslint',
-      'bin',
-      'eslint.js'
-    );
-    checks.push(
-      runScopedStaticGate(permission, deps, 'eslint', [
-        deps.processExecPath,
-        eslintCli,
-        '--max-warnings=0',
-        '--no-cache',
-        '--no-color',
-        ...plan.changedPaths,
-      ])
-    );
-  }
+  const eslintCli = deps.pathModule.join(
+    deps.rootDir,
+    'node_modules',
+    'eslint',
+    'bin',
+    'eslint.js'
+  );
+  checks.push(
+    runScopedStaticGate(permission, deps, 'eslint', [
+      deps.processExecPath,
+      eslintCli,
+      '--max-warnings=0',
+      '--no-cache',
+      '--no-color',
+      ...plan.changedPaths,
+    ])
+  );
   if (plan.staticGates.includes('core-parse')) {
     checks.push(
       runScopedStaticGate(permission, deps, 'core-parse', [
