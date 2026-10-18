@@ -43,6 +43,7 @@ jobs:
 
     steps:
       - name: Require explicit apply confirmation
+        working-directory: ${{ github.workspace }}
         run: |
           if [[ "$CONFIRM_PRODUCTION_APPLY" != "true" ]]; then
             echo "::error::Set confirm_production_apply=true only after reviewing the scoped production plan."

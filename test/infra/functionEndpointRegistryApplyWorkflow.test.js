@@ -20,6 +20,12 @@ describe('function endpoint registry scoped apply workflow', () => {
     expect(workflow).toContain('cancel-in-progress: false');
   });
 
+  it('runs the confirmation guard from the checked-out workspace root', () => {
+    expect(workflow).toContain(
+      'name: Require explicit apply confirmation\n        working-directory: ${{ github.workspace }}\n        run:'
+    );
+  });
+
   it('targets only the three production registry resources', () => {
     const targetArgs = [...workflow.matchAll(/-target=([^\s\\]+)/g)]
       .map(([, target]) => target)
