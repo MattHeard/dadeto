@@ -35,6 +35,10 @@
 | Command | Subsystem focus | Primary impact |
 | --- | --- | --- |
 | `npm test` | Full repo test gate | Runs `npm run test:unit` and `npm run test:e2e`.
+| `npm run check` | Fast local aggregate gate | Runs impact-selected Jest tests without coverage plus all static quality gates.
+| `npm run check:full` | Full aggregate quality gate | Runs the previous full `npm run check` behavior: `npm test` with coverage and E2E plus all static gates.
+| `npm run test:impact` | Changed-test runner | Runs related or changed unit tests without coverage; falls back to all unit tests without coverage in bounded serial shards when selection is unsafe or fails.
+| `npm run check:impact` | Changed-test planner | Prints a plan only; it does not run tests.
 | `npm run test:unit` | Unit/integration coverage | Runs Jest suite with coverage over `src/**` via `test/**`.
 | `npm run lint` | Quality gates + style health | ESLint/Prettier sweep with output in `reports/lint/lint.txt`.
 | `npm run build` / `npm run build:mattheard-net` | Build pipeline + static blog | Generates/copies blog output into `public/`.
@@ -46,3 +50,5 @@
 | `npm run test:e2e:cloud` | Cloud E2E validation | Executes Playwright suite intended for cloud/CI execution.
 | `npm run test:e2e:local` | Local server E2E validation | Executes Playwright against the local simulator/local writer path only.
 | `npm run duplication` | Architecture hygiene | Runs duplication analysis (`jscpd`) across repo sources.
+
+The aggregate runner reports active commands every three seconds by default. The full coverage runner also reports shard starts, completions, and current shard progress on the same interval.

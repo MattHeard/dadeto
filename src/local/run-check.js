@@ -10,6 +10,9 @@ const runCheckSuite = createRunCheckSuite({
   defaultTimeoutMs: Number(
     process.env.DADETO_CHECK_TIMEOUT_MS ?? 120 * 60 * 1000
   ),
+  defaultProgressIntervalMs: Number(
+    process.env.DADETO_CHECK_PROGRESS_INTERVAL_MS ?? 3000
+  ),
 });
 
 const handle = createRunCheckHandle({

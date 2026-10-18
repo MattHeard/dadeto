@@ -1,16 +1,29 @@
-name: Check
+name: Full Check
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
-  check:
+  check-full:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    env:
+      DADETO_COVERAGE_SHARD_SIZE: 20
+      DADETO_COVERAGE_WORKER_HEAP_MB: 1536
+      DADETO_CHECK_TIMEOUT_MS: 7200000
+      DADETO_CHECK_PROGRESS_INTERVAL_MS: 3000
+      DADETO_CHECK_IMPACT_SHARD_SIZE: 20
+      DADETO_CHECK_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -20,5 +33,28 @@ jobs:
         run: npm ci
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run checks
-        run: npm run check
+      - name: Run full checks
+        id: full
+        run: |
+          echo "Coverage shard size: ${DADETO_COVERAGE_SHARD_SIZE}"
+          echo "Coverage worker heap: ${DADETO_COVERAGE_WORKER_HEAP_MB} MiB"
+          echo "Check command timeout: ${DADETO_CHECK_TIMEOUT_MS} ms"
+          echo "Progress interval: ${DADETO_CHECK_PROGRESS_INTERVAL_MS} ms"
+          mkdir -p reports
+          set -o pipefail
+          npm run check:full 2>&1 | tee reports/check-full.log
+      - name: Write full-check report
+        if: always()
+        env:
+          CHECK_FULL_RESULT: ${{ job.status }}
+        run: node src/local/write-check-full-report.js
+      - name: Upload full-check reports
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: full-check-${{ github.run_id }}
+          path: |
+            reports/check-full.log
+            reports/coverage/
+          if-no-files-found: warn
+          retention-days: 30

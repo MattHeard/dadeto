@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
 import { acquireJestSlot } from './jest-pool.js';
@@ -17,32 +16,107 @@ const shardSize = Number.parseInt(
   process.env.DADETO_COVERAGE_SHARD_SIZE ?? '40',
   10
 );
+const finalDir = path.resolve(ROOT, 'reports/coverage');
 const coverageRoot =
-  process.env.DADETO_COVERAGE_DIR ??
-  path.join(os.tmpdir(), `dadeto-coverage-${process.pid}`);
+  process.env.DADETO_COVERAGE_DIR ?? path.join(finalDir, 'work');
 const shardRoot = path.join(coverageRoot, 'shards');
 const storeRoot = path.join(coverageRoot, 'files');
-const finalDir = path.resolve(ROOT, 'reports/coverage');
+const coverageFinalPath = path.join(finalDir, 'coverage-final.json');
+const coverageSummaryPath = path.join(finalDir, 'coverage-summary.json');
+const testRunMetadataPath = path.join(finalDir, 'full-test-run.json');
 const workerHeapMb = Number.parseInt(
   process.env.DADETO_COVERAGE_WORKER_HEAP_MB ?? '1024',
   10
 );
-
-const testFiles = requestedTestFiles() ?? listTestFiles();
-const sourceFiles = listSourceFiles();
-const sourceKeys = sourceFiles;
-const shards = partitionValues(testFiles, shardSize);
+const progressIntervalMs = resolveProgressIntervalMs(
+  process.env.DADETO_CHECK_PROGRESS_INTERVAL_MS
+);
 
 fs.rmSync(coverageRoot, { recursive: true, force: true });
 fs.mkdirSync(shardRoot, { recursive: true });
 fs.mkdirSync(storeRoot, { recursive: true });
+fs.mkdirSync(finalDir, { recursive: true });
+fs.rmSync(coverageFinalPath, { force: true });
+fs.rmSync(coverageSummaryPath, { force: true });
 
-const release = await acquireSlot();
+const testRun = {
+  commitSha: getCommitSha(),
+  status: 'running',
+  startedAt: new Date().toISOString(),
+  finishedAt: null,
+  shardSize,
+  workerHeapMb,
+  totalShards: null,
+  completedShards: 0,
+  phase: 'discovering unit tests',
+  currentShard: null,
+  lastProgressAt: new Date().toISOString(),
+  testSuites: null,
+  tests: null,
+  passed: null,
+  failed: null,
+  thresholds: { statements: 100, branches: 100, functions: 100, lines: 100 },
+  coverageAvailable: false,
+  failureReason: null,
+};
+writeTestRun();
+logProgress(`Coverage run started; discovering unit tests.`);
+const progressTimer = setInterval(writeProgress, progressIntervalMs);
+
+let testFiles = [];
+let sourceFiles = [];
+let sourceKeys = [];
+let shards = [];
 try {
+  testFiles = requestedTestFiles() ?? listTestFiles();
+  sourceFiles = listSourceFiles();
+  sourceKeys = sourceFiles;
+  shards = partitionValues(testFiles, shardSize);
+  testRun.totalShards = shards.length;
+  testRun.phase = 'waiting for Jest slot';
+  writeTestRun();
+  logProgress(
+    `Discovered ${testFiles.length} unit test files across ${shards.length} shard(s). Waiting for the Jest slot.`
+  );
+} catch (error) {
+  clearInterval(progressTimer);
+  testRun.status = 'failed';
+  testRun.phase = 'failed';
+  testRun.failureReason = error instanceof Error ? error.message : String(error);
+  testRun.finishedAt = new Date().toISOString();
+  writeTestRun();
+  throw error;
+}
+
+let release = () => {};
+try {
+  release = await acquireSlot();
+  testRun.phase = 'running coverage shards';
+  writeTestRun();
+  logProgress('Jest slot acquired; coverage shard execution started.');
   for (const [index, shard] of shards.entries()) {
     const shardDir = path.join(shardRoot, String(index));
     fs.mkdirSync(shardDir, { recursive: true });
-    await runShard(shard, shardDir);
+    testRun.currentShard = { index: index + 1, total: shards.length, testFiles: shard.length };
+    testRun.phase = 'running coverage shard';
+    writeTestRun();
+    logProgress(
+      `Starting coverage shard ${index + 1}/${shards.length} (${shard.length} test files).`
+    );
+    let shardResult;
+    try {
+      shardResult = await runShard(shard, shardDir);
+    } catch (error) {
+      addTestCounts(error.testResults);
+      throw error;
+    }
+    addTestCounts(shardResult);
+    testRun.completedShards += 1;
+    testRun.currentShard = null;
+    writeTestRun();
+    logProgress(
+      `Completed coverage shard ${index + 1}/${shards.length}; ${testRun.completedShards}/${shards.length} finished.`
+    );
     const fragment = JSON.parse(
       fs.readFileSync(path.join(shardDir, 'coverage-final.json'), 'utf8')
     );
@@ -53,17 +127,86 @@ try {
     fs.readdirSync(storeRoot).map(file => [decodeURIComponent(file), true])
   );
   addUncoveredFiles(sourceFiles, knownFiles, storeRoot);
-  fs.mkdirSync(finalDir, { recursive: true });
+  testRun.phase = 'merging coverage artifacts';
+  writeTestRun();
+  logProgress('All test shards passed; merging coverage artifacts.');
   writeCoverageArtifacts(
     storeRoot,
     sourceFiles,
-    path.join(finalDir, 'coverage-final.json'),
-    path.join(finalDir, 'coverage-summary.json')
+    coverageFinalPath,
+    coverageSummaryPath
   );
   enforceCoverageThreshold();
+  testRun.status = 'passed';
+  testRun.phase = 'passed';
+  testRun.coverageAvailable = true;
+  testRun.finishedAt = new Date().toISOString();
+  writeTestRun();
+} catch (error) {
+  testRun.status = 'failed';
+  testRun.phase = 'failed';
+  testRun.currentShard = null;
+  testRun.coverageAvailable = fs.existsSync(coverageSummaryPath);
+  testRun.failureReason = error instanceof Error ? error.message : String(error);
+  testRun.finishedAt = new Date().toISOString();
+  writeTestRun();
+  throw error;
 } finally {
+  clearInterval(progressTimer);
   release();
-  fs.rmSync(coverageRoot, { recursive: true, force: true });
+  logProgress(`Coverage run ${testRun.status} after ${testRun.completedShards}/${testRun.totalShards ?? 0} shard(s).`);
+  if (testRun.status === 'passed')
+    fs.rmSync(coverageRoot, { recursive: true, force: true });
+}
+
+function writeTestRun() {
+  testRun.lastProgressAt = new Date().toISOString();
+  fs.writeFileSync(testRunMetadataPath, `${JSON.stringify(testRun, null, 2)}\n`);
+}
+
+function writeProgress() {
+  testRun.lastProgressAt = new Date().toISOString();
+  writeTestRun();
+  const current = testRun.currentShard
+    ? `; shard ${testRun.currentShard.index}/${testRun.currentShard.total} is active`
+    : '';
+  process.stderr.write(
+    `[check-progress] Coverage ${testRun.phase}; ${testRun.completedShards}/${testRun.totalShards ?? '?'} shard(s) complete${current}.\n`
+  );
+}
+
+function logProgress(message) {
+  process.stderr.write(`[check-progress] ${message}\n`);
+}
+
+function resolveProgressIntervalMs(value) {
+  const intervalMs = Number.parseInt(value ?? '3000', 10);
+  return Number.isFinite(intervalMs) && intervalMs > 0 ? intervalMs : 3000;
+}
+
+function addTestCounts(results) {
+  if (!results) return;
+  for (const [target, source] of [
+    ['testSuites', 'numTotalTestSuites'],
+    ['tests', 'numTotalTests'],
+    ['passed', 'numPassedTests'],
+    ['failed', 'numFailedTests'],
+  ]) {
+    const value = results[source];
+    if (Number.isFinite(value)) testRun[target] = (testRun[target] ?? 0) + value;
+  }
+}
+
+function getCommitSha() {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA;
+  try {
+    return execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    }).trim();
+  } catch {
+    return '';
+  }
 }
 
 async function acquireSlot() {
@@ -121,6 +264,7 @@ function isIgnoredCoverageFile(file) {
 }
 
 function runShard(testFilesForShard, shardDir) {
+  const testResultPath = path.join(shardDir, 'test-results.json');
   const args = [
     JEST_BIN,
     '--coverage',
@@ -131,6 +275,9 @@ function runShard(testFilesForShard, shardDir) {
     '--coverageThreshold={"global":{"branches":0,"functions":0,"lines":0,"statements":0}}',
     '--coverageDirectory',
     shardDir,
+    '--json',
+    '--outputFile',
+    testResultPath,
     '--runTestsByPath',
     ...testFilesForShard,
   ];
@@ -139,7 +286,7 @@ function runShard(testFilesForShard, shardDir) {
     .trim();
   const child = spawn(process.execPath, args, {
     cwd: ROOT,
-    stdio: 'inherit',
+    stdio: ['ignore', 'inherit', 'pipe'],
     env: {
       ...process.env,
       DADETO_COVERAGE_SHARD: '1',
@@ -148,13 +295,35 @@ function runShard(testFilesForShard, shardDir) {
     },
   });
   return new Promise((resolve, reject) => {
+    let stderrTail = '';
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', chunk => {
+      stderrTail = `${stderrTail}${chunk}`.slice(-8_000);
+      process.stderr.write(chunk);
+    });
     child.on('error', reject);
-    child.on('exit', code =>
-      code === 0
-        ? resolve()
-        : reject(new Error(`Coverage shard failed with code ${code}`))
-    );
+    child.on('exit', code => {
+      const testResults = readTestResults(testResultPath);
+      if (code === 0) {
+        resolve(testResults);
+        return;
+      }
+      const reason = /heap out of memory|heap limit|allocation failed/i.test(stderrTail)
+        ? 'Coverage shard exhausted the JavaScript heap.'
+        : `Unit test shard failed with exit code ${code}.`;
+      const error = new Error(reason);
+      error.testResults = testResults;
+      reject(error);
+    });
   });
+}
+
+function readTestResults(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 function enforceCoverageThreshold() {

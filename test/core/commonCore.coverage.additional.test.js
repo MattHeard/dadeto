@@ -506,7 +506,12 @@ describe('commonCore additional aggregate coverage', () => {
       setExitCode,
     });
     await handler();
-    expect(runSuite).toHaveBeenCalledWith({ failFast: true, skipTests: true });
+    expect(runSuite).toHaveBeenCalledWith({
+      failFast: true,
+      skipTests: true,
+      fullCheck: false,
+      suiteCommand: 'npm run check',
+    });
     expect(setExitCode).toHaveBeenCalledWith(1);
   });
 

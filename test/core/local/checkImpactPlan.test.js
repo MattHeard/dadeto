@@ -1,18 +1,44 @@
 import { createCheckImpactPlan } from '../../../src/core/local/checkImpactPlan.js';
 
 describe('createCheckImpactPlan', () => {
-  it('falls back to the authoritative check when no paths are supplied', () => {
+  it('reports that no tests are selected when there are no changes', () => {
     expect(createCheckImpactPlan()).toEqual({
-      mode: 'full-check',
+      mode: 'none',
       changedPaths: [],
       tests: [],
-      commands: ['npm run check'],
-      reason: 'No changed paths were provided.',
-      authoritative: 'npm run check',
+      testSelection: 'none',
+      staticGates: [],
+      commands: [],
+      reason: 'No changed source or unit-test paths were found.',
+      authoritative: 'npm run check:full',
     });
   });
 
-  it('falls back for unsupported and unsafe paths', () => {
+  it('plans direct changed unit tests without coverage flags', () => {
+    const plan = createCheckImpactPlan({
+      changedPaths: ['test/core/z.test.js', 'test/core/a.test.js'],
+    });
+
+    expect(plan).toMatchObject({
+      mode: 'selected',
+      testSelection: 'direct',
+      tests: ['test/core/a.test.js', 'test/core/z.test.js'],
+    });
+    expect(plan.commands.join(' ')).not.toMatch(/coverage|npm test/);
+  });
+
+  it('plans related tests and explains unsupported or unsafe paths', () => {
+    const related = createCheckImpactPlan({
+      changedPaths: ['src/core/local/checkImpactPlan.js'],
+      relatedTestsResolved: true,
+      relatedTestPaths: ['test/core/a.test.js'],
+    });
+    expect(related).toMatchObject({
+      mode: 'selected',
+      testSelection: 'related',
+      tests: ['test/core/a.test.js'],
+    });
+
     for (const changedPath of [
       'docs/guide.md',
       '../test/a.test.js',
@@ -24,26 +50,18 @@ describe('createCheckImpactPlan', () => {
     ]) {
       expect(
         createCheckImpactPlan({ changedPaths: [changedPath] })
-      ).toMatchObject({
-        mode: 'full-check',
-        commands: ['npm run check'],
-      });
+      ).toMatchObject({ mode: 'fallback', testSelection: 'all-unit' });
     }
-    expect(createCheckImpactPlan({ changedPaths: [''] }).reason).toBe(
-      'Unsupported or unsafe changed path: (empty).'
-    );
-    expect(
-      createCheckImpactPlan({ changedPaths: ['../test/a.test.js'] }).reason
-    ).toBe('Unsupported or unsafe changed path: (empty).');
   });
 
-  it('requires a successful related-test query for source changes', () => {
+  it('falls back to all unit tests if discovery fails or finds no tests', () => {
     expect(
       createCheckImpactPlan({
         changedPaths: ['src/core/local/checkImpactPlan.js'],
       })
     ).toMatchObject({
-      mode: 'full-check',
+      mode: 'fallback',
+      testSelection: 'all-unit',
       reason: 'Jest related-test discovery did not complete successfully.',
     });
     expect(
@@ -53,82 +71,43 @@ describe('createCheckImpactPlan', () => {
         relatedTestPaths: ['test/e2e/ignored.test.js', '../outside.test.js'],
       })
     ).toMatchObject({
-      mode: 'full-check',
+      mode: 'fallback',
       reason: 'Jest did not identify related unit tests for changed source.',
     });
   });
 
-  it('sorts and deduplicates changed paths and related unit tests', () => {
-    const plan = createCheckImpactPlan({
-      changedPaths: [
-        './test/core/z.test.js',
-        'test/core/a.test.js',
-        'test/core/a.test.js',
-        'src/core/local/checkImpactPlan.js',
-      ],
-      relatedTestsResolved: true,
-      relatedTestPaths: [
-        'test/core/z.test.js',
-        'test/core/related.test.js',
-        'test/core/related.test.js',
-      ],
-    });
-
-    expect(plan).toEqual({
-      mode: 'diagnostic',
-      changedPaths: [
-        'src/core/local/checkImpactPlan.js',
-        'test/core/a.test.js',
-        'test/core/z.test.js',
-      ],
-      staticGates: ['eslint', 'core-parse'],
-      tests: [
-        'test/core/a.test.js',
-        'test/core/related.test.js',
-        'test/core/z.test.js',
-      ],
-      commands: [
-        "npx eslint --no-cache --max-warnings=0 'src/core/local/checkImpactPlan.js' 'test/core/a.test.js' 'test/core/related.test.js' 'test/core/z.test.js'",
-        "node scripts/run-jest.js --runInBand --runTestsByPath 'test/core/a.test.js' 'test/core/related.test.js' 'test/core/z.test.js'",
-        'npm run core-parse',
-        'npm run check',
-      ],
-      authoritative: 'npm run check',
-    });
+  it('normalizes, sorts, and deduplicates changed paths and tests', () => {
+    expect(
+      createCheckImpactPlan({
+        changedPaths: [
+          './test/core/z.test.js',
+          'test\\core\\a.test.js',
+          'test/core/a.test.js',
+        ],
+      }).tests
+    ).toEqual(['test/core/a.test.js', 'test/core/z.test.js']);
   });
 
-  it('quotes unusual test paths in the printable command', () => {
+  it('quotes display paths without making them shell-evaluated inputs', () => {
     const plan = createCheckImpactPlan({
       changedPaths: ["test/core/it's-a-test.test.js"],
     });
 
     expect(plan.tests).toEqual(["test/core/it's-a-test.test.js"]);
     expect(plan.commands[0]).toContain("'test/core/it'\\''s-a-test.test.js'");
-    expect(plan.commands[1]).toContain("'test/core/it'\\''s-a-test.test.js'");
   });
 
-  it('normalizes Windows separators in changed test paths', () => {
+  it('supports JavaScript changes anywhere under src', () => {
     expect(
       createCheckImpactPlan({
-        changedPaths: ['test\\core\\changed.test.js'],
-      }).changedPaths
-    ).toEqual(['test/core/changed.test.js']);
-  });
-
-  it('accepts supported source roots when related tests resolve', () => {
-    for (const sourcePath of [
-      'src/browser/app.js',
-      'src/cloud/app.js',
-      'src/core/app.js',
-      'src/local/app.js',
-    ]) {
-      expect(
-        createCheckImpactPlan({
-          changedPaths: [sourcePath],
-          relatedTestsResolved: true,
-          relatedTestPaths: ['test/core/app.test.js'],
-        }).mode
-      ).toBe('diagnostic');
-    }
+        changedPaths: ['src/build/generate.js'],
+        relatedTestsResolved: true,
+        relatedTestPaths: ['test/build/generate.test.js'],
+      })
+    ).toMatchObject({
+      mode: 'selected',
+      testSelection: 'related',
+      tests: ['test/build/generate.test.js'],
+    });
   });
 });

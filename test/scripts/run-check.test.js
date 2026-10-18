@@ -129,7 +129,14 @@ describe('runCheckSuite', () => {
 
     await handle();
 
-    expect(suiteCalls).toEqual([{ failFast: true, skipTests: false }]);
+    expect(suiteCalls).toEqual([
+      {
+        failFast: true,
+        skipTests: false,
+        fullCheck: false,
+        suiteCommand: 'npm run check',
+      },
+    ]);
     expect(exitCodes).toEqual([7]);
   });
 
@@ -146,7 +153,37 @@ describe('runCheckSuite', () => {
 
     await handle();
 
-    expect(suiteCalls).toEqual([{ failFast: false, skipTests: true }]);
+    expect(suiteCalls).toEqual([
+      {
+        failFast: false,
+        skipTests: true,
+        fullCheck: false,
+        suiteCommand: 'npm run check',
+      },
+    ]);
+  });
+
+  it('selects the complete gate when requested', async () => {
+    const suiteCalls = [];
+    const handle = createRunCheckHandle({
+      argv: ['node', 'src/local/run-check.js', '--full'],
+      runSuite: async options => {
+        suiteCalls.push(options);
+        return { exitCode: 0 };
+      },
+      setExitCode: () => {},
+    });
+
+    await handle();
+
+    expect(suiteCalls).toEqual([
+      {
+        failFast: false,
+        skipTests: false,
+        fullCheck: true,
+        suiteCommand: 'npm run check:full',
+      },
+    ]);
   });
 
   it('returns a passed summary when there are no commands', async () => {
@@ -173,6 +210,45 @@ describe('runCheckSuite', () => {
         failed: 0,
       }),
     ]);
+  });
+
+  it('emits active-command progress every three seconds', async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(0);
+    const child = createChild();
+    const { spawnImpl } = createSpawnStub([child]);
+    const stderr = createWriter();
+    const progressSuite = createRunCheckSuite({
+      defaultSpawn: spawnImpl,
+      defaultStdout: createWriter(),
+      defaultStderr: stderr,
+      defaultNow: () => Date.now(),
+      defaultProgressIntervalMs: 3000,
+    });
+
+    try {
+      const suitePromise = progressSuite({
+        commands: [{ name: 'slow-unit-tests', command: 'jest', args: [] }],
+      });
+      await jest.advanceTimersByTimeAsync(6000);
+
+      const progressEvents = parseEvents(stderr.chunks).filter(
+        event => event.type === 'check-progress'
+      );
+      expect(progressEvents).toEqual([
+        expect.objectContaining({
+          active: [{ name: 'slow-unit-tests', elapsedMs: 3000 }],
+        }),
+        expect.objectContaining({
+          active: [{ name: 'slow-unit-tests', elapsedMs: 6000 }],
+        }),
+      ]);
+
+      child.emit('close', 0, null);
+      await expect(suitePromise).resolves.toMatchObject({ exitCode: 0 });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('uses the default writers and clock when no overrides are supplied', async () => {

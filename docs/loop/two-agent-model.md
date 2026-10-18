@@ -202,7 +202,7 @@ When `ralph` finishes a bead without handing it back, use this as the canonical 
 
 If the bead's acceptance criteria are satisfied and there is no remaining follow-up owned by the same bead, `ralph` must close the bead as part of this contract. Leaving the bead `in_progress` after success is a defect unless the work was intentionally redirected into a new bead.
 
-1. Run the required evaluator set for the bead, including `npm test` when repo policy requires the full suite before closure.
+1. Run `npm run check` for fast local static and impact-test evidence. The `check:full` workflow runs asynchronously for the complete suite, coverage thresholds, and E2E; record its result separately and do not equate it with the local check.
 2. Record execution evidence in `bd`, including exact commands, pass/fail results, and relevant artifact paths or proof points.
 3. Add the required `notes/agents/` retrospective when the loop produced meaningful repo work or a durable lesson.
 4. Stage the full intended result with `git add -A` so closure does not leave partial tracked changes behind.

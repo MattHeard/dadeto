@@ -22,7 +22,7 @@
 - GitHub Actions job log failure with non-zero exit and stage-specific error summary.
 
 ## Prevention harness
-- Keep local loop aligned with CI commands (`npm test`, `npm run lint`, required build command) before push.
+- Run the fast local `npm run check` before push. The pull-request/main Actions workflow runs `npm run check:full` for the complete suite, coverage thresholds, and E2E; record that asynchronous result separately.
 - Pin/update runtime/tooling versions in repo-managed config.
 - When a Node bump is planned, update this note first so the intended version split is visible before workflow or infra edits land.
 

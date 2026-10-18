@@ -1,10 +1,13 @@
 import { jest } from '@jest/globals';
 import path from 'node:path';
-import { createPlanCheckImpactHandle } from '../../src/core/local/checkImpactPlan.js';
+import {
+  createPlanCheckImpactHandle,
+  createRunCheckImpactHandle,
+} from '../../src/core/local/checkImpactPlan.js';
 
 /**
- * Capture output from a planner handle.
- * @returns {{chunks: string[], write: (value: string) => void, plan: () => object}} Output collector.
+ * Create a capture for impact-runner output.
+ * @returns {{chunks: string[], write: (value: string) => void, report: () => object}} Output capture.
  */
 function captureOutput() {
   const chunks = [];
@@ -13,187 +16,440 @@ function captureOutput() {
     write(value) {
       chunks.push(value);
     },
-    plan() {
-      return JSON.parse(chunks.join(''));
+    report() {
+      return JSON.parse(chunks.filter(value => value.startsWith('{')).at(-1));
     },
   };
 }
 
 /**
- * Construct a planner with permission-aware effect mocks.
- * @param {{argv: string[], runImpl?: (command: string, args: string[], options: object) => object}} options Test inputs.
- * @returns {{result: object, output: ReturnType<typeof captureOutput>, permission: object, runCommand: jest.Mock}} Planner result and mocks.
+ * Run an impact handler with controlled process effects.
+ * @param {object} root0 Test configuration.
+ * @param {typeof createPlanCheckImpactHandle | typeof createRunCheckImpactHandle} [root0.createHandle] Handler factory.
+ * @param {string[]} [root0.argv] CLI arguments.
+ * @param {(command: string, args: string[], options: object) => {status: number | null, stdout?: string, stderr?: string, error?: Error}} [root0.runImpl] Process result stub.
+ * @param {string} [root0.defaultBaseRef] Optional Git comparison base.
+ * @param {number} [root0.impactShardSize] Maximum test files per shard.
+ * @param {(absolutePath: string) => boolean} [root0.fileExists] Worktree existence stub.
+ * @returns {{result: {exitCode: number}, output: ReturnType<typeof captureOutput>, permission: object, runCommand: jest.Mock, writeOutput: jest.Mock}} Handler result and captured effects.
  */
-function runPlanner({ argv, runImpl = () => ({ status: 0, stdout: '' }) }) {
+function runHandle({
+  createHandle = createRunCheckImpactHandle,
+  argv = [],
+  runImpl = () => ({ status: 0, stdout: '' }),
+  defaultBaseRef,
+  impactShardSize,
+  fileExists,
+} = {}) {
   const permission = {};
   const output = captureOutput();
-  const runCommand = jest.fn(
-    (receivedPermission, command, args, commandOptions) => {
-      expect(receivedPermission).toBe(permission);
-      return runImpl(command, args, commandOptions);
-    }
-  );
+  const runCommand = jest.fn((receivedPermission, command, args, options) => {
+    expect(receivedPermission).toBe(permission);
+    return runImpl(command, args, options);
+  });
   const writeOutput = jest.fn((receivedPermission, value) => {
     expect(receivedPermission).toBe(permission);
     output.write(value);
   });
-  const handle = createPlanCheckImpactHandle({
+  const handle = createHandle({
     argv,
     rootDir: process.cwd(),
     processExecPath: process.execPath,
+    defaultBaseRef,
+    impactShardSize,
+    fileExists,
     pathModule: path,
-    bindStartupEffectBoundary: handler => handler(permission),
+    bindStartupEffectBoundary: callback => callback(permission),
     runCommand,
     writeOutput,
   });
   return { result: handle(), output, permission, runCommand, writeOutput };
 }
 
-describe('createPlanCheckImpactHandle', () => {
-  it('prints explicit test changes without starting Jest discovery', () => {
-    const { result, output, runCommand, writeOutput } = runPlanner({
+/**
+ * Return the Jest command arguments from a recorded process call.
+ * @param {[string, string, string[], object]} call Recorded process call.
+ * @returns {string[]} Arguments after the executable path.
+ */
+function runnerArgs(call) {
+  return call[2].slice(1);
+}
+
+describe('impact planner', () => {
+  it('prints an explicit test plan without running Jest', () => {
+    const { result, output, runCommand } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
       argv: ['--files', 'test/core/example.test.js'],
     });
 
     expect(result).toEqual({ exitCode: 0 });
     expect(runCommand).not.toHaveBeenCalled();
-    expect(writeOutput).toHaveBeenCalledTimes(1);
-    expect(output.plan()).toMatchObject({
-      mode: 'diagnostic',
+    expect(output.report()).toMatchObject({
+      mode: 'selected',
       tests: ['test/core/example.test.js'],
-      staticGates: ['eslint'],
-      authoritative: 'npm run check',
+      authoritative: 'npm run check:full',
+    });
+  });
+});
+
+describe('test impact runner', () => {
+  it('runs a changed test directly with no coverage runner or shell', () => {
+    const { result, output, runCommand } = runHandle({
+      argv: ['--files', "test/core/it's-a-test.test.js"],
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(runCommand).toHaveBeenCalledTimes(1);
+    const call = runCommand.mock.calls[0];
+    expect(call[1]).toBe(process.execPath);
+    expect(call[2][0]).toMatch(/scripts\/run-jest\.js$/);
+    expect(runnerArgs(call)).toEqual([
+      '--runInBand',
+      '--runTestsByPath',
+      "test/core/it's-a-test.test.js",
+    ]);
+    expect(JSON.stringify(call)).not.toMatch(
+      /run-jest-with-coverage|--coverage/
+    );
+    expect(output.report()).toMatchObject({
+      changedPaths: ["test/core/it's-a-test.test.js"],
+      selectedTests: ["test/core/it's-a-test.test.js"],
+      result: 'passed',
+      exitStatus: 0,
     });
   });
 
-  it('uses bounded Jest discovery and normalizes absolute test paths', () => {
-    const { output, permission, runCommand } = runPlanner({
+  it('discovers and runs related tests for changed source', () => {
+    const calls = [];
+    const { result, runCommand, output } = runHandle({
       argv: ['--files', 'src/core/example.js'],
-      runImpl: () => ({
-        status: 0,
-        stdout: `${process.cwd()}/test/core/a.test.js\n`,
-      }),
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        return calls.length === 1
+          ? {
+              status: 0,
+              stdout: `${process.cwd()}/test/core/related.test.js\n`,
+            }
+          : { status: 0, stdout: 'tests passed\n' };
+      },
     });
 
-    expect(runCommand).toHaveBeenCalledWith(
-      permission,
-      process.execPath,
-      expect.arrayContaining([
-        '--runInBand',
-        '--listTests',
-        '--findRelatedTests',
-        'src/core/example.js',
-      ]),
-      expect.objectContaining({ timeout: 45_000 })
-    );
-    expect(output.plan()).toMatchObject({
-      mode: 'diagnostic',
-      tests: ['test/core/a.test.js'],
-      staticGates: ['eslint', 'core-parse'],
+    expect(result).toEqual({ exitCode: 0 });
+    expect(runCommand).toHaveBeenCalledTimes(2);
+    expect(calls[0].args).toEqual([
+      expect.stringMatching(/scripts\/run-jest\.js$/),
+      '--runInBand',
+      '--listTests',
+      '--findRelatedTests',
+      'src/core/example.js',
+    ]);
+    expect(calls[0].options).toMatchObject({ timeout: 45_000 });
+    expect(calls[1].args.slice(1)).toEqual([
+      '--runInBand',
+      '--runTestsByPath',
+      'test/core/related.test.js',
+    ]);
+    expect(output.report()).toMatchObject({
+      selectedTests: ['test/core/related.test.js'],
+      testSelection: 'related',
+      exitStatus: 0,
     });
   });
 
-  it('falls back when Jest discovery errors, fails, or finds no tests', () => {
-    for (const runImpl of [
-      () => ({ status: 1, stdout: '', error: new Error('selector failed') }),
-      () => ({ status: 1, stdout: '' }),
-      () => ({ status: 0, stdout: '' }),
-      () => ({ status: 0 }),
-      () => ({ status: 0 }),
-    ]) {
-      const { output } = runPlanner({
-        argv: ['--files', 'src/core/example.js'],
-        runImpl,
-      });
-      expect(output.plan()).toMatchObject({
-        mode: 'full-check',
-        commands: ['npm run check'],
-      });
-    }
+  it('includes staged, unstaged, and untracked paths and deduplicates them', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      runImpl: (command, args) => {
+        calls.push({ command, args });
+        if (
+          command === 'git' &&
+          args[0] === 'diff' &&
+          !args.includes('--cached')
+        )
+          return {
+            status: 0,
+            stdout: 'src/core/unstaged.js\0test/core/shared.test.js\0',
+          };
+        if (command === 'git' && args.includes('--cached'))
+          return {
+            status: 0,
+            stdout: 'test/core/staged.test.js\0test/core/shared.test.js\0',
+          };
+        if (command === 'git' && args[0] === 'ls-files')
+          return { status: 0, stdout: 'src/core/untracked.js\0' };
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/core/related.test.js\n' };
+        return { status: 0, stdout: '' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls.slice(0, 3).map(call => call.args[0])).toEqual([
+      'diff',
+      'diff',
+      'ls-files',
+    ]);
+    expect(calls[0].args).not.toContain('--cached');
+    expect(calls[1].args).toContain('--cached');
+    expect(output.report()).toMatchObject({
+      changedPaths: [
+        'src/core/unstaged.js',
+        'src/core/untracked.js',
+        'test/core/shared.test.js',
+        'test/core/staged.test.js',
+      ].sort(),
+      selectedTests: [
+        'test/core/related.test.js',
+        'test/core/shared.test.js',
+        'test/core/staged.test.js',
+      ],
+    });
   });
 
-  it('resolves a Git diff range and uses directly changed tests', () => {
-    const { output, permission, runCommand } = runPlanner({
+  it('adds changes relative to the selected base ref', () => {
+    const calls = [];
+    const { result, runCommand, output } = runHandle({
       argv: ['--base', 'origin/main'],
-      runImpl: () => ({ status: 0, stdout: 'test/core/change.test.js\n' }),
+      runImpl: (command, args) => {
+        calls.push({ command, args });
+        if (
+          command === 'git' &&
+          args[0] === 'diff' &&
+          args.includes('--cached')
+        )
+          return { status: 0, stdout: '' };
+        if (command === 'git' && args[0] === 'ls-files')
+          return { status: 0, stdout: '' };
+        if (command === 'git' && args[0] === 'rev-parse')
+          return { status: 0, stdout: 'abcdef123456\n' };
+        if (command === 'git' && args.some(arg => arg.includes('...HEAD')))
+          return { status: 0, stdout: 'test/core/from-base.test.js\0' };
+        return { status: 0, stdout: '' };
+      },
     });
 
-    expect(runCommand).toHaveBeenCalledWith(
-      permission,
-      'git',
-      ['diff', '--name-only', 'origin/main...HEAD'],
-      expect.objectContaining({ timeout: 45_000 })
+    expect(result).toEqual({ exitCode: 0 });
+    expect(runCommand).toHaveBeenCalled();
+    expect(calls.some(call => call.args.includes('origin/main^{commit}'))).toBe(
+      true
     );
-    expect(output.plan()).toMatchObject({
-      mode: 'diagnostic',
-      changedPaths: ['test/core/change.test.js'],
-      tests: ['test/core/change.test.js'],
+    expect(calls.some(call => call.args.includes('abcdef123456...HEAD'))).toBe(
+      true
+    );
+    expect(output.report()).toMatchObject({
+      changedPaths: ['test/core/from-base.test.js'],
+      selectedTests: ['test/core/from-base.test.js'],
     });
   });
 
-  it('uses an explicit head ref and falls back when Git cannot read the diff', () => {
-    const { output, runCommand } = runPlanner({
-      argv: ['--base', 'main', '--head', 'feature'],
-      runImpl: () => ({ status: 128, stdout: '' }),
-    });
-
-    expect(runCommand).toHaveBeenCalledWith(
-      expect.anything(),
-      'git',
-      ['diff', '--name-only', 'main...feature'],
-      expect.any(Object)
-    );
-    expect(output.plan()).toMatchObject({
-      mode: 'full-check',
-      reason: 'Git could not resolve the requested diff range.',
-    });
-  });
-
-  it('handles a Git execution error and missing diff output conservatively', () => {
-    for (const runImpl of [
-      () => ({ status: null, stdout: '', error: new Error('git failed') }),
-      () => ({ status: 0 }),
+  it('falls back to all unit tests after selector failure or no related tests', () => {
+    for (const selectorResult of [
+      { status: 1, stdout: '', error: new Error('selector failed') },
+      { status: 0, stdout: '' },
     ]) {
-      const { output } = runPlanner({ argv: ['--base', 'main'], runImpl });
-      expect(output.plan()).toMatchObject({
-        mode: 'full-check',
-        commands: ['npm run check'],
+      const calls = [];
+      const { result, output } = runHandle({
+        argv: ['--files', 'src/core/example.js'],
+        runImpl: (command, args) => {
+          calls.push(args);
+          if (calls.length === 1) return selectorResult;
+          if (command === 'git' && args.includes('--exclude-standard')) {
+            return {
+              status: 0,
+              stdout: 'test/core/fallback.test.js\0test/e2e/ignored.test.js\0',
+            };
+          }
+          return { status: 0, stdout: '' };
+        },
+      });
+
+      expect(result).toEqual({ exitCode: 0 });
+      expect(calls[1]).toEqual(['ls-files', '-co', '--exclude-standard', '-z']);
+      expect(calls[2].slice(1)).toEqual([
+        '--runInBand',
+        '--runTestsByPath',
+        'test/core/fallback.test.js',
+      ]);
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+        fallbackReason: expect.any(String),
+        result: 'passed',
       });
     }
   });
 
-  it('accepts relative paths from Jest discovery', () => {
-    const { output } = runPlanner({
-      argv: ['--files', 'src/cloud/example.js'],
-      runImpl: () => ({ status: 0, stdout: 'test/cloud/example.test.js\n' }),
+  it('falls back for unsupported, unsafe, and malformed inputs', () => {
+    for (const argv of [
+      ['--files', 'docs/guide.md'],
+      ['--files', '../outside.test.js'],
+      ['--unsupported'],
+    ]) {
+      const calls = [];
+      const { result, output } = runHandle({
+        argv,
+        runImpl: (command, args) => {
+          calls.push(args);
+          if (command === 'git' && args.includes('--exclude-standard')) {
+            return {
+              status: 0,
+              stdout: 'test/core/fallback.test.js\0',
+            };
+          }
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(result).toEqual({ exitCode: 0 });
+      expect(calls.some(args => args.includes('--findRelatedTests'))).toBe(
+        false
+      );
+      expect(calls.at(-1).slice(1)).toEqual([
+        '--runInBand',
+        '--runTestsByPath',
+        'test/core/fallback.test.js',
+      ]);
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+      });
+    }
+  });
+
+  it('does not run tests for a clean tree and explains the empty selection', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      runImpl: (command, args) => {
+        calls.push({ command, args });
+        return { status: 0, stdout: '' };
+      },
     });
-    expect(output.plan()).toMatchObject({
-      mode: 'diagnostic',
-      tests: ['test/cloud/example.test.js'],
-      staticGates: ['eslint'],
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls).toHaveLength(3);
+    expect(output.report()).toMatchObject({
+      changedPaths: [],
+      selectedTests: [],
+      testSelection: 'none',
+      result: 'skipped',
+      exitStatus: 0,
     });
   });
 
-  it('falls back with a clear reason for invalid arguments', () => {
-    const invalidArgs = [
-      [],
-      ['--files'],
-      ['--files', '--unknown'],
-      ['prefix', '--files', 'test/core/a.test.js'],
-      ['--files', 'test/core/a.test.js', '--base', 'main'],
-      ['--base', 'main', '--head'],
-      ['--base'],
-      ['--base', 'main', '--head', ''],
-      ['--base', 'main', '--unknown'],
-      ['--base', 'main', 'HEAD'],
-    ];
-    for (const argv of invalidArgs) {
-      const { output, runCommand } = runPlanner({ argv });
-      expect(output.plan()).toMatchObject({
-        mode: 'full-check',
-        commands: ['npm run check'],
-      });
-      expect(runCommand).not.toHaveBeenCalled();
-    }
+  it('runs every unit test without coverage if Git cannot inspect changes', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      runImpl: (command, args) => {
+        calls.push({ command, args });
+        if (command === 'git' && args[0] === 'diff')
+          return { status: 128, stdout: '' };
+        if (command === 'git' && args.includes('--exclude-standard')) {
+          return {
+            status: 0,
+            stdout: 'test/core/fallback.test.js\0',
+          };
+        }
+        return { status: 0, stdout: '' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls.at(-1).args.slice(1)).toEqual([
+      '--runInBand',
+      '--runTestsByPath',
+      'test/core/fallback.test.js',
+    ]);
+    expect(output.report()).toMatchObject({
+      testSelection: 'all-unit',
+      fallbackReason: expect.stringContaining('Git could not inspect'),
+    });
+  });
+
+  it('returns a failing exit status when selected tests fail', () => {
+    const { result, output } = runHandle({
+      argv: ['--files', 'test/core/failing.test.js'],
+      runImpl: () => ({ status: 1, stdout: 'failed\n' }),
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(output.report()).toMatchObject({ result: 'failed', exitStatus: 1 });
+  });
+
+  it('runs fallback unit tests in bounded no-coverage shards', () => {
+    const files = [1, 2, 3, 4, 5].map(index =>
+      path.resolve(`test/core/fallback-${index}.test.js`)
+    );
+    const commands = [];
+    const { result, output } = runHandle({
+      argv: ['--unsupported'],
+      impactShardSize: 2,
+      runImpl: (command, args) => {
+        commands.push(args);
+        if (command === 'git' && args.includes('--exclude-standard')) {
+          return {
+            status: 0,
+            stdout: files
+              .map(file => path.relative(process.cwd(), file))
+              .join('\0'),
+          };
+        }
+        return { status: 0, stdout: '' };
+      },
+    });
+
+    const shardCommands = commands.filter(args =>
+      args.includes('--runTestsByPath')
+    );
+    expect(result).toEqual({ exitCode: 0 });
+    expect(shardCommands).toHaveLength(3);
+    expect(
+      shardCommands.map(
+        args => args.slice(args.indexOf('--runTestsByPath') + 1).length
+      )
+    ).toEqual([2, 2, 1]);
+    expect(JSON.stringify(shardCommands)).not.toMatch(/coverage/);
+    expect(output.report()).toMatchObject({
+      selectedTests: files.map(file =>
+        path.relative(process.cwd(), file).split(path.sep).join('/')
+      ),
+      result: 'passed',
+    });
+  });
+
+  it('fails when Git cannot list fallback unit tests', () => {
+    const { result, output } = runHandle({
+      argv: ['--unsupported'],
+      runImpl: (command, args) =>
+        command === 'git' && args.includes('--exclude-standard')
+          ? { status: 1, stdout: '', error: new Error('list failed') }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(output.report()).toMatchObject({
+      testSelection: 'all-unit',
+      fallbackFailure: 'list failed',
+      result: 'failed',
+      exitStatus: 1,
+    });
+  });
+
+  it('omits deleted test paths from the current-worktree fallback inventory', () => {
+    const { result, output } = runHandle({
+      argv: ['--files', 'docs/guide.md'],
+      fileExists: filePath => filePath.endsWith('present.test.js'),
+      runImpl: (command, args) =>
+        command === 'git' && args.includes('--exclude-standard')
+          ? {
+              status: 0,
+              stdout: 'test/core/present.test.js\0test/core/deleted.test.js\0',
+            }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(output.report()).toMatchObject({
+      selectedTests: ['test/core/present.test.js'],
+      result: 'passed',
+    });
   });
 });

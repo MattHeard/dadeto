@@ -15,5 +15,8 @@ These instructions apply to everything under `src/core/`, including browser/clou
 - Use targeted ESLint runs (JSON output or a temporarily lower local complexity threshold) to pinpoint hot spots before larger refactors.
 
 ## Testing Expectations
-- Run `npm test` after any core change; maintain full branch coverage, especially in content processing and Firestore integration paths.
+- Run `npm run test:impact` or `npm run check` after core changes for fast related-test feedback without coverage.
+- GitHub Actions runs `npm run check:full` asynchronously for full-suite, global-coverage, and E2E evidence. Continue implementation while it runs, but keep those results distinct from the local impact test result.
+- Aggregate check runners print active-command progress every three seconds by default. All-unit fallbacks use serial shards of 200 test files by default.
+- Maintain full branch coverage, especially in content processing and Firestore integration paths.
 - Share mock builders across tests (e.g., story hierarchy creators) to avoid missing links between parent/child documents and to keep coverage stable.

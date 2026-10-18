@@ -124,6 +124,10 @@ For full triage/autoloop details: `bd prime` and docs linked above.
 ## 2) Test-before-close is required
 
 - Run `npm run check` before closing any bead.
+- `npm run check` is the fast local check: static gates plus change-selected Jest tests without coverage instrumentation. A pass proves only those local checks passed.
+- GitHub Actions runs `npm run check:full` for pull requests and main updates. It is the authoritative full-suite, coverage-threshold, and E2E result. Record that workflow result separately; never describe a local pass as full coverage evidence.
+- Continue implementation after the fast local check while the asynchronous full workflow runs. Do not close the overarching quality task or report full validation complete until its `check:full` workflow succeeds.
+- Aggregate checks print a progress heartbeat every three seconds by default. `DADETO_CHECK_PROGRESS_INTERVAL_MS` tunes the interval; local all-unit fallbacks run in serial process shards of 200 files by default, configurable with `DADETO_CHECK_IMPACT_SHARD_SIZE`.
 - Record the exact command + outcome in bead comments as closure evidence.
 - Keep branch coverage expectations at 100%; create/fix beads for gaps.
 
@@ -160,6 +164,8 @@ Use canonical procedures in:
 - `npm install`
 - `npm run build`
 - `npm run check`
+- `npm run check:full` (authoritative local equivalent of the GitHub Actions full gate)
+- `npm run test:impact` (test-only changed-test execution; no coverage)
 - `npm run lint`
 - `npm run start`
 
