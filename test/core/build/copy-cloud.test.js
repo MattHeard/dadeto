@@ -35,6 +35,18 @@ describe('createCopyCloudHandle', () => {
       target:
         '/repo/infra/cloud-functions/get-author-uuid-v2/core/submit-shared.js',
     });
+    expect(copies).toContainEqual({
+      source: '/repo/src/browser/admin-core.js',
+      target: '/repo/infra/admin-core.js',
+    });
+    expect(copies).toContainEqual({
+      source: '/repo/src/browser/load-static-config-core.js',
+      target: '/repo/infra/load-static-config-core.js',
+    });
+    expect(copies).toContainEqual({
+      source: '/repo/src/browser/logging.js',
+      target: '/repo/infra/logging.js',
+    });
     for (const filename of ['index.js', 'wgs84.js']) {
       expect(copies).toContainEqual({
         source: `/repo/src/core/wgs84/${filename}`,
