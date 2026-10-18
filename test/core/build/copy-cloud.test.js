@@ -1,13 +1,16 @@
+import { execFileSync } from 'node:child_process';
 import {
   copyFile as copyFileActual,
   mkdir as mkdirActual,
   mkdtemp,
   readFile,
   rm,
+  symlink,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { jest } from '@jest/globals';
 import { createCopyCloudHandle } from '../../../src/core/build/copy-cloud.js';
 
@@ -236,5 +239,98 @@ describe('createCopyCloudHandle', () => {
     await expect(
       runRootBrowserWrapperCopyFixture({ missingSource: 'logging.js' })
     ).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
+  test('runs source contracts with generated infra wrappers absent', async () => {
+    const projectRoot = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../..'
+    );
+    const fixtureRoot = await mkdtemp(
+      path.join(tmpdir(), 'dadeto-clean-checkout-')
+    );
+
+    try {
+      await mkdirActual(path.join(fixtureRoot, 'infra'), { recursive: true });
+      await mkdirActual(path.join(fixtureRoot, 'test/infra'), {
+        recursive: true,
+      });
+      for (const filename of [
+        'admin.html',
+        'functions-v2.tf',
+        'load-balancer.tf',
+        'main.tf',
+      ]) {
+        await copyFileActual(
+          path.join(projectRoot, 'infra', filename),
+          path.join(fixtureRoot, 'infra', filename)
+        );
+      }
+      for (const filename of [
+        'babel.config.cjs',
+        'jest.config.mjs',
+        'package.json',
+      ]) {
+        await copyFileActual(
+          path.join(projectRoot, filename),
+          path.join(fixtureRoot, filename)
+        );
+      }
+      await copyFileActual(
+        path.join(projectRoot, 'test/infra/cloudBrowserEntrypoints.test.js'),
+        path.join(fixtureRoot, 'test/infra/cloudBrowserEntrypoints.test.js')
+      );
+      await symlink(
+        path.join(projectRoot, 'src'),
+        path.join(fixtureRoot, 'src'),
+        'dir'
+      );
+      await symlink(
+        path.join(projectRoot, 'node_modules'),
+        path.join(fixtureRoot, 'node_modules'),
+        'dir'
+      );
+
+      for (const { name } of rootBrowserWrappers) {
+        await expect(
+          readFile(path.join(fixtureRoot, 'infra', name), 'utf8')
+        ).rejects.toMatchObject({ code: 'ENOENT' });
+      }
+
+      const args = [
+        '--experimental-vm-modules',
+        path.join(projectRoot, 'node_modules/.bin/jest'),
+        '--config',
+        path.join(fixtureRoot, 'jest.config.mjs'),
+        '--runInBand',
+        '--coverage=false',
+        '--watchman=false',
+        path.join(fixtureRoot, 'test/infra/cloudBrowserEntrypoints.test.js'),
+      ];
+      const runContractSuite = () =>
+        execFileSync(process.execPath, args, {
+          cwd: fixtureRoot,
+          stdio: 'ignore',
+          timeout: 60_000,
+        });
+
+      expect(runContractSuite).not.toThrow();
+
+      const contractTestPath = path.join(
+        fixtureRoot,
+        'test/infra/cloudBrowserEntrypoints.test.js'
+      );
+      const contractTestSource = await readFile(contractTestPath, 'utf8');
+      const finalDescribeClose = contractTestSource.lastIndexOf('\n});');
+      expect(finalDescribeClose).toBeGreaterThanOrEqual(0);
+      await writeFile(
+        contractTestPath,
+        `${contractTestSource.slice(0, finalDescribeClose)}\n  it('fails when a generated wrapper is read', async () => {\n    await readFile('infra/admin-core.js', 'utf8');\n  });${contractTestSource.slice(finalDescribeClose)}`
+      );
+
+      expect(runContractSuite).toThrow();
+    } finally {
+      await rm(fixtureRoot, { recursive: true, force: true });
+    }
   });
 });
