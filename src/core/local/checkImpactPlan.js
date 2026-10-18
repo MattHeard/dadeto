@@ -1,5 +1,10 @@
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('../../../types/allow-effects').StartupAllowEffectsBoundary} StartupAllowEffectsBoundary */
+/** @typedef {{start?: {line?: number}}} IstanbulCoverageLocation */
+/** @typedef {{line?: number, locations?: IstanbulCoverageLocation[]}} IstanbulBranchLocation */
+/** @typedef {{statementMap?: Record<string, IstanbulCoverageLocation>, branchMap?: Record<string, IstanbulBranchLocation>, s?: Record<string, number>, f?: Record<string, number>, b?: Record<string, number[]>}} IstanbulCoverageRecord */
+/** @typedef {Record<string, IstanbulCoverageRecord>} IstanbulCoverageMap */
+/** @typedef {{status: number | null, stdout?: string, stderr?: string, error?: Error, coverage?: IstanbulCoverageMap, command?: string, coverageError?: string}} ScopedCoverageRun */
 
 const SOURCE_ROOT = 'src/';
 const UNIT_TEST_ROOT = 'test/';
@@ -186,7 +191,7 @@ export function createScopedCoverageCommand({
  * @property {typeof import('node:path')} pathModule Path utilities.
  * @property {StartupAllowEffectsBoundary} bindStartupEffectBoundary Permission boundary for synchronous process and output effects.
  * @property {(permission: AllowEffects, command: string, args: string[], options: object) => {status: number | null, stdout?: string, stderr?: string, error?: Error}} runCommand Permission-aware child-process runner.
- * @property {(permission: AllowEffects, tests: string[], sourceFiles: string[]) => {status: number | null, stdout?: string, stderr?: string, error?: Error, coverage?: object, command?: string, coverageError?: string}} runCoverage Permission-aware targeted coverage runner.
+ * @property {(permission: AllowEffects, tests: string[], sourceFiles: string[]) => ScopedCoverageRun} runCoverage Permission-aware targeted coverage runner.
  * @property {(permission: AllowEffects, output: string) => unknown} writeOutput Permission-aware CLI output writer.
  */
 
@@ -253,6 +258,7 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
           path => path.startsWith('src/core/') && path.endsWith('.js')
         )
       : [];
+  /** @type {ScopedCoverageRun[]} */
   const coverageRuns = [];
   const staticChecks = includeStaticGates
     ? runScopedStaticGates(permission, deps, plan)
@@ -326,13 +332,13 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
 /**
  * Summarize only the changed core files reported by scoped Jest coverage.
  * @param {string[]} sourceFiles Changed core source paths.
- * @param {Array<{coverage?: object, command?: string, coverageError?: string}>} coverageRuns Coverage shard results.
+ * @param {ScopedCoverageRun[]} coverageRuns Coverage shard results.
  * @param {CheckImpactDependencies} deps Path dependencies.
  * @returns {{scope: string, files: Array<{file: string, collected: boolean, uncoveredLines: number[], uncoveredBranches: Array<{line: number, arm: number}>}>, commands: string[], errors: string[], authoritative: string}} Scoped coverage evidence.
  */
 function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
   const expectedFiles = new Set(sourceFiles);
-  /** @type {Map<string, object>} */
+  /** @type {Map<string, IstanbulCoverageRecord>} */
   const records = new Map();
   const errors = [];
   for (const run of coverageRuns) {
@@ -371,7 +377,7 @@ function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
   return {
     scope: 'changed-core-files',
     files,
-    commands: coverageRuns.map(run => run.command).filter(Boolean),
+    commands: coverageRuns.flatMap(run => (run.command ? [run.command] : [])),
     errors,
     authoritative: 'npm run check:full',
   };
@@ -379,9 +385,9 @@ function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
 
 /**
  * Merge Istanbul coverage counters from separate bounded test shards.
- * @param {object | undefined} existing Previously collected file record.
- * @param {object} next New shard file record.
- * @returns {object} Merged file record.
+ * @param {IstanbulCoverageRecord | undefined} existing Previously collected file record.
+ * @param {IstanbulCoverageRecord} next New shard file record.
+ * @returns {IstanbulCoverageRecord} Merged file record.
  */
 function mergeCoverageRecord(existing, next) {
   if (!existing) return structuredClone(next);
@@ -395,8 +401,8 @@ function mergeCoverageRecord(existing, next) {
 
 /**
  * Sum keyed Istanbul statement or function counters.
- * @param {Record<string, number>} left Existing counts.
- * @param {Record<string, number>} right New counts.
+ * @param {Record<string, number>} [left] Existing counts.
+ * @param {Record<string, number>} [right] New counts.
  * @returns {Record<string, number>} Summed counts.
  */
 function addCoverageCounters(left = {}, right = {}) {
@@ -410,8 +416,8 @@ function addCoverageCounters(left = {}, right = {}) {
 
 /**
  * Sum Istanbul branch-arm counters.
- * @param {Record<string, number[]>} left Existing counts.
- * @param {Record<string, number[]>} right New counts.
+ * @param {Record<string, number[]>} [left] Existing counts.
+ * @param {Record<string, number[]>} [right] New counts.
  * @returns {Record<string, number[]>} Summed branch counts.
  */
 function addCoverageBranches(left = {}, right = {}) {
@@ -432,7 +438,7 @@ function addCoverageBranches(left = {}, right = {}) {
 
 /**
  * Find uncovered source statement lines in one Istanbul record.
- * @param {object} record Istanbul file coverage record.
+ * @param {IstanbulCoverageRecord} record Istanbul file coverage record.
  * @returns {number[]} Sorted unique line numbers.
  */
 function listUncoveredLines(record) {
@@ -442,15 +448,19 @@ function listUncoveredLines(record) {
     ...new Set(
       Object.entries(counters)
         .filter(([, count]) => count === 0)
-        .map(([key]) => locations[key]?.start?.line)
-        .filter(Number.isInteger)
+        .flatMap(([key]) => {
+          const line = locations[key]?.start?.line;
+          return typeof line === 'number' && Number.isInteger(line)
+            ? [line]
+            : [];
+        })
     ),
   ].sort((left, right) => left - right);
 }
 
 /**
  * Find uncovered branch arms in one Istanbul record.
- * @param {object} record Istanbul file coverage record.
+ * @param {IstanbulCoverageRecord} record Istanbul file coverage record.
  * @returns {Array<{line: number, arm: number}>} Missed branch locations.
  */
 function listUncoveredBranches(record) {
@@ -461,7 +471,9 @@ function listUncoveredBranches(record) {
       if (count !== 0) return [];
       const branch = locations[key];
       const line = branch?.locations?.[index]?.start?.line ?? branch?.line;
-      return Number.isInteger(line) ? [{ line, arm: index + 1 }] : [];
+      return typeof line === 'number' && Number.isInteger(line)
+        ? [{ line, arm: index + 1 }]
+        : [];
     })
   );
 }
