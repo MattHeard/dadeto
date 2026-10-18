@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {
   addUncoveredFiles,
+  listUncoveredBranches,
   mergeCoverageFragment,
   partitionValues,
 } from '../scripts/coverage-shards.js';
@@ -20,6 +21,32 @@ describe('coverage shard helpers', () => {
     expect(() => partitionValues(['a'], 0)).toThrow(
       'Coverage shard size must be a positive integer.'
     );
+  });
+
+  test('reports uncovered branch arms with source locations', () => {
+    expect(
+      listUncoveredBranches({
+        'src/example.js': {
+          b: { 0: [1, 0] },
+          branchMap: {
+            0: {
+              locations: [
+                { start: { line: 3, column: 1 } },
+                { start: { line: 5, column: 2 } },
+              ],
+            },
+          },
+        },
+      })
+    ).toEqual([
+      {
+        file: 'src/example.js',
+        branch: '0',
+        arm: 1,
+        line: 5,
+        column: 2,
+      },
+    ]);
   });
 
   test('merges fragments and creates zero coverage for absent files', () => {

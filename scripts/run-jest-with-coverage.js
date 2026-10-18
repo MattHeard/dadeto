@@ -5,6 +5,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { acquireJestSlot } from './jest-pool.js';
 import {
   addUncoveredFiles,
+  listUncoveredBranches,
   mergeCoverageFragment,
   partitionValues,
   writeCoverageArtifacts,
@@ -328,13 +329,28 @@ function readTestResults(filePath) {
 
 function enforceCoverageThreshold() {
   const summary = JSON.parse(
-    fs.readFileSync(path.join(finalDir, 'coverage-summary.json'), 'utf8')
+    fs.readFileSync(coverageSummaryPath, 'utf8')
   ).total;
   for (const key of ['branches', 'functions', 'lines', 'statements']) {
     if (summary[key].pct !== 100) {
+      const branchDetails =
+        key === 'branches' ? readUncoveredBranchDetails() : '';
       throw new Error(
-        `Coverage threshold failed for ${key}: ${summary[key].pct}%`
+        `Coverage threshold failed for ${key}: ${summary[key].pct}%${branchDetails}`
       );
     }
   }
+}
+
+function readUncoveredBranchDetails() {
+  const coverage = JSON.parse(fs.readFileSync(coverageFinalPath, 'utf8'));
+  const uncovered = listUncoveredBranches(coverage);
+  if (uncovered.length === 0) return '';
+  const displayed = uncovered.slice(0, 100).map(branch => {
+    const location = branch.line === null ? 'unknown' : `${branch.line}:${branch.column ?? 0}`;
+    return `- ${branch.file}:${location} branch ${branch.branch} arm ${branch.arm}`;
+  });
+  const omitted = uncovered.length - displayed.length;
+  if (omitted > 0) displayed.push(`- ... ${omitted} additional uncovered branch arm(s)`);
+  return `\nUncovered branch arms (${uncovered.length}):\n${displayed.join('\n')}`;
 }

@@ -20,7 +20,7 @@ The asynchronous `check:full` workflow is the authoritative result for the compl
 
 Run fast local checks first, then expensive/cloud checks:
 
-Use `npm run check` for the default fast local gate. It runs `npm run test:impact` without coverage, then the existing static gates, and streams structured failure and five-second progress events to stderr. The impact runner checks staged, unstaged, untracked, and optional base-ref changes. It uses Jest related-test discovery for source changes, direct execution for changed unit-test files, and falls back to all unit tests without coverage in serial process shards when discovery fails or paths are unsupported. A clean tree reports that no tests were selected. The default impact shard size is 200 test files (`DADETO_CHECK_IMPACT_SHARD_SIZE`); the progress interval can be tuned with `DADETO_CHECK_PROGRESS_INTERVAL_MS`.
+Use `npm run check` for the default fast local gate. It runs `npm run test:impact` without coverage, then the existing static gates, and streams structured failure and three-second progress events to stderr. The impact runner checks staged, unstaged, untracked, and optional base-ref changes. It uses Jest related-test discovery for source changes, direct execution for changed unit-test files, and falls back to all unit tests without coverage in serial process shards when discovery fails or paths are unsupported. A clean tree reports that no tests were selected. The default impact shard size is 200 test files (`DADETO_CHECK_IMPACT_SHARD_SIZE`); the progress interval can be tuned with `DADETO_CHECK_PROGRESS_INTERVAL_MS`.
 
 Use `npm run check:fast` when you want the fast local gate to stop on the first failure instead of collecting all failures.
 

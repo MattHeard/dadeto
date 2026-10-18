@@ -19,12 +19,12 @@ describe('get-author-uuid-v2 scoped apply workflow', () => {
     expect(workflow).toContain('CONFIRM_PRODUCTION_APPLY');
   });
 
-  it('targets the function, invoker, and configured endpoint object', () => {
+  it('targets only the approved function and related objects', () => {
     expect(workflow).toContain(
       '-target=google_cloudfunctions2_function.get_author_uuid_v2'
     );
     expect(workflow).toContain(
-      '-target=google_cloud_run_service_iam_member.get_author_uuid_v2_public'
+      '-target=google_storage_bucket_object.get_author_uuid_v2_zip'
     );
     expect(workflow).toContain(
       '-target=google_storage_bucket_object.dendrite_static_config'
@@ -35,14 +35,22 @@ describe('get-author-uuid-v2 scoped apply workflow', () => {
     expect(workflow).toContain('terraform show -json');
   });
 
-  it('requires only the remaining reviewed action after the partial apply', () => {
+  it('requires the exact approved action set after the partial apply', () => {
     const expected = workflow.match(/expected='([^']+)'/);
 
     expect(expected).not.toBeNull();
     expect(JSON.parse(expected[1])).toEqual([
       {
         actions: ['update'],
+        address: 'google_cloudfunctions2_function.get_author_uuid_v2',
+      },
+      {
+        actions: ['update'],
         address: 'google_storage_bucket_object.dendrite_static_config',
+      },
+      {
+        actions: ['delete', 'create'],
+        address: 'google_storage_bucket_object.get_author_uuid_v2_zip',
       },
     ]);
   });

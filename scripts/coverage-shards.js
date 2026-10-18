@@ -26,6 +26,32 @@ export function partitionValues(values, size) {
 }
 
 /**
+ * Locate uncovered branch arms in merged Istanbul coverage data.
+ * @param {Record<string, {b?: Record<string, number[]>, branchMap?: Record<string, {loc?: {start?: {line?: number, column?: number}}, locations?: Array<{start?: {line?: number, column?: number}}>}>}>} coverage Merged coverage map.
+ * @returns {Array<{file: string, branch: string, arm: number, line: number | null, column: number | null}>} Uncovered branch locations.
+ */
+export function listUncoveredBranches(coverage) {
+  const uncovered = [];
+  for (const [file, record] of Object.entries(coverage)) {
+    for (const [branch, counts] of Object.entries(record.b ?? {})) {
+      counts.forEach((count, arm) => {
+        if (count > 0) return;
+        const metadata = record.branchMap?.[branch];
+        const location = metadata?.locations?.[arm] ?? metadata?.loc;
+        uncovered.push({
+          file,
+          branch,
+          arm,
+          line: location?.start?.line ?? null,
+          column: location?.start?.column ?? null,
+        });
+      });
+    }
+  }
+  return uncovered;
+}
+
+/**
  * Merge one coverage fragment into a file-backed coverage store.
  * @param {Record<string, unknown>} fragment Coverage fragment.
  * @param {string} storeDir Store directory.
