@@ -27,6 +27,29 @@ resource "google_storage_bucket_iam_member" "function_endpoint_registry_public_r
   member = local.all_users_member
 }
 
+data "google_cloudfunctions2_function" "object_minute_rental_search_registry" {
+  count = var.environment == "prod" ? 1 : 0
+
+  name     = "${var.environment}-object-minute-rental-search"
+  location = var.region
+  project  = var.project_id
+}
+
+data "google_cloudfunctions2_function" "get_author_uuid_v2_registry" {
+  count = var.environment == "prod" ? 1 : 0
+
+  name     = "${var.environment}-get-author-uuid-v2"
+  location = var.region
+  project  = var.project_id
+}
+
+locals {
+  function_endpoint_registry_functions = var.environment == "prod" ? {
+    objectMinuteRentalSearch = data.google_cloudfunctions2_function.object_minute_rental_search_registry[0].service_config[0].uri
+    getAuthorUuidV2          = data.google_cloudfunctions2_function.get_author_uuid_v2_registry[0].service_config[0].uri
+  } : {}
+}
+
 resource "google_storage_bucket_object" "function_endpoint_registry" {
   count = var.environment == "prod" ? 1 : 0
 
@@ -35,10 +58,7 @@ resource "google_storage_bucket_object" "function_endpoint_registry" {
   content = jsonencode({
     schemaVersion = 1
     environment   = "prod"
-    functions = {
-      objectMinuteRentalSearch = google_cloudfunctions2_function.object_minute_rental_search.service_config[0].uri
-      getAuthorUuidV2          = google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri
-    }
+    functions     = local.function_endpoint_registry_functions
   })
   content_type  = "application/json"
   cache_control = "no-store"

@@ -14,15 +14,41 @@ describe('production function endpoint registry Terraform', () => {
     expect(object[0]).toContain('name   = "function-endpoints.json"');
     expect(object[0]).toContain('schemaVersion = 1');
     expect(object[0]).toContain('environment   = "prod"');
-    expect(object[0]).toContain(
-      'google_cloudfunctions2_function.object_minute_rental_search.service_config[0].uri'
-    );
-    expect(object[0]).toContain(
-      'google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri'
+    expect(object[0]).toMatch(
+      /functions\s+=\s+local\.function_endpoint_registry_functions/
     );
     expect(object[0]).toContain('content_type  = "application/json"');
     expect(object[0]).toContain('cache_control = "no-store"');
     expect(object[0]).not.toMatch(/https:\/\//);
+  });
+
+  it('reads live deployed function URIs without depending on managed function updates', async () => {
+    const terraform = await readFile('infra/function-endpoints.tf', 'utf8');
+
+    expect(terraform).toContain(
+      'data "google_cloudfunctions2_function" "object_minute_rental_search_registry"'
+    );
+    expect(terraform).toContain(
+      'data "google_cloudfunctions2_function" "get_author_uuid_v2_registry"'
+    );
+    expect(terraform).toContain(
+      'name     = "${var.environment}-object-minute-rental-search"'
+    );
+    expect(terraform).toContain(
+      'name     = "${var.environment}-get-author-uuid-v2"'
+    );
+    expect(terraform).toContain(
+      'objectMinuteRentalSearch = data.google_cloudfunctions2_function.object_minute_rental_search_registry[0].service_config[0].uri'
+    );
+    expect(terraform).toContain(
+      'getAuthorUuidV2          = data.google_cloudfunctions2_function.get_author_uuid_v2_registry[0].service_config[0].uri'
+    );
+    expect(terraform).not.toContain(
+      'objectMinuteRentalSearch = google_cloudfunctions2_function.object_minute_rental_search.service_config[0].uri'
+    );
+    expect(terraform).not.toContain(
+      'getAuthorUuidV2          = google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri'
+    );
   });
 
   it('isolates the registry bucket and grants anonymous read without runtime writers', async () => {
