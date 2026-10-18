@@ -1,8 +1,8 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { parseFunctionEndpointRegistry } from '../src/core/build/function-endpoint-registry.js';
 
 const REQUEST_TIMEOUT_MS = 15_000;
-const REQUIRED_FUNCTIONS = ['objectMinuteRentalSearch', 'getAuthorUuidV2'];
 
 /**
  * Fetch and validate the public production function endpoint registry.
@@ -43,7 +43,12 @@ export async function runFunctionEndpointRegistrySmoke({
   }
 
   const manifest = await readRegistryJson(response);
-  const functionHosts = validateManifest(manifest);
+  const functionHosts = Object.fromEntries(
+    Object.entries(manifest.functions).map(([functionName, functionUrl]) => [
+      functionName,
+      new URL(functionUrl).host,
+    ])
+  );
 
   return {
     registryHost: endpoint.host,
@@ -129,58 +134,13 @@ function parseRegistryUrl(registryUrl) {
 }
 
 async function readRegistryJson(response) {
+  let registryJson;
   try {
-    return await response.json();
+    registryJson = await response.text();
   } catch {
     throw new Error('Registry GET returned invalid JSON.');
   }
-}
-
-function validateManifest(manifest) {
-  if (!isRecord(manifest)) {
-    throw new Error('Registry JSON must be an object.');
-  }
-  if (manifest.schemaVersion !== 1) {
-    throw new Error('Registry schemaVersion must be 1.');
-  }
-  if (manifest.environment !== 'prod') {
-    throw new Error('Registry environment must be prod.');
-  }
-  if (!isRecord(manifest.functions)) {
-    throw new Error('Registry functions must be an object.');
-  }
-
-  for (const requiredFunction of REQUIRED_FUNCTIONS) {
-    if (!Object.hasOwn(manifest.functions, requiredFunction)) {
-      throw new Error(`Registry is missing the ${requiredFunction} function key.`);
-    }
-  }
-
-  const functionHosts = {};
-  for (const [functionName, functionUrl] of Object.entries(manifest.functions)) {
-    if (functionName.trim() === '' || typeof functionUrl !== 'string') {
-      throw new Error('Registry function keys must be non-empty and values must be HTTPS URLs.');
-    }
-    let parsedFunctionUrl;
-    try {
-      parsedFunctionUrl = new URL(functionUrl);
-    } catch {
-      throw new Error(`Registry URL for ${functionName} is invalid.`);
-    }
-    if (
-      parsedFunctionUrl.protocol !== 'https:' ||
-      parsedFunctionUrl.username !== '' ||
-      parsedFunctionUrl.password !== ''
-    ) {
-      throw new Error(`Registry URL for ${functionName} must use HTTPS.`);
-    }
-    functionHosts[functionName] = parsedFunctionUrl.host;
-  }
-  return functionHosts;
-}
-
-function isRecord(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+  return parseFunctionEndpointRegistry(registryJson);
 }
 
 if (
