@@ -119,6 +119,8 @@ export function createCheckImpactPlan({
   if (sourceChanges.some(path => path.startsWith('src/core/'))) {
     staticGates.push('core-parse');
     commands.push('npm run core-parse');
+    staticGates.push('duplication');
+    commands.push('npm run duplication');
   }
   return {
     mode: 'selected',
@@ -312,6 +314,15 @@ function runScopedStaticGates(permission, deps, plan) {
         'npm',
         'run',
         'core-parse',
+      ])
+    );
+  }
+  if (plan.staticGates.includes('duplication')) {
+    checks.push(
+      runScopedStaticGate(permission, deps, 'duplication', [
+        'npm',
+        'run',
+        'duplication',
       ])
     );
   }

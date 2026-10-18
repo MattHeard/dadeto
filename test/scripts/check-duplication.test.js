@@ -293,6 +293,44 @@ describe('createCheckDuplicationHandle process failures', () => {
     );
   });
 
+  test('lists up to five clone file and line pairs on failure', () => {
+    const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
+    const duplicates = Array.from({ length: 6 }, (_value, index) => ({
+      firstFile: {
+        name: `src/core/file-${index}.js`,
+        start: index + 1,
+        end: index + 3,
+      },
+      secondFile: {
+        name: `src/core/file-${index + 10}.js`,
+        start: (index + 1) * 10,
+        end: (index + 1) * 10 + 2,
+      },
+    }));
+    const readFileSync = jest.fn(() => JSON.stringify({ duplicates }));
+    const stderr = createWriter();
+    const handle = createCheckDuplicationHandle({
+      spawnImpl,
+      readFileSync,
+      stderr,
+    });
+
+    expect(handle()).toEqual({ exitCode: 1, clones: 6 });
+    expect(stderr.chunks.join('')).toContain(
+      'Clone locations (up to 5 shown):'
+    );
+    expect(stderr.chunks.join('')).toContain(
+      'src/core/file-0.js:1-3 ↔ src/core/file-10.js:10-12'
+    );
+    expect(stderr.chunks.join('')).toContain(
+      '1 more clone(s); see detailed report.'
+    );
+    expect(stderr.chunks.join('')).not.toContain('src/core/file-5.js');
+    expect(stderr.chunks.join('')).toContain(
+      'See reports/duplication/jscpd-report.json for the detailed clone report.'
+    );
+  });
+
   test('reports clones without summary data', () => {
     const spawnImpl = jest.fn(() => ({ status: 0, signal: null }));
     const readFileSync = jest.fn(() =>

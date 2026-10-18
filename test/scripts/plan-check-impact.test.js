@@ -397,7 +397,7 @@ describe('scoped static-check impact executor', () => {
     });
 
     expect(result).toEqual({ exitCode: 0 });
-    expect(calls).toHaveLength(4);
+    expect(calls).toHaveLength(5);
     expect(calls[1]).toMatchObject({
       command: process.execPath,
       args: [
@@ -413,19 +413,83 @@ describe('scoped static-check impact executor', () => {
       args: ['run', 'core-parse'],
       options: { stdio: 'inherit' },
     });
-    expect(calls[3].args).toContain('--runTestsByPath');
+    expect(calls[3]).toMatchObject({
+      command: 'npm',
+      args: ['run', 'duplication'],
+      options: { stdio: 'inherit' },
+    });
+    expect(calls[4].args).toContain('--runTestsByPath');
     expect(calls[1].options).toMatchObject({ stdio: 'inherit' });
-    expect(calls[3].options).toMatchObject({ stdio: 'inherit' });
+    expect(calls[4].options).toMatchObject({ stdio: 'inherit' });
     expect(output.report()).toMatchObject({
       result: 'passed',
       staticChecks: [
         { name: 'eslint', result: 'passed', exitStatus: 0 },
         { name: 'core-parse', result: 'passed', exitStatus: 0 },
+        { name: 'duplication', result: 'passed', exitStatus: 0 },
       ],
     });
     expect(output.chunks).toContain('Impact checks: starting eslint.\n');
     expect(output.chunks).toContain(
       'Impact checks: core-parse passed (exit 0).\n'
+    );
+    expect(output.chunks).toContain(
+      'Impact checks: duplication passed (exit 0).\n'
+    );
+  });
+
+  it('does not run the core duplication scan for non-core source changes', () => {
+    const calls = [];
+    const { result } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/browser/example.js'],
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/browser/related.test.js\n' };
+        return { status: 0, stdout: '' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls).toHaveLength(3);
+    expect(
+      calls.some(
+        call => call.command === 'npm' && call.args[1] === 'duplication'
+      )
+    ).toBe(false);
+  });
+
+  it('reports a failed duplication gate and still runs selected tests', () => {
+    const calls = [];
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/core/related.test.js\n' };
+        if (args.some(arg => arg.endsWith('/eslint.js')))
+          return { status: 0, stdout: 'lint passed\n' };
+        if (command === 'npm' && args[1] === 'duplication')
+          return { status: 1, stderr: 'Duplication gate found 1 clone.\n' };
+        return { status: 0, stdout: 'check passed\n' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(calls.at(-1).args).toContain('--runTestsByPath');
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      staticChecks: [
+        { name: 'eslint', result: 'passed', exitStatus: 0 },
+        { name: 'core-parse', result: 'passed', exitStatus: 0 },
+        { name: 'duplication', result: 'failed', exitStatus: 1 },
+      ],
+    });
+    expect(output.chunks).toContain('Duplication gate found 1 clone.\n');
+    expect(output.chunks).toContain(
+      'Impact checks: duplication failed (exit 1).\n'
     );
   });
 

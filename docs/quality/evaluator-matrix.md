@@ -33,7 +33,7 @@ Use this as the canonical checklist before closure.
 - **`npm run check:full`:** full local equivalent of the Actions workflow; runs `npm test` and all static gates.
 - **`npm run test:impact`:** test-only changed-test selection and execution. Use `-- --files <paths...>` for explicit reproducible inputs or `-- --base <git-ref>` to add a base-branch comparison. `DADETO_CHECK_BASE` can set the default base.
 - **`npm run check:impact`:** planning-only JSON output. It does not execute the listed tests and is not evidence that they passed.
-- **`npm run check:impact:run`:** executes selected no-coverage unit tests plus ESLint on changed JavaScript files and `core-parse` for changed `src/core` files. If path selection is uncertain, it falls back to all unit tests and explicitly reports that static gates were not assessed. This is a diagnostic accelerator, not coverage evidence or a replacement for `npm run check`.
++ **`npm run check:impact:run`:** executes selected no-coverage unit tests plus ESLint on changed JavaScript files. For changed `src/core` files it also runs `core-parse` and `npm run duplication`, which scans all of `src/core`; clone failures list up to five file/line pairs and point to the full JSON report. If path selection is uncertain, it falls back to all unit tests and explicitly reports that static gates were not assessed. This is a diagnostic accelerator, not coverage evidence or a replacement for `npm run check`.
 - **`npm run check -- --skip-tests`:** runs local static gates without impact tests.
 - **What stays out:** `npm run build:cloud` and `npm run build:dendritestories-co-nz` remain opt-in / subsystem-specific until their owning beads call for them.
 

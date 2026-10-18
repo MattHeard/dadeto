@@ -37,6 +37,7 @@ describe('createCheckImpactPlan', () => {
       mode: 'selected',
       testSelection: 'related',
       tests: ['test/core/a.test.js'],
+      staticGates: ['eslint', 'core-parse', 'duplication'],
     });
 
     for (const changedPath of [
