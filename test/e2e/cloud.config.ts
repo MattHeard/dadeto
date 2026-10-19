@@ -39,6 +39,7 @@ export default defineConfig({
     '**/new-story.spec.ts',
     '**/payment-webhook.spec.ts',
     '**/search-function.spec.ts',
+    '**/get-author-uuid-v2.spec.ts',
   ],
   projects: [
     {

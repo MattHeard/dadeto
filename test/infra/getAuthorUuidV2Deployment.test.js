@@ -38,4 +38,28 @@ describe('get-author-uuid-v2 deployment configuration', () => {
       '"getAuthorUuidUrl": ${jsonencode(get_author_uuid_url)}'
     );
   });
+
+  it('keeps the test endpoint and author write inside the temporary tenant and database', async () => {
+    const [terraform, main, workflow] = await Promise.all([
+      readFile('infra/playwright.tf', 'utf8'),
+      readFile('infra/main.tf', 'utf8'),
+      readFile('.github/workflows/gcp-test.yml', 'utf8'),
+    ]);
+
+    expect(terraform).toContain('name  = "GET_AUTHOR_UUID_V2_URL"');
+    expect(terraform).toContain(
+      'google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri'
+    );
+    expect(terraform).toContain('name  = "GET_AUTHOR_UUID_V2_TENANT_ID"');
+    expect(terraform).toContain(
+      'google_identity_platform_tenant.environment.name'
+    );
+    expect(main).toContain('DATABASE_ID          = var.database_id');
+    expect(workflow).toContain(
+      'echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"'
+    );
+    expect(workflow).toContain(
+      'terraform destroy -refresh=false -lock-timeout=5m -auto-approve -input=false -var="environment=${ENVIRONMENT}" -var="database_id=${ENVIRONMENT}"'
+    );
+  });
 });
