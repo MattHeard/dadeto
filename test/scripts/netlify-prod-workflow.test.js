@@ -23,8 +23,19 @@ describe('Netlify production deployment workflow', () => {
     expect(source).toContain(
       'FUNCTION_ENDPOINT_REGISTRY_URL: https://storage.googleapis.com/irien-465710-function-endpoints/function-endpoints.json'
     );
+    expect(source).toContain(
+      'FUNCTION_ENDPOINT_REGISTRY_EVIDENCE_PATH: ${{ runner.temp }}/function-endpoint-registry-observation.json'
+    );
     expect(verifyIndex).toBeGreaterThan(buildIndex);
     expect(deployIndex).toBeGreaterThan(verifyIndex);
+    const artifactIndex = source.indexOf(
+      'name: Upload function endpoint registry observation'
+    );
+    expect(artifactIndex).toBeGreaterThan(deployIndex);
+    expect(source).toContain('name: function-endpoint-registry-observation');
+    expect(source).toContain(
+      'path: ${{ runner.temp }}/function-endpoint-registry-observation.json'
+    );
     expect(source).toContain(
       `grep -Eq 'data-search-endpoint="https://[^"]+"' "$PAGE"`
     );

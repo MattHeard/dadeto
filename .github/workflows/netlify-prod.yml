@@ -28,6 +28,7 @@ jobs:
       - name: Configure production rental search endpoint from registry
         env:
           FUNCTION_ENDPOINT_REGISTRY_URL: https://storage.googleapis.com/irien-465710-function-endpoints/function-endpoints.json
+          FUNCTION_ENDPOINT_REGISTRY_EVIDENCE_PATH: ${{ runner.temp }}/function-endpoint-registry-observation.json
         run: node .github/scripts/fetch-function-endpoint-registry.js
 
       - run: npm run build:browser
@@ -49,3 +50,11 @@ jobs:
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Upload function endpoint registry observation
+        uses: actions/upload-artifact@v6
+        with:
+          name: function-endpoint-registry-observation
+          path: ${{ runner.temp }}/function-endpoint-registry-observation.json
+          if-no-files-found: error
+          retention-days: 90
