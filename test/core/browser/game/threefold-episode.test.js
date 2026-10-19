@@ -37,6 +37,22 @@ describe('THREEFOLD episode save state', () => {
     });
   });
 
+  test('retains a valid withdrawal outcome when normalizing', () => {
+    expect(
+      normalizeThreefoldEpisodeState({
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        withdrawn: true,
+      })
+    ).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+      withdrawn: true,
+    });
+  });
+
   test.each([null, 'unknown'])(
     'rejects invalid Latchfolk outcome %p',
     latchfolk => {
@@ -45,6 +61,19 @@ describe('THREEFOLD episode save state', () => {
           passengers: 'aboard',
           ferry: 'afloat',
           latchfolk,
+        })
+      ).toThrow('Episode outcome state is invalid.');
+    }
+  );
+
+  test.each([null, 'yes', 1])(
+    'rejects invalid withdrawal outcome %p',
+    withdrawn => {
+      expect(() =>
+        normalizeThreefoldEpisodeState({
+          passengers: 'aboard',
+          ferry: 'afloat',
+          withdrawn,
         })
       ).toThrow('Episode outcome state is invalid.');
     }

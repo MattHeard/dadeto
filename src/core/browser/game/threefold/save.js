@@ -87,6 +87,8 @@ export function restoreThreefoldSimulation(serialized) {
       const episode = normalizeThreefoldEpisodeState(
         state.episode ?? createThreefoldEpisodeState()
       );
+      if (episode.withdrawn === true && crisis.stage !== 'aftermath')
+        throw new RangeError('A withdrawn episode must be settled.');
       return {
         scene,
         player: normalizeScaleState(state.player),

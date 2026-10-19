@@ -3,6 +3,7 @@ import {
   advanceThreefoldEpisode,
   attemptThreefoldLatchfolkWarning,
   attemptThreefoldPassengerRescue,
+  attemptThreefoldWithdrawal,
   createThreefoldEpisodeState,
 } from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
@@ -43,6 +44,7 @@ export function createThreefoldSimulation(
  * @returns {ReturnType<typeof createThreefoldSimulation>} New simulation state, or the original for inert commands.
  */
 export function stepThreefoldSimulation(state, action) {
+  if (state.episode.withdrawn === true) return state;
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
   if (action.type === 'wait') return advanceWait(state, action);
@@ -72,21 +74,41 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   if (action.type === 'interact') {
-    const rescue = attemptThreefoldPassengerRescue(state);
-    const episode =
-      rescue === state.episode
-        ? attemptThreefoldLatchfolkWarning(state)
-        : rescue;
+    let episode = attemptThreefoldPassengerRescue(state);
+    if (episode === state.episode)
+      episode = attemptThreefoldLatchfolkWarning(state);
+    if (episode === state.episode) episode = attemptThreefoldWithdrawal(state);
     const actionState =
       episode === state.episode ? state : { ...state, episode };
-    return applyTimedAction(
+    const timedState = applyTimedAction(
       actionState,
       state.player,
       episode === state.episode ? 'failed-action' : 'interaction'
     );
+    return episode.withdrawn === true
+      ? settleWithdrawalStorm(timedState)
+      : timedState;
   }
 
   return state;
+}
+
+/**
+ * Simulate the unattended crisis after Mara leaves through the upland road.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state State after the departure action.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Withdrawn episode settled at aftermath.
+ */
+function settleWithdrawalStorm(state) {
+  const elapsedGameMinutes =
+    state.crisis.thresholds.aftermathAtMinutes - state.crisis.elapsedMinutes;
+  const crisis =
+    elapsedGameMinutes > 0
+      ? advanceCrisisClock(state.crisis, {
+          type: 'wait',
+          elapsedGameMinutes,
+        })
+      : state.crisis;
+  return applyCrisisSnapshot(state, state.player, crisis);
 }
 
 /**
@@ -113,12 +135,7 @@ function advanceWait(state, action) {
     ANCHOR_RECOVERY_MINUTES,
     { inCombat: false }
   );
-  const episode = advanceThreefoldEpisode(state.episode, crisis);
-  return crisis === state.crisis &&
-    player === state.player &&
-    episode === state.episode
-    ? state
-    : { ...state, player, crisis, episode };
+  return applyCrisisSnapshot(state, player, crisis);
 }
 
 /**
@@ -139,12 +156,23 @@ function applyTimedAction(state, player, eventType) {
     type: eventType,
     elapsedGameMinutes: ACTION_GAME_MINUTES,
   });
-  return {
-    ...state,
-    player: recoveredPlayer,
-    crisis,
-    episode: advanceThreefoldEpisode(state.episode, crisis),
-  };
+  return applyCrisisSnapshot(state, recoveredPlayer, crisis);
+}
+
+/**
+ * Apply one crisis tick and resolve its dependent episode outcomes.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Prior simulation.
+ * @param {ReturnType<import('./spatial.js').createScaleState>} player Resulting player state.
+ * @param {ReturnType<typeof createCrisisClock>} crisis Resulting deterministic clock.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated simulation or the original when unchanged.
+ */
+function applyCrisisSnapshot(state, player, crisis) {
+  const episode = advanceThreefoldEpisode(state.episode, crisis);
+  return player === state.player &&
+    crisis === state.crisis &&
+    episode === state.episode
+    ? state
+    : { ...state, player, crisis, episode };
 }
 
 /**

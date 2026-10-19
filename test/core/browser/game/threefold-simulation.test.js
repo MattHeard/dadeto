@@ -239,6 +239,115 @@ describe('THREEFOLD gatehouse simulation', () => {
     });
   });
 
+  test('withdraws through the reachable upland road and settles the storm', () => {
+    let state = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const route = [
+      ...Array.from({ length: 12 }, () => ({
+        type: 'move',
+        direction: 'left',
+      })),
+      ...Array.from({ length: 10 }, () => ({
+        type: 'move',
+        direction: 'up',
+      })),
+    ];
+    route.forEach(action => {
+      state = stepThreefoldSimulation(state, action);
+    });
+
+    const road = state.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    expect(
+      Math.hypot(
+        state.player.position.x - road.position.x,
+        state.player.position.y - road.position.y
+      )
+    ).toBeLessThanOrEqual(heightAtScale(state.player.scale) * 0.55);
+
+    const withdrawn = stepThreefoldSimulation(state, { type: 'interact' });
+
+    expect(withdrawn.crisis).toMatchObject({
+      elapsedMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes,
+      stage: 'aftermath',
+    });
+    expect(withdrawn.episode).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+      withdrawn: true,
+    });
+    expect(
+      stepThreefoldSimulation(withdrawn, {
+        type: 'move',
+        direction: 'right',
+      })
+    ).toBe(withdrawn);
+    expect(
+      stepThreefoldSimulation(withdrawn, {
+        type: 'wait',
+        elapsedGameMinutes: 1,
+      })
+    ).toBe(withdrawn);
+  });
+
+  test('cannot withdraw from outside the upland road range', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+
+    const attempted = stepThreefoldSimulation(initial, { type: 'interact' });
+
+    expect(attempted.episode).toEqual(initial.episode);
+    expect(attempted.crisis.elapsedMinutes).toBe(0.25);
+  });
+
+  test('withdrawal preserves earlier passenger and Latchfolk outcomes', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const road = initial.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const atRoad = {
+      ...initial,
+      player: createScaleState(road.position),
+      episode: {
+        ...initial.episode,
+        passengers: 'evacuated',
+        latchfolk: 'warned',
+      },
+    };
+
+    const withdrawn = stepThreefoldSimulation(atRoad, { type: 'interact' });
+
+    expect(withdrawn.episode).toEqual({
+      passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'safe',
+      withdrawn: true,
+    });
+  });
+
+  test('can withdraw after surge when already at the upland road', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const road = initial.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const aftermath = stepThreefoldSimulation(
+      {
+        ...initial,
+        player: createScaleState(road.position),
+      },
+      { type: 'wait', elapsedGameMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes }
+    );
+
+    const withdrawn = stepThreefoldSimulation(aftermath, {
+      type: 'interact',
+    });
+
+    expect(withdrawn.crisis).toBe(aftermath.crisis);
+    expect(withdrawn.episode.withdrawn).toBe(true);
+    expect(withdrawn.episode.passengers).toBe('lost');
+    expect(withdrawn.episode.latchfolk).toBe('lost');
+  });
+
   test('out-of-range and post-surge interactions cannot evacuate passengers', () => {
     const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
     const outOfRange = stepThreefoldSimulation(initial, { type: 'interact' });

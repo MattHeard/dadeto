@@ -95,6 +95,7 @@ export function renderThreefoldFrame(state) {
     passengers: state.episode.passengers,
     ferry: state.episode.ferry,
     latchfolk: state.episode.latchfolk,
+    withdrawn: state.episode.withdrawn === true,
   };
   return frame;
 }
@@ -129,6 +130,12 @@ function tideBar(width, fill) {
 function getThreefoldToast(state, drainageState) {
   if (state.crisis.elapsedMinutes === 0)
     return 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.';
+  if (state.episode.withdrawn) {
+    const passengers =
+      state.episode.passengers === 'evacuated' ? 'SAFE' : 'LOST';
+    const latchfolk = state.episode.latchfolk === 'safe' ? 'SAFE' : 'LOST';
+    return `MARA WITHDREW · PASSENGERS ${passengers} · LATCHFOLK ${latchfolk}`;
+  }
   let message;
   if (state.episode.passengers === 'lost')
     message = 'PASSENGERS LOST WITH THE FERRY · THE SURGE HAS PASSED';
@@ -258,9 +265,11 @@ function geometrySprite(actor, camera, heightMeters) {
             ? PALETTE[3]
             : actor.id === 'latchfolk-watchkeeper'
               ? '#b6d8dc'
-              : actor.id === 'relief-gate'
-                ? PALETTE[2]
-                : PALETTE[3],
+              : actor.id === 'upland-road-exit'
+                ? '#f1ead0'
+                : actor.id === 'relief-gate'
+                  ? PALETTE[2]
+                  : PALETTE[3],
     },
   ];
 }

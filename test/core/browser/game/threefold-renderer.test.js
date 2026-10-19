@@ -238,6 +238,37 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(outcome.toast).toContain('LATCHFOLK SAFE');
   });
 
+  test('renders the upland road and persistent withdrawal outcome', () => {
+    const scene = createBrokenGateScene();
+    const road = scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    scene.spawn = createScaleState(road.position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const withdrawn = stepThreefoldSimulation(initial, { type: 'interact' });
+    const frame = renderThreefoldFrame(withdrawn);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'upland-road-exit'
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'upland-road-exit',
+        fill: '#f1ead0',
+      })
+    );
+    expect(frame.threefold).toMatchObject({
+      withdrawn: true,
+      crisisStage: 'aftermath',
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+    expect(frame.toast).toContain('MARA WITHDREW');
+    expect(frame.toast).toContain('PASSENGERS LOST');
+    expect(frame.toast).toContain('LATCHFOLK LOST');
+  });
+
   test.each([
     [4, 'urgent', 7, '#e9d88d'],
     [15, 'aftermath', 26, '#e16b5a'],

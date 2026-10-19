@@ -12,9 +12,10 @@
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
 - The opening view reports scale 0, Anchor 8, and the rising crisis stage.
 - A visible TIDE meter starts empty, fills with deterministic crisis minutes, and changes color at the authored stages.
-- Arrows move, A grows, B shrinks, E or gamepad left shoulder warns the Latchfolk watchkeeper or rescues passengers at the ferry, X waits 15 in-game minutes, and Y saves. The touch warning/rescue control is also available.
+- Arrows move, A grows, B shrinks, E or gamepad left shoulder warns the Latchfolk watchkeeper, rescues passengers at the ferry, or withdraws through the upland road; X waits 15 in-game minutes, and Y saves. The touch interaction control is also available.
 - At the mooring before surge, interact to evacuate passengers; surge later loses the ferry but preserves rescued passengers. Waiting through surge without rescuing them records their loss.
 - Reach the marked watchkeeper in the lower settlement and warn them before surge; warned Latchfolk reach higher ground, while unwarned Latchfolk are lost. This outcome is independent of the ferry branch and survives save/export/import.
+- Walk northwest to the marked upland road and interact to withdraw. The remaining crisis resolves deterministically to aftermath; earlier rescues and warnings persist, and later world actions are inert. The withdrawn outcome survives save/export/import.
 - The west wall remains damaged after reload when Mara grows through it.
 - The focused Jest suite passes and exits with status 0.
 - Build artifacts are written under `public/`; full check evidence is written under `.tmp/` and coverage reports under `reports/coverage/`.

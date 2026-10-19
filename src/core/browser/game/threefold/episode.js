@@ -5,10 +5,11 @@ const FERRY_OUTCOMES = new Set(['afloat', 'lost']);
 const LATCHFOLK_OUTCOMES = new Set(['unwarned', 'warned', 'safe', 'lost']);
 const MOORING_ID = 'ferry-mooring-line';
 const LATCHFOLK_ID = 'latchfolk-watchkeeper';
+const UPLAND_ROAD_ID = 'upland-road-exit';
 
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
- * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost'}} Initial episode state.
+ * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true}} Initial episode state.
  */
 export function createThreefoldEpisodeState() {
   return { passengers: 'aboard', ferry: 'afloat', latchfolk: 'unwarned' };
@@ -47,6 +48,17 @@ export function attemptThreefoldLatchfolkWarning(state) {
 }
 
 /**
+ * Withdraw from the gatehouse when Mara reaches the upland road.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when withdrawal is unavailable.
+ */
+export function attemptThreefoldWithdrawal(state) {
+  const { episode } = state;
+  if (!isWithinInteractionRange(state, UPLAND_ROAD_ID)) return episode;
+  return { ...episode, withdrawn: true };
+}
+
+/**
  * Resolve ferry and settlement outcomes while retaining successful warnings.
  * @param {ReturnType<typeof createThreefoldEpisodeState>} episode Current episode outcomes.
  * @param {ReturnType<import('./crisis.js').createCrisisClock>} crisis Current deterministic crisis clock.
@@ -68,11 +80,11 @@ export function advanceThreefoldEpisode(episode, crisis) {
     episode.latchfolk === latchfolk
   )
     return episode;
-  return { passengers, ferry: 'lost', latchfolk };
+  return { ...episode, passengers, ferry: 'lost', latchfolk };
 }
 
 /**
- * Rebuild and validate saved passenger and ferry outcomes.
+ * Rebuild and validate saved passenger, ferry, and withdrawal outcomes.
  * @param {unknown} candidate Saved episode state.
  * @returns {ReturnType<typeof createThreefoldEpisodeState>} Canonical episode state.
  */
@@ -82,19 +94,22 @@ export function normalizeThreefoldEpisodeState(candidate) {
   const state = /** @type {Record<string, unknown>} */ (candidate);
   const latchfolk =
     state.latchfolk === undefined ? 'unwarned' : state.latchfolk;
+  const withdrawn = state.withdrawn === undefined ? false : state.withdrawn;
   if (
     typeof state.passengers !== 'string' ||
     !PASSENGER_OUTCOMES.has(state.passengers) ||
     typeof state.ferry !== 'string' ||
     !FERRY_OUTCOMES.has(state.ferry) ||
     typeof latchfolk !== 'string' ||
-    !LATCHFOLK_OUTCOMES.has(latchfolk)
+    !LATCHFOLK_OUTCOMES.has(latchfolk) ||
+    typeof withdrawn !== 'boolean'
   )
     throw new RangeError('Episode outcome state is invalid.');
   return /** @type {ReturnType<typeof createThreefoldEpisodeState>} */ ({
     passengers: state.passengers,
     ferry: state.ferry,
     latchfolk,
+    ...(withdrawn ? { withdrawn: true } : {}),
   });
 }
 

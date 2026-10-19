@@ -74,6 +74,14 @@ const GATEHOUSE_INTERACTABLES = [
       max: { x: 7.42, y: 7.48, z: 0.55 },
     },
   },
+  {
+    id: 'upland-road-exit',
+    position: { x: 0.5, y: 2 },
+    bounds: {
+      min: { x: 0.25, y: 1.75, z: 0 },
+      max: { x: 0.75, y: 2.25, z: 0.2 },
+    },
+  },
 ];
 
 /**

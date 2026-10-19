@@ -246,6 +246,28 @@ describe('THREEFOLD complete-run save codec', () => {
     });
   });
 
+  test('roundtrips withdrawal after the unattended storm settles', () => {
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
+    const road = initial.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const atRoad = {
+      ...initial,
+      player: createScaleState(road.position),
+    };
+    const withdrawn = stepThreefoldSimulation(atRoad, {
+      type: 'interact',
+    });
+
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(withdrawn)
+    );
+
+    expect(withdrawn.crisis.stage).toBe('aftermath');
+    expect(withdrawn.episode.withdrawn).toBe(true);
+    expect(restored).toEqual(withdrawn);
+  });
+
   test('migrates existing saves without episode state from their crisis stage', () => {
     const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
     const oldSave = JSON.parse(serializeThreefoldSimulation(initial));
@@ -353,6 +375,10 @@ describe('THREEFOLD complete-run save codec', () => {
         ferry: 'afloat',
         latchfolk: 'unknown',
       },
+    }),
+    state => ({
+      ...state,
+      episode: { ...state.episode, withdrawn: true },
     }),
   ])('rejects invalid player or inconsistent crisis state', mutate => {
     const valid = JSON.parse(

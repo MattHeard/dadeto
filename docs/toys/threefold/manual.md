@@ -8,11 +8,11 @@ Before the first timed action, a dock worker warns, “The tide is climbing. Tha
 
 ## Input
 
-Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the Latchfolk watchkeeper and press E (or the gamepad's left shoulder button or the touch warning/rescue button) to warn the settlement; reach the ferry mooring to evacuate passengers. Both actions must begin before surge. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
+Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the Latchfolk watchkeeper and press E (or the gamepad's left shoulder button or the touch interaction button) to warn the settlement; reach the ferry mooring to evacuate passengers; or walk northwest to the upland road and interact to withdraw. Warnings and passenger rescue must begin before surge. Withdrawal settles the unattended storm immediately and ends further world actions. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
 Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.
 
-The ferry mooring and Latchfolk watchkeeper are marked in the world. An in-range rescue action before surge evacuates the ferry passengers. Warning the watchkeeper sends the settlement toward higher ground. At surge the ferry is lost; passengers still aboard and unwarned Latchfolk are lost, while evacuated passengers and warned Latchfolk remain safe. The outcomes are independent and saved with the run.
+The ferry mooring, Latchfolk watchkeeper, and upland road are marked in the world. An in-range rescue action before surge evacuates the ferry passengers. Warning the watchkeeper sends the settlement toward higher ground. At surge the ferry is lost; passengers still aboard and unwarned Latchfolk are lost, while evacuated passengers and warned Latchfolk remain safe. Withdrawing through the road fast-forwards the deterministic crisis to aftermath, preserving any passenger rescue or warning already completed. These outcomes are saved with the run.
 
 ### Example
 
