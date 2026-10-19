@@ -8,6 +8,7 @@ import {
   stepThreefoldSimulation,
 } from './simulation.js';
 import { renderThreefoldFrame } from './renderer.js';
+import { isGatehouseRatInReach } from './encounter.js';
 
 const CRISIS_THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -56,14 +57,18 @@ export function createThreefoldRuntime(options = {}) {
     if (direction)
       state = stepThreefoldSimulation(state, { type: 'move', direction });
     else if (pressed.has('a') && !previousActions.has('a'))
-      state = stepThreefoldSimulation(state, { type: 'grow' });
+      state = stepThreefoldSimulation(state, {
+        type: isGatehouseRatInReach(state) ? 'fight' : 'grow',
+      });
     else if (pressed.has('b') && !previousActions.has('b'))
       state = stepThreefoldSimulation(state, { type: 'shrink' });
     else if (pressed.has('x') && !previousActions.has('x'))
-      state = stepThreefoldSimulation(state, {
-        type: 'wait',
-        elapsedGameMinutes: WAIT_MINUTES,
-      });
+      state = stepThreefoldSimulation(
+        state,
+        isGatehouseRatInReach(state)
+          ? { type: 'bypass' }
+          : { type: 'wait', elapsedGameMinutes: WAIT_MINUTES }
+      );
     else if (pressed.has('y') && !previousActions.has('y')) save.save?.(state);
     previousActions = pressed;
   }
@@ -162,7 +167,7 @@ function createMapStorage(env) {
 function normalizeCommand(action, command) {
   if (typeof action !== 'string') return null;
   if (DIRECTIONS.includes(action)) return { type: 'move', direction: action };
-  if (['move', 'grow', 'shrink', 'wait'].includes(action))
+  if (['move', 'grow', 'shrink', 'wait', 'fight', 'bypass'].includes(action))
     return action === 'move'
       ? { type: 'move', direction: command.direction }
       : action === 'wait'

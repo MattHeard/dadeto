@@ -1,6 +1,11 @@
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import {
+  createThreefoldEncounter,
+  isGatehouseRatInReach,
+  resolveGatehouseRat,
+} from './encounter.js';
+import {
   changeScale,
   growThroughGeometry,
   moveAtScale,
@@ -14,7 +19,7 @@ const ANCHOR_RECOVERY_MINUTES = 15;
  * Create a fresh deterministic simulation for the authored Broken Gate.
  * @param {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} thresholds Authored crisis-stage boundaries in game minutes.
  * @param {ReturnType<typeof createBrokenGateScene>} [scene] Canonical gatehouse scene.
- * @returns {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>}} Initial player, world, and crisis state.
+ * @returns {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, encounter: ReturnType<typeof createThreefoldEncounter>}} Initial player, world, crisis, and encounter state.
  */
 export function createThreefoldSimulation(
   thresholds,
@@ -24,6 +29,7 @@ export function createThreefoldSimulation(
     scene,
     player: scene.spawn,
     crisis: createCrisisClock(thresholds),
+    encounter: createThreefoldEncounter(),
   };
 }
 
@@ -39,6 +45,8 @@ export function stepThreefoldSimulation(state, action) {
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
   if (action.type === 'wait') return advanceWait(state, action);
+  if (action.type === 'fight' || action.type === 'bypass')
+    return resolveEncounterAction(state, action.type);
 
   if (action.type === 'move') {
     const player = moveAtScale(
@@ -65,6 +73,29 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   return state;
+}
+
+/**
+ * Resolve the single authored rat encounter and charge deterministic game time.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @param {'fight'|'bypass'} choice Player choice.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated simulation.
+ */
+function resolveEncounterAction(state, choice) {
+  if (!isGatehouseRatInReach(state))
+    return applyTimedAction(state, state.player, 'failed-action');
+  const encounter = resolveGatehouseRat(
+    state.encounter,
+    choice,
+    state.player.scale
+  );
+  const next = { ...state, encounter };
+  return applyTimedAction(
+    next,
+    state.player,
+    choice === 'fight' ? 'combat' : 'travel',
+    { inCombat: choice === 'fight' }
+  );
 }
 
 /**
@@ -100,15 +131,16 @@ function advanceWait(state, action) {
  * Commit one attempted world action and its game-time cost.
  * @param {ReturnType<typeof createThreefoldSimulation>} state Prior simulation.
  * @param {ReturnType<import('./spatial.js').createScaleState>} player Resulting scale state.
- * @param {'travel'|'interaction'|'failed-action'} eventType Crisis event kind.
+ * @param {'travel'|'combat'|'interaction'|'failed-action'} eventType Crisis event kind.
+ * @param {{inCombat?: boolean}} [context] Anchor recovery context.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Updated simulation.
  */
-function applyTimedAction(state, player, eventType) {
+function applyTimedAction(state, player, eventType, { inCombat = false } = {}) {
   const recoveredPlayer = recoverAnchor(
     player,
     ACTION_GAME_MINUTES,
     ANCHOR_RECOVERY_MINUTES,
-    { inCombat: false }
+    { inCombat }
   );
   const crisis = advanceCrisisClock(state.crisis, {
     type: eventType,

@@ -62,6 +62,59 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
   });
 
+  test('renders the reachable rat as pixels and omits it after a terminal fate', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 3.158, y: 4 },
+      {
+        scale: -2,
+        anchor: 6,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const state = createThreefoldSimulation(THRESHOLDS, scene);
+    state.crisis.elapsedMinutes = 0.25;
+
+    const nearby = renderThreefoldFrame(state);
+    expect(nearby.toast).toBe('RAT IN REACH · A FIGHT · X BYPASS');
+    expect(nearby.threefold.ratFate).toBe('present');
+    expect(nearby.world.map.objects.map(({ id }) => id)).toContain(
+      'gatehouse-rat'
+    );
+    expect(
+      nearby.shapes.filter(shape => shape.geometryId === 'gatehouse-rat')
+    ).toHaveLength(4);
+
+    const ended = renderThreefoldFrame({
+      ...state,
+      encounter: { ratFate: 'killed' },
+    });
+    expect(ended.world.map.objects.map(({ id }) => id)).not.toContain(
+      'gatehouse-rat'
+    );
+  });
+
+  test('culls the rat sprite when its physical position is outside the frame', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 11.9, y: 8.9 },
+      {
+        scale: -2,
+        anchor: 8,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+
+    expect(
+      frame.shapes.filter(shape => shape.geometryId === 'gatehouse-rat')
+    ).toHaveLength(0);
+  });
+
   test('keeps Mara fixed while the same geometry scales inversely by three', () => {
     const humanScale = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS)

@@ -57,10 +57,20 @@ const GATEHOUSE_GEOMETRY = [
   },
 ];
 
+const GATEHOUSE_RAT = {
+  id: 'gatehouse-rat',
+  position: { x: 3.28, y: 4 },
+  bounds: {
+    min: { x: 3.18, y: 3.9, z: 0 },
+    max: { x: 3.38, y: 4.1, z: 0.2032 },
+  },
+  interactionRadiusMeters: 0.12,
+};
+
 /**
  * Create the contiguous canonical scene for THREEFOLD's first gatehouse.
  * Coordinates and geometry bounds use physical metres at every scale.
- * @returns {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Authored Broken Gate scene data.
+ * @returns {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
  */
 export function createBrokenGateScene() {
   return {
@@ -79,6 +89,7 @@ export function createBrokenGateScene() {
     baseBodyWidthMeters: 0.4,
     areas: GATEHOUSE_AREAS.map(copyArea),
     geometry: GATEHOUSE_GEOMETRY.map(copyGeometry),
+    creatures: [copyCreature(GATEHOUSE_RAT)],
   };
 }
 
@@ -101,5 +112,20 @@ function copyGeometry(object) {
   return {
     id: object.id,
     bounds: { min: { ...object.bounds.min }, max: { ...object.bounds.max } },
+  };
+}
+
+/**
+ * @param {typeof GATEHOUSE_RAT} creature Authored creature.
+ * @returns {typeof GATEHOUSE_RAT} Independent creature value.
+ */
+function copyCreature(creature) {
+  return {
+    ...creature,
+    position: { ...creature.position },
+    bounds: {
+      min: { ...creature.bounds.min },
+      max: { ...creature.bounds.max },
+    },
   };
 }

@@ -1,6 +1,41 @@
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
 
 describe('THREEFOLD handheld runtime', () => {
+  test('maps A to fight and X to bypass when the small rat is in reach', () => {
+    const runtime = createThreefoldRuntime(new Map());
+    runtime.start();
+    runtime.dispatch('shrink');
+    runtime.dispatch('shrink');
+    for (let step = 0; step < 7; step += 1) runtime.dispatch('right');
+    expect(runtime.frame().toast).toBe('RAT IN REACH · A FIGHT · X BYPASS');
+
+    runtime.step(125, ['a']);
+    expect(runtime.getState().encounter.ratFate).toBe('repelled');
+
+    runtime.resetSave();
+    runtime.dispatch('shrink');
+    runtime.dispatch('shrink');
+    for (let step = 0; step < 7; step += 1) runtime.dispatch('right');
+    runtime.step(125, ['x']);
+    expect(runtime.getState().encounter.ratFate).toBe('bypassed');
+  });
+
+  test('accepts fight and bypass as bounded named commands', () => {
+    const fought = createThreefoldRuntime(new Map());
+    fought.dispatch('shrink');
+    fought.dispatch('shrink');
+    for (let step = 0; step < 7; step += 1) fought.dispatch('right');
+    fought.dispatch('fight');
+    expect(fought.getState().encounter.ratFate).toBe('repelled');
+
+    const bypassed = createThreefoldRuntime(new Map());
+    bypassed.dispatch('shrink');
+    bypassed.dispatch('shrink');
+    for (let step = 0; step < 7; step += 1) bypassed.dispatch('right');
+    bypassed.dispatch('bypass');
+    expect(bypassed.getState().encounter.ratFate).toBe('bypassed');
+  });
+
   test('maps handheld actions to deterministic simulation steps and saves the run', () => {
     const env = new Map();
     const runtime = createThreefoldRuntime(env);
