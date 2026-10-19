@@ -163,6 +163,9 @@ function validateRecord(record, lineNumber) {
       errors.push(`${prefix}: ${field} must be a non-empty string`);
     }
   }
+  if (!isRepoPath(candidate.sourceNote)) {
+    errors.push(`${prefix}: sourceNote must be a repository-relative path`);
+  }
   validatePathList(candidate.reusedModules, 'reusedModules', prefix, errors);
   validatePathList(candidate.newModules, 'newModules', prefix, errors);
   validateRejectedModules(candidate.consideredButRejected, prefix, errors);

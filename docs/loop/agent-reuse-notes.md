@@ -21,7 +21,8 @@ Each record uses schema version 1 and contains:
   only when the feature's required capabilities and supplied capabilities can
   be described; otherwise use `null` and explain why. This is a subjective
   signal, not a line-count metric or a target to maximize.
-- `sourceNote`: a path to the contemporaneous task note or other evidence.
+- `sourceNote`: a repository-relative path to the contemporaneous task note or
+  other evidence.
 
 Copy this starter record and fill only evidence you can support:
 

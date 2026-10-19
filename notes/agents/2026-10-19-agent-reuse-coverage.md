@@ -18,10 +18,12 @@
 - Behavior: a JSON array of unique task IDs is accepted through
   `--eligible-tasks`; reports compare against the latest event, count
   superseded records and missing eligible events, and check source-note
-  existence through an injected lookup. Without an inventory, eligibility and
-  eligible source-note coverage say `unknown`.
+  existence through an injected lookup. Event source-note paths must be
+  repository-relative and cannot escape via parent traversal. Without an
+  inventory, eligibility and eligible source-note coverage say `unknown`.
 - Evidence: focused `npm run test:impact -- --files
-  test/core/local/agentReuseReport.test.js` passed (1 suite, 19 tests). The
+  test/core/local/agentReuseReport.test.js` passed (1 suite, 19 tests), including
+  a parent-traversal source-note rejection case. The
   end-to-end `npm run agents:reuse-report -- --eligible-tasks
   /tmp/dadeto-eligible-tasks.json` run reported one known and one missing
   eligible task, with the source note found. `npm run check` passed all 10

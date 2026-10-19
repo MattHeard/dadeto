@@ -148,6 +148,7 @@ describe('parseReuseNotes', () => {
       schemaVersion: 2,
       taskId: '',
       feature: 5,
+      sourceNote: '../outside.md',
       reusedModules: ['../outside.js', null],
       newModules: ['/absolute.js', ''],
       consideredButRejected: [null, { modulePath: '/outside.js', reason: '' }],
@@ -161,7 +162,10 @@ describe('parseReuseNotes', () => {
     const result = parseReuseNotes(JSON.stringify(record));
 
     expect(result.records).toEqual([]);
-    expect(result.errors).toHaveLength(11);
+    expect(result.errors).toHaveLength(12);
+    expect(result.errors).toContain(
+      'Line 1: sourceNote must be a repository-relative path'
+    );
   });
 
   it('rejects non-object values and non-array fields', () => {
