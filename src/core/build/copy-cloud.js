@@ -2038,6 +2038,17 @@ function createCopyCloudPlan(deps) {
       ),
     }))
   );
+  individualFileCopies.push(
+    ...typedFunctionDirectories.map(functionDir => ({
+      source: join(srcCoreDir, 'google-auth-status-asset-version.js'),
+      target: join(
+        infraFunctionsDir,
+        functionDir,
+        'core',
+        'google-auth-status-asset-version.js'
+      ),
+    }))
+  );
   individualFileCopies.push({
     source: join(srcCoreDir, 'submit-shared.js'),
     target: join(
