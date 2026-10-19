@@ -2,6 +2,7 @@ import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { getThreefoldGateOutcome } from './outcome.js';
+import { previewThreefoldGrowthDamageIds } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 
 const TILE_PIXELS = 12;
@@ -17,7 +18,9 @@ const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 export function renderThreefoldFrame(state) {
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = getThreefoldGateOutcome(state);
-  const world = createRenderWorld(state, heightMeters);
+  const growthPreviewIds = previewThreefoldGrowthDamageIds(state);
+  const growthPreviewSet = new Set(growthPreviewIds);
+  const world = createRenderWorld(state, heightMeters, growthPreviewSet);
   const frame = toFramePayload(
     {
       world,
@@ -50,7 +53,7 @@ export function renderThreefoldFrame(state) {
       frameType: 'threefold',
       spriteRenderer: (actor, camera, tick) => {
         const worldActor =
-          /** @type {typeof actor & {id: string, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
+          /** @type {typeof actor & {id: string, growthPreview?: boolean, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
             actor
           );
         const bounds = worldActor.bounds;
@@ -83,6 +86,19 @@ export function renderThreefoldFrame(state) {
     tideBar(26, PALETTE[1]),
     tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
   );
+  if (growthPreviewIds.length > 0) {
+    frame.shapes.push(
+      { type: 'rect', x: 3, y: 17, width: 98, height: 11, fill: PALETTE[0] },
+      {
+        type: 'text',
+        x: 5,
+        y: 25,
+        text: getGrowthPreviewLabel(growthPreviewIds),
+        fill: '#e16b5a',
+        font: '5px monospace',
+      }
+    );
+  }
   frame.threefold = {
     scale: state.player.scale,
     heightMeters,
@@ -102,6 +118,7 @@ export function renderThreefoldFrame(state) {
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
     closedBy: state.episode.closedBy ?? null,
+    growthPreviewIds,
   };
   return frame;
 }
@@ -228,9 +245,10 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
  * Convert canonical scene coordinates to the tile world used by Mosslight's camera.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @param {number} heightMeters Mara's current physical height.
+ * @param {Set<string>} growthPreviewIds Intact geometry affected by the next growth step.
  * @returns {Record<string, any>} Mosslight-compatible world snapshot.
  */
-function createRenderWorld(state, heightMeters) {
+function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
   const { drainageState } = getThreefoldGateOutcome(state);
   const { geometry } = projectGeometryForScale(player, scene.geometry);
@@ -275,7 +293,10 @@ function createRenderWorld(state, heightMeters) {
               },
             ]
           : []),
-        ...geometry,
+        ...geometry.map(object => ({
+          ...object,
+          growthPreview: growthPreviewIds.has(object.id),
+        })),
       ].map(object => ({
         ...object,
         x:
@@ -300,10 +321,10 @@ function createRenderWorld(state, heightMeters) {
 
 /**
  * Paint one physical geometry footprint at the current world scale.
- * @param {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Projected world object.
+ * @param {{id: string, growthPreview?: boolean, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Projected world object.
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} heightMeters Mara's current physical height.
- * @returns {Array<{type: string, geometryId: string, x: number, y: number, width: number, height: number, fill: string}>} Pixelated structure shape.
+ * @returns {Array<{type: string, geometryId: string, x: number, y: number, width: number, height: number, fill: string, growthPreview: boolean}>} Pixelated structure shape.
  */
 function geometrySprite(actor, camera, heightMeters) {
   const x =
@@ -326,19 +347,39 @@ function geometrySprite(actor, camera, heightMeters) {
       width,
       height,
       fill:
-        actor.id === 'drainage-floodwater'
-          ? '#25a9b8'
-          : actor.id === 'ferry-mooring-line'
-            ? PALETTE[3]
-            : actor.id === 'latchfolk-watchkeeper'
-              ? '#b6d8dc'
-              : actor.id === 'upland-road-exit'
-                ? '#f1ead0'
-                : actor.id === 'relief-gate'
-                  ? PALETTE[2]
-                  : PALETTE[3],
+        actor.growthPreview === true
+          ? '#e16b5a'
+          : actor.id === 'drainage-floodwater'
+            ? '#25a9b8'
+            : actor.id === 'ferry-mooring-line'
+              ? PALETTE[3]
+              : actor.id === 'latchfolk-watchkeeper'
+                ? '#b6d8dc'
+                : actor.id === 'upland-road-exit'
+                  ? '#f1ead0'
+                  : actor.id === 'relief-gate'
+                    ? PALETTE[2]
+                    : PALETTE[3],
+      growthPreview: actor.growthPreview === true,
     },
   ];
+}
+
+/**
+ * Identify the known structures affected by the next growth action.
+ * @param {string[]} geometryIds Identifiers returned by the growth preview.
+ * @returns {string} Compact handheld message.
+ */
+function getGrowthPreviewLabel(geometryIds) {
+  const labels = geometryIds.map(id =>
+    id
+      .replace(/^gatehouse-/, '')
+      .replaceAll('-', ' ')
+      .toUpperCase()
+  );
+  const shown =
+    labels.length > 1 ? `${labels[0]} +${labels.length - 1}` : labels[0];
+  return `A BREAKS ${shown}`;
 }
 
 /**

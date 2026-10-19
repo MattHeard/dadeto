@@ -8,6 +8,8 @@ Before the first timed action, a dock worker warns, “The tide is climbing. Tha
 
 ## Input
 
+Before a growth action, the frame highlights and names intact structures the next scale rung will break. This preview is informational: pressing A still grows. The current preview covers structures, not living occupants.
+
 Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the Latchfolk watchkeeper and press E (or the gamepad's left shoulder button or the touch interaction button) to warn the settlement; reach the ferry mooring to evacuate passengers; or walk northwest to the upland road and interact to withdraw. After surge has lost the ferry, shrink to scale −2 and interact beside the marked relief-gate locking pawl to repair the gate. After the storm, interact at the signal-station console to file a report, or leave by the upland road. If growth destroys the signal station, reporting is unavailable but the upland departure route remains open. Warnings and passenger rescue must begin before surge. Withdrawing before aftermath settles the unattended storm immediately and closes the episode; later world actions are inert. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
 Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.

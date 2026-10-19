@@ -85,6 +85,47 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
   });
 
+  test('previews the geometry destroyed by growth without changing the simulation', () => {
+    const state = createThreefoldSimulation(THRESHOLDS);
+    const originalState = JSON.parse(JSON.stringify(state));
+    const frame = renderThreefoldFrame(state);
+    const westWall = frame.shapes.find(
+      shape => shape.geometryId === 'gatehouse-west-wall'
+    );
+
+    expect(frame.threefold.growthPreviewIds).toEqual(['gatehouse-west-wall']);
+    expect(westWall).toMatchObject({ fill: '#e16b5a', growthPreview: true });
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A BREAKS WEST WALL',
+        fill: '#e16b5a',
+      })
+    );
+    expect(state).toEqual(originalState);
+    expect(
+      stepThreefoldSimulation(state, { type: 'grow' }).player
+        .destroyedGeometryIds
+    ).toEqual(frame.threefold.growthPreviewIds);
+  });
+
+  test('keeps the regular status when the next growth step hits no geometry', () => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const state = {
+      ...initial,
+      player: { ...initial.player, position: { x: 0, y: 0 } },
+    };
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.threefold.growthPreviewIds).toEqual([]);
+    expect(frame.toast).toBe(
+      'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
+    );
+    expect(frame.shapes.some(shape => shape.growthPreview === true)).toBe(
+      false
+    );
+  });
+
   test('keeps Mara fixed while the same geometry scales inversely by three', () => {
     const humanScale = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS)

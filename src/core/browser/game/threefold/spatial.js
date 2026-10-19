@@ -91,17 +91,36 @@ export function changeScale(state, direction, intersectingGeometryIds = []) {
  * @returns {ReturnType<typeof createScaleState>} Updated state, or the original state when growth is unavailable.
  */
 export function growThroughGeometry(state, geometry, baseBodyWidthMeters) {
+  const newlyIntersectedIds = previewGrowthDamageIds(
+    state,
+    geometry,
+    baseBodyWidthMeters
+  );
+  return changeScale(state, 1, newlyIntersectedIds);
+}
+
+/**
+ * Preview the intact geometry that the next growth rung will newly intersect.
+ * The result uses the same physical-volume rule as committed growth and does
+ * not change the supplied state.
+ * @param {ReturnType<typeof createScaleState>} state Current state.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Canonical world geometry.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @returns {string[]} Sorted identifiers of intact geometry newly intersected by growth.
+ */
+export function previewGrowthDamageIds(state, geometry, baseBodyWidthMeters) {
   assertScaleState(state);
   assertBodyWidth(baseBodyWidthMeters);
   const objects = validateGeometry(geometry);
   const next = changeScale(state, 1);
-  if (next === state) return state;
-  const newlyIntersectedIds = objects
-    .filter(object =>
-      isNewGrowthIntersection(state, next, object, baseBodyWidthMeters)
-    )
-    .map(object => object.id);
-  return changeScale(state, 1, newlyIntersectedIds);
+  if (next === state) return [];
+  return normalizeGeometryIds(
+    objects
+      .filter(object =>
+        isNewGrowthIntersection(state, next, object, baseBodyWidthMeters)
+      )
+      .map(object => object.id)
+  );
 }
 
 /**

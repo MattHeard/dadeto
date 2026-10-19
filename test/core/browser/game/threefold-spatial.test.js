@@ -7,6 +7,7 @@ import {
   INITIAL_MAX_ANCHOR,
   MAX_SCALE,
   MIN_SCALE,
+  previewGrowthDamageIds,
   projectGeometryForScale,
   recoverAnchor,
   viewAtScale,
@@ -121,6 +122,7 @@ describe('THREEFOLD scale-space', () => {
 
   test('grows through newly intersected canonical geometry and records rubble', () => {
     const state = createScaleState({ x: 0, y: 0 });
+    const originalState = JSON.parse(JSON.stringify(state));
     const geometry = [
       {
         id: 'wall',
@@ -144,11 +146,15 @@ describe('THREEFOLD scale-space', () => {
         },
       },
     ];
+    const preview = previewGrowthDamageIds(state, geometry, 0.4);
+    expect(preview).toEqual(['wall']);
+    expect(state).toEqual(originalState);
+
     const grown = growThroughGeometry(state, geometry, 0.4);
     expect(grown.scale).toBe(1);
     expect(grown.anchor).toBe(INITIAL_MAX_ANCHOR - 1);
     expect(grown.position).toEqual(state.position);
-    expect(grown.destroyedGeometryIds).toEqual(['wall']);
+    expect(grown.destroyedGeometryIds).toEqual(preview);
     expect(growThroughGeometry(state, [...geometry].reverse(), 0.4)).toEqual(
       grown
     );
@@ -227,13 +233,16 @@ describe('THREEFOLD scale-space', () => {
       { x: 0, y: 0 },
       { maximumUnlockedScale: 0 }
     );
+    expect(previewGrowthDamageIds(locked, [wall], 0.4)).toEqual([]);
     expect(growThroughGeometry(locked, [wall], 0.4)).toBe(locked);
     const emptyAnchor = createScaleState({ x: 0, y: 0 }, { anchor: 0 });
+    expect(previewGrowthDamageIds(emptyAnchor, [wall], 0.4)).toEqual([]);
     expect(growThroughGeometry(emptyAnchor, [wall], 0.4)).toBe(emptyAnchor);
     const alreadyCollapsed = createScaleState(
       { x: 0, y: 0 },
       { destroyedGeometryIds: ['wall'] }
     );
+    expect(previewGrowthDamageIds(alreadyCollapsed, [wall], 0.4)).toEqual([]);
     expect(
       growThroughGeometry(alreadyCollapsed, [wall], 0.4).destroyedGeometryIds
     ).toEqual(['wall']);

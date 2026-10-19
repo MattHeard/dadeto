@@ -14,6 +14,7 @@ import {
   changeScale,
   growThroughGeometry,
   moveAtScale,
+  previewGrowthDamageIds,
   recoverAnchor,
 } from './spatial.js';
 
@@ -36,6 +37,22 @@ export function createThreefoldSimulation(
     crisis: createCrisisClock(thresholds),
     episode: createThreefoldEpisodeState(),
   };
+}
+
+/**
+ * Return the intact geometry affected by the next growth command while the episode is open.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @returns {string[]} Sorted geometry identifiers; an empty list after episode closure.
+ */
+export function previewThreefoldGrowthDamageIds(state) {
+  if (state.episode.withdrawn === true || state.episode.closedBy !== undefined)
+    return [];
+  const { player, scene } = state;
+  return previewGrowthDamageIds(
+    player,
+    scene.geometry,
+    scene.baseBodyWidthMeters
+  );
 }
 
 /**
