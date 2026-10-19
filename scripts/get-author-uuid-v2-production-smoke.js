@@ -10,6 +10,10 @@ const runtimeDepsRequire = createRequire(
 );
 const SMOKE_IDENTITY_UID = 'dadeto-get-author-uuid-v2-smoke';
 const PRODUCTION_ORIGIN = 'https://www.dendritestories.co.nz';
+const CUSTOM_TOKEN_AUDIENCE =
+  'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
+const CUSTOM_TOKEN_LIFETIME_SECONDS = 300;
+const IAM_SCOPE = 'https://www.googleapis.com/auth/iam';
 const CUSTOM_TOKEN_ENDPOINT =
   'https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken';
 
@@ -176,41 +180,130 @@ export async function runGetAuthorUuidV2ProductionSmoke({
   });
 }
 
-async function createFirebaseTenantAuth({
+/**
+ * Create a short-lived tenant custom token using the IAM Credentials signBlob API.
+ * @param {{ uid: string, tenantId: string, signerServiceAccount: string, signBlobFn: (payload: string) => Promise<string>, nowSeconds?: number }} options Token signing inputs.
+ * @returns {Promise<string>} Signed Firebase custom token.
+ */
+export async function createTenantCustomToken({
+  uid,
+  tenantId,
+  signerServiceAccount,
+  signBlobFn,
+  nowSeconds = Math.floor(Date.now() / 1000),
+}) {
+  if (
+    typeof uid !== 'string' ||
+    uid.length === 0 ||
+    uid.length > 128 ||
+    typeof tenantId !== 'string' ||
+    tenantId.length === 0 ||
+    typeof signerServiceAccount !== 'string' ||
+    signerServiceAccount.length === 0 ||
+    typeof signBlobFn !== 'function' ||
+    !Number.isInteger(nowSeconds) ||
+    nowSeconds <= 0
+  ) {
+    throw new Error('Firebase smoke token signing configuration is incomplete.');
+  }
+
+  const header = Buffer.from(
+    JSON.stringify({ alg: 'RS256', typ: 'JWT' })
+  ).toString('base64url');
+  const claims = Buffer.from(
+    JSON.stringify({
+      iss: signerServiceAccount,
+      sub: signerServiceAccount,
+      aud: CUSTOM_TOKEN_AUDIENCE,
+      iat: nowSeconds,
+      exp: nowSeconds + CUSTOM_TOKEN_LIFETIME_SECONDS,
+      uid,
+      tenant_id: tenantId,
+    })
+  ).toString('base64url');
+  const unsignedToken = `${header}.${claims}`;
+
+  let signedBlob;
+  try {
+    signedBlob = await signBlobFn(unsignedToken);
+  } catch {
+    throw new Error('Could not sign the dedicated smoke custom token.');
+  }
+  if (
+    typeof signedBlob !== 'string' ||
+    !/^[A-Za-z0-9+/]+={0,2}$/.test(signedBlob)
+  ) {
+    throw new Error('IAM Credentials did not return a valid token signature.');
+  }
+  const signature = Buffer.from(signedBlob, 'base64');
+  if (signature.length === 0) {
+    throw new Error('IAM Credentials did not return a valid token signature.');
+  }
+  return `${unsignedToken}.${signature.toString('base64url')}`;
+}
+
+/**
+ * Create the Google Auth client and a tenant custom-token signer.
+ * @param {{ projectId: string, tenantId: string, signerServiceAccount: string, googleAuthFactory?: (options: object) => { getClient: () => Promise<{ request: (options: object) => Promise<{ data?: { signedBlob?: string } }> }> }, nowSecondsFn?: () => number }} options Identity setup inputs.
+ * @returns {Promise<{ firebaseAuth: { createCustomToken: (uid: string) => Promise<string> }, close: () => Promise<void> }>} Token signer and cleanup hook.
+ */
+export async function createFirebaseTenantAuth({
   projectId,
   tenantId,
   signerServiceAccount,
+  googleAuthFactory = loadGoogleAuth,
+  nowSecondsFn = () => Math.floor(Date.now() / 1000),
 }) {
-  if (!signerServiceAccount) {
+  if (!projectId || !tenantId || !signerServiceAccount) {
     throw new Error('The dedicated smoke signer service account is not configured.');
   }
-  let initializeApp;
-  let applicationDefault;
-  let getAuth;
+  let googleAuth;
   try {
-    ({ initializeApp, applicationDefault } =
-      runtimeDepsRequire('firebase-admin/app'));
-    ({ getAuth } = runtimeDepsRequire('firebase-admin/auth'));
+    googleAuth = googleAuthFactory({
+      projectId,
+      scopes: [IAM_SCOPE],
+    });
   } catch {
-    throw new Error('Firebase Admin runtime dependencies are unavailable.');
+    throw new Error('Google Auth runtime dependencies are unavailable.');
   }
-  let app;
+  let client;
   try {
-    app = initializeApp(
-      {
-        credential: applicationDefault(),
-        projectId,
-        serviceAccountId: signerServiceAccount,
-      },
-      'get-author-uuid-v2-production-smoke'
-    );
-    return {
-      firebaseAuth: getAuth(app).tenantManager().authForTenant(tenantId),
-      close: () => app.delete(),
-    };
+    client = await googleAuth.getClient();
   } catch {
-    throw new Error('Could not initialize the dedicated Firebase tenant signer.');
+    throw new Error('Could not initialize the dedicated smoke Google identity.');
   }
+  return {
+    firebaseAuth: {
+      createCustomToken: uid =>
+        createTenantCustomToken({
+          uid,
+          tenantId,
+          signerServiceAccount,
+          nowSeconds: nowSecondsFn(),
+          signBlobFn: async payload => {
+            let response;
+            try {
+              response = await client.request({
+                url: `https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${encodeURIComponent(signerServiceAccount)}:signBlob`,
+                method: 'POST',
+                data: {
+                  payload: Buffer.from(payload, 'utf8').toString('base64'),
+                },
+              });
+            } catch {
+              throw new Error('IAM Credentials could not sign the smoke token.');
+            }
+            return response?.data?.signedBlob;
+          },
+        }),
+    },
+    close: async () => {},
+  };
+}
+
+function loadGoogleAuth(options) {
+  const { GoogleAuth } = runtimeDepsRequire('google-auth-library');
+  return new GoogleAuth(options);
 }
 
 /**
@@ -231,7 +324,7 @@ export async function main({
     writeLine('No requests sent. This CI runner requires --execute.');
     return 0;
   }
-  let admin;
+  let identity;
   try {
     const metadataPath = environment.GET_AUTHOR_UUID_SMOKE_DEPLOYMENT_METADATA;
     const expectedGcpProdRunId =
@@ -253,14 +346,14 @@ export async function main({
       expectedGcpProdRunId,
       defaultBranch,
     });
-    admin = await authFactory({
+    identity = await authFactory({
       projectId: deployment.firebase.projectId,
       tenantId: deployment.firebase.tenantId,
       signerServiceAccount,
     });
     const result = await smokeRunner({
       deployment,
-      firebaseAuth: admin.firebaseAuth,
+      firebaseAuth: identity.firebaseAuth,
     });
     const output = {
       ...result,
@@ -295,7 +388,7 @@ export async function main({
     return 1;
   } finally {
     try {
-      await admin?.close();
+      await identity?.close();
     } catch {
       // Cleanup errors are intentionally silent; they cannot change test evidence.
     }

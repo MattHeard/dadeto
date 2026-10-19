@@ -44,7 +44,7 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           path: ${{ runner.temp }}/get-author-uuid-v2-deployment
 
-      - name: Install Firebase Admin runtime dependencies
+      - name: Install cloud runtime dependencies for Google Auth
         run: npm ci --prefix src/cloud/runtime-deps
 
       - name: Verify smoke-only Workload Identity Federation settings

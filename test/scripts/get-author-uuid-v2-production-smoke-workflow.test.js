@@ -61,6 +61,19 @@ describe('get-author-uuid-v2 production smoke workflow', () => {
     );
   });
 
+  it('uses Google Auth ADC and IAM signBlob for short-lived tenant token minting', async () => {
+    const runner = await readFile(
+      'scripts/get-author-uuid-v2-production-smoke.js',
+      'utf8'
+    );
+
+    expect(runner).toContain("runtimeDepsRequire('google-auth-library')");
+    expect(runner).toContain('iamcredentials.googleapis.com');
+    expect(runner).toContain('tenant_id: tenantId');
+    expect(runner).toContain('CUSTOM_TOKEN_LIFETIME_SECONDS = 300');
+    expect(runner).not.toContain('firebase-admin');
+  });
+
   it('publishes only safe deployment metadata after Terraform apply succeeds', async () => {
     const workflow = await readFile('.github/workflows/gcp-prod.yml', 'utf8');
     const applyIndex = workflow.indexOf('name: Terraform Apply');
