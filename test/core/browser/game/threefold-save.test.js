@@ -171,6 +171,43 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(restored.crisis.elapsedMinutes).toBe(9.25);
   });
 
+  test.each(['present', 'repelled', 'bypassed', 'killed'])(
+    'roundtrips rat fate %s',
+    ratFate => {
+      const simulation = createThreefoldSimulation(CRISIS_THRESHOLDS);
+      simulation.encounter = { ratFate };
+
+      expect(
+        restoreThreefoldSimulation(serializeThreefoldSimulation(simulation))
+      ).toEqual(simulation);
+    }
+  );
+
+  test('migrates a schema-v1 run with the rat present and rejects malformed v2 state', () => {
+    const legacy = JSON.parse(
+      serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))
+    );
+    legacy.schemaVersion = 1;
+    delete legacy.state.encounter;
+
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacy)).encounter
+    ).toEqual({ ratFate: 'present' });
+
+    const missingEncounter = { ...legacy, schemaVersion: 2 };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(missingEncounter))
+    ).toBeNull();
+
+    const invalidEncounter = {
+      ...missingEncounter,
+      state: { ...missingEncounter.state, encounter: { ratFate: 'unknown' } },
+    };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(invalidEncounter))
+    ).toBeNull();
+  });
+
   test('canonicalizes unordered destroyed geometry IDs on restore', () => {
     const simulation = createThreefoldSimulation(CRISIS_THRESHOLDS);
     const envelope = JSON.parse(serializeThreefoldSimulation(simulation));

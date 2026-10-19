@@ -1,6 +1,7 @@
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
+import { isGatehouseRatInReach } from './encounter.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { previewThreefoldGrowthEffects } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
@@ -8,6 +9,14 @@ import { heightAtScale, projectGeometryForScale } from './spatial.js';
 const TILE_PIXELS = 12;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
+/** @typedef {{type: string, x: number, y: number, width: number, height: number, fill: string, geometryId?: string, growthPreview?: boolean}} ThreefoldSpriteShape */
+/** @type {Array<[number, number, number, number, string]>} */
+const RAT_SILHOUETTE = [
+  [0.16, 0.3, 0.7, 0.62, '#b46b55'],
+  [0.22, 0.08, 0.2, 0.3, '#d28b69'],
+  [0.66, 0.08, 0.2, 0.3, '#d28b69'],
+  [0.68, 0.48, 0.08, 0.08, PALETTE[0]],
+];
 
 /**
  * Adapt the canonical Broken Gate simulation to Mosslight's shared handheld renderer.
@@ -41,7 +50,7 @@ export function renderThreefoldFrame(state) {
       journal: [],
       inventory: {},
       menu: null,
-      quickAction: 'grow',
+      quickAction: isGatehouseRatInReach(state) ? 'fight' : 'grow',
       ending: null,
       tick: 0,
       toast: getThreefoldToast(state, gateOutcome.drainageState),
@@ -59,11 +68,9 @@ export function renderThreefoldFrame(state) {
           );
         const bounds = worldActor.bounds;
         if (typeof worldActor.id === 'string' && bounds)
-          return geometrySprite(
-            { ...worldActor, bounds },
-            camera,
-            heightMeters
-          );
+          return worldActor.id === 'gatehouse-rat'
+            ? ratSprite({ ...worldActor, bounds }, camera, heightMeters)
+            : geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
         return spriteShapes(actor, camera, tick).map(shape => ({
           ...shape,
           actorId: 'mara',
@@ -126,6 +133,7 @@ export function renderThreefoldFrame(state) {
     closedBy: state.episode.closedBy ?? null,
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
+    ratFate: state.encounter.ratFate,
   };
   return frame;
 }
@@ -214,7 +222,10 @@ function getThreefoldToast(state, drainageState) {
           ? 'LATCHFOLK LOST'
           : '';
   const status = latchfolkStatus ? `${message} · ${latchfolkStatus}` : message;
-  return addClosurePrompt(state, status, signalStationDestroyed);
+  const encounterStatus = isGatehouseRatInReach(state)
+    ? `${status} · RAT IN REACH · A FIGHT · X BYPASS`
+    : status;
+  return addClosurePrompt(state, encounterStatus, signalStationDestroyed);
 }
 
 /**
@@ -259,6 +270,10 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
   const { drainageState } = getThreefoldGateOutcome(state);
   const { geometry } = projectGeometryForScale(player, scene.geometry);
+  const ratObjects =
+    state.encounter.ratFate === 'present'
+      ? scene.creatures.filter(creature => creature.id === 'gatehouse-rat')
+      : [];
   const mapWidth = Math.max(
     14,
     Math.ceil((scene.bounds.max.x - scene.bounds.min.x) / heightMeters) +
@@ -304,6 +319,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
               },
             ]
           : []),
+        ...ratObjects,
         ...geometry.map(object => ({
           ...object,
           growthPreview: growthPreviewIds.has(object.id),
@@ -338,25 +354,13 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
  * @returns {Array<{type: string, geometryId: string, x: number, y: number, width: number, height: number, fill: string, growthPreview: boolean}>} Pixelated structure shape.
  */
 function geometrySprite(actor, camera, heightMeters) {
-  const x =
-    (actor.bounds.min.x / heightMeters + VIEW_ORIGIN.x - camera.x) *
-    TILE_PIXELS;
-  const y =
-    (actor.bounds.min.y / heightMeters + VIEW_ORIGIN.y - camera.y) *
-    TILE_PIXELS;
-  const width =
-    ((actor.bounds.max.x - actor.bounds.min.x) / heightMeters) * TILE_PIXELS;
-  const height =
-    ((actor.bounds.max.y - actor.bounds.min.y) / heightMeters) * TILE_PIXELS;
-  if (x + width <= 0 || x >= 160 || y + height <= 0 || y >= 108) return [];
+  const footprint = screenFootprint(actor, camera, heightMeters);
+  if (!footprint) return [];
   return [
     {
       type: 'rect',
       geometryId: actor.id,
-      x,
-      y,
-      width,
-      height,
+      ...footprint,
       fill:
         actor.growthPreview === true
           ? '#e16b5a'
@@ -374,6 +378,49 @@ function geometrySprite(actor, camera, heightMeters) {
       growthPreview: actor.growthPreview === true,
     },
   ];
+}
+
+/**
+ * Paint the authored rat as a tiny pixel silhouette inside its physical bounds.
+ * @param {{bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, id: string}} actor Rat footprint.
+ * @param {{x: number, y: number}} camera Mosslight tile camera.
+ * @param {number} heightMeters Mara's current physical height.
+ * @returns {Array<ThreefoldSpriteShape>} Pixel shapes tagged with the rat identity.
+ */
+function ratSprite(actor, camera, heightMeters) {
+  const footprint = screenFootprint(actor, camera, heightMeters);
+  if (!footprint) return [];
+  return RAT_SILHOUETTE.map(([left, top, width, height, fill]) => ({
+    type: 'rect',
+    geometryId: actor.id,
+    x: footprint.x + footprint.width * left,
+    y: footprint.y + footprint.height * top,
+    width: Math.max(1, footprint.width * width),
+    height: Math.max(1, footprint.height * height),
+    fill,
+  }));
+}
+
+/**
+ * Project a physical object's bounds into the visible Mosslight viewport.
+ * @param {{bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Physical footprint.
+ * @param {{x: number, y: number}} camera Mosslight tile camera.
+ * @param {number} heightMeters Mara's current physical height.
+ * @returns {{x: number, y: number, width: number, height: number}|null} Visible pixel bounds.
+ */
+function screenFootprint(actor, camera, heightMeters) {
+  const x =
+    (actor.bounds.min.x / heightMeters + VIEW_ORIGIN.x - camera.x) *
+    TILE_PIXELS;
+  const y =
+    (actor.bounds.min.y / heightMeters + VIEW_ORIGIN.y - camera.y) *
+    TILE_PIXELS;
+  const width =
+    ((actor.bounds.max.x - actor.bounds.min.x) / heightMeters) * TILE_PIXELS;
+  const height =
+    ((actor.bounds.max.y - actor.bounds.min.y) / heightMeters) * TILE_PIXELS;
+  if (x + width <= 0 || x >= 160 || y + height <= 0 || y >= 108) return null;
+  return { x, y, width, height };
 }
 
 /**

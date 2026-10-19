@@ -33,6 +33,26 @@ function createWithdrawnSimulation(episode = {}) {
 }
 
 describe('THREEFOLD Mosslight handheld frame', () => {
+  test('renders the authored rat and names fight/bypass when it is in reach', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState({ x: 3.15, y: 4 }, { scale: -1 });
+    const state = stepThreefoldSimulation(
+      createThreefoldSimulation(THRESHOLDS, scene),
+      { type: 'shrink' }
+    );
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'gatehouse-rat'
+    );
+    expect(
+      frame.shapes.filter(shape => shape.geometryId === 'gatehouse-rat')
+    ).toHaveLength(4);
+    expect(frame.threefold.ratFate).toBe('present');
+    expect(frame.quickAction).toBe('fight');
+    expect(frame.toast).toContain('RAT IN REACH · A FIGHT · X BYPASS');
+  });
+
   test('uses the shared pixelated 160x144 frame and exposes current status', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
     const frame = renderThreefoldFrame(state);

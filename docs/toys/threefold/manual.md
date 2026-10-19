@@ -10,7 +10,7 @@ Before the first timed action, a dock worker warns, “The tide is climbing. Tha
 
 Before a growth action, the frame highlights and names intact structures the next scale rung will break. If the next body volume overlaps the still-present Latchfolk watchkeeper, the frame also highlights them and says `A KILLS LATCHFOLK`, including when Mara has entered their bounds at small size. This warning covers the authored watchkeeper only. It is informational: pressing A still grows and commits the shown outcome.
 
-Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the Latchfolk watchkeeper and press E (or the gamepad's left shoulder button or the touch interaction button) to warn the settlement; reach the ferry mooring to evacuate passengers; or walk northwest to the upland road and interact to withdraw. After surge has lost the ferry, shrink to scale −2 and interact beside the marked relief-gate locking pawl to repair the gate. After the storm, interact at the signal-station console to file a report, or leave by the upland road. If growth destroys the signal station, reporting is unavailable but the upland departure route remains open. Warnings and passenger rescue must begin before surge. Withdrawing before aftermath settles the unattended storm immediately and closes the episode; later world actions are inert. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
+Use the arrow keys or directional pad to move. A grows one unlocked scale step and can break obstructing geometry, leaving permanent rubble. When Mara is within reach of the gatehouse rat at scale −2 or −1, A fights instead: the rat is repelled at −2 and killed at −1. At those same in-range moments, X bypasses the rat instead of waiting. B shrinks one step. Reach the Latchfolk watchkeeper and press E (or the gamepad's left shoulder button or the touch interaction button) to warn the settlement; reach the ferry mooring to evacuate passengers; or walk northwest to the upland road and interact to withdraw. After surge has lost the ferry, shrink to scale −2 and interact beside the marked relief-gate locking pawl to repair the gate. After the storm, interact at the signal-station console to file a report, or leave by the upland road. If growth destroys the signal station, reporting is unavailable but the upland departure route remains open. Warnings and passenger rescue must begin before surge. Withdrawing before aftermath settles the unattended storm immediately and closes the episode; later world actions are inert. Away from the rat, X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
 Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.
 
@@ -33,7 +33,7 @@ The ferry mooring, Latchfolk watchkeeper, upland road, relief-gate locking pawl,
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["up", "down", "left", "right", "a", "b", "x", "y", "interact"]
+        "enum": ["up", "down", "left", "right", "a", "b", "x", "y", "interact", "fight", "bypass"]
       }
     },
     "save": { "type": "string" }
@@ -43,7 +43,7 @@ The ferry mooring, Latchfolk watchkeeper, upland road, relief-gate locking pawl,
 
 ## Output
 
-The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, crisis stage, and passenger, ferry, and Latchfolk outcomes. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale.
+The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, crisis stage, encounter fate, and passenger, ferry, and Latchfolk outcomes. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale. The rat is rendered at its physical size, and the frame names its fight/bypass controls only when Mara is close enough at −2 or −1.
 
 ### Example
 
@@ -59,7 +59,7 @@ The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, cri
 
 ## Behavior
 
-Movement, scale transitions, and deliberate waiting advance the deterministic game-time crisis clock. The clock never uses browser wall time. Menu, pause, save, import/export, and reading this guide leave game time unchanged. The complete player/crisis state, including destroyed geometry, is stored locally and revalidated when loaded.
+Movement, scale transitions, deliberate waiting, fighting, and bypassing advance the deterministic game-time crisis clock. The clock never uses browser wall time. Fighting does not recover Anchor during its action. Menu, pause, save, import/export, and reading this guide leave game time unchanged. The complete player/crisis state, rat fate, and destroyed geometry are stored locally and revalidated when loaded; version-one saves migrate with the rat still present.
 
 ## Gate outcome
 

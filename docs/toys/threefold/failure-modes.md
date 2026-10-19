@@ -18,6 +18,7 @@
 
 - Error signatures/log lines: browser module import errors, an invalid-save message, or a failed storage operation.
 - Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; run returning to the opening state after reload.
+- Observable symptoms: fight/bypass prompt appears outside the rat's range or at an unsupported scale; A grows instead of fighting or X waits instead of bypassing while the rat is in reach; a resolved rat reappears after reload.
 - Passenger/ferry state disagrees with the in-range rescue action or deterministic surge transition.
 - Partial passenger state is rejected by save import, overwritten at surge, or rendered without distinguishing the rescued group from the group still aboard or lost.
 - Latchfolk are safe without a pre-surge warning, or a warning changes ferry/passenger outcomes.
@@ -34,6 +35,12 @@
 4. Keep crisis progression on explicit game commands; pause, menu, and accessibility operations must remain inert.
 5. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
 6. For interaction failures, verify target identity, range and eligibility independently from input mapping and save normalization; then check that episode outcomes resolve independently at surge, late repair, withdrawal, or post-storm closure.
+
+## Rat encounter checks
+
+- Confirm the rat fate is `present`, Mara is at scale −2 or −1, and her canonical position is inside the authored interaction radius before expecting fight/bypass controls.
+- A should repel the rat at −2 and kill it at −1; X should bypass it at either scale. Both outcomes advance the game clock, while only fighting suppresses Anchor recovery for that action.
+- Verify complete-run schema-v1 migration defaults the rat to `present`, while schema-v2 rejects missing or unknown rat fates.
 
 ## Promoted from Real Failures
 

@@ -4,6 +4,10 @@ import { createBrokenGateScene } from './gatehouse.js';
 import { createThreefoldSimulation } from './simulation.js';
 import { createScaleState } from './spatial.js';
 import {
+  createThreefoldEncounter,
+  normalizeThreefoldEncounter,
+} from './encounter.js';
+import {
   advanceThreefoldEpisode,
   createThreefoldEpisodeState,
   normalizeThreefoldEpisodeState,
@@ -14,7 +18,8 @@ import {
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
 const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
-const SIMULATION_SCHEMA_VERSION = 1;
+const PREVIOUS_SIMULATION_SCHEMA_VERSION = 1;
+const SIMULATION_SCHEMA_VERSION = 2;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 
 /**
@@ -68,6 +73,7 @@ export function serializeThreefoldSimulation(simulation) {
       player: normalizeScaleState(simulation.player),
       crisis: normalizeCrisisClock(simulation.crisis),
       episode: normalizeThreefoldEpisodeState(simulation.episode),
+      encounter: normalizeThreefoldEncounter(simulation.encounter),
     },
   });
 }
@@ -78,49 +84,53 @@ export function serializeThreefoldSimulation(simulation) {
  * @returns {ReturnType<typeof createThreefoldSimulation>|null} Restored run or null when unsupported/corrupt.
  */
 export function restoreThreefoldSimulation(serialized) {
-  return restoreSave(
-    serialized,
-    SIMULATION_SCHEMA_VERSION,
-    (state, envelope) => {
-      if (envelope.sceneId !== 'broken-gate')
-        throw new RangeError('Unknown scene.');
-      const scene = createBrokenGateScene();
-      const crisis = normalizeCrisisClock(state.crisis);
-      const episode = normalizeThreefoldEpisodeState(
-        state.episode ?? createThreefoldEpisodeState()
-      );
-      const player = normalizeScaleState(state.player);
-      if (episode.withdrawn === true && crisis.stage !== 'aftermath')
-        throw new RangeError('A withdrawn episode must be settled.');
-      if (episode.closedBy !== undefined && crisis.stage !== 'aftermath')
-        throw new RangeError('A closed episode must follow the aftermath.');
+  const envelope = readSimulationEnvelope(serialized);
+  if (!envelope) return null;
+  try {
+    if (envelope.sceneId !== 'broken-gate')
+      throw new RangeError('Unknown scene.');
+    const legacy =
+      envelope.schemaVersion === PREVIOUS_SIMULATION_SCHEMA_VERSION;
+    const state = envelope.state ?? envelope;
+    if (!legacy && !Object.hasOwn(state, 'encounter'))
+      throw new RangeError('THREEFOLD encounter state is missing.');
+    const scene = createBrokenGateScene();
+    const crisis = normalizeCrisisClock(state.crisis);
+    const episode = normalizeThreefoldEpisodeState(
+      state.episode ?? createThreefoldEpisodeState()
+    );
+    const player = normalizeScaleState(state.player);
+    if (episode.withdrawn === true && crisis.stage !== 'aftermath')
+      throw new RangeError('A withdrawn episode must be settled.');
+    if (episode.closedBy !== undefined && crisis.stage !== 'aftermath')
+      throw new RangeError('A closed episode must follow the aftermath.');
+    if (
+      episode.closedBy === 'reported' &&
+      player.destroyedGeometryIds.includes(THREEFOLD_SIGNAL_STATION_GEOMETRY_ID)
+    )
+      throw new RangeError('A destroyed signal station cannot file a report.');
+    if (episode.gateRepaired === true) {
+      if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath')
+        throw new RangeError('A repaired gate must follow the surge.');
       if (
-        episode.closedBy === 'reported' &&
-        player.destroyedGeometryIds.includes(
-          THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+        THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
+          player.destroyedGeometryIds.includes(id)
         )
       )
-        throw new RangeError(
-          'A destroyed signal station cannot file a report.'
-        );
-      if (episode.gateRepaired === true) {
-        if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath')
-          throw new RangeError('A repaired gate must follow the surge.');
-        if (
-          THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
-            player.destroyedGeometryIds.includes(id)
-          )
-        )
-          throw new RangeError('A repaired gate cannot remain damaged.');
-      }
-      return {
-        scene,
-        player,
-        crisis,
-        episode: advanceThreefoldEpisode(episode, crisis),
-      };
+        throw new RangeError('A repaired gate cannot remain damaged.');
     }
-  );
+    return {
+      scene,
+      player,
+      crisis,
+      episode: advanceThreefoldEpisode(episode, crisis),
+      encounter: legacy
+        ? createThreefoldEncounter()
+        : normalizeThreefoldEncounter(state.encounter),
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -204,6 +214,34 @@ function restoreSave(serialized, schemaVersion, normalize) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Read an envelope supported by the complete-run codec.
+ * @param {unknown} serialized Candidate complete-run export.
+ * @returns {Record<string, any>|null} Supported game envelope.
+ */
+function readSimulationEnvelope(serialized) {
+  const envelope = readSaveEnvelope(serialized);
+  return envelope &&
+    envelope.game === GAME_ID &&
+    [PREVIOUS_SIMULATION_SCHEMA_VERSION, SIMULATION_SCHEMA_VERSION].includes(
+      envelope.schemaVersion
+    )
+    ? envelope
+    : null;
+}
+
+/**
+ * Parse an envelope shared by both THREEFOLD save codecs.
+ * @param {unknown} serialized Candidate serialized save.
+ * @returns {Record<string, any>|null} Parsed object envelope.
+ */
+function readSaveEnvelope(serialized) {
+  if (typeof serialized !== 'string') return null;
+  const parsed = parseJsonOrNull(serialized);
+  if (!parsed || typeof parsed !== 'object') return null;
+  return /** @type {Record<string, any>} */ (parsed);
 }
 
 /**
