@@ -463,3 +463,36 @@ function frameBounds(shapes, property, id) {
   const maxY = Math.max(...owned.map(shape => shape.y + shape.height));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
+
+describe('THREEFOLD legacy withdrawal rendering', () => {
+  test.each([
+    [
+      { passengers: 'evacuated', ferry: 'lost', latchfolk: 'safe' },
+      'MARA WITHDREW · PASSENGERS SAFE · LATCHFOLK SAFE',
+    ],
+    [
+      { passengers: 'lost', ferry: 'lost', latchfolk: 'lost' },
+      'MARA WITHDREW · PASSENGERS LOST · LATCHFOLK LOST',
+    ],
+  ])('renders a legacy withdrawal state %p', (outcomes, expectedToast) => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const legacyWithdrawal = {
+      ...initial,
+      crisis: {
+        ...initial.crisis,
+        elapsedMinutes: THRESHOLDS.aftermathAtMinutes,
+        stage: 'aftermath',
+      },
+      episode: {
+        ...initial.episode,
+        ...outcomes,
+        withdrawn: true,
+      },
+    };
+
+    const frame = renderThreefoldFrame(legacyWithdrawal);
+
+    expect(frame.threefold.closedBy).toBeNull();
+    expect(frame.toast).toBe(expectedToast);
+  });
+});
