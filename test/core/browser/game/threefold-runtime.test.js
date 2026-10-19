@@ -1,4 +1,6 @@
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
+import { createThreefoldSimulation } from '../../../../src/core/browser/game/threefold/simulation.js';
+import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 
 describe('THREEFOLD handheld runtime', () => {
   test('maps handheld actions to deterministic simulation steps and saves the run', () => {
@@ -57,6 +59,28 @@ describe('THREEFOLD handheld runtime', () => {
     runtime.resume();
     runtime.step(-50, ['left']);
     expect(runtime.getState().crisis.elapsedMinutes).toBe(2.75);
+  });
+
+  test('applies handheld interaction once per press instead of repeating while held', () => {
+    const opening = createThreefoldSimulation({
+      urgentAtMinutes: 4,
+      surgeAtMinutes: 9,
+      aftermathAtMinutes: 15,
+    });
+    const atMooring = {
+      ...opening,
+      player: createScaleState(opening.scene.interactables[0].position),
+    };
+    const runtime = createThreefoldRuntime({ save: { load: () => atMooring } });
+    runtime.start();
+
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
+
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
   });
 
   test('supports default lifecycle arguments and normalizes named tool commands', () => {
