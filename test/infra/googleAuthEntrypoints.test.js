@@ -13,10 +13,9 @@ const readEntrypoint = (directory, name) =>
 
 describe('Google auth status entrypoint compatibility', () => {
   it.each(entrypointNames)(
-    '%s uses the options-object call in source and the GCS object source',
+    '%s uses the options-object call in source',
     name => {
       const source = readEntrypoint('src/browser', name);
-      const gcsObjectSource = readEntrypoint('infra', name);
 
       expect(source).toContain('createGoogleAuthStatusHandle({');
       expect(source).toContain('documentObj: document');
@@ -25,8 +24,6 @@ describe('Google auth status entrypoint compatibility', () => {
         "statusModuleUrl.searchParams.set('v', GOOGLE_AUTH_STATUS_ASSET_VERSION)"
       );
       expect(source).toContain('await import(statusModuleUrl.href)');
-      expect(gcsObjectSource).toContain('createGoogleAuthStatusHandle({');
-      expect(gcsObjectSource).toContain('documentObj: document');
     }
   );
 
@@ -51,5 +48,10 @@ describe('Google auth status entrypoint compatibility', () => {
     expect(terraformMain).toContain('"variantGoogleSignIn.js",');
     expect(terraformMain).toContain('"statsGoogleAuthModule.js",');
     expect(terraformMain).toContain('"contentsGoogleAuthModule.js",');
+    for (const name of entrypointNames) {
+      expect(terraformMain).toContain(
+        `source        = "\${path.module}/${name}"`
+      );
+    }
   });
 });

@@ -28,6 +28,11 @@ const rootBrowserWrappers = [
     contents: "export * from '../core/browser/browser-core.js';\n",
   },
 ];
+const googleAuthObjectNames = [
+  'contentsGoogleAuthModule.js',
+  'statsGoogleAuthModule.js',
+  'variantGoogleSignIn.js',
+];
 
 /**
  * Run the cloud copy workflow against an isolated project tree.
@@ -50,6 +55,66 @@ async function runRootBrowserWrapperCopyFixture(options = {}) {
 
   const selectedSources = new Set(
     rootBrowserWrappers.map(({ name }) => path.join(browserSourceDir, name))
+  );
+  const fsPromisesModule = {
+    readdir: async () => [],
+    mkdir: mkdirActual,
+    copyFile: async (source, target) => {
+      if (selectedSources.has(source)) {
+        await copyFileActual(source, target);
+      }
+    },
+    readFile: async () => {
+      const error = new Error('fixture file is absent');
+      error.code = 'ENOENT';
+      throw error;
+    },
+    writeFile: async () => undefined,
+  };
+
+  try {
+    await createCopyCloudHandle({
+      fileURLToPathFn: () =>
+        path.join(projectRoot, 'src/core/build/copy-cloud.js'),
+      dirnameFn: path.dirname,
+      pathModule: path,
+      fsPromisesModule,
+    });
+  } catch (error) {
+    await rm(projectRoot, { recursive: true, force: true });
+    throw error;
+  }
+
+  return projectRoot;
+}
+
+/**
+ * Run the cloud copy workflow with real Google-auth source files in a fixture.
+ * @param {{missingSource?: string}} [options] Optional auth module to omit.
+ * @returns {Promise<string>} Path to the temporary project root.
+ */
+async function runGoogleAuthObjectCopyFixture(options = {}) {
+  const { missingSource } = options;
+  const projectRoot = await mkdtemp(
+    path.join(tmpdir(), 'dadeto-google-auth-copy-')
+  );
+  const browserSourceDir = path.join(projectRoot, 'src/browser');
+  const repositoryRoot = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../..'
+  );
+  await mkdirActual(browserSourceDir, { recursive: true });
+
+  for (const name of googleAuthObjectNames) {
+    if (name === missingSource) continue;
+    await copyFileActual(
+      path.join(repositoryRoot, 'src/browser', name),
+      path.join(browserSourceDir, name)
+    );
+  }
+
+  const selectedSources = new Set(
+    googleAuthObjectNames.map(name => path.join(browserSourceDir, name))
   );
   const fsPromisesModule = {
     readdir: async () => [],
@@ -241,6 +306,36 @@ describe('createCopyCloudHandle', () => {
     ).rejects.toMatchObject({ code: 'ENOENT' });
   });
 
+  test('writes Google-auth GCS object files byte-for-byte in a temporary tree', async () => {
+    const projectRoot = await runGoogleAuthObjectCopyFixture();
+    const repositoryRoot = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../..'
+    );
+
+    try {
+      for (const name of googleAuthObjectNames) {
+        const expected = await readFile(
+          path.join(repositoryRoot, 'src/browser', name),
+          'utf8'
+        );
+        await expect(
+          readFile(path.join(projectRoot, 'infra', name), 'utf8')
+        ).resolves.toBe(expected);
+      }
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('fails when a Google-auth GCS object source is missing', async () => {
+    await expect(
+      runGoogleAuthObjectCopyFixture({
+        missingSource: 'statsGoogleAuthModule.js',
+      })
+    ).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+
   test('runs source contracts with generated infra wrappers absent', async () => {
     const projectRoot = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
@@ -280,6 +375,10 @@ describe('createCopyCloudHandle', () => {
         path.join(projectRoot, 'test/infra/cloudBrowserEntrypoints.test.js'),
         path.join(fixtureRoot, 'test/infra/cloudBrowserEntrypoints.test.js')
       );
+      await copyFileActual(
+        path.join(projectRoot, 'test/infra/googleAuthEntrypoints.test.js'),
+        path.join(fixtureRoot, 'test/infra/googleAuthEntrypoints.test.js')
+      );
       await symlink(
         path.join(projectRoot, 'src'),
         path.join(fixtureRoot, 'src'),
@@ -296,6 +395,11 @@ describe('createCopyCloudHandle', () => {
           readFile(path.join(fixtureRoot, 'infra', name), 'utf8')
         ).rejects.toMatchObject({ code: 'ENOENT' });
       }
+      for (const name of googleAuthObjectNames) {
+        await expect(
+          readFile(path.join(fixtureRoot, 'infra', name), 'utf8')
+        ).rejects.toMatchObject({ code: 'ENOENT' });
+      }
 
       const args = [
         '--experimental-vm-modules',
@@ -306,6 +410,7 @@ describe('createCopyCloudHandle', () => {
         '--coverage=false',
         '--watchman=false',
         path.join(fixtureRoot, 'test/infra/cloudBrowserEntrypoints.test.js'),
+        path.join(fixtureRoot, 'test/infra/googleAuthEntrypoints.test.js'),
       ];
       const runContractSuite = () =>
         execFileSync(process.execPath, args, {
@@ -326,6 +431,24 @@ describe('createCopyCloudHandle', () => {
       await writeFile(
         contractTestPath,
         `${contractTestSource.slice(0, finalDescribeClose)}\n  it('fails when a generated wrapper is read', async () => {\n    await readFile('infra/admin-core.js', 'utf8');\n  });${contractTestSource.slice(finalDescribeClose)}`
+      );
+
+      expect(runContractSuite).toThrow();
+
+      const googleAuthContractTestPath = path.join(
+        fixtureRoot,
+        'test/infra/googleAuthEntrypoints.test.js'
+      );
+      const googleAuthContractTestSource = await readFile(
+        googleAuthContractTestPath,
+        'utf8'
+      );
+      const finalGoogleAuthDescribeClose =
+        googleAuthContractTestSource.lastIndexOf('\n});');
+      expect(finalGoogleAuthDescribeClose).toBeGreaterThanOrEqual(0);
+      await writeFile(
+        googleAuthContractTestPath,
+        `${googleAuthContractTestSource.slice(0, finalGoogleAuthDescribeClose)}\n  it('fails when a generated GCS object is read', () => {\n    readFileSync('infra/contentsGoogleAuthModule.js', 'utf8');\n  });${googleAuthContractTestSource.slice(finalGoogleAuthDescribeClose)}`
       );
 
       expect(runContractSuite).toThrow();
