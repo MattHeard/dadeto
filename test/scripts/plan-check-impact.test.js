@@ -831,6 +831,85 @@ describe('scoped static-check impact executor', () => {
   });
 });
 
+describe('composed scoped impact diagnostics', () => {
+  it('surfaces parse, clone, and uncovered-branch locations in one scoped run', () => {
+    const changedFile = 'src/core/changed.js';
+    const parseLocation =
+      'src/core/changed.js contains parser function parseInput; keep parse logic in boundary modules.\n';
+    const cloneLocation =
+      'src/core/changed.js:12-18 ↔ src/core/other.js:31-37\n';
+    const { result, output, runCommand } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', changedFile],
+      runImpl: (command, args) => {
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/core/related.test.js\n' };
+        if (args.some(argument => argument.endsWith('/eslint.js')))
+          return { status: 0, stdout: 'lint passed\n' };
+        if (args[1] === 'core-parse')
+          return { status: 1, stdout: parseLocation };
+        if (args[1] === 'duplication')
+          return { status: 1, stderr: cloneLocation };
+        return { status: 0, stdout: 'tests passed\n' };
+      },
+      coverageImpl: (_tests, sourceFiles) => ({
+        status: 0,
+        coverage: Object.fromEntries(
+          sourceFiles.map(sourceFile => [
+            path.resolve(sourceFile),
+            {
+              statementMap: { 0: { start: { line: 8 } } },
+              s: { 0: 1 },
+              branchMap: {
+                0: {
+                  line: 20,
+                  locations: [{ start: { line: 20 } }, { start: { line: 21 } }],
+                },
+              },
+              b: { 0: [1, 0] },
+            },
+          ])
+        ),
+      }),
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(
+      runCommand.mock.calls.map(([, command, args]) => [command, args])
+    ).toEqual(
+      expect.arrayContaining([
+        ['npm', ['run', 'core-parse']],
+        ['npm', ['run', 'duplication']],
+      ])
+    );
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      staticChecks: [
+        { name: 'eslint', result: 'passed', exitStatus: 0 },
+        { name: 'core-parse', result: 'failed', exitStatus: 1 },
+        { name: 'duplication', result: 'failed', exitStatus: 1 },
+      ],
+      scopedCoverage: {
+        files: [
+          {
+            file: changedFile,
+            uncoveredBranches: [{ line: 21, arm: 2 }],
+          },
+        ],
+      },
+    });
+    expect(output.chunks).toContain(parseLocation);
+    expect(output.chunks).toContain(cloneLocation);
+    expect(output.chunks).toContain(
+      'Impact checks: core-parse failed (exit 1).\n'
+    );
+    expect(output.chunks).toContain(
+      'Impact checks: duplication failed (exit 1).\n'
+    );
+  });
+});
+
 describe('test impact runner fallback execution', () => {
   it('runs fallback unit tests in bounded no-coverage shards', () => {
     const files = [1, 2, 3, 4, 5].map(index =>
