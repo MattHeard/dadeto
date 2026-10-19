@@ -63,7 +63,6 @@ locals {
     run              = "run.googleapis.com"
     artifactregistry = "artifactregistry.googleapis.com"
     eventarc         = "eventarc.googleapis.com"
-    iamcredentials   = "iamcredentials.googleapis.com"
     secretmanager    = "secretmanager.googleapis.com"
   }
   runtime_secret_environment = var.environment == "prod" ? "prod" : "test"
