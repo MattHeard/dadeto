@@ -4,6 +4,7 @@ import {
   attemptThreefoldGateRepair,
   attemptThreefoldLatchfolkWarning,
   attemptThreefoldPassengerRescue,
+  attemptThreefoldReport,
   attemptThreefoldWithdrawal,
   createThreefoldEpisodeState,
   THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
@@ -46,7 +47,8 @@ export function createThreefoldSimulation(
  * @returns {ReturnType<typeof createThreefoldSimulation>} New simulation state, or the original for inert commands.
  */
 export function stepThreefoldSimulation(state, action) {
-  if (state.episode.withdrawn === true) return state;
+  if (state.episode.withdrawn === true || state.episode.closedBy !== undefined)
+    return state;
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
   if (action.type === 'wait') return advanceWait(state, action);
@@ -80,6 +82,7 @@ export function stepThreefoldSimulation(state, action) {
     if (episode === state.episode)
       episode = attemptThreefoldLatchfolkWarning(state);
     if (episode === state.episode) episode = attemptThreefoldWithdrawal(state);
+    if (episode === state.episode) episode = attemptThreefoldReport(state);
     let player = state.player;
     if (episode === state.episode) {
       episode = attemptThreefoldGateRepair(state);

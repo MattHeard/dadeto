@@ -325,7 +325,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
       ferry: 'lost',
       latchfolk: 'lost',
     });
-    expect(frame.toast).toContain('MARA WITHDREW');
+    expect(frame.toast).toContain('EPISODE CLOSED BY DEPARTURE');
     expect(frame.toast).toContain('PASSENGERS LOST');
     expect(frame.toast).toContain('LATCHFOLK LOST');
   });
@@ -338,8 +338,86 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     const frame = renderThreefoldFrame(withdrawn);
 
     expect(frame.toast).toBe(
-      'MARA WITHDREW · PASSENGERS SAFE · LATCHFOLK SAFE'
+      'EPISODE CLOSED BY DEPARTURE · MARA LEFT THE GATEHOUSE · PASSENGERS SAFE · LATCHFOLK SAFE'
     );
+  });
+
+  test('renders destroyed signal station and the surviving closure route', () => {
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    scene.spawn = createScaleState(console.position);
+    let state = createThreefoldSimulation(THRESHOLDS, scene);
+    state = stepThreefoldSimulation(state, { type: 'grow' });
+    state = stepThreefoldSimulation(state, {
+      type: 'wait',
+      elapsedGameMinutes: THRESHOLDS.aftermathAtMinutes,
+    });
+
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.threefold).toMatchObject({
+      signalStationDestroyed: true,
+      closedBy: null,
+      crisisStage: 'aftermath',
+    });
+    expect(frame.world.map.objects.map(object => object.id)).not.toContain(
+      'signal-station-console'
+    );
+    expect(frame.toast).toContain('SIGNAL STATION LOST');
+    expect(frame.toast).toContain('DEPART UPLAND TO CLOSE');
+  });
+
+  test('renders a filed report as the episode closure outcome', () => {
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const atConsole = {
+      ...initial,
+      player: createScaleState(console.position),
+    };
+    const aftermath = stepThreefoldSimulation(atConsole, {
+      type: 'wait',
+      elapsedGameMinutes: THRESHOLDS.aftermathAtMinutes,
+    });
+    const reported = stepThreefoldSimulation(aftermath, {
+      type: 'interact',
+    });
+
+    const frame = renderThreefoldFrame(reported);
+
+    expect(frame.threefold.closedBy).toBe('reported');
+    expect(frame.toast).toBe(
+      'EPISODE CLOSED · REPORT SENT THROUGH THE SIGNAL STATION'
+    );
+  });
+
+  test('renders departure closure without a report after station destruction', () => {
+    const scene = createBrokenGateScene();
+    const road = scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const atRoad = {
+      ...initial,
+      player: createScaleState(road.position, {
+        destroyedGeometryIds: ['signal-station'],
+      }),
+    };
+    const aftermath = stepThreefoldSimulation(atRoad, {
+      type: 'wait',
+      elapsedGameMinutes: THRESHOLDS.aftermathAtMinutes,
+    });
+    const departed = stepThreefoldSimulation(aftermath, { type: 'interact' });
+
+    const frame = renderThreefoldFrame(departed);
+
+    expect(frame.threefold.closedBy).toBe('departed');
+    expect(frame.toast).toContain('SIGNAL STATION LOST');
+    expect(frame.toast).toContain('NO REPORT SENT');
   });
 
   test.each([

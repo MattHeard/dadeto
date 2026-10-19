@@ -7,6 +7,7 @@ import {
   advanceThreefoldEpisode,
   createThreefoldEpisodeState,
   normalizeThreefoldEpisodeState,
+  THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
   THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
 } from './episode.js';
 
@@ -91,6 +92,17 @@ export function restoreThreefoldSimulation(serialized) {
       const player = normalizeScaleState(state.player);
       if (episode.withdrawn === true && crisis.stage !== 'aftermath')
         throw new RangeError('A withdrawn episode must be settled.');
+      if (episode.closedBy !== undefined && crisis.stage !== 'aftermath')
+        throw new RangeError('A closed episode must follow the aftermath.');
+      if (
+        episode.closedBy === 'reported' &&
+        player.destroyedGeometryIds.includes(
+          THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+        )
+      )
+        throw new RangeError(
+          'A destroyed signal station cannot file a report.'
+        );
       if (episode.gateRepaired === true) {
         if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath')
           throw new RangeError('A repaired gate must follow the surge.');

@@ -1,5 +1,6 @@
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
+import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 
@@ -97,6 +98,10 @@ export function renderThreefoldFrame(state) {
     latchfolk: state.episode.latchfolk,
     withdrawn: state.episode.withdrawn === true,
     gateRepaired: state.episode.gateRepaired === true,
+    signalStationDestroyed: state.player.destroyedGeometryIds.includes(
+      THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+    ),
+    closedBy: state.episode.closedBy ?? null,
   };
   return frame;
 }
@@ -129,6 +134,20 @@ function tideBar(width, fill) {
  * @returns {string} Compact player-facing status.
  */
 function getThreefoldToast(state, drainageState) {
+  const signalStationDestroyed = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+  );
+  if (state.episode.closedBy === 'reported')
+    return 'EPISODE CLOSED · REPORT SENT THROUGH THE SIGNAL STATION';
+  if (state.episode.closedBy === 'departed') {
+    const passengers =
+      state.episode.passengers === 'evacuated' ? 'SAFE' : 'LOST';
+    const latchfolk = state.episode.latchfolk === 'safe' ? 'SAFE' : 'LOST';
+    const communication = signalStationDestroyed
+      ? 'SIGNAL STATION LOST · NO REPORT SENT'
+      : 'MARA LEFT THE GATEHOUSE';
+    return `EPISODE CLOSED BY DEPARTURE · ${communication} · PASSENGERS ${passengers} · LATCHFOLK ${latchfolk}`;
+  }
   if (state.crisis.elapsedMinutes === 0)
     return 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.';
   if (state.episode.withdrawn) {
@@ -138,9 +157,11 @@ function getThreefoldToast(state, drainageState) {
     return `MARA WITHDREW · PASSENGERS ${passengers} · LATCHFOLK ${latchfolk}`;
   }
   if (state.episode.gateRepaired) {
-    return drainageState === 'receded'
-      ? 'GATE REPAIRED AFTER FERRY LOSS · LOWER WATER RECEDED'
-      : 'GATE REPAIRED AFTER FERRY LOSS · LOWER CHANNEL STILL FLOODED';
+    const message =
+      drainageState === 'receded'
+        ? 'GATE REPAIRED AFTER FERRY LOSS · LOWER WATER RECEDED'
+        : 'GATE REPAIRED AFTER FERRY LOSS · LOWER CHANNEL STILL FLOODED';
+    return addClosurePrompt(state, message, signalStationDestroyed);
   }
   let message;
   if (state.episode.passengers === 'lost')
@@ -168,7 +189,23 @@ function getThreefoldToast(state, drainageState) {
         : state.episode.latchfolk === 'lost'
           ? 'LATCHFOLK LOST'
           : '';
-  return latchfolkStatus ? `${message} · ${latchfolkStatus}` : message;
+  const status = latchfolkStatus ? `${message} · ${latchfolkStatus}` : message;
+  return addClosurePrompt(state, status, signalStationDestroyed);
+}
+
+/**
+ * Explain the available episode closure route once the storm has passed.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @param {string} message Existing branch status.
+ * @param {boolean} signalStationDestroyed Whether report transmission is unavailable.
+ * @returns {string} Branch status with the surviving closure route.
+ */
+function addClosurePrompt(state, message, signalStationDestroyed) {
+  if (state.crisis.stage !== 'aftermath') return message;
+  const prompt = signalStationDestroyed
+    ? 'SIGNAL STATION LOST · DEPART UPLAND TO CLOSE'
+    : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
+  return `${message} · ${prompt}`;
 }
 
 /**
@@ -202,7 +239,15 @@ function createRenderWorld(state, heightMeters) {
       exits: [],
       palette: 'shore',
       objects: [
-        ...scene.interactables.map(({ id, bounds }) => ({ id, bounds })),
+        ...scene.interactables
+          .filter(
+            ({ id }) =>
+              id !== 'signal-station-console' ||
+              !player.destroyedGeometryIds.includes(
+                THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+              )
+          )
+          .map(({ id, bounds }) => ({ id, bounds })),
         ...(drainageState === 'flooded'
           ? [
               {

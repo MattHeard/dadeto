@@ -50,6 +50,23 @@ describe('THREEFOLD episode save state', () => {
       ferry: 'lost',
       latchfolk: 'lost',
       withdrawn: true,
+      closedBy: 'departed',
+    });
+  });
+
+  test('retains an explicit report closure when normalizing', () => {
+    expect(
+      normalizeThreefoldEpisodeState({
+        passengers: 'evacuated',
+        ferry: 'lost',
+        latchfolk: 'safe',
+        closedBy: 'reported',
+      })
+    ).toEqual({
+      passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'safe',
+      closedBy: 'reported',
     });
   });
 
@@ -103,6 +120,36 @@ describe('THREEFOLD episode save state', () => {
           passengers: 'lost',
           ferry: 'lost',
           gateRepaired,
+        })
+      ).toThrow('Episode outcome state is invalid.');
+    }
+  );
+
+  test.each([null, 'open', 'filed', 1])(
+    'rejects invalid closure outcome %p',
+    closedBy => {
+      expect(() =>
+        normalizeThreefoldEpisodeState({
+          passengers: 'aboard',
+          ferry: 'afloat',
+          closedBy,
+        })
+      ).toThrow('Episode outcome state is invalid.');
+    }
+  );
+
+  test.each([
+    [true, 'reported'],
+    [false, 'departed'],
+  ])(
+    'rejects inconsistent withdrawal/closure state %p %p',
+    (withdrawn, closedBy) => {
+      expect(() =>
+        normalizeThreefoldEpisodeState({
+          passengers: 'aboard',
+          ferry: 'afloat',
+          withdrawn,
+          closedBy,
         })
       ).toThrow('Episode outcome state is invalid.');
     }

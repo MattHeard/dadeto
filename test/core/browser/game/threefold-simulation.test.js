@@ -276,6 +276,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       ferry: 'lost',
       latchfolk: 'lost',
       withdrawn: true,
+      closedBy: 'departed',
     });
     expect(
       stepThreefoldSimulation(withdrawn, {
@@ -322,6 +323,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       ferry: 'lost',
       latchfolk: 'safe',
       withdrawn: true,
+      closedBy: 'departed',
     });
   });
 

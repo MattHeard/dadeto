@@ -10,6 +10,7 @@ import {
   serializeThreefoldSimulation,
   serializeThreefoldScaleSave,
 } from '../../../../src/core/browser/game/threefold/save.js';
+import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import {
   createThreefoldSimulation,
   stepThreefoldSimulation,
@@ -266,6 +267,73 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(withdrawn.crisis.stage).toBe('aftermath');
     expect(withdrawn.episode.withdrawn).toBe(true);
     expect(restored).toEqual(withdrawn);
+
+    const legacyWithdrawal = JSON.parse(
+      serializeThreefoldSimulation(withdrawn)
+    );
+    delete legacyWithdrawal.state.episode.closedBy;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacyWithdrawal)).episode
+    ).toMatchObject({ withdrawn: true, closedBy: 'departed' });
+  });
+
+  test('roundtrips station rubble and report closure', () => {
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    let simulation = createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
+    simulation = {
+      ...simulation,
+      player: createScaleState(console.position),
+    };
+    simulation = stepThreefoldSimulation(simulation, { type: 'grow' });
+    expect(simulation.player.destroyedGeometryIds).toContain('signal-station');
+    simulation = stepThreefoldSimulation(simulation, {
+      type: 'wait',
+      elapsedGameMinutes: CRISIS_THRESHOLDS.aftermathAtMinutes,
+    });
+    const rubbleSave = serializeThreefoldSimulation(simulation);
+    expect(restoreThreefoldSimulation(rubbleSave)).toEqual(simulation);
+
+    const intactScene = createBrokenGateScene();
+    const stationConsole = intactScene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const intact = {
+      ...createThreefoldSimulation(CRISIS_THRESHOLDS, intactScene),
+      player: createScaleState(stationConsole.position),
+    };
+    const aftermath = stepThreefoldSimulation(intact, {
+      type: 'wait',
+      elapsedGameMinutes: CRISIS_THRESHOLDS.aftermathAtMinutes,
+    });
+    const reported = stepThreefoldSimulation(aftermath, { type: 'interact' });
+    expect(reported.episode.closedBy).toBe('reported');
+    expect(
+      restoreThreefoldSimulation(serializeThreefoldSimulation(reported))
+    ).toEqual(reported);
+
+    const lostScene = createBrokenGateScene();
+    const road = lostScene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    let departed = createThreefoldSimulation(CRISIS_THRESHOLDS, lostScene);
+    departed = {
+      ...departed,
+      player: createScaleState(road.position, {
+        destroyedGeometryIds: ['signal-station'],
+      }),
+    };
+    departed = stepThreefoldSimulation(departed, {
+      type: 'wait',
+      elapsedGameMinutes: CRISIS_THRESHOLDS.aftermathAtMinutes,
+    });
+    departed = stepThreefoldSimulation(departed, { type: 'interact' });
+    expect(departed.episode.closedBy).toBe('departed');
+    expect(
+      restoreThreefoldSimulation(serializeThreefoldSimulation(departed))
+    ).toEqual(departed);
   });
 
   test('migrates existing saves without episode state from their crisis stage', () => {
@@ -382,6 +450,10 @@ describe('THREEFOLD complete-run save codec', () => {
     }),
     state => ({
       ...state,
+      episode: { ...state.episode, closedBy: 'reported' },
+    }),
+    state => ({
+      ...state,
       episode: {
         ...state.episode,
         passengers: 'lost',
@@ -400,6 +472,18 @@ describe('THREEFOLD complete-run save codec', () => {
         ferry: 'lost',
         latchfolk: 'lost',
         gateRepaired: true,
+      },
+    }),
+    state => ({
+      ...state,
+      player: { ...state.player, destroyedGeometryIds: ['signal-station'] },
+      crisis: { ...state.crisis, elapsedMinutes: 15, stage: 'aftermath' },
+      episode: {
+        ...state.episode,
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        closedBy: 'reported',
       },
     }),
   ])('rejects invalid player or inconsistent crisis state', mutate => {

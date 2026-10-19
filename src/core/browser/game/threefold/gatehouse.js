@@ -55,6 +55,13 @@ const GATEHOUSE_GEOMETRY = [
       max: { x: 9.5, y: 5.9, z: 1.5 },
     },
   },
+  {
+    id: 'signal-station',
+    bounds: {
+      min: { x: 8.7, y: 2.8, z: 0 },
+      max: { x: 9.1, y: 3.2, z: 6 },
+    },
+  },
 ];
 
 const GATEHOUSE_INTERACTABLES = [
@@ -88,6 +95,14 @@ const GATEHOUSE_INTERACTABLES = [
     bounds: {
       min: { x: 4.55, y: 2.95, z: 0 },
       max: { x: 4.65, y: 3.05, z: 0.15 },
+    },
+  },
+  {
+    id: 'signal-station-console',
+    position: { x: 8.35, y: 3 },
+    bounds: {
+      min: { x: 8.25, y: 2.9, z: 0 },
+      max: { x: 8.45, y: 3.1, z: 0.6 },
     },
   },
 ];

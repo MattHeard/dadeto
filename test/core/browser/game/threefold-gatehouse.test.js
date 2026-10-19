@@ -39,12 +39,14 @@ describe('THREEFOLD Broken Gate scene', () => {
       'gate-counterweight',
       'landing-piling',
       'drainage-weir',
+      'signal-station',
     ]);
     expect(scene.interactables.map(({ id }) => id)).toEqual([
       'ferry-mooring-line',
       'latchfolk-watchkeeper',
       'upland-road-exit',
       'relief-gate-locking-pawl',
+      'signal-station-console',
     ]);
     expect(scene.interactables[1].position).toEqual({ x: 7.25, y: 7.25 });
     expect(scene.interactables[2].position).toEqual({ x: 0.5, y: 2 });
@@ -74,6 +76,7 @@ describe('THREEFOLD Broken Gate scene', () => {
       'gate-counterweight',
       'landing-piling',
       'relief-gate',
+      'signal-station',
     ]);
 
     const finer = changeScale(grown, -1);

@@ -3,6 +3,8 @@ import { heightAtScale } from './spatial.js';
 const PASSENGER_OUTCOMES = new Set(['aboard', 'evacuated', 'lost']);
 const FERRY_OUTCOMES = new Set(['afloat', 'lost']);
 const LATCHFOLK_OUTCOMES = new Set(['unwarned', 'warned', 'safe', 'lost']);
+const EPISODE_CLOSURES = new Set(['reported', 'departed']);
+export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
 export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
   'gate-counterweight',
   'relief-gate',
@@ -14,7 +16,7 @@ const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
- * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true}} Initial episode state.
+ * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, closedBy?: 'reported'|'departed'}} Initial episode state.
  */
 export function createThreefoldEpisodeState() {
   return { passengers: 'aboard', ferry: 'afloat', latchfolk: 'unwarned' };
@@ -60,7 +62,25 @@ export function attemptThreefoldLatchfolkWarning(state) {
 export function attemptThreefoldWithdrawal(state) {
   const { episode } = state;
   if (!isWithinInteractionRange(state, UPLAND_ROAD_ID)) return episode;
-  return { ...episode, withdrawn: true };
+  return { ...episode, withdrawn: true, closedBy: 'departed' };
+}
+
+/**
+ * File the episode report after the storm while the signal station still stands.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Reported episode state or the original when reporting is unavailable.
+ */
+export function attemptThreefoldReport(state) {
+  const { episode, crisis, player } = state;
+  if (
+    crisis.stage !== 'aftermath' ||
+    player.destroyedGeometryIds.includes(
+      THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+    ) ||
+    !isWithinInteractionRange(state, 'signal-station-console')
+  )
+    return episode;
+  return { ...episode, closedBy: 'reported' };
 }
 
 /**
@@ -121,6 +141,10 @@ export function normalizeThreefoldEpisodeState(candidate) {
   const withdrawn = state.withdrawn === undefined ? false : state.withdrawn;
   const gateRepaired =
     state.gateRepaired === undefined ? false : state.gateRepaired;
+  const closedBy =
+    state.closedBy === undefined && withdrawn === true
+      ? 'departed'
+      : state.closedBy;
   if (
     typeof state.passengers !== 'string' ||
     !PASSENGER_OUTCOMES.has(state.passengers) ||
@@ -129,7 +153,12 @@ export function normalizeThreefoldEpisodeState(candidate) {
     typeof latchfolk !== 'string' ||
     !LATCHFOLK_OUTCOMES.has(latchfolk) ||
     typeof withdrawn !== 'boolean' ||
-    typeof gateRepaired !== 'boolean'
+    typeof gateRepaired !== 'boolean' ||
+    (closedBy !== undefined &&
+      (typeof closedBy !== 'string' ||
+        !EPISODE_CLOSURES.has(closedBy) ||
+        (closedBy === 'departed' && withdrawn !== true) ||
+        (closedBy === 'reported' && withdrawn === true)))
   )
     throw new RangeError('Episode outcome state is invalid.');
   return /** @type {ReturnType<typeof createThreefoldEpisodeState>} */ ({
@@ -138,6 +167,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
     latchfolk,
     ...(withdrawn ? { withdrawn: true } : {}),
     ...(gateRepaired ? { gateRepaired: true } : {}),
+    ...(closedBy ? { closedBy } : {}),
   });
 }
 

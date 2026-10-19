@@ -17,6 +17,7 @@
 - Reach the marked watchkeeper in the lower settlement and warn them before surge; warned Latchfolk reach higher ground, while unwarned Latchfolk are lost. This outcome is independent of the ferry branch and survives save/export/import.
 - Walk northwest to the marked upland road and interact to withdraw. The remaining crisis resolves deterministically to aftermath; earlier rescues and warnings persist, and later world actions are inert. The withdrawn outcome survives save/export/import.
 - After surge loses the ferry, shrink to scale −2 and reach the marked locking pawl beside the forced-open relief gate. Interact to restore the gate; ferry/passenger/Latchfolk losses remain, the gate survives save/export/import, and lower water recedes by aftermath.
+- Grow through the marked signal station to destroy it. After the crisis reaches aftermath, the console is gone and the frame says that a report cannot be sent; follow the open route to the upland road and interact to close by departure. With an intact station, interact at its console after aftermath to close by report. Both closure branches survive save/export/import.
 - The west wall remains damaged after reload when Mara grows through it.
 - The focused Jest suite passes and exits with status 0.
 - Build artifacts are written under `public/`; full check evidence is written under `.tmp/` and coverage reports under `reports/coverage/`.
