@@ -3,6 +3,7 @@ import { THREEFOLD_LATCHFOLK_INTERACTABLE_ID } from '../../../../src/core/browse
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import {
   createThreefoldSimulation,
+  previewThreefoldGrowthDamageIds,
   previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/simulation.js';
@@ -43,6 +44,14 @@ function createWatchkeeperGrowthState(
 }
 
 describe('THREEFOLD growth impact on the known watchkeeper', () => {
+  test('keeps the geometry-only preview aligned with the combined growth effects', () => {
+    const state = createThreefoldSimulation(THRESHOLDS);
+    const effects = previewThreefoldGrowthEffects(state);
+
+    expect(effects.geometryIds).toContain('gatehouse-west-wall');
+    expect(previewThreefoldGrowthDamageIds(state)).toEqual(effects.geometryIds);
+  });
+
   test('previews the lethal overlap read-only and commits the same fate', () => {
     const state = createWatchkeeperGrowthState();
     const before = JSON.parse(JSON.stringify(state));
