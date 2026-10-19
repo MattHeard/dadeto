@@ -8,6 +8,7 @@
 - Non-deterministic timing or ordering: wall-clock callbacks accidentally advance crisis time, or simultaneous controls apply in different orders.
 - Environment-specific behavior: pointer capture, gamepad polling, canvas support, or browser storage differs on mobile.
 - Growth-preview drift: the highlighted geometry differs from committed rubble, previewing mutates simulation state, or the warning prevents a deliberate growth action.
+- Occupant-preview drift: the Latchfolk is highlighted without a matching saved loss, growth kills them without a preview, or safe/lost/closed states keep showing a lethal warning.
 - Interaction regression: a ferry rescue or Latchfolk warning is accepted out of range, after surge, or is lost after save/import; one ferry interaction rescues both passenger groups, partial rescue is misreported at surge, or withdrawal succeeds from outside the road's interaction range.
 - Withdrawal regression: the storm clock does not settle to aftermath, prior rescues/warnings are erased, or new world actions remain available after departure.
 - Late-repair regression: the locking pawl repairs an intact gate, accepts a pre-surge/out-of-range/wrong-scale action, leaves repaired gate geometry as rubble, restores ferry or resident losses, or fails to drain lower water by aftermath.

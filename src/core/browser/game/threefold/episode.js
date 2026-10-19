@@ -5,12 +5,13 @@ const FERRY_OUTCOMES = new Set(['afloat', 'lost']);
 const LATCHFOLK_OUTCOMES = new Set(['unwarned', 'warned', 'safe', 'lost']);
 const EPISODE_CLOSURES = new Set(['reported', 'departed']);
 export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
+/** Stable identifier for the authored Latchfolk watchkeeper interactable. */
+export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
 export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
   'gate-counterweight',
   'relief-gate',
 ];
 const MOORING_ID = 'ferry-mooring-line';
-const LATCHFOLK_ID = 'latchfolk-watchkeeper';
 const UPLAND_ROAD_ID = 'upland-road-exit';
 const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
@@ -51,7 +52,7 @@ export function attemptThreefoldLatchfolkWarning(state) {
   if (
     episode.latchfolk !== 'unwarned' ||
     crisis.elapsedMinutes >= crisis.thresholds.surgeAtMinutes ||
-    !isWithinInteractionRange(state, LATCHFOLK_ID)
+    !isWithinInteractionRange(state, THREEFOLD_LATCHFOLK_INTERACTABLE_ID)
   )
     return episode;
   return { ...episode, latchfolk: 'warned' };

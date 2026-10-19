@@ -8,6 +8,7 @@ import {
   attemptThreefoldWithdrawal,
   createThreefoldEpisodeState,
   THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
+  THREEFOLD_LATCHFOLK_INTERACTABLE_ID,
 } from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import {
@@ -45,14 +46,32 @@ export function createThreefoldSimulation(
  * @returns {string[]} Sorted geometry identifiers; an empty list after episode closure.
  */
 export function previewThreefoldGrowthDamageIds(state) {
-  if (state.episode.withdrawn === true || state.episode.closedBy !== undefined)
-    return [];
+  return previewThreefoldGrowthEffects(state).geometryIds;
+}
+
+/**
+ * Return the known geometry and living occupant affected by the next growth step.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @returns {{geometryIds: string[], occupantIds: string[]}} Sorted impacted identifiers.
+ */
+export function previewThreefoldGrowthEffects(state) {
+  if (isEpisodeClosed(state)) return { geometryIds: [], occupantIds: [] };
   const { player, scene } = state;
-  return previewGrowthDamageIds(
+  const geometryIds = previewGrowthDamageIds(
     player,
     scene.geometry,
     scene.baseBodyWidthMeters
   );
+  const watchkeeper = scene.interactables.find(
+    ({ id }) => id === THREEFOLD_LATCHFOLK_INTERACTABLE_ID
+  );
+  const occupantIds =
+    watchkeeper &&
+    (state.episode.latchfolk === 'unwarned' ||
+      state.episode.latchfolk === 'warned')
+      ? previewGrowthDamageIds(player, [watchkeeper], scene.baseBodyWidthMeters)
+      : [];
+  return { geometryIds, occupantIds };
 }
 
 /**
@@ -64,8 +83,7 @@ export function previewThreefoldGrowthDamageIds(state) {
  * @returns {ReturnType<typeof createThreefoldSimulation>} New simulation state, or the original for inert commands.
  */
 export function stepThreefoldSimulation(state, action) {
-  if (state.episode.withdrawn === true || state.episode.closedBy !== undefined)
-    return state;
+  if (isEpisodeClosed(state)) return state;
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
   if (action.type === 'wait') return advanceWait(state, action);
@@ -81,12 +99,24 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   if (action.type === 'grow') {
+    const { occupantIds } = previewThreefoldGrowthEffects(state);
     const player = growThroughGeometry(
       state.player,
       state.scene.geometry,
       state.scene.baseBodyWidthMeters
     );
-    return applyPlayerAction(state, player, 'interaction');
+    const actionState = occupantIds.includes(
+      THREEFOLD_LATCHFOLK_INTERACTABLE_ID
+    )
+      ? {
+          ...state,
+          episode: {
+            ...state.episode,
+            latchfolk: /** @type {'lost'} */ ('lost'),
+          },
+        }
+      : state;
+    return applyPlayerAction(actionState, player, 'interaction');
   }
 
   if (action.type === 'shrink') {
@@ -230,5 +260,15 @@ function applyPlayerAction(state, player, successType) {
     state,
     player,
     player === state.player ? 'failed-action' : successType
+  );
+}
+
+/**
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the episode has stopped accepting world actions.
+ */
+function isEpisodeClosed(state) {
+  return (
+    state.episode.withdrawn === true || state.episode.closedBy !== undefined
   );
 }

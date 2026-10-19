@@ -12,6 +12,7 @@
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
 - The opening view reports scale 0, Anchor 8, and the rising crisis stage.
 - At the starting position, the west wall is highlighted and the HUD says `A BREAKS WEST WALL`; pressing A still performs the growth. At positions where the next rung hits no intact geometry, the regular message remains and no structure is highlighted.
+- When Mara stands at a position where the next rung newly intersects the watchkeeper, the frame highlights the watchkeeper and says `A KILLS LATCHFOLK`; A remains available and commits `lost`. No warning appears for an already safe/lost watchkeeper or when growth misses their bounds, and save/import preserves the growth-caused outcome.
 - A visible TIDE meter starts empty, fills with deterministic crisis minutes, and changes color at the authored stages.
 - Arrows move, A grows, B shrinks, E or gamepad left shoulder warns the Latchfolk watchkeeper, rescues passengers at the ferry, or withdraws through the upland road; X waits 15 in-game minutes, and Y saves. The touch interaction control is also available.
 - At the mooring before surge, interact once to rescue one of two passenger groups, then interact again to rescue the second. The frame shows one safe and one still aboard between interactions. At surge the ferry is lost; any group still aboard is lost, and a partial rescue remains one safe / one lost. Waiting through surge without rescuing them records both losses.

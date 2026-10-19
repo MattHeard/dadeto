@@ -2,7 +2,7 @@ import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { getThreefoldGateOutcome } from './outcome.js';
-import { previewThreefoldGrowthDamageIds } from './simulation.js';
+import { previewThreefoldGrowthEffects } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 
 const TILE_PIXELS = 12;
@@ -18,8 +18,9 @@ const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 export function renderThreefoldFrame(state) {
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = getThreefoldGateOutcome(state);
-  const growthPreviewIds = previewThreefoldGrowthDamageIds(state);
-  const growthPreviewSet = new Set(growthPreviewIds);
+  const growthPreview = previewThreefoldGrowthEffects(state);
+  const { geometryIds, occupantIds } = growthPreview;
+  const growthPreviewSet = new Set([...geometryIds, ...occupantIds]);
   const world = createRenderWorld(state, heightMeters, growthPreviewSet);
   const frame = toFramePayload(
     {
@@ -86,19 +87,24 @@ export function renderThreefoldFrame(state) {
     tideBar(26, PALETTE[1]),
     tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
   );
-  if (growthPreviewIds.length > 0) {
+  const growthLabels = [
+    geometryIds.length > 0 ? getGrowthPreviewLabel(geometryIds) : null,
+    occupantIds.length > 0 ? 'A KILLS LATCHFOLK' : null,
+  ].filter(label => label !== null);
+  growthLabels.forEach((text, index) => {
+    const y = 17 + index * 12;
     frame.shapes.push(
-      { type: 'rect', x: 3, y: 17, width: 98, height: 11, fill: PALETTE[0] },
+      { type: 'rect', x: 3, y, width: 98, height: 11, fill: PALETTE[0] },
       {
         type: 'text',
         x: 5,
-        y: 25,
-        text: getGrowthPreviewLabel(growthPreviewIds),
+        y: y + 8,
+        text,
         fill: '#e16b5a',
         font: '5px monospace',
       }
     );
-  }
+  });
   frame.threefold = {
     scale: state.player.scale,
     heightMeters,
@@ -118,7 +124,8 @@ export function renderThreefoldFrame(state) {
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
     closedBy: state.episode.closedBy ?? null,
-    growthPreviewIds,
+    growthPreviewIds: geometryIds,
+    growthPreviewOccupantIds: occupantIds,
   };
   return frame;
 }
@@ -245,7 +252,7 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
  * Convert canonical scene coordinates to the tile world used by Mosslight's camera.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @param {number} heightMeters Mara's current physical height.
- * @param {Set<string>} growthPreviewIds Intact geometry affected by the next growth step.
+ * @param {Set<string>} growthPreviewIds Geometry or occupants affected by the next growth step.
  * @returns {Record<string, any>} Mosslight-compatible world snapshot.
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
@@ -281,7 +288,11 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
                 THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
               )
           )
-          .map(({ id, bounds }) => ({ id, bounds })),
+          .map(({ id, bounds }) => ({
+            id,
+            bounds,
+            growthPreview: growthPreviewIds.has(id),
+          })),
         ...(drainageState === 'flooded'
           ? [
               {
