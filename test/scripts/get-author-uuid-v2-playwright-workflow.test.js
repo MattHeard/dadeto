@@ -63,7 +63,10 @@ describe('get-author-uuid-v2 temporary Playwright coverage', () => {
   });
 
   it('limits custom-token signing to the disposable Playwright service account', async () => {
-    const terraform = await readFile('infra/playwright.tf', 'utf8');
+    const [terraform, main] = await Promise.all([
+      readFile('infra/playwright.tf', 'utf8'),
+      readFile('infra/main.tf', 'utf8'),
+    ]);
     const signer = terraform.match(
       /resource "google_service_account_iam_member" "playwright_can_sign_test_tokens" \{[\s\S]*?\n\}/
     );
@@ -83,5 +86,6 @@ describe('get-author-uuid-v2 temporary Playwright coverage', () => {
       'service            = "iamcredentials.googleapis.com"'
     );
     expect(terraform).toContain('disable_on_destroy = false');
+    expect(main).not.toContain('iamcredentials.googleapis.com');
   });
 });
