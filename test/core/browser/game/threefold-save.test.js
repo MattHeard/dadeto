@@ -182,13 +182,19 @@ describe('THREEFOLD complete-run save codec', () => {
     ).toEqual(['wall-a', 'wall-z']);
   });
 
-  test('roundtrips evacuated passengers and their later ferry loss', () => {
+  test('roundtrips partial and complete passenger rescues and later ferry loss', () => {
     const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
     const atMooring = {
       ...initial,
       player: createScaleState(initial.scene.interactables[0].position),
     };
-    const rescued = stepThreefoldSimulation(atMooring, { type: 'interact' });
+    const partial = stepThreefoldSimulation(atMooring, { type: 'interact' });
+    const restoredPartial = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(partial)
+    );
+    const rescued = stepThreefoldSimulation(restoredPartial, {
+      type: 'interact',
+    });
     const restoredRescue = restoreThreefoldSimulation(
       serializeThreefoldSimulation(rescued)
     );
@@ -201,6 +207,7 @@ describe('THREEFOLD complete-run save codec', () => {
     );
 
     expect(restoredRescue).toEqual(rescued);
+    expect(restoredPartial.episode.passengers).toBe('partial');
     expect(restoredRescue.episode).toEqual({
       passengers: 'evacuated',
       ferry: 'afloat',
@@ -209,6 +216,32 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(restoredSurge).toEqual(surge);
     expect(restoredSurge.episode).toEqual({
       passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+  });
+
+  test('roundtrips a partial rescue through surge without restoring the lost group', () => {
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
+    const atMooring = {
+      ...initial,
+      player: createScaleState(initial.scene.interactables[0].position),
+    };
+    const partial = stepThreefoldSimulation(atMooring, { type: 'interact' });
+    const restoredPartial = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(partial)
+    );
+    const surge = stepThreefoldSimulation(restoredPartial, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const restoredSurge = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(surge)
+    );
+
+    expect(restoredPartial.episode.passengers).toBe('partial');
+    expect(restoredSurge.episode).toEqual({
+      passengers: 'partial',
       ferry: 'lost',
       latchfolk: 'lost',
     });

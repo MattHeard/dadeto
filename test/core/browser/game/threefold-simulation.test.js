@@ -169,12 +169,13 @@ describe('THREEFOLD gatehouse simulation', () => {
         direction: 'right',
       })),
       { type: 'interact' },
+      { type: 'interact' },
     ];
     route.forEach(action => {
       state = stepThreefoldSimulation(state, action);
     });
 
-    expect(state.crisis.elapsedMinutes).toBe(3.5);
+    expect(state.crisis.elapsedMinutes).toBe(3.75);
     expect(state.episode).toEqual({
       passengers: 'evacuated',
       ferry: 'afloat',
@@ -500,4 +501,58 @@ describe('THREEFOLD gatehouse simulation', () => {
       expect(stepThreefoldSimulation(state, action)).toBe(state);
     }
   );
+});
+
+describe('THREEFOLD staged passenger rescue', () => {
+  test('rescues one group per interaction and preserves partial rescue at surge', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const mooring = initial.scene.interactables.find(
+      item => item.id === 'ferry-mooring-line'
+    );
+    const atMooring = {
+      ...initial,
+      player: createScaleState(mooring.position),
+    };
+
+    const outOfRange = stepThreefoldSimulation(initial, { type: 'interact' });
+    expect(outOfRange.episode.passengers).toBe('aboard');
+
+    const partial = stepThreefoldSimulation(atMooring, { type: 'interact' });
+    expect(partial.episode).toEqual({
+      passengers: 'partial',
+      ferry: 'afloat',
+      latchfolk: 'unwarned',
+    });
+
+    const complete = stepThreefoldSimulation(partial, { type: 'interact' });
+    expect(complete.episode.passengers).toBe('evacuated');
+    const alreadyComplete = stepThreefoldSimulation(complete, {
+      type: 'interact',
+    });
+    expect(alreadyComplete.episode.passengers).toBe('evacuated');
+
+    const completeSurge = stepThreefoldSimulation(complete, {
+      type: 'wait',
+      elapsedGameMinutes: 8.5,
+    });
+    expect(completeSurge.episode).toEqual({
+      passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+
+    const partialSurge = stepThreefoldSimulation(partial, {
+      type: 'wait',
+      elapsedGameMinutes: 8.75,
+    });
+    expect(partialSurge.episode).toEqual({
+      passengers: 'partial',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+    const afterSurgeInteraction = stepThreefoldSimulation(partialSurge, {
+      type: 'interact',
+    });
+    expect(afterSurgeInteraction.episode.passengers).toBe('partial');
+  });
 });

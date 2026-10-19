@@ -13,7 +13,7 @@
 - The opening view reports scale 0, Anchor 8, and the rising crisis stage.
 - A visible TIDE meter starts empty, fills with deterministic crisis minutes, and changes color at the authored stages.
 - Arrows move, A grows, B shrinks, E or gamepad left shoulder warns the Latchfolk watchkeeper, rescues passengers at the ferry, or withdraws through the upland road; X waits 15 in-game minutes, and Y saves. The touch interaction control is also available.
-- At the mooring before surge, interact to evacuate passengers; surge later loses the ferry but preserves rescued passengers. Waiting through surge without rescuing them records their loss.
+- At the mooring before surge, interact once to rescue one of two passenger groups, then interact again to rescue the second. The frame shows one safe and one still aboard between interactions. At surge the ferry is lost; any group still aboard is lost, and a partial rescue remains one safe / one lost. Waiting through surge without rescuing them records both losses.
 - Reach the marked watchkeeper in the lower settlement and warn them before surge; warned Latchfolk reach higher ground, while unwarned Latchfolk are lost. This outcome is independent of the ferry branch and survives save/export/import.
 - Walk northwest to the marked upland road and interact to withdraw. The remaining crisis resolves deterministically to aftermath; earlier rescues and warnings persist, and later world actions are inert. The withdrawn outcome survives save/export/import.
 - After surge loses the ferry, shrink to scale −2 and reach the marked locking pawl beside the forced-open relief gate. Interact to restore the gate; ferry/passenger/Latchfolk losses remain, the gate survives save/export/import, and lower water recedes by aftermath.

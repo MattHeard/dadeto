@@ -18,7 +18,7 @@ const THRESHOLDS = {
  */
 /**
  * Create a settled withdrawal with optional prior episode outcomes.
- * @param {{passengers?: 'aboard'|'evacuated'|'lost', ferry?: 'afloat'|'lost', latchfolk?: 'unwarned'|'warned'|'safe'|'lost'}} [episode] Prior outcomes to preserve.
+ * @param {{passengers?: 'aboard'|'partial'|'evacuated'|'lost', ferry?: 'afloat'|'lost', latchfolk?: 'unwarned'|'warned'|'safe'|'lost'}} [episode] Prior outcomes to preserve.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Withdrawn simulation.
  */
 function createWithdrawnSimulation(episode = {}) {
@@ -250,20 +250,27 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     const scene = createBrokenGateScene();
     scene.spawn = createScaleState(scene.interactables[0].position);
     const initial = createThreefoldSimulation(THRESHOLDS, scene);
-    const rescued = stepThreefoldSimulation(initial, { type: 'interact' });
-    const frame = renderThreefoldFrame(rescued);
+    const partial = stepThreefoldSimulation(initial, { type: 'interact' });
+    const partialFrame = renderThreefoldFrame(partial);
 
-    expect(frame.world.map.objects.map(object => object.id)).toContain(
+    expect(partialFrame.world.map.objects.map(object => object.id)).toContain(
       'ferry-mooring-line'
     );
-    expect(frame.shapes).toContainEqual(
+    expect(partialFrame.shapes).toContainEqual(
       expect.objectContaining({ geometryId: 'ferry-mooring-line' })
     );
-    expect(frame.threefold).toMatchObject({
-      passengers: 'evacuated',
+    expect(partialFrame.threefold).toMatchObject({
+      passengers: 'partial',
       ferry: 'afloat',
     });
-    expect(frame.toast).toContain('PASSENGERS EVACUATED');
+    expect(partialFrame.toast).toContain(
+      'PASSENGERS 1/2 SAFE · 1/2 STILL ABOARD'
+    );
+
+    const rescued = stepThreefoldSimulation(partial, { type: 'interact' });
+    expect(renderThreefoldFrame(rescued).toast).toContain(
+      'PASSENGERS EVACUATED'
+    );
 
     const surge = stepThreefoldSimulation(rescued, {
       type: 'wait',
@@ -271,6 +278,14 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     });
     expect(renderThreefoldFrame(surge).toast).toContain(
       'PASSENGERS SAFE · FERRY LOST'
+    );
+
+    const partialSurge = stepThreefoldSimulation(partial, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    expect(renderThreefoldFrame(partialSurge).toast).toContain(
+      'PASSENGERS 1/2 SAFE · 1/2 LOST'
     );
   });
 
@@ -473,6 +488,10 @@ describe('THREEFOLD legacy withdrawal rendering', () => {
     [
       { passengers: 'lost', ferry: 'lost', latchfolk: 'lost' },
       'MARA WITHDREW · PASSENGERS LOST · LATCHFOLK LOST',
+    ],
+    [
+      { passengers: 'partial', ferry: 'lost', latchfolk: 'lost' },
+      'MARA WITHDREW · PASSENGERS 1/2 SAFE · 1/2 LOST · LATCHFOLK LOST',
     ],
   ])('renders a legacy withdrawal state %p', (outcomes, expectedToast) => {
     const initial = createThreefoldSimulation(THRESHOLDS);

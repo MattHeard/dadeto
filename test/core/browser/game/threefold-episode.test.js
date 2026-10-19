@@ -37,6 +37,31 @@ describe('THREEFOLD episode save state', () => {
     });
   });
 
+  test('accepts the additive partial passenger outcome', () => {
+    expect(
+      normalizeThreefoldEpisodeState({
+        passengers: 'partial',
+        ferry: 'afloat',
+      })
+    ).toEqual({
+      passengers: 'partial',
+      ferry: 'afloat',
+      latchfolk: 'unwarned',
+    });
+  });
+
+  test.each(['aboard', 'evacuated', 'lost'])(
+    'retains a version 1 passenger outcome %s',
+    passengers => {
+      expect(
+        normalizeThreefoldEpisodeState({
+          passengers,
+          ferry: passengers === 'aboard' ? 'afloat' : 'lost',
+        }).passengers
+      ).toBe(passengers);
+    }
+  );
+
   test('retains a valid withdrawal outcome when normalizing', () => {
     expect(
       normalizeThreefoldEpisodeState({

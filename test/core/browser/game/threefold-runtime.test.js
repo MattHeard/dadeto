@@ -75,12 +75,21 @@ describe('THREEFOLD handheld runtime', () => {
     runtime.start();
 
     runtime.step(125, ['interact']);
-    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().episode.passengers).toBe('partial');
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
 
     runtime.step(125, ['interact']);
-    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().episode.passengers).toBe('partial');
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
+
+    runtime.step(125, []);
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.5);
+
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.5);
   });
 
   test('supports default lifecycle arguments and normalizes named tool commands', () => {

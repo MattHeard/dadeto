@@ -140,21 +140,19 @@ function getThreefoldToast(state, drainageState) {
   if (state.episode.closedBy === 'reported')
     return 'EPISODE CLOSED · REPORT SENT THROUGH THE SIGNAL STATION';
   if (state.episode.closedBy === 'departed') {
-    const passengers =
-      state.episode.passengers === 'evacuated' ? 'SAFE' : 'LOST';
+    const passengers = getPassengerOutcomeLabel(state.episode);
     const latchfolk = state.episode.latchfolk === 'safe' ? 'SAFE' : 'LOST';
     const communication = signalStationDestroyed
       ? 'SIGNAL STATION LOST · NO REPORT SENT'
       : 'MARA LEFT THE GATEHOUSE';
-    return `EPISODE CLOSED BY DEPARTURE · ${communication} · PASSENGERS ${passengers} · LATCHFOLK ${latchfolk}`;
+    return `EPISODE CLOSED BY DEPARTURE · ${communication} · ${passengers} · LATCHFOLK ${latchfolk}`;
   }
   if (state.crisis.elapsedMinutes === 0)
     return 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.';
   if (state.episode.withdrawn) {
-    const passengers =
-      state.episode.passengers === 'evacuated' ? 'SAFE' : 'LOST';
+    const passengers = getPassengerOutcomeLabel(state.episode);
     const latchfolk = state.episode.latchfolk === 'safe' ? 'SAFE' : 'LOST';
-    return `MARA WITHDREW · PASSENGERS ${passengers} · LATCHFOLK ${latchfolk}`;
+    return `MARA WITHDREW · ${passengers} · LATCHFOLK ${latchfolk}`;
   }
   if (state.episode.gateRepaired) {
     const message =
@@ -173,6 +171,8 @@ function getThreefoldToast(state, drainageState) {
     message = 'PASSENGERS SAFE · FERRY LOST IN THE SURGE';
   else if (state.episode.passengers === 'evacuated')
     message = 'PASSENGERS EVACUATED · FERRY STILL AT RISK';
+  else if (state.episode.passengers === 'partial')
+    message = getPassengerOutcomeLabel(state.episode);
   else if (drainageState === 'flooded')
     message =
       'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · E WARN/RESCUE · X WAIT';
@@ -191,6 +191,22 @@ function getThreefoldToast(state, drainageState) {
           : '';
   const status = latchfolkStatus ? `${message} · ${latchfolkStatus}` : message;
   return addClosurePrompt(state, status, signalStationDestroyed);
+}
+
+/**
+ * Describe the two passenger groups across ferry and surge outcomes.
+ * @param {ReturnType<import('./episode.js').createThreefoldEpisodeState>} episode Current episode outcomes.
+ * @returns {string} Passenger rescue result for the shared Mosslight frame.
+ */
+function getPassengerOutcomeLabel(episode) {
+  if (episode.passengers === 'evacuated') return 'PASSENGERS SAFE';
+  if (episode.passengers === 'partial')
+    return episode.ferry === 'lost'
+      ? 'PASSENGERS 1/2 SAFE · 1/2 LOST'
+      : 'PASSENGERS 1/2 SAFE · 1/2 STILL ABOARD';
+  return episode.passengers === 'lost'
+    ? 'PASSENGERS LOST'
+    : 'PASSENGERS STILL ABOARD';
 }
 
 /**

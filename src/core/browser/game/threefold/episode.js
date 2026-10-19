@@ -1,6 +1,6 @@
 import { heightAtScale } from './spatial.js';
 
-const PASSENGER_OUTCOMES = new Set(['aboard', 'evacuated', 'lost']);
+const PASSENGER_OUTCOMES = new Set(['aboard', 'partial', 'evacuated', 'lost']);
 const FERRY_OUTCOMES = new Set(['afloat', 'lost']);
 const LATCHFOLK_OUTCOMES = new Set(['unwarned', 'warned', 'safe', 'lost']);
 const EPISODE_CLOSURES = new Set(['reported', 'departed']);
@@ -16,26 +16,29 @@ const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
- * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, closedBy?: 'reported'|'departed'}} Initial episode state.
+ * @returns {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, closedBy?: 'reported'|'departed'}} Initial episode state.
  */
 export function createThreefoldEpisodeState() {
   return { passengers: 'aboard', ferry: 'afloat', latchfolk: 'unwarned' };
 }
 
 /**
- * Rescue passengers from the ferry when Mara reaches its mooring before surge.
+ * Rescue one passenger group from the ferry at its mooring before surge.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when rescue is unavailable.
  */
 export function attemptThreefoldPassengerRescue(state) {
   const { episode, crisis } = state;
   if (
-    episode.passengers !== 'aboard' ||
+    (episode.passengers !== 'aboard' && episode.passengers !== 'partial') ||
     crisis.elapsedMinutes >= crisis.thresholds.surgeAtMinutes ||
     !isWithinInteractionRange(state, MOORING_ID)
   )
     return episode;
-  return { ...episode, passengers: 'evacuated' };
+  return {
+    ...episode,
+    passengers: episode.passengers === 'aboard' ? 'partial' : 'evacuated',
+  };
 }
 
 /**
