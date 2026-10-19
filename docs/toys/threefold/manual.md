@@ -8,9 +8,11 @@ Before the first timed action, a dock worker warns, “The tide is climbing. Tha
 
 ## Input
 
-Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
+Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the ferry mooring and press E (or the gamepad's left shoulder button or the touch rescue button) to evacuate passengers before surge. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
 Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.
+
+The ferry mooring is marked in the world. An in-range rescue action started before surge evacuates the passengers. At surge the ferry is lost; passengers still aboard are lost too. These outcomes are saved with the run.
 
 ### Example
 
@@ -29,7 +31,7 @@ Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale at
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["up", "down", "left", "right", "a", "b", "x", "y"]
+        "enum": ["up", "down", "left", "right", "a", "b", "x", "y", "interact"]
       }
     },
     "save": { "type": "string" }

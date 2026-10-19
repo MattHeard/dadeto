@@ -57,10 +57,21 @@ const GATEHOUSE_GEOMETRY = [
   },
 ];
 
+const GATEHOUSE_INTERACTABLES = [
+  {
+    id: 'ferry-mooring-line',
+    position: { x: 6.75, y: 3.5 },
+    bounds: {
+      min: { x: 6.62, y: 3.42, z: 0 },
+      max: { x: 6.88, y: 3.58, z: 0.4 },
+    },
+  },
+];
+
 /**
  * Create the contiguous canonical scene for THREEFOLD's first gatehouse.
  * Coordinates and geometry bounds use physical metres at every scale.
- * @returns {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Authored Broken Gate scene data.
+ * @returns {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Authored Broken Gate scene data.
  */
 export function createBrokenGateScene() {
   return {
@@ -79,6 +90,19 @@ export function createBrokenGateScene() {
     baseBodyWidthMeters: 0.4,
     areas: GATEHOUSE_AREAS.map(copyArea),
     geometry: GATEHOUSE_GEOMETRY.map(copyGeometry),
+    interactables: GATEHOUSE_INTERACTABLES.map(copyInteractable),
+  };
+}
+
+/**
+ * @param {typeof GATEHOUSE_INTERACTABLES[number]} item Authored interaction point.
+ * @returns {typeof GATEHOUSE_INTERACTABLES[number]} Independent interaction point.
+ */
+function copyInteractable(item) {
+  return {
+    id: item.id,
+    position: { ...item.position },
+    bounds: { min: { ...item.bounds.min }, max: { ...item.bounds.max } },
   };
 }
 

@@ -1,4 +1,13 @@
 import { jest } from '@jest/globals';
+import { readFileSync } from 'node:fs';
+
+const THREEFOLD_HTML = readFileSync(
+  new URL(
+    '../../../../src/content/pages/threefold/index.html',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 const mockStartMosslightPage = jest.fn(() => () => {});
 
@@ -26,6 +35,13 @@ const { startThreefoldPage } = await import(
 
 describe('THREEFOLD page adapter', () => {
   beforeEach(() => mockStartMosslightPage.mockClear());
+
+  test('exposes an accessible touch interaction for the ferry rescue', () => {
+    expect(THREEFOLD_HTML).toContain('data-action="interact"');
+    expect(THREEFOLD_HTML).toContain(
+      'aria-label="Interact at the ferry mooring to rescue passengers"'
+    );
+  });
 
   test('uses the supplied storage and shared Mosslight page presenter', () => {
     const storage = {

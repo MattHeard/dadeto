@@ -3,6 +3,11 @@ import { advanceCrisisClock, createCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import { createThreefoldSimulation } from './simulation.js';
 import { createScaleState } from './spatial.js';
+import {
+  advanceThreefoldEpisode,
+  createThreefoldEpisodeState,
+  normalizeThreefoldEpisodeState,
+} from './episode.js';
 
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
@@ -60,6 +65,7 @@ export function serializeThreefoldSimulation(simulation) {
     state: {
       player: normalizeScaleState(simulation.player),
       crisis: normalizeCrisisClock(simulation.crisis),
+      episode: normalizeThreefoldEpisodeState(simulation.episode),
     },
   });
 }
@@ -77,10 +83,15 @@ export function restoreThreefoldSimulation(serialized) {
       if (envelope.sceneId !== 'broken-gate')
         throw new RangeError('Unknown scene.');
       const scene = createBrokenGateScene();
+      const crisis = normalizeCrisisClock(state.crisis);
+      const episode = normalizeThreefoldEpisodeState(
+        state.episode ?? createThreefoldEpisodeState()
+      );
       return {
         scene,
         player: normalizeScaleState(state.player),
-        crisis: normalizeCrisisClock(state.crisis),
+        crisis,
+        episode: advanceThreefoldEpisode(episode, crisis),
       };
     }
   );

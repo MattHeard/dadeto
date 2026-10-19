@@ -92,6 +92,8 @@ export function renderThreefoldFrame(state) {
     tideProgress,
     gateState: gateOutcome.gateState,
     drainageState: gateOutcome.drainageState,
+    passengers: state.episode.passengers,
+    ferry: state.episode.ferry,
   };
   return frame;
 }
@@ -126,11 +128,20 @@ function tideBar(width, fill) {
 function getThreefoldToast(state, drainageState) {
   if (state.crisis.elapsedMinutes === 0)
     return 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.';
+  if (state.episode.passengers === 'lost')
+    return 'PASSENGERS LOST WITH THE FERRY · THE SURGE HAS PASSED';
+  if (
+    state.episode.passengers === 'evacuated' &&
+    state.episode.ferry === 'lost'
+  )
+    return 'PASSENGERS SAFE · FERRY LOST IN THE SURGE';
+  if (state.episode.passengers === 'evacuated')
+    return 'PASSENGERS EVACUATED · FERRY STILL AT RISK';
   if (drainageState === 'flooded')
-    return 'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · X WAIT';
+    return 'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · E RESCUE · X WAIT';
   if (drainageState === 'at-risk')
     return 'GATE FORCED OPEN · LOWER CHANNEL AT RISK · X WAIT';
-  return `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · X WAIT`;
+  return `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · E RESCUE · X WAIT`;
 }
 
 /**
@@ -164,6 +175,7 @@ function createRenderWorld(state, heightMeters) {
       exits: [],
       palette: 'shore',
       objects: [
+        ...scene.interactables.map(({ id, bounds }) => ({ id, bounds })),
         ...(drainageState === 'flooded'
           ? [
               {
@@ -228,9 +240,11 @@ function geometrySprite(actor, camera, heightMeters) {
       fill:
         actor.id === 'drainage-floodwater'
           ? '#25a9b8'
-          : actor.id === 'relief-gate'
-            ? PALETTE[2]
-            : PALETTE[3],
+          : actor.id === 'ferry-mooring-line'
+            ? PALETTE[3]
+            : actor.id === 'relief-gate'
+              ? PALETTE[2]
+              : PALETTE[3],
     },
   ];
 }

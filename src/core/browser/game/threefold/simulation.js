@@ -1,4 +1,9 @@
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
+import {
+  advanceThreefoldEpisode,
+  attemptThreefoldPassengerRescue,
+  createThreefoldEpisodeState,
+} from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import {
   changeScale,
@@ -14,7 +19,7 @@ const ANCHOR_RECOVERY_MINUTES = 15;
  * Create a fresh deterministic simulation for the authored Broken Gate.
  * @param {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} thresholds Authored crisis-stage boundaries in game minutes.
  * @param {ReturnType<typeof createBrokenGateScene>} [scene] Canonical gatehouse scene.
- * @returns {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>}} Initial player, world, and crisis state.
+ * @returns {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>}} Initial player, world, crisis, and episode state.
  */
 export function createThreefoldSimulation(
   thresholds,
@@ -24,6 +29,7 @@ export function createThreefoldSimulation(
     scene,
     player: scene.spawn,
     crisis: createCrisisClock(thresholds),
+    episode: createThreefoldEpisodeState(),
   };
 }
 
@@ -64,6 +70,17 @@ export function stepThreefoldSimulation(state, action) {
     return applyPlayerAction(state, player, 'interaction');
   }
 
+  if (action.type === 'interact') {
+    const episode = attemptThreefoldPassengerRescue(state);
+    const actionState =
+      episode === state.episode ? state : { ...state, episode };
+    return applyTimedAction(
+      actionState,
+      state.player,
+      episode === state.episode ? 'failed-action' : 'interaction'
+    );
+  }
+
   return state;
 }
 
@@ -91,9 +108,12 @@ function advanceWait(state, action) {
     ANCHOR_RECOVERY_MINUTES,
     { inCombat: false }
   );
-  return crisis === state.crisis && player === state.player
+  const episode = advanceThreefoldEpisode(state.episode, crisis);
+  return crisis === state.crisis &&
+    player === state.player &&
+    episode === state.episode
     ? state
-    : { ...state, player, crisis };
+    : { ...state, player, crisis, episode };
 }
 
 /**
@@ -114,7 +134,12 @@ function applyTimedAction(state, player, eventType) {
     type: eventType,
     elapsedGameMinutes: ACTION_GAME_MINUTES,
   });
-  return { ...state, player: recoveredPlayer, crisis };
+  return {
+    ...state,
+    player: recoveredPlayer,
+    crisis,
+    episode: advanceThreefoldEpisode(state.episode, crisis),
+  };
 }
 
 /**

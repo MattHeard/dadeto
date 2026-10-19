@@ -13,6 +13,11 @@ const THRESHOLDS = {
   surgeAtMinutes: 0.5,
   aftermathAtMinutes: 0.75,
 };
+const RESCUE_THRESHOLDS = {
+  urgentAtMinutes: 4,
+  surgeAtMinutes: 9,
+  aftermathAtMinutes: 15,
+};
 
 describe('THREEFOLD gatehouse simulation', () => {
   test('moves in canonical space and a blocked step still advances the crisis', () => {
@@ -147,6 +152,72 @@ describe('THREEFOLD gatehouse simulation', () => {
       anchor: 3,
       recoveryProgressMinutes: 0,
     });
+  });
+
+  test('rescues passengers at the reachable mooring before surge and persists the tradeoff', () => {
+    let state = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const route = [
+      { type: 'grow' },
+      { type: 'shrink' },
+      ...Array.from({ length: 7 }, () => ({
+        type: 'move',
+        direction: 'right',
+      })),
+      { type: 'grow' },
+      ...Array.from({ length: 3 }, () => ({
+        type: 'move',
+        direction: 'right',
+      })),
+      { type: 'interact' },
+    ];
+    route.forEach(action => {
+      state = stepThreefoldSimulation(state, action);
+    });
+
+    expect(state.crisis.elapsedMinutes).toBe(3.5);
+    expect(state.episode).toEqual({ passengers: 'evacuated', ferry: 'afloat' });
+
+    const surge = stepThreefoldSimulation(state, {
+      type: 'wait',
+      elapsedGameMinutes: 5.5,
+    });
+    expect(surge.crisis.stage).toBe('surge');
+    expect(surge.episode).toEqual({ passengers: 'evacuated', ferry: 'lost' });
+  });
+
+  test('out-of-range and post-surge interactions cannot evacuate passengers', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const outOfRange = stepThreefoldSimulation(initial, { type: 'interact' });
+    expect(outOfRange.episode).toEqual({
+      passengers: 'aboard',
+      ferry: 'afloat',
+    });
+    expect(outOfRange.crisis.elapsedMinutes).toBe(0.25);
+
+    const surge = stepThreefoldSimulation(initial, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const atMooring = {
+      ...surge,
+      player: {
+        ...surge.player,
+        position: { ...surge.scene.interactables[0].position },
+      },
+    };
+    const late = stepThreefoldSimulation(atMooring, { type: 'interact' });
+
+    expect(late.episode).toEqual({ passengers: 'lost', ferry: 'lost' });
+    expect(late.crisis.stage).toBe('surge');
+  });
+
+  test('passengers still aboard are lost with the ferry at surge', () => {
+    const state = stepThreefoldSimulation(
+      createThreefoldSimulation(RESCUE_THRESHOLDS),
+      { type: 'wait', elapsedGameMinutes: 9 }
+    );
+
+    expect(state.episode).toEqual({ passengers: 'lost', ferry: 'lost' });
   });
 
   test('world actions accumulate partial Anchor recovery progress', () => {

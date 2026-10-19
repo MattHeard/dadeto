@@ -7,11 +7,13 @@
 - Dependency/service unavailable: localStorage is denied or quota-limited.
 - Non-deterministic timing or ordering: wall-clock callbacks accidentally advance crisis time, or simultaneous controls apply in different orders.
 - Environment-specific behavior: pointer capture, gamepad polling, canvas support, or browser storage differs on mobile.
+- Interaction regression: a rescue is accepted out of range, after surge, or is lost after save/import.
 
 ## Detection Signals
 
 - Error signatures/log lines: browser module import errors, an invalid-save message, or a failed storage operation.
 - Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; run returning to the opening state after reload.
+- Passenger/ferry state disagrees with the in-range rescue action or deterministic surge transition.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook
@@ -21,6 +23,7 @@
 3. Verify simulation reducers without the page, then check input adaptation and storage injection separately.
 4. Keep crisis progression on explicit game commands; pause, menu, and accessibility operations must remain inert.
 5. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
+6. For rescue failures, verify range and pre-surge eligibility independently from input mapping and save normalization.
 
 ## Promoted from Real Failures
 

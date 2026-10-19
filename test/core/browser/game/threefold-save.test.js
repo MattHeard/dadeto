@@ -181,6 +181,59 @@ describe('THREEFOLD complete-run save codec', () => {
     ).toEqual(['wall-a', 'wall-z']);
   });
 
+  test('roundtrips evacuated passengers and their later ferry loss', () => {
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
+    const atMooring = {
+      ...initial,
+      player: createScaleState(initial.scene.interactables[0].position),
+    };
+    const rescued = stepThreefoldSimulation(atMooring, { type: 'interact' });
+    const restoredRescue = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(rescued)
+    );
+    const surge = stepThreefoldSimulation(rescued, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const restoredSurge = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(surge)
+    );
+
+    expect(restoredRescue).toEqual(rescued);
+    expect(restoredRescue.episode).toEqual({
+      passengers: 'evacuated',
+      ferry: 'afloat',
+    });
+    expect(restoredSurge).toEqual(surge);
+    expect(restoredSurge.episode).toEqual({
+      passengers: 'evacuated',
+      ferry: 'lost',
+    });
+  });
+
+  test('migrates existing saves without episode state from their crisis stage', () => {
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
+    const oldSave = JSON.parse(serializeThreefoldSimulation(initial));
+    delete oldSave.state.episode;
+    expect(restoreThreefoldSimulation(JSON.stringify(oldSave))).toEqual(
+      initial
+    );
+
+    const lateSave = JSON.parse(serializeThreefoldSimulation(initial));
+    lateSave.state.crisis = {
+      ...lateSave.state.crisis,
+      elapsedMinutes: 9,
+      stage: 'surge',
+    };
+    delete lateSave.state.episode;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(lateSave)).episode
+    ).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+    });
+  });
+
   test.each([
     null,
     undefined,
@@ -223,6 +276,10 @@ describe('THREEFOLD complete-run save codec', () => {
           aftermathAtMinutes: 15,
         },
       },
+    }),
+    state => ({
+      ...state,
+      episode: { passengers: 'unknown', ferry: 'afloat' },
     }),
   ])('rejects invalid player or inconsistent crisis state', mutate => {
     const valid = JSON.parse(

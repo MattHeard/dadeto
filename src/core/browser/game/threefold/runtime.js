@@ -59,6 +59,8 @@ export function createThreefoldRuntime(options = {}) {
       state = stepThreefoldSimulation(state, { type: 'grow' });
     else if (pressed.has('b') && !previousActions.has('b'))
       state = stepThreefoldSimulation(state, { type: 'shrink' });
+    else if (pressed.has('interact') && !previousActions.has('interact'))
+      state = stepThreefoldSimulation(state, { type: 'interact' });
     else if (pressed.has('x') && !previousActions.has('x'))
       state = stepThreefoldSimulation(state, {
         type: 'wait',
@@ -162,7 +164,7 @@ function createMapStorage(env) {
 function normalizeCommand(action, command) {
   if (typeof action !== 'string') return null;
   if (DIRECTIONS.includes(action)) return { type: 'move', direction: action };
-  if (['move', 'grow', 'shrink', 'wait'].includes(action))
+  if (['move', 'grow', 'shrink', 'wait', 'interact'].includes(action))
     return action === 'move'
       ? { type: 'move', direction: command.direction }
       : action === 'wait'

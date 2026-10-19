@@ -1,7 +1,10 @@
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
-import { createThreefoldSimulation } from '../../../../src/core/browser/game/threefold/simulation.js';
+import {
+  createThreefoldSimulation,
+  stepThreefoldSimulation,
+} from '../../../../src/core/browser/game/threefold/simulation.js';
 
 const THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -173,6 +176,34 @@ describe('THREEFOLD Mosslight handheld frame', () => {
         geometryId: 'drainage-floodwater',
         fill: '#25a9b8',
       })
+    );
+  });
+
+  test('renders the ferry mooring and branch-specific rescue outcomes', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(scene.interactables[0].position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const rescued = stepThreefoldSimulation(initial, { type: 'interact' });
+    const frame = renderThreefoldFrame(rescued);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'ferry-mooring-line'
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({ geometryId: 'ferry-mooring-line' })
+    );
+    expect(frame.threefold).toMatchObject({
+      passengers: 'evacuated',
+      ferry: 'afloat',
+    });
+    expect(frame.toast).toContain('PASSENGERS EVACUATED');
+
+    const surge = stepThreefoldSimulation(rescued, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    expect(renderThreefoldFrame(surge).toast).toContain(
+      'PASSENGERS SAFE · FERRY LOST'
     );
   });
 

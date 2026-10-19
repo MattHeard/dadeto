@@ -50,11 +50,13 @@ describe('THREEFOLD handheld runtime', () => {
     runtime.dispatch({ type: 'wait', elapsedGameMinutes: 2 });
     expect(runtime.getState().crisis.elapsedMinutes).toBe(2.25);
     runtime.dispatch('grow');
+    runtime.dispatch('interact');
     runtime.dispatch('unsupported');
     expect(runtime.getState().player.scale).toBe(1);
+    expect(runtime.getState().episode.passengers).toBe('aboard');
     runtime.resume();
     runtime.step(-50, ['left']);
-    expect(runtime.getState().crisis.elapsedMinutes).toBe(2.5);
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(2.75);
   });
 
   test('supports default lifecycle arguments and normalizes named tool commands', () => {

@@ -296,6 +296,14 @@ test('keyboard edges, released keys and gamepad controls normalize consistently'
     ])
   ).toEqual(['up', 'down', 'left', 'right']);
   expect(gamepadActions([{ axes: [1, 0] }])).toEqual(['right']);
+  const rescueKey = updateInput(createInputState(), {
+    type: 'keydown',
+    key: 'E',
+  });
+  expect(actionsFromInput(rescueKey)).toEqual(['interact']);
+  expect(gamepadActions([{ buttons: [, , , , { pressed: true }] }])).toEqual([
+    'interact',
+  ]);
 });
 
 test('dialogue can move between choices, commit a bond, and close at the end', () => {

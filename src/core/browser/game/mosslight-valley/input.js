@@ -12,6 +12,7 @@ const KEYS = Object.freeze({
   b: 'b',
   x: 'x',
   y: 'y',
+  e: 'interact',
 });
 
 /**
@@ -78,5 +79,6 @@ export function gamepadActions(gamepads = []) {
   if (buttons[1]?.pressed) actions.push('b');
   if (buttons[2]?.pressed) actions.push('x');
   if (buttons[3]?.pressed) actions.push('y');
+  if (buttons[4]?.pressed) actions.push('interact');
   return actions;
 }
