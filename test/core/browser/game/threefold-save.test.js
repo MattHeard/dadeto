@@ -380,6 +380,28 @@ describe('THREEFOLD complete-run save codec', () => {
       ...state,
       episode: { ...state.episode, withdrawn: true },
     }),
+    state => ({
+      ...state,
+      episode: {
+        ...state.episode,
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        gateRepaired: true,
+      },
+    }),
+    state => ({
+      ...state,
+      player: { ...state.player, destroyedGeometryIds: ['relief-gate'] },
+      crisis: { ...state.crisis, elapsedMinutes: 9, stage: 'surge' },
+      episode: {
+        ...state.episode,
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        gateRepaired: true,
+      },
+    }),
   ])('rejects invalid player or inconsistent crisis state', mutate => {
     const valid = JSON.parse(
       serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))

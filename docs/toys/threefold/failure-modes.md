@@ -9,6 +9,7 @@
 - Environment-specific behavior: pointer capture, gamepad polling, canvas support, or browser storage differs on mobile.
 - Interaction regression: a ferry rescue or Latchfolk warning is accepted out of range, after surge, or is lost after save/import; or withdrawal succeeds from outside the road's interaction range.
 - Withdrawal regression: the storm clock does not settle to aftermath, prior rescues/warnings are erased, or new world actions remain available after departure.
+- Late-repair regression: the locking pawl repairs an intact gate, accepts a pre-surge/out-of-range/wrong-scale action, leaves repaired gate geometry as rubble, restores ferry or resident losses, or fails to drain lower water by aftermath.
 
 ## Detection Signals
 
@@ -17,6 +18,7 @@
 - Passenger/ferry state disagrees with the in-range rescue action or deterministic surge transition.
 - Latchfolk are safe without a pre-surge warning, or a warning changes ferry/passenger outcomes.
 - Mara is marked withdrawn before reaching the upland road, or can still change the world after withdrawal.
+- Gate repair is recorded without a lost ferry and forced-open gate, or any ferry/passenger/Latchfolk loss changes after repair.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook
@@ -26,7 +28,7 @@
 3. Verify simulation reducers without the page, then check input adaptation and storage injection separately.
 4. Keep crisis progression on explicit game commands; pause, menu, and accessibility operations must remain inert.
 5. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
-6. For interaction failures, verify target identity, range and pre-surge eligibility independently from input mapping and save normalization; then check that the episode outcomes resolve independently at surge or withdrawal.
+6. For interaction failures, verify target identity, range and eligibility independently from input mapping and save normalization; then check that episode outcomes resolve independently at surge, late repair, or withdrawal.
 
 ## Promoted from Real Failures
 

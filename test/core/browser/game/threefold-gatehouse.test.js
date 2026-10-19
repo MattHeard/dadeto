@@ -44,6 +44,7 @@ describe('THREEFOLD Broken Gate scene', () => {
       'ferry-mooring-line',
       'latchfolk-watchkeeper',
       'upland-road-exit',
+      'relief-gate-locking-pawl',
     ]);
     expect(scene.interactables[1].position).toEqual({ x: 7.25, y: 7.25 });
     expect(scene.interactables[2].position).toEqual({ x: 0.5, y: 2 });

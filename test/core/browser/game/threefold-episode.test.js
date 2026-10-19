@@ -53,6 +53,22 @@ describe('THREEFOLD episode save state', () => {
     });
   });
 
+  test('retains a valid post-loss gate repair when normalizing', () => {
+    expect(
+      normalizeThreefoldEpisodeState({
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        gateRepaired: true,
+      })
+    ).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+      gateRepaired: true,
+    });
+  });
+
   test.each([null, 'unknown'])(
     'rejects invalid Latchfolk outcome %p',
     latchfolk => {
@@ -74,6 +90,19 @@ describe('THREEFOLD episode save state', () => {
           passengers: 'aboard',
           ferry: 'afloat',
           withdrawn,
+        })
+      ).toThrow('Episode outcome state is invalid.');
+    }
+  );
+
+  test.each([null, 'yes', 1])(
+    'rejects invalid repaired-gate outcome %p',
+    gateRepaired => {
+      expect(() =>
+        normalizeThreefoldEpisodeState({
+          passengers: 'lost',
+          ferry: 'lost',
+          gateRepaired,
         })
       ).toThrow('Episode outcome state is invalid.');
     }

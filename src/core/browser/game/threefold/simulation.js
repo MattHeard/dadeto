@@ -1,10 +1,12 @@
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import {
   advanceThreefoldEpisode,
+  attemptThreefoldGateRepair,
   attemptThreefoldLatchfolkWarning,
   attemptThreefoldPassengerRescue,
   attemptThreefoldWithdrawal,
   createThreefoldEpisodeState,
+  THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
 } from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import {
@@ -78,11 +80,18 @@ export function stepThreefoldSimulation(state, action) {
     if (episode === state.episode)
       episode = attemptThreefoldLatchfolkWarning(state);
     if (episode === state.episode) episode = attemptThreefoldWithdrawal(state);
+    let player = state.player;
+    if (episode === state.episode) {
+      episode = attemptThreefoldGateRepair(state);
+      if (episode !== state.episode) player = restoreGateGeometry(state.player);
+    }
     const actionState =
-      episode === state.episode ? state : { ...state, episode };
+      episode === state.episode && player === state.player
+        ? state
+        : { ...state, player, episode };
     const timedState = applyTimedAction(
       actionState,
-      state.player,
+      player,
       episode === state.episode ? 'failed-action' : 'interaction'
     );
     return episode.withdrawn === true
@@ -91,6 +100,20 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   return state;
+}
+
+/**
+ * Restore the gate and counterweight after their locking pawl is repaired.
+ * @param {ReturnType<import('./spatial.js').createScaleState>} player Current scale state.
+ * @returns {ReturnType<import('./spatial.js').createScaleState>} Scale state with repaired gate geometry restored.
+ */
+function restoreGateGeometry(player) {
+  return {
+    ...player,
+    destroyedGeometryIds: player.destroyedGeometryIds.filter(
+      id => !THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.includes(id)
+    ),
+  };
 }
 
 /**

@@ -3,13 +3,18 @@ import { heightAtScale } from './spatial.js';
 const PASSENGER_OUTCOMES = new Set(['aboard', 'evacuated', 'lost']);
 const FERRY_OUTCOMES = new Set(['afloat', 'lost']);
 const LATCHFOLK_OUTCOMES = new Set(['unwarned', 'warned', 'safe', 'lost']);
+export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
+  'gate-counterweight',
+  'relief-gate',
+];
 const MOORING_ID = 'ferry-mooring-line';
 const LATCHFOLK_ID = 'latchfolk-watchkeeper';
 const UPLAND_ROAD_ID = 'upland-road-exit';
+const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
- * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true}} Initial episode state.
+ * @returns {{passengers: 'aboard'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true}} Initial episode state.
  */
 export function createThreefoldEpisodeState() {
   return { passengers: 'aboard', ferry: 'afloat', latchfolk: 'unwarned' };
@@ -59,6 +64,25 @@ export function attemptThreefoldWithdrawal(state) {
 }
 
 /**
+ * Repair the forced-open relief gate after the ferry is lost by freeing its locking pawl.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Repaired episode state or the original value when repair is unavailable.
+ */
+export function attemptThreefoldGateRepair(state) {
+  const { episode, crisis } = state;
+  if (episode.gateRepaired === true) return episode;
+  if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath') return episode;
+  if (episode.ferry !== 'lost') return episode;
+  if (state.player.scale !== -2) return episode;
+  const gateWasForcedOpen = THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
+    state.player.destroyedGeometryIds.includes(id)
+  );
+  if (!gateWasForcedOpen) return episode;
+  if (!isWithinInteractionRange(state, GATE_REPAIR_ID)) return episode;
+  return { ...episode, gateRepaired: true };
+}
+
+/**
  * Resolve ferry and settlement outcomes while retaining successful warnings.
  * @param {ReturnType<typeof createThreefoldEpisodeState>} episode Current episode outcomes.
  * @param {ReturnType<import('./crisis.js').createCrisisClock>} crisis Current deterministic crisis clock.
@@ -95,6 +119,8 @@ export function normalizeThreefoldEpisodeState(candidate) {
   const latchfolk =
     state.latchfolk === undefined ? 'unwarned' : state.latchfolk;
   const withdrawn = state.withdrawn === undefined ? false : state.withdrawn;
+  const gateRepaired =
+    state.gateRepaired === undefined ? false : state.gateRepaired;
   if (
     typeof state.passengers !== 'string' ||
     !PASSENGER_OUTCOMES.has(state.passengers) ||
@@ -102,7 +128,8 @@ export function normalizeThreefoldEpisodeState(candidate) {
     !FERRY_OUTCOMES.has(state.ferry) ||
     typeof latchfolk !== 'string' ||
     !LATCHFOLK_OUTCOMES.has(latchfolk) ||
-    typeof withdrawn !== 'boolean'
+    typeof withdrawn !== 'boolean' ||
+    typeof gateRepaired !== 'boolean'
   )
     throw new RangeError('Episode outcome state is invalid.');
   return /** @type {ReturnType<typeof createThreefoldEpisodeState>} */ ({
@@ -110,6 +137,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
     ferry: state.ferry,
     latchfolk,
     ...(withdrawn ? { withdrawn: true } : {}),
+    ...(gateRepaired ? { gateRepaired: true } : {}),
   });
 }
 

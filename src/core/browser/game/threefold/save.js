@@ -7,6 +7,7 @@ import {
   advanceThreefoldEpisode,
   createThreefoldEpisodeState,
   normalizeThreefoldEpisodeState,
+  THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
 } from './episode.js';
 
 const GAME_ID = 'threefold';
@@ -87,11 +88,22 @@ export function restoreThreefoldSimulation(serialized) {
       const episode = normalizeThreefoldEpisodeState(
         state.episode ?? createThreefoldEpisodeState()
       );
+      const player = normalizeScaleState(state.player);
       if (episode.withdrawn === true && crisis.stage !== 'aftermath')
         throw new RangeError('A withdrawn episode must be settled.');
+      if (episode.gateRepaired === true) {
+        if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath')
+          throw new RangeError('A repaired gate must follow the surge.');
+        if (
+          THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
+            player.destroyedGeometryIds.includes(id)
+          )
+        )
+          throw new RangeError('A repaired gate cannot remain damaged.');
+      }
       return {
         scene,
-        player: normalizeScaleState(state.player),
+        player,
         crisis,
         episode: advanceThreefoldEpisode(episode, crisis),
       };

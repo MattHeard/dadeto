@@ -199,6 +199,53 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
   });
 
+  test('shows the repaired gate and receding lower water after ferry loss', () => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const repaired = {
+      ...initial,
+      player: {
+        ...initial.player,
+        scale: -2,
+        destroyedGeometryIds: ['gatehouse-west-wall'],
+      },
+      crisis: { ...initial.crisis, elapsedMinutes: 9, stage: 'surge' },
+      episode: {
+        ...initial.episode,
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        gateRepaired: true,
+      },
+    };
+    const flooded = renderThreefoldFrame(repaired);
+
+    expect(flooded.threefold).toMatchObject({
+      gateState: 'repaired',
+      drainageState: 'flooded',
+      gateRepaired: true,
+    });
+    expect(flooded.toast).toContain('LOWER CHANNEL STILL FLOODED');
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'relief-gate'
+    );
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'relief-gate-locking-pawl'
+    );
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'drainage-floodwater'
+    );
+
+    const aftermath = renderThreefoldFrame({
+      ...repaired,
+      crisis: { ...repaired.crisis, elapsedMinutes: 15, stage: 'aftermath' },
+    });
+    expect(aftermath.threefold.drainageState).toBe('receded');
+    expect(aftermath.toast).toContain('LOWER WATER RECEDED');
+    expect(aftermath.world.map.objects.map(object => object.id)).not.toContain(
+      'drainage-floodwater'
+    );
+  });
+
   test('renders the ferry mooring and branch-specific rescue outcomes', () => {
     const scene = createBrokenGateScene();
     scene.spawn = createScaleState(scene.interactables[0].position);

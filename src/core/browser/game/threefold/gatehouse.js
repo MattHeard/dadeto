@@ -82,6 +82,14 @@ const GATEHOUSE_INTERACTABLES = [
       max: { x: 0.75, y: 2.25, z: 0.2 },
     },
   },
+  {
+    id: 'relief-gate-locking-pawl',
+    position: { x: 4.6, y: 3 },
+    bounds: {
+      min: { x: 4.55, y: 2.95, z: 0 },
+      max: { x: 4.65, y: 3.05, z: 0.15 },
+    },
+  },
 ];
 
 /**

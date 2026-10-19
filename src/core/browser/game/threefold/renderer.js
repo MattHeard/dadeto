@@ -96,6 +96,7 @@ export function renderThreefoldFrame(state) {
     ferry: state.episode.ferry,
     latchfolk: state.episode.latchfolk,
     withdrawn: state.episode.withdrawn === true,
+    gateRepaired: state.episode.gateRepaired === true,
   };
   return frame;
 }
@@ -124,7 +125,7 @@ function tideBar(width, fill) {
 /**
  * Describe the authored warning or the consequence of forcing the relief gate.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
- * @param {'dry'|'at-risk'|'flooded'} drainageState Derived lower-channel outcome.
+ * @param {'dry'|'at-risk'|'flooded'|'receded'} drainageState Derived lower-channel outcome.
  * @returns {string} Compact player-facing status.
  */
 function getThreefoldToast(state, drainageState) {
@@ -135,6 +136,11 @@ function getThreefoldToast(state, drainageState) {
       state.episode.passengers === 'evacuated' ? 'SAFE' : 'LOST';
     const latchfolk = state.episode.latchfolk === 'safe' ? 'SAFE' : 'LOST';
     return `MARA WITHDREW · PASSENGERS ${passengers} · LATCHFOLK ${latchfolk}`;
+  }
+  if (state.episode.gateRepaired) {
+    return drainageState === 'receded'
+      ? 'GATE REPAIRED AFTER FERRY LOSS · LOWER WATER RECEDED'
+      : 'GATE REPAIRED AFTER FERRY LOSS · LOWER CHANNEL STILL FLOODED';
   }
   let message;
   if (state.episode.passengers === 'lost')
