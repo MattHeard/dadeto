@@ -12,6 +12,26 @@ const THRESHOLDS = {
   aftermathAtMinutes: 15,
 };
 
+/**
+ *
+ * @param episode
+ */
+/**
+ * Create a settled withdrawal with optional prior episode outcomes.
+ * @param {{passengers?: 'aboard'|'evacuated'|'lost', ferry?: 'afloat'|'lost', latchfolk?: 'unwarned'|'warned'|'safe'|'lost'}} [episode] Prior outcomes to preserve.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Withdrawn simulation.
+ */
+function createWithdrawnSimulation(episode = {}) {
+  const scene = createBrokenGateScene();
+  const road = scene.interactables.find(item => item.id === 'upland-road-exit');
+  scene.spawn = createScaleState(road.position);
+  const initial = createThreefoldSimulation(THRESHOLDS, scene);
+  return stepThreefoldSimulation(
+    { ...initial, episode: { ...initial.episode, ...episode } },
+    { type: 'interact' }
+  );
+}
+
 describe('THREEFOLD Mosslight handheld frame', () => {
   test('uses the shared pixelated 160x144 frame and exposes current status', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
@@ -239,13 +259,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
   });
 
   test('renders the upland road and persistent withdrawal outcome', () => {
-    const scene = createBrokenGateScene();
-    const road = scene.interactables.find(
-      item => item.id === 'upland-road-exit'
-    );
-    scene.spawn = createScaleState(road.position);
-    const initial = createThreefoldSimulation(THRESHOLDS, scene);
-    const withdrawn = stepThreefoldSimulation(initial, { type: 'interact' });
+    const withdrawn = createWithdrawnSimulation();
     const frame = renderThreefoldFrame(withdrawn);
 
     expect(frame.world.map.objects.map(object => object.id)).toContain(
@@ -267,6 +281,18 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.toast).toContain('MARA WITHDREW');
     expect(frame.toast).toContain('PASSENGERS LOST');
     expect(frame.toast).toContain('LATCHFOLK LOST');
+  });
+
+  test('renders rescued passengers and warned Latchfolk as safe after withdrawal', () => {
+    const withdrawn = createWithdrawnSimulation({
+      passengers: 'evacuated',
+      latchfolk: 'warned',
+    });
+    const frame = renderThreefoldFrame(withdrawn);
+
+    expect(frame.toast).toBe(
+      'MARA WITHDREW · PASSENGERS SAFE · LATCHFOLK SAFE'
+    );
   });
 
   test.each([
