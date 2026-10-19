@@ -490,6 +490,10 @@ describe('THREEFOLD legacy withdrawal rendering', () => {
       'MARA WITHDREW · PASSENGERS LOST · LATCHFOLK LOST',
     ],
     [
+      { passengers: 'aboard', ferry: 'afloat', latchfolk: 'lost' },
+      'MARA WITHDREW · PASSENGERS STILL ABOARD · LATCHFOLK LOST',
+    ],
+    [
       { passengers: 'partial', ferry: 'lost', latchfolk: 'lost' },
       'MARA WITHDREW · PASSENGERS 1/2 SAFE · 1/2 LOST · LATCHFOLK LOST',
     ],
