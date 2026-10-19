@@ -56,6 +56,14 @@ The loop is still bounded in scope, but required acceptance checks are allowed t
 
 When the acceptance evidence is satisfied and the bead no longer needs follow-up, the runner should close the bead instead of leaving it open in `in_progress`. If the work should continue, create or requeue a separate bead for the follow-up.
 
+Before closing a meaningful completed toy or feature bead, use the reuse-event
+prompt in `docs/loop/agent-reuse-notes.md`: identify existing modules that
+actually supplied capabilities, concrete reuse attempts that were rejected,
+friction categories, and new modules. Record only source-backed evidence;
+empty lists are valid, and use an unknown estimate instead of inventing a
+fraction. This record is for meaningful toy/feature completions, not every
+commit.
+
 ## Default Heuristics
 
 When the user gives only a bead reference, use these defaults unless the bead clearly requires something else:
