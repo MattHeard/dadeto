@@ -16,6 +16,7 @@ import {
   growThroughGeometry,
   moveAtScale,
   previewGrowthDamageIds,
+  previewGrowthOverlapIds,
   recoverAnchor,
 } from './spatial.js';
 
@@ -69,7 +70,11 @@ export function previewThreefoldGrowthEffects(state) {
     watchkeeper &&
     (state.episode.latchfolk === 'unwarned' ||
       state.episode.latchfolk === 'warned')
-      ? previewGrowthDamageIds(player, [watchkeeper], scene.baseBodyWidthMeters)
+      ? previewGrowthOverlapIds(
+          player,
+          [watchkeeper],
+          scene.baseBodyWidthMeters
+        )
       : [];
   return { geometryIds, occupantIds };
 }

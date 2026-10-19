@@ -109,16 +109,44 @@ export function growThroughGeometry(state, geometry, baseBodyWidthMeters) {
  * @returns {string[]} Sorted identifiers of intact geometry newly intersected by growth.
  */
 export function previewGrowthDamageIds(state, geometry, baseBodyWidthMeters) {
+  return previewGrowthIds(
+    state,
+    geometry,
+    baseBodyWidthMeters,
+    isNewGrowthIntersection
+  );
+}
+
+/**
+ * Preview volumes overlapped by the next growth body, including volumes the
+ * current smaller body already occupies. This is used for living occupants:
+ * growing while inside an occupant is lethal even without a new intersection.
+ * @param {ReturnType<typeof createScaleState>} state Current state.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} volumes Canonical occupant volumes.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @returns {string[]} Sorted identifiers overlapped by the next growth body.
+ */
+export function previewGrowthOverlapIds(state, volumes, baseBodyWidthMeters) {
+  return previewGrowthIds(state, volumes, baseBodyWidthMeters, isGrowthOverlap);
+}
+
+/**
+ * Validate inputs, compute the next scale, and collect matching volume IDs.
+ * @param {ReturnType<typeof createScaleState>} state Current state.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} volumes Candidate physical volumes.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @param {(current: ReturnType<typeof createScaleState>, next: ReturnType<typeof createScaleState>, object: {id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}, baseBodyWidthMeters: number) => boolean} isImpact Volume impact rule.
+ * @returns {string[]} Sorted matching identifiers.
+ */
+function previewGrowthIds(state, volumes, baseBodyWidthMeters, isImpact) {
   assertScaleState(state);
   assertBodyWidth(baseBodyWidthMeters);
-  const objects = validateGeometry(geometry);
+  const objects = validateGeometry(volumes);
   const next = changeScale(state, 1);
   if (next === state) return [];
   return normalizeGeometryIds(
     objects
-      .filter(object =>
-        isNewGrowthIntersection(state, next, object, baseBodyWidthMeters)
-      )
+      .filter(object => isImpact(state, next, object, baseBodyWidthMeters))
       .map(object => object.id)
   );
 }
@@ -375,6 +403,17 @@ function isNewGrowthIntersection(current, next, object, baseBodyWidthMeters) {
   const oldBody = bodyBoundsAtScale(current, baseBodyWidthMeters);
   const newBody = bodyBoundsAtScale(next, baseBodyWidthMeters);
   return overlaps(newBody, object.bounds) && !overlaps(oldBody, object.bounds);
+}
+
+/**
+ * @param {ReturnType<typeof createScaleState>} _current Current smaller body state.
+ * @param {ReturnType<typeof createScaleState>} next Proposed grown body state.
+ * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} object Candidate living volume.
+ * @param {number} baseBodyWidthMeters Body width at scale zero.
+ * @returns {boolean} Whether the proposed grown body overlaps the volume.
+ */
+function isGrowthOverlap(_current, next, object, baseBodyWidthMeters) {
+  return overlaps(bodyBoundsAtScale(next, baseBodyWidthMeters), object.bounds);
 }
 
 /**

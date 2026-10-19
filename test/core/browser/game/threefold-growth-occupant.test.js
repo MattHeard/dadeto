@@ -23,15 +23,17 @@ const THRESHOLDS = {
  * Create a game state next to the authored watchkeeper.
  * @param {{x: number, y: number}} [position] Mara position in canonical metres.
  * @param {'unwarned'|'warned'|'safe'|'lost'} [latchfolk] Watchkeeper outcome.
+ * @param {number} [scale] Mara scale rung.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
  */
 function createWatchkeeperGrowthState(
   position = { x: 6.7, y: 7.25 },
-  latchfolk = 'unwarned'
+  latchfolk = 'unwarned',
+  scale = 0
 ) {
   const scene = createBrokenGateScene();
   scene.spawn = createScaleState(position, {
-    scale: 0,
+    scale,
     anchor: 8,
     maximumAnchor: 8,
     minimumUnlockedScale: -2,
@@ -69,6 +71,38 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     expect(previewThreefoldGrowthEffects(grown).occupantIds).toEqual([]);
   });
 
+  test('kills the watchkeeper when Mara grows after entering their bounds at scale -2', () => {
+    const outside = createWatchkeeperGrowthState(
+      { x: 7.025, y: 7.25 },
+      'unwarned',
+      -2
+    );
+    const inside = Array.from({ length: 10 }).reduce(
+      state =>
+        stepThreefoldSimulation(state, { type: 'move', direction: 'right' }),
+      outside
+    );
+
+    expect(inside.player.scale).toBe(-2);
+    expect(inside.player.position.x).toBeGreaterThan(7.08);
+    expect(inside.player.position.x).toBeLessThan(7.42);
+    expect(previewThreefoldGrowthEffects(inside).occupantIds).toEqual([
+      THREEFOLD_LATCHFOLK_INTERACTABLE_ID,
+    ]);
+    expect(renderThreefoldFrame(inside).shapes).toContainEqual(
+      expect.objectContaining({ type: 'text', text: 'A KILLS LATCHFOLK' })
+    );
+
+    const grown = stepThreefoldSimulation(inside, { type: 'grow' });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+
+    expect(grown.player.scale).toBe(-1);
+    expect(grown.episode.latchfolk).toBe('lost');
+    expect(restored.episode.latchfolk).toBe('lost');
+  });
+
   test.each([
     [
       'outside the next growth volume',
@@ -77,6 +111,16 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     ['already evacuated', createWatchkeeperGrowthState(undefined, 'safe')],
     ['already lost', createWatchkeeperGrowthState(undefined, 'lost')],
   ])('does not preview a watchkeeper %s', (_condition, state) => {
+    expect(previewThreefoldGrowthEffects(state).occupantIds).toEqual([]);
+  });
+
+  test('does not preview a living occupant when the next growth rung is locked', () => {
+    const state = createWatchkeeperGrowthState(
+      { x: 7.25, y: 7.25 },
+      'unwarned',
+      1
+    );
+
     expect(previewThreefoldGrowthEffects(state).occupantIds).toEqual([]);
   });
 

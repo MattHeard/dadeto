@@ -346,7 +346,8 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         geometryId: 'latchfolk-watchkeeper',
-        fill: '#b6d8dc',
+        fill: '#e16b5a',
+        growthPreview: true,
       })
     );
     expect(frame.threefold.latchfolk).toBe('warned');
