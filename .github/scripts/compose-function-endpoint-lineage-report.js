@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -40,6 +41,10 @@ export function composeFunctionEndpointLineageReport({
     gcpArtifact.gcpProd,
     'GCP production evidence must be an object.'
   );
+  const gcpRegistry = requireRecord(
+    gcpArtifact.registryObject,
+    'GCP registry object evidence must be an object.'
+  );
   const gcpRun = requireMatchingWorkflowRun(
     gcpWorkflowRun,
     gcpProduction,
@@ -62,6 +67,8 @@ export function composeFunctionEndpointLineageReport({
     netlifyArtifact.registryObject,
     'Netlify registry observation must be an object.'
   );
+  requireRegistryDigest(gcpRegistry, 'GCP');
+  const netlifyRegistrySha256 = requireRegistryDigest(netlifyRegistry, 'Netlify');
 
   const lineage = {
     schemaVersion: 1,
@@ -69,7 +76,7 @@ export function composeFunctionEndpointLineageReport({
       ...gcpProduction,
       conclusion: gcpRun.conclusion,
     },
-    registryObject: gcpArtifact.registryObject,
+    registryObject: gcpRegistry,
     netlify: {
       buildRunId: netlifyRun.runId,
       deploymentId: netlifyDeployment.deploymentId,
@@ -80,7 +87,7 @@ export function composeFunctionEndpointLineageReport({
       registryUrl: netlifyRegistry.url,
       registryGeneration: netlifyRegistry.generation,
       registryEtag: netlifyRegistry.etag,
-      registrySha256: netlifyRegistry.sha256,
+      registrySha256: netlifyRegistrySha256,
     },
   };
 
@@ -280,6 +287,30 @@ function requireEnvironmentValue(value, name) {
     throw new Error(`Missing required workflow environment value: ${name}.`);
   }
   return value;
+}
+
+/**
+ * Verify that a captured registry digest identifies its exact body.
+ * @param {Record<string, unknown>} registry Registry artifact section.
+ * @param {string} label Artifact label for static diagnostics.
+ * @returns {string} Validated SHA-256 digest.
+ */
+function requireRegistryDigest(registry, label) {
+  const body = registry.body;
+  const digest = registry.sha256;
+  if (typeof body !== 'string' || body.trim() === '') {
+    throw new Error(`${label} registry body must be a non-empty string.`);
+  }
+  if (typeof digest !== 'string' || !/^[a-f0-9]{64}$/i.test(digest)) {
+    throw new Error(`${label} registry digest must be 64 hex characters.`);
+  }
+  const actualDigest = createHash('sha256').update(body, 'utf8').digest('hex');
+  if (digest.toLowerCase() !== actualDigest) {
+    throw new Error(
+      `${label} registry digest does not match its captured body.`
+    );
+  }
+  return actualDigest;
 }
 
 if (

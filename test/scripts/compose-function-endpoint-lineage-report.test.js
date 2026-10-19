@@ -233,12 +233,38 @@ describe('composeFunctionEndpointLineageReport', () => {
     {
       label: 'different Netlify registry digest',
       key: 'netlifyObservationJson',
-      path: ['registryObject', 'sha256'],
-      value: '0'.repeat(64),
+      path: ['registryObject', 'body'],
+      value: JSON.stringify({
+        schemaVersion: 1,
+        environment: 'prod',
+        functions: {
+          objectMinuteRentalSearch: 'https://other.example.run.app',
+          getAuthorUuidV2: 'https://get-author-uuid.example.run.app',
+        },
+      }),
       error: 'Netlify build consumed a different registry object.',
     },
+    {
+      label: 'GCP body and digest mismatch',
+      key: 'gcpArtifactJson',
+      path: ['registryObject', 'sha256'],
+      value: '0'.repeat(64),
+      error: 'GCP registry digest does not match its captured body.',
+    },
+    {
+      label: 'Netlify body and digest mismatch',
+      key: 'netlifyObservationJson',
+      path: ['registryObject', 'sha256'],
+      value: '0'.repeat(64),
+      error: 'Netlify registry digest does not match its captured body.',
+    },
   ])('rejects $label', ({ key, path, value, error }) => {
-    const input = updateJsonInput(makeInputs(), key, path, value);
+    let input = updateJsonInput(makeInputs(), key, path, value);
+    if (path.at(-1) === 'body') {
+      const body = value;
+      const digest = createHash('sha256').update(body, 'utf8').digest('hex');
+      input = updateJsonInput(input, key, ['registryObject', 'sha256'], digest);
+    }
     expect(() => composeFunctionEndpointLineageReport(input)).toThrow(error);
   });
 
