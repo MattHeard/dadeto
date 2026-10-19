@@ -36,10 +36,10 @@ const { startThreefoldPage } = await import(
 describe('THREEFOLD page adapter', () => {
   beforeEach(() => mockStartMosslightPage.mockClear());
 
-  test('exposes an accessible touch interaction for the ferry rescue', () => {
+  test('exposes an accessible touch interaction for the warning and rescue', () => {
     expect(THREEFOLD_HTML).toContain('data-action="interact"');
     expect(THREEFOLD_HTML).toContain(
-      'aria-label="Interact at the ferry mooring to rescue passengers"'
+      'aria-label="Warn the Latchfolk or rescue passengers at the ferry"'
     );
   });
 

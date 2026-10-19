@@ -207,6 +207,37 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
   });
 
+  test('renders the Latchfolk warning target and branch outcome', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    scene.spawn = createScaleState(watchkeeper.position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const warned = stepThreefoldSimulation(initial, { type: 'interact' });
+    const frame = renderThreefoldFrame(warned);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'latchfolk-watchkeeper'
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'latchfolk-watchkeeper',
+        fill: '#b6d8dc',
+      })
+    );
+    expect(frame.threefold.latchfolk).toBe('warned');
+    expect(frame.toast).toContain('LATCHFOLK WARNED');
+
+    const surge = stepThreefoldSimulation(warned, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const outcome = renderThreefoldFrame(surge);
+    expect(outcome.threefold.latchfolk).toBe('safe');
+    expect(outcome.toast).toContain('LATCHFOLK SAFE');
+  });
+
   test.each([
     [4, 'urgent', 7, '#e9d88d'],
     [15, 'aftermath', 26, '#e16b5a'],

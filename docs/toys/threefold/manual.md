@@ -8,11 +8,11 @@ Before the first timed action, a dock worker warns, “The tide is climbing. Tha
 
 ## Input
 
-Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the ferry mooring and press E (or the gamepad's left shoulder button or the touch rescue button) to evacuate passengers before surge. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
+Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. Reach the Latchfolk watchkeeper and press E (or the gamepad's left shoulder button or the touch warning/rescue button) to warn the settlement; reach the ferry mooring to evacuate passengers. Both actions must begin before surge. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
 Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.
 
-The ferry mooring is marked in the world. An in-range rescue action started before surge evacuates the passengers. At surge the ferry is lost; passengers still aboard are lost too. These outcomes are saved with the run.
+The ferry mooring and Latchfolk watchkeeper are marked in the world. An in-range rescue action before surge evacuates the ferry passengers. Warning the watchkeeper sends the settlement toward higher ground. At surge the ferry is lost; passengers still aboard and unwarned Latchfolk are lost, while evacuated passengers and warned Latchfolk remain safe. The outcomes are independent and saved with the run.
 
 ### Example
 
@@ -41,7 +41,7 @@ The ferry mooring is marked in the world. An in-range rescue action started befo
 
 ## Output
 
-The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and crisis stage information. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale.
+The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, crisis stage, and passenger, ferry, and Latchfolk outcomes. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale.
 
 ### Example
 

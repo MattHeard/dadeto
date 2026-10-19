@@ -203,11 +203,46 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(restoredRescue.episode).toEqual({
       passengers: 'evacuated',
       ferry: 'afloat',
+      latchfolk: 'unwarned',
     });
     expect(restoredSurge).toEqual(surge);
     expect(restoredSurge.episode).toEqual({
       passengers: 'evacuated',
       ferry: 'lost',
+      latchfolk: 'lost',
+    });
+  });
+
+  test('roundtrips the Latchfolk warning and their safe surge outcome', () => {
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS);
+    const watchkeeper = initial.scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    const atWatchkeeper = {
+      ...initial,
+      player: createScaleState(watchkeeper.position),
+    };
+    const warned = stepThreefoldSimulation(atWatchkeeper, {
+      type: 'interact',
+    });
+    const restoredWarning = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(warned)
+    );
+    const surge = stepThreefoldSimulation(warned, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const restoredSurge = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(surge)
+    );
+
+    expect(restoredWarning).toEqual(warned);
+    expect(restoredWarning.episode.latchfolk).toBe('warned');
+    expect(restoredSurge).toEqual(surge);
+    expect(restoredSurge.episode).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'safe',
     });
   });
 
@@ -231,6 +266,36 @@ describe('THREEFOLD complete-run save codec', () => {
     ).toEqual({
       passengers: 'lost',
       ferry: 'lost',
+      latchfolk: 'lost',
+    });
+
+    const priorEpisodeSave = JSON.parse(serializeThreefoldSimulation(initial));
+    priorEpisodeSave.state.episode = {
+      passengers: 'aboard',
+      ferry: 'afloat',
+    };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(priorEpisodeSave)).episode
+    ).toEqual(initial.episode);
+
+    const latePriorEpisodeSave = JSON.parse(
+      serializeThreefoldSimulation(initial)
+    );
+    latePriorEpisodeSave.state.crisis = {
+      ...latePriorEpisodeSave.state.crisis,
+      elapsedMinutes: 9,
+      stage: 'surge',
+    };
+    latePriorEpisodeSave.state.episode = {
+      passengers: 'aboard',
+      ferry: 'afloat',
+    };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(latePriorEpisodeSave)).episode
+    ).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
     });
   });
 
@@ -280,6 +345,14 @@ describe('THREEFOLD complete-run save codec', () => {
     state => ({
       ...state,
       episode: { passengers: 'unknown', ferry: 'afloat' },
+    }),
+    state => ({
+      ...state,
+      episode: {
+        passengers: 'aboard',
+        ferry: 'afloat',
+        latchfolk: 'unknown',
+      },
     }),
   ])('rejects invalid player or inconsistent crisis state', mutate => {
     const valid = JSON.parse(

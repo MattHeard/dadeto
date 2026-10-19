@@ -1,6 +1,7 @@
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import {
   advanceThreefoldEpisode,
+  attemptThreefoldLatchfolkWarning,
   attemptThreefoldPassengerRescue,
   createThreefoldEpisodeState,
 } from './episode.js';
@@ -71,7 +72,11 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   if (action.type === 'interact') {
-    const episode = attemptThreefoldPassengerRescue(state);
+    const rescue = attemptThreefoldPassengerRescue(state);
+    const episode =
+      rescue === state.episode
+        ? attemptThreefoldLatchfolkWarning(state)
+        : rescue;
     const actionState =
       episode === state.episode ? state : { ...state, episode };
     return applyTimedAction(

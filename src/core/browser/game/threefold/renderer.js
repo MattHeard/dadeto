@@ -94,6 +94,7 @@ export function renderThreefoldFrame(state) {
     drainageState: gateOutcome.drainageState,
     passengers: state.episode.passengers,
     ferry: state.episode.ferry,
+    latchfolk: state.episode.latchfolk,
   };
   return frame;
 }
@@ -128,20 +129,33 @@ function tideBar(width, fill) {
 function getThreefoldToast(state, drainageState) {
   if (state.crisis.elapsedMinutes === 0)
     return 'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.';
+  let message;
   if (state.episode.passengers === 'lost')
-    return 'PASSENGERS LOST WITH THE FERRY · THE SURGE HAS PASSED';
-  if (
+    message = 'PASSENGERS LOST WITH THE FERRY · THE SURGE HAS PASSED';
+  else if (
     state.episode.passengers === 'evacuated' &&
     state.episode.ferry === 'lost'
   )
-    return 'PASSENGERS SAFE · FERRY LOST IN THE SURGE';
-  if (state.episode.passengers === 'evacuated')
-    return 'PASSENGERS EVACUATED · FERRY STILL AT RISK';
-  if (drainageState === 'flooded')
-    return 'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · E RESCUE · X WAIT';
-  if (drainageState === 'at-risk')
-    return 'GATE FORCED OPEN · LOWER CHANNEL AT RISK · X WAIT';
-  return `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · E RESCUE · X WAIT`;
+    message = 'PASSENGERS SAFE · FERRY LOST IN THE SURGE';
+  else if (state.episode.passengers === 'evacuated')
+    message = 'PASSENGERS EVACUATED · FERRY STILL AT RISK';
+  else if (drainageState === 'flooded')
+    message =
+      'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · E WARN/RESCUE · X WAIT';
+  else if (drainageState === 'at-risk')
+    message = 'GATE FORCED OPEN · LOWER CHANNEL AT RISK · X WAIT';
+  else
+    message = `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · E WARN/RESCUE · X WAIT`;
+
+  const latchfolkStatus =
+    state.episode.latchfolk === 'warned'
+      ? 'LATCHFOLK WARNED · HEADING TO HIGHER GROUND'
+      : state.episode.latchfolk === 'safe'
+        ? 'LATCHFOLK SAFE'
+        : state.episode.latchfolk === 'lost'
+          ? 'LATCHFOLK LOST'
+          : '';
+  return latchfolkStatus ? `${message} · ${latchfolkStatus}` : message;
 }
 
 /**
@@ -242,9 +256,11 @@ function geometrySprite(actor, camera, heightMeters) {
           ? '#25a9b8'
           : actor.id === 'ferry-mooring-line'
             ? PALETTE[3]
-            : actor.id === 'relief-gate'
-              ? PALETTE[2]
-              : PALETTE[3],
+            : actor.id === 'latchfolk-watchkeeper'
+              ? '#b6d8dc'
+              : actor.id === 'relief-gate'
+                ? PALETTE[2]
+                : PALETTE[3],
     },
   ];
 }
