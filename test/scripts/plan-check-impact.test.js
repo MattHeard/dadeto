@@ -42,7 +42,15 @@ function runHandle({
   defaultBaseRef,
   impactShardSize,
   fileExists,
-  coverageImpl = () => ({ status: 0, coverage: {} }),
+  coverageImpl = (_tests, sourceFiles) => ({
+    status: 0,
+    coverage: Object.fromEntries(
+      sourceFiles.map(sourceFile => [
+        path.resolve(sourceFile),
+        { statementMap: {}, s: {}, branchMap: {}, b: {} },
+      ])
+    ),
+  }),
 } = {}) {
   const permission = {};
   const output = captureOutput();
@@ -554,9 +562,11 @@ describe('scoped static-check impact executor', () => {
           : { status: 0, stdout: '' },
     });
 
-    expect(result).toEqual({ exitCode: 0 });
+    expect(result).toEqual({ exitCode: 1 });
     expect(runCoverage).toHaveBeenCalledTimes(3);
     expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
       scopedCoverage: {
         scope: 'changed-core-files',
         files: [
@@ -577,6 +587,50 @@ describe('scoped static-check impact executor', () => {
     });
   });
 
+  it('fails when scoped coverage finds an uncovered branch arm', () => {
+    const changedFile = path.resolve('src/core/example.js');
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      coverageImpl: () => ({
+        status: 0,
+        coverage: {
+          [changedFile]: {
+            statementMap: {},
+            branchMap: {
+              0: {
+                line: 42,
+                locations: [{ start: { line: 42 } }, { start: { line: 43 } }],
+              },
+            },
+            s: {},
+            b: { 0: [1, 0] },
+          },
+        },
+      }),
+      runImpl: (_command, args) =>
+        args.includes('--findRelatedTests')
+          ? { status: 0, stdout: 'test/core/related.test.js\n' }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      scopedCoverage: {
+        files: [
+          {
+            file: 'src/core/example.js',
+            collected: true,
+            uncoveredLines: [],
+            uncoveredBranches: [{ line: 43, arm: 2 }],
+          },
+        ],
+      },
+    });
+  });
+
   it('marks a changed core file as uncollected when coverage output is missing', () => {
     const { result, output } = runHandle({
       createHandle: createRunScopedCheckImpactHandle,
@@ -591,8 +645,10 @@ describe('scoped static-check impact executor', () => {
           : { status: 0, stdout: '' },
     });
 
-    expect(result).toEqual({ exitCode: 0 });
+    expect(result).toEqual({ exitCode: 1 });
     expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
       scopedCoverage: {
         files: [
           {

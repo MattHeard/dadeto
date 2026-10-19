@@ -263,10 +263,6 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
   const staticChecks = includeStaticGates
     ? runScopedStaticGates(permission, deps, plan)
     : undefined;
-  if (staticChecks?.some(check => check.result === 'failed')) {
-    exitCode = 1;
-    status = 'failed';
-  }
 
   if (plan.testSelection !== 'none') {
     if (plan.testSelection === 'all-unit') {
@@ -312,6 +308,20 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
     scopedSourceFiles.length > 0
       ? createScopedCoverageReport(scopedSourceFiles, coverageRuns, deps)
       : undefined;
+  if (
+    staticChecks?.some(check => check.result === 'failed') ||
+    (scopedCoverage &&
+      (scopedCoverage.errors.length > 0 ||
+        scopedCoverage.files.some(
+          file =>
+            !file.collected ||
+            file.uncoveredLines.length > 0 ||
+            file.uncoveredBranches.length > 0
+        )))
+  ) {
+    exitCode = 1;
+    status = 'failed';
+  }
   const report = {
     changedPaths: plan.changedPaths,
     selectedTests,
