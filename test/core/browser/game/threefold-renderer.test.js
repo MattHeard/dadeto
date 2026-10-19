@@ -503,6 +503,34 @@ describe('THREEFOLD Mosslight handheld frame', () => {
   );
 });
 
+describe('THREEFOLD growth preview summary', () => {
+  test('summarizes multiple structures in the growth preview', () => {
+    const scene = createBrokenGateScene();
+    scene.geometry.push({
+      id: 'gatehouse-west-support',
+      bounds: {
+        min: { x: 3.55, y: 3.4, z: 0 },
+        max: { x: 3.85, y: 4.6, z: 3 },
+      },
+    });
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+
+    expect(frame.threefold.growthPreviewIds).toEqual([
+      'gatehouse-west-support',
+      'gatehouse-west-wall',
+    ]);
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A BREAKS WEST SUPPORT +1',
+        fill: '#e16b5a',
+      })
+    );
+  });
+});
+
 /**
  * Measure the rendered bounds of a tagged actor or piece of geometry.
  * @param {Array<Record<string, any>>} shapes Rendered Mosslight-compatible pixel shapes.
