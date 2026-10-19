@@ -32,3 +32,9 @@ The initial inventory misclassified `src/build/blog.json` as generated output. I
 
 - `DADETO_CHECK_TIMEOUT_MS=7200000 TMPDIR=/home/matt/dadeto/.tmp DADETO_COVERAGE_SHARD_SIZE=40 DADETO_COVERAGE_WORKER_HEAP_MB=1024 DADETO_JEST_POOL_DIR=/home/matt/dadeto/.tmp/jest-pool-rank4 DADETO_COVERAGE_DIR=/home/matt/dadeto/.tmp/coverage-rank4 npm run check` — passed, exit 0. All test shards and 11/11 local E2E tests passed; all 10 static gates passed; line, statement, function, and branch coverage were each 100%; duplication reported 0 clones. Coverage artifact: `reports/coverage/coverage-summary.json`.
 - `git diff --check` — passed after the inventory update.
+
+## Section E recheck (2026-10-19)
+
+Rank 2 is no longer plan-only. Guarded GCP registry apply run [39140379340](https://github.com/MattHeard/dadeto/actions/runs/39140379340) succeeded on `4687262cbced0ae50fb47420d70318dde1e82143`; Netlify production run [39145150554](https://github.com/MattHeard/dadeto/actions/runs/39145150554) succeeded on `b94733223b736f72925ba9c1418ce2c71e59077a`. An anonymous GET of the public registry returned HTTP 200 with schema version 1, `environment: prod`, generation `1792337153100867`, ETag `"2d306d52c44adcc25a703f51f04065a5"`, and SHA-256 `0cb2ea90c5a80bfaf23b83f5e6398501530a186b91a2f8cb279fa71cae385e6e`.
+
+The offline contract validator is now implemented in `src/core/build/function-endpoint-lineage.js`, reusing the Rank 2 registry parser. It checks GCP apply/source/function evidence, registry URL/body/schema/environment/functions and object version metadata, and the later Netlify build/source/digest association. Focused coverage and the fast local `npm run check` passed; see `notes/agents/2026-10-19-function-endpoint-lineage-validation.md`. This still does not collect workflow metadata or prove endpoint health. Reusable CI collection, its workflow regression coverage, and independent authorized production health evidence remain outstanding.
