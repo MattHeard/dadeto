@@ -41,6 +41,16 @@ describe('createCopyCloudHandle', () => {
       target:
         '/repo/infra/cloud-functions/submit-new-story/adapters/allow-effects.js',
     });
+    for (const functionName of [
+      'generate-stats',
+      'render-contents',
+      'render-variant',
+    ]) {
+      expect(copied).toContainEqual({
+        source: '/repo/src/core/google-auth-status-asset-version.js',
+        target: `/repo/infra/cloud-functions/${functionName}/core/google-auth-status-asset-version.js`,
+      });
+    }
     expect(
       written.some(({ contents }) => contents.includes('./allow-effects.js'))
     ).toBe(true);

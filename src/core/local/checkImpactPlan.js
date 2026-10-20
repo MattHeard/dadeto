@@ -1,5 +1,10 @@
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('../../../types/allow-effects').StartupAllowEffectsBoundary} StartupAllowEffectsBoundary */
+/** @typedef {{start?: {line?: number}}} IstanbulCoverageLocation */
+/** @typedef {{line?: number, locations?: IstanbulCoverageLocation[]}} IstanbulBranchLocation */
+/** @typedef {{statementMap?: Record<string, IstanbulCoverageLocation>, branchMap?: Record<string, IstanbulBranchLocation>, s?: Record<string, number>, f?: Record<string, number>, b?: Record<string, number[]>}} IstanbulCoverageRecord */
+/** @typedef {Record<string, IstanbulCoverageRecord>} IstanbulCoverageMap */
+/** @typedef {{status: number | null, stdout?: string, stderr?: string, error?: Error, coverage?: IstanbulCoverageMap, command?: string, coverageError?: string}} ScopedCoverageRun */
 
 const SOURCE_ROOT = 'src/';
 const UNIT_TEST_ROOT = 'test/';
@@ -119,6 +124,8 @@ export function createCheckImpactPlan({
   if (sourceChanges.some(path => path.startsWith('src/core/'))) {
     staticGates.push('core-parse');
     commands.push('npm run core-parse');
+    staticGates.push('duplication');
+    commands.push('npm run duplication');
   }
   return {
     mode: 'selected',
@@ -132,6 +139,48 @@ export function createCheckImpactPlan({
 }
 
 /**
+ * Build a Jest command whose coverage scope is limited to changed core files.
+ * @param {{paths: {rootDir: string, pathModule: typeof import('node:path')}, coverageDirectory: string, selection: {tests: string[], sourceFiles: string[]}, environment: Record<string, string | undefined>}} options Command inputs.
+ * @returns {{args: string[], command: string, options: import('node:child_process').SpawnSyncOptionsWithStringEncoding}} Executable arguments and a reproduction command.
+ */
+export function createScopedCoverageCommand({
+  paths,
+  coverageDirectory,
+  selection,
+  environment,
+}) {
+  const { rootDir, pathModule } = paths;
+  const { tests, sourceFiles } = selection;
+  const threshold = JSON.stringify({
+    global: { branches: 0, functions: 0, lines: 0, statements: 0 },
+  });
+  const args = [
+    pathModule.join(rootDir, JEST_RUNNER),
+    '--runInBand',
+    '--coverage',
+    '--coverageReporters=json',
+    `--coverageThreshold=${threshold}`,
+    '--coverageDirectory',
+    coverageDirectory,
+    ...sourceFiles.map(file => `--collectCoverageFrom=${file}`),
+    '--runTestsByPath',
+    ...tests,
+  ];
+  const displayArgs = [
+    'node',
+    JEST_RUNNER,
+    ...args
+      .slice(1)
+      .map(argument =>
+        argument === coverageDirectory ? '<temporary-coverage-dir>' : argument
+      ),
+  ];
+  const options = commandOptions(rootDir, 120 * 60 * 1000, true);
+  options.env = { ...environment, DADETO_COVERAGE_SHARD: '1' };
+  return { args, command: displayArgs.map(quotePath).join(' '), options };
+}
+
+/**
  * @typedef {object} CheckImpactDependencies
  * @property {string[]} argv Command-line arguments.
  * @property {string} rootDir Repository root.
@@ -142,6 +191,7 @@ export function createCheckImpactPlan({
  * @property {typeof import('node:path')} pathModule Path utilities.
  * @property {StartupAllowEffectsBoundary} bindStartupEffectBoundary Permission boundary for synchronous process and output effects.
  * @property {(permission: AllowEffects, command: string, args: string[], options: object) => {status: number | null, stdout?: string, stderr?: string, error?: Error}} runCommand Permission-aware child-process runner.
+ * @property {(permission: AllowEffects, tests: string[], sourceFiles: string[]) => ScopedCoverageRun} runCoverage Permission-aware targeted coverage runner.
  * @property {(permission: AllowEffects, output: string) => unknown} writeOutput Permission-aware CLI output writer.
  */
 
@@ -202,13 +252,17 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
   let status = plan.mode === 'none' ? 'skipped' : 'passed';
   let selectedTests = plan.tests;
   let fallbackFailure = '';
+  const scopedSourceFiles =
+    includeStaticGates && plan.mode === 'selected'
+      ? plan.changedPaths.filter(
+          path => path.startsWith('src/core/') && path.endsWith('.js')
+        )
+      : [];
+  /** @type {ScopedCoverageRun[]} */
+  const coverageRuns = [];
   const staticChecks = includeStaticGates
     ? runScopedStaticGates(permission, deps, plan)
     : undefined;
-  if (staticChecks?.some(check => check.result === 'failed')) {
-    exitCode = 1;
-    status = 'failed';
-  }
 
   if (plan.testSelection !== 'none') {
     if (plan.testSelection === 'all-unit') {
@@ -230,7 +284,11 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
           permission,
           `Impact tests: starting shard ${index + 1}/${shards.length} (${shard.length} test files).\n`
         );
-        const execution = runTestShard(permission, deps, shard);
+        const execution =
+          scopedSourceFiles.length > 0
+            ? deps.runCoverage(permission, shard, scopedSourceFiles)
+            : runTestShard(permission, deps, shard);
+        if (scopedSourceFiles.length > 0) coverageRuns.push(execution);
         if (execution.stdout) deps.writeOutput(permission, execution.stdout);
         if (execution.stderr) deps.writeOutput(permission, execution.stderr);
         const shardPassed = !execution.error && execution.status === 0;
@@ -246,6 +304,24 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
     }
   }
 
+  const scopedCoverage =
+    scopedSourceFiles.length > 0
+      ? createScopedCoverageReport(scopedSourceFiles, coverageRuns, deps)
+      : undefined;
+  if (
+    staticChecks?.some(check => check.result === 'failed') ||
+    (scopedCoverage &&
+      (scopedCoverage.errors.length > 0 ||
+        scopedCoverage.files.some(
+          file =>
+            !file.collected ||
+            file.uncoveredLines.length > 0 ||
+            file.uncoveredBranches.length > 0
+        )))
+  ) {
+    exitCode = 1;
+    status = 'failed';
+  }
   const report = {
     changedPaths: plan.changedPaths,
     selectedTests,
@@ -254,12 +330,162 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
     selectorFailure,
     fallbackFailure: fallbackFailure || null,
     ...(staticChecks ? { staticChecks } : {}),
+    ...(scopedCoverage ? { scopedCoverage } : {}),
     result: status,
     exitStatus: exitCode,
     authoritative: plan.authoritative,
   };
   deps.writeOutput(permission, `${JSON.stringify(report, null, 2)}\n`);
   return { exitCode };
+}
+
+/**
+ * Summarize only the changed core files reported by scoped Jest coverage.
+ * @param {string[]} sourceFiles Changed core source paths.
+ * @param {ScopedCoverageRun[]} coverageRuns Coverage shard results.
+ * @param {CheckImpactDependencies} deps Path dependencies.
+ * @returns {{scope: string, files: Array<{file: string, collected: boolean, uncoveredLines: number[], uncoveredBranches: Array<{line: number, arm: number}>}>, commands: string[], errors: string[], authoritative: string}} Scoped coverage evidence.
+ */
+function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
+  const expectedFiles = new Set(sourceFiles);
+  /** @type {Map<string, IstanbulCoverageRecord>} */
+  const records = new Map();
+  const errors = [];
+  for (const run of coverageRuns) {
+    if (run.coverageError) errors.push(run.coverageError);
+    for (const [filePath, record] of Object.entries(run.coverage ?? {})) {
+      const relativePath = deps.pathModule.isAbsolute(filePath)
+        ? deps.pathModule.relative(deps.rootDir, filePath)
+        : filePath;
+      const normalizedPath = normalizePath(
+        relativePath.split(deps.pathModule.sep).join('/')
+      );
+      if (!expectedFiles.has(normalizedPath)) continue;
+      records.set(
+        normalizedPath,
+        mergeCoverageRecord(records.get(normalizedPath), record)
+      );
+    }
+  }
+
+  const files = sourceFiles.map(file => {
+    const record = records.get(file);
+    if (!record)
+      return {
+        file,
+        collected: false,
+        uncoveredLines: [],
+        uncoveredBranches: [],
+      };
+    return {
+      file,
+      collected: true,
+      uncoveredLines: listUncoveredLines(record),
+      uncoveredBranches: listUncoveredBranches(record),
+    };
+  });
+  return {
+    scope: 'changed-core-files',
+    files,
+    commands: coverageRuns.flatMap(run => (run.command ? [run.command] : [])),
+    errors,
+    authoritative: 'npm run check:full',
+  };
+}
+
+/**
+ * Merge Istanbul coverage counters from separate bounded test shards.
+ * @param {IstanbulCoverageRecord | undefined} existing Previously collected file record.
+ * @param {IstanbulCoverageRecord} next New shard file record.
+ * @returns {IstanbulCoverageRecord} Merged file record.
+ */
+function mergeCoverageRecord(existing, next) {
+  if (!existing) return structuredClone(next);
+  return {
+    ...existing,
+    s: addCoverageCounters(existing.s, next.s),
+    f: addCoverageCounters(existing.f, next.f),
+    b: addCoverageBranches(existing.b, next.b),
+  };
+}
+
+/**
+ * Sum keyed Istanbul statement or function counters.
+ * @param {Record<string, number>} [left] Existing counts.
+ * @param {Record<string, number>} [right] New counts.
+ * @returns {Record<string, number>} Summed counts.
+ */
+function addCoverageCounters(left = {}, right = {}) {
+  return Object.fromEntries(
+    [...new Set([...Object.keys(left), ...Object.keys(right)])].map(key => [
+      key,
+      (left[key] ?? 0) + (right[key] ?? 0),
+    ])
+  );
+}
+
+/**
+ * Sum Istanbul branch-arm counters.
+ * @param {Record<string, number[]>} [left] Existing counts.
+ * @param {Record<string, number[]>} [right] New counts.
+ * @returns {Record<string, number[]>} Summed branch counts.
+ */
+function addCoverageBranches(left = {}, right = {}) {
+  return Object.fromEntries(
+    [...new Set([...Object.keys(left), ...Object.keys(right)])].map(key => {
+      const leftArms = left[key] ?? [];
+      const rightArms = right[key] ?? [];
+      return [
+        key,
+        Array.from(
+          { length: Math.max(leftArms.length, rightArms.length) },
+          (_, index) => (leftArms[index] ?? 0) + (rightArms[index] ?? 0)
+        ),
+      ];
+    })
+  );
+}
+
+/**
+ * Find uncovered source statement lines in one Istanbul record.
+ * @param {IstanbulCoverageRecord} record Istanbul file coverage record.
+ * @returns {number[]} Sorted unique line numbers.
+ */
+function listUncoveredLines(record) {
+  const locations = record.statementMap ?? {};
+  const counters = record.s ?? {};
+  return [
+    ...new Set(
+      Object.entries(counters)
+        .filter(([, count]) => count === 0)
+        .flatMap(([key]) => {
+          const line = locations[key]?.start?.line;
+          return typeof line === 'number' && Number.isInteger(line)
+            ? [line]
+            : [];
+        })
+    ),
+  ].sort((left, right) => left - right);
+}
+
+/**
+ * Find uncovered branch arms in one Istanbul record.
+ * @param {IstanbulCoverageRecord} record Istanbul file coverage record.
+ * @returns {Array<{line: number, arm: number}>} Missed branch locations.
+ */
+function listUncoveredBranches(record) {
+  const locations = record.branchMap ?? {};
+  const branches = record.b ?? {};
+  return Object.entries(branches).flatMap(([key, counts]) =>
+    counts.flatMap((count, index) => {
+      if (count !== 0) return [];
+      const branch = locations[key];
+      const line = branch?.locations?.[index]?.start?.line ?? branch?.line;
+      return typeof line === 'number' && Number.isInteger(line)
+        ? [{ line, arm: index + 1 }]
+        : [];
+    })
+  );
 }
 
 /**
@@ -312,6 +538,15 @@ function runScopedStaticGates(permission, deps, plan) {
         'npm',
         'run',
         'core-parse',
+      ])
+    );
+  }
+  if (plan.staticGates.includes('duplication')) {
+    checks.push(
+      runScopedStaticGate(permission, deps, 'duplication', [
+        'npm',
+        'run',
+        'duplication',
       ])
     );
   }

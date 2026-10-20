@@ -1,4 +1,5 @@
 import { describe, expect, it, jest } from '@jest/globals';
+import { createHash } from 'node:crypto';
 import {
   fetchFunctionEndpointRegistry,
   main,
@@ -28,7 +29,17 @@ describe('Netlify production function endpoint registry fetch', () => {
     });
 
     expect(result).toEqual({
+      registryUrl,
       registryHost: 'storage.googleapis.com',
+      registryBody: JSON.stringify(validRegistry),
+      registrySha256: createHash('sha256')
+        .update(JSON.stringify(validRegistry), 'utf8')
+        .digest('hex'),
+      registryGeneration: '1740000000000000',
+      registryEtag: '"registry-etag"',
+      schemaVersion: 1,
+      environment: 'prod',
+      functions: validRegistry.functions,
       endpointUrl: 'https://search.example.run.app',
       functionKeys: ['getAuthorUuidV2', 'objectMinuteRentalSearch'],
     });
@@ -135,6 +146,7 @@ describe('Netlify production function endpoint registry fetch', () => {
     'rejects %s before writing production build settings',
     async (_label, body, message) => {
       const appendFileFn = jest.fn();
+      const writeFileFn = jest.fn();
       const registryJson =
         typeof body === 'string' ? body : JSON.stringify(body);
 
@@ -143,30 +155,48 @@ describe('Netlify production function endpoint registry fetch', () => {
           environment: {
             GITHUB_ENV: '/runner/github-env',
             FUNCTION_ENDPOINT_REGISTRY_URL: registryUrl,
+            FUNCTION_ENDPOINT_REGISTRY_EVIDENCE_PATH:
+              '/runner/temp/function-endpoint-registry-observation.json',
+            GITHUB_RUN_ID: '123456789',
+            GITHUB_SHA: 'a'.repeat(40),
           },
           fetchFn: jest.fn().mockResolvedValue(makeResponse(registryJson)),
           appendFileFn,
+          writeFileFn,
           writeLine: jest.fn(),
         })
       ).rejects.toThrow(message);
       expect(appendFileFn).not.toHaveBeenCalled();
+      expect(writeFileFn).not.toHaveBeenCalled();
     }
   );
 
-  it('writes the production build endpoint only after validation succeeds', async () => {
+  it('writes the build endpoint and registry observation only after validation succeeds', async () => {
     const appendFileFn = jest.fn().mockResolvedValue(undefined);
+    const writeFileFn = jest.fn().mockResolvedValue(undefined);
     const writeLine = jest.fn();
+    const evidencePath =
+      '/runner/temp/function-endpoint-registry-observation.json';
+    const registryJson = JSON.stringify(validRegistry);
+    const registrySha256 = createHash('sha256')
+      .update(registryJson, 'utf8')
+      .digest('hex');
 
     await expect(
       main({
         environment: {
           GITHUB_ENV: '/runner/github-env',
           FUNCTION_ENDPOINT_REGISTRY_URL: registryUrl,
+          FUNCTION_ENDPOINT_REGISTRY_EVIDENCE_PATH: evidencePath,
+          GITHUB_RUN_ID: '123456789',
+          GITHUB_SHA: 'a'.repeat(40),
         },
         fetchFn: jest.fn().mockResolvedValue(makeResponse(validRegistry)),
         appendFileFn,
+        writeFileFn,
         writeLine,
         timeoutSignal: () => 'timeout-signal',
+        now: () => '2026-10-19T00:00:00.000Z',
       })
     ).resolves.toBe(0);
 
@@ -176,9 +206,33 @@ describe('Netlify production function endpoint registry fetch', () => {
         'OBJECT_MINUTE_RENTAL_SEARCH_URL=https://search.example.run.app\n',
       'utf8'
     );
+    const observation = {
+      schemaVersion: 1,
+      build: {
+        runId: '123456789',
+        sourceCommitSha: 'a'.repeat(40),
+        observedAt: '2026-10-19T00:00:00.000Z',
+      },
+      registryObject: {
+        url: registryUrl,
+        body: registryJson,
+        sha256: registrySha256,
+        generation: '1740000000000000',
+        etag: '"registry-etag"',
+        schemaVersion: 1,
+        environment: 'prod',
+        functions: validRegistry.functions,
+      },
+    };
+    expect(writeFileFn).toHaveBeenCalledWith(
+      evidencePath,
+      `${JSON.stringify(observation, null, 2)}\n`,
+      'utf8'
+    );
     expect(writeLine).toHaveBeenCalledWith(
       'Configured production endpoint from the public registry at storage.googleapis.com; validated keys: getAuthorUuidV2, objectMinuteRentalSearch.'
     );
+    expect(writeLine.mock.calls.flat().join(' ')).not.toContain(registryJson);
   });
 });
 
@@ -193,6 +247,8 @@ function makeResponse(body, status = 200, headerOverrides = {}) {
   const headers = {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
+    'x-goog-generation': '1740000000000000',
+    etag: '"registry-etag"',
     ...headerOverrides,
   };
   return {

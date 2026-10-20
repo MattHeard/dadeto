@@ -32,7 +32,8 @@ function captureOutput() {
  * @param {string} [root0.defaultBaseRef] Optional Git comparison base.
  * @param {number} [root0.impactShardSize] Maximum test files per shard.
  * @param {(absolutePath: string) => boolean} [root0.fileExists] Worktree existence stub.
- * @returns {{result: {exitCode: number}, output: ReturnType<typeof captureOutput>, permission: object, runCommand: jest.Mock, writeOutput: jest.Mock}} Handler result and captured effects.
+ * @param {(tests: string[], sourceFiles: string[]) => object} [root0.coverageImpl] Coverage result stub.
+ * @returns {{result: {exitCode: number}, output: ReturnType<typeof captureOutput>, permission: object, runCommand: jest.Mock, runCoverage: jest.Mock, writeOutput: jest.Mock}} Handler result and captured effects.
  */
 function runHandle({
   createHandle = createRunCheckImpactHandle,
@@ -41,6 +42,15 @@ function runHandle({
   defaultBaseRef,
   impactShardSize,
   fileExists,
+  coverageImpl = (_tests, sourceFiles) => ({
+    status: 0,
+    coverage: Object.fromEntries(
+      sourceFiles.map(sourceFile => [
+        path.resolve(sourceFile),
+        { statementMap: {}, s: {}, branchMap: {}, b: {} },
+      ])
+    ),
+  }),
 } = {}) {
   const permission = {};
   const output = captureOutput();
@@ -52,6 +62,10 @@ function runHandle({
     expect(receivedPermission).toBe(permission);
     output.write(value);
   });
+  const runCoverage = jest.fn((receivedPermission, tests, sourceFiles) => {
+    expect(receivedPermission).toBe(permission);
+    return coverageImpl(tests, sourceFiles);
+  });
   const handle = createHandle({
     argv,
     rootDir: process.cwd(),
@@ -62,9 +76,17 @@ function runHandle({
     pathModule: path,
     bindStartupEffectBoundary: callback => callback(permission),
     runCommand,
+    runCoverage,
     writeOutput,
   });
-  return { result: handle(), output, permission, runCommand, writeOutput };
+  return {
+    result: handle(),
+    output,
+    permission,
+    runCommand,
+    runCoverage,
+    writeOutput,
+  };
 }
 
 /**
@@ -95,12 +117,13 @@ describe('impact planner', () => {
 
 describe('test impact runner', () => {
   it('runs a changed test directly with no coverage runner or shell', () => {
-    const { result, output, runCommand } = runHandle({
+    const { result, output, runCommand, runCoverage } = runHandle({
       argv: ['--files', "test/core/it's-a-test.test.js"],
     });
 
     expect(result).toEqual({ exitCode: 0 });
     expect(runCommand).toHaveBeenCalledTimes(1);
+    expect(runCoverage).not.toHaveBeenCalled();
     const call = runCommand.mock.calls[0];
     expect(call[1]).toBe(process.execPath);
     expect(call[2][0]).toMatch(/scripts\/run-jest\.js$/);
@@ -122,7 +145,7 @@ describe('test impact runner', () => {
 
   it('discovers and runs related tests for changed source', () => {
     const calls = [];
-    const { result, runCommand, output } = runHandle({
+    const { result, runCommand, runCoverage, output } = runHandle({
       argv: ['--files', 'src/core/example.js'],
       runImpl: (command, args, options) => {
         calls.push({ command, args, options });
@@ -137,6 +160,7 @@ describe('test impact runner', () => {
 
     expect(result).toEqual({ exitCode: 0 });
     expect(runCommand).toHaveBeenCalledTimes(2);
+    expect(runCoverage).not.toHaveBeenCalled();
     expect(calls[0].args).toEqual([
       expect.stringMatching(/scripts\/run-jest\.js$/),
       '--runInBand',
@@ -381,7 +405,7 @@ describe('test impact runner selection fallbacks', () => {
 describe('scoped static-check impact executor', () => {
   it('runs changed-file ESLint and core-parse before selected unit tests', () => {
     const calls = [];
-    const { result, output } = runHandle({
+    const { result, output, runCoverage, permission } = runHandle({
       createHandle: createRunScopedCheckImpactHandle,
       argv: ['--files', 'src/core/example.js'],
       runImpl: (command, args, options) => {
@@ -413,19 +437,291 @@ describe('scoped static-check impact executor', () => {
       args: ['run', 'core-parse'],
       options: { stdio: 'inherit' },
     });
-    expect(calls[3].args).toContain('--runTestsByPath');
+    expect(calls[3]).toMatchObject({
+      command: 'npm',
+      args: ['run', 'duplication'],
+      options: { stdio: 'inherit' },
+    });
+    expect(runCoverage).toHaveBeenCalledWith(
+      permission,
+      ['test/core/related.test.js'],
+      ['src/core/example.js']
+    );
     expect(calls[1].options).toMatchObject({ stdio: 'inherit' });
-    expect(calls[3].options).toMatchObject({ stdio: 'inherit' });
     expect(output.report()).toMatchObject({
       result: 'passed',
       staticChecks: [
         { name: 'eslint', result: 'passed', exitStatus: 0 },
         { name: 'core-parse', result: 'passed', exitStatus: 0 },
+        { name: 'duplication', result: 'passed', exitStatus: 0 },
       ],
     });
     expect(output.chunks).toContain('Impact checks: starting eslint.\n');
     expect(output.chunks).toContain(
       'Impact checks: core-parse passed (exit 0).\n'
+    );
+    expect(output.chunks).toContain(
+      'Impact checks: duplication passed (exit 0).\n'
+    );
+  });
+
+  it('does not run the core duplication scan for non-core source changes', () => {
+    const calls = [];
+    const { result } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/browser/example.js'],
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/browser/related.test.js\n' };
+        return { status: 0, stdout: '' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 0 });
+    expect(calls).toHaveLength(3);
+    expect(
+      calls.some(
+        call => call.command === 'npm' && call.args[1] === 'duplication'
+      )
+    ).toBe(false);
+  });
+
+  it('reports only uncovered locations in changed core files for scoped coverage', () => {
+    const changedFile = path.resolve('src/core/example.js');
+    const unrelatedFile = path.resolve('src/core/unrelated.js');
+    let shard = 0;
+    const { result, output, runCoverage } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js', 'src/browser/example.js'],
+      impactShardSize: 1,
+      coverageImpl: (tests, sourceFiles) => {
+        expect(sourceFiles).toEqual(['src/core/example.js']);
+        expect(tests).toEqual([`test/core/related-${shard + 1}.test.js`]);
+        shard += 1;
+        if (shard === 1)
+          return {
+            status: 0,
+            command: "node 'scripts/run-jest.js' '--coverage'",
+            coverage: {
+              [changedFile]: {
+                statementMap: {
+                  0: { start: { line: 10 } },
+                  1: { start: { line: 20 } },
+                  2: { start: { line: 30 } },
+                  99: { start: { line: 'unknown' } },
+                },
+                s: { 0: 1 },
+                branchMap: {
+                  0: {
+                    line: 22,
+                    locations: [
+                      { start: { line: 22 } },
+                      { start: { line: 23 } },
+                    ],
+                  },
+                  1: { line: 24 },
+                },
+              },
+              [unrelatedFile]: {
+                statementMap: { 0: { start: { line: 1 } } },
+                s: { 0: 0 },
+                branchMap: {},
+                b: {},
+              },
+            },
+          };
+        if (shard === 2)
+          return {
+            status: 0,
+            coverage: {
+              'src/core/example.js': {
+                statementMap: {},
+                s: { 1: 0, 2: 0, 99: 0 },
+                f: { 0: 0, 1: 0 },
+                branchMap: {},
+                b: { 0: [1, 0], 1: [1, 0], 2: [0] },
+              },
+            },
+          };
+        return {
+          status: 0,
+          coverage: {
+            'src/core/example.js': { s: {}, statementMap: {}, branchMap: {} },
+          },
+          coverageError: 'One shard could not finish its report.',
+        };
+      },
+      runImpl: (command, args) =>
+        args.includes('--findRelatedTests')
+          ? {
+              status: 0,
+              stdout:
+                'test/core/related-1.test.js\ntest/core/related-2.test.js\ntest/core/related-3.test.js\n',
+            }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(runCoverage).toHaveBeenCalledTimes(3);
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      scopedCoverage: {
+        scope: 'changed-core-files',
+        files: [
+          {
+            file: 'src/core/example.js',
+            collected: true,
+            uncoveredLines: [20, 30],
+            uncoveredBranches: [
+              { line: 23, arm: 2 },
+              { line: 24, arm: 2 },
+            ],
+          },
+        ],
+        commands: [expect.stringContaining('--coverage')],
+        errors: ['One shard could not finish its report.'],
+        authoritative: 'npm run check:full',
+      },
+    });
+  });
+
+  it('fails when scoped coverage finds an uncovered branch arm', () => {
+    const changedFile = path.resolve('src/core/example.js');
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      coverageImpl: () => ({
+        status: 0,
+        coverage: {
+          [changedFile]: {
+            statementMap: {},
+            branchMap: {
+              0: {
+                line: 42,
+                locations: [{ start: { line: 42 } }, { start: { line: 43 } }],
+              },
+            },
+            s: {},
+            b: { 0: [1, 0] },
+          },
+        },
+      }),
+      runImpl: (_command, args) =>
+        args.includes('--findRelatedTests')
+          ? { status: 0, stdout: 'test/core/related.test.js\n' }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      scopedCoverage: {
+        files: [
+          {
+            file: 'src/core/example.js',
+            collected: true,
+            uncoveredLines: [],
+            uncoveredBranches: [{ line: 43, arm: 2 }],
+          },
+        ],
+      },
+    });
+  });
+
+  it('marks a changed core file as uncollected when coverage output is missing', () => {
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      coverageImpl: () => ({
+        status: 0,
+        coverageError: 'Could not read scoped coverage output.',
+      }),
+      runImpl: (command, args) =>
+        args.includes('--findRelatedTests')
+          ? { status: 0, stdout: 'test/core/related.test.js\n' }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      scopedCoverage: {
+        files: [
+          {
+            file: 'src/core/example.js',
+            collected: false,
+            uncoveredLines: [],
+            uncoveredBranches: [],
+          },
+        ],
+        commands: [],
+        errors: ['Could not read scoped coverage output.'],
+      },
+    });
+  });
+
+  it('handles an empty Istanbul record as a collected file with no locations', () => {
+    const changedFile = path.resolve('src/core/example.js');
+    const { output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      coverageImpl: () => ({ status: 0, coverage: { [changedFile]: {} } }),
+      runImpl: (command, args) =>
+        args.includes('--findRelatedTests')
+          ? { status: 0, stdout: 'test/core/related.test.js\n' }
+          : { status: 0, stdout: '' },
+    });
+
+    expect(output.report()).toMatchObject({
+      scopedCoverage: {
+        files: [
+          {
+            file: 'src/core/example.js',
+            collected: true,
+            uncoveredLines: [],
+            uncoveredBranches: [],
+          },
+        ],
+        commands: [],
+        errors: [],
+      },
+    });
+  });
+
+  it('reports a failed duplication gate and still runs selected tests', () => {
+    const calls = [];
+    const { result, output, runCoverage } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js'],
+      runImpl: (command, args, options) => {
+        calls.push({ command, args, options });
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/core/related.test.js\n' };
+        if (args.some(arg => arg.endsWith('/eslint.js')))
+          return { status: 0, stdout: 'lint passed\n' };
+        if (command === 'npm' && args[1] === 'duplication')
+          return { status: 1, stderr: 'Duplication gate found 1 clone.\n' };
+        return { status: 0, stdout: 'check passed\n' };
+      },
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(runCoverage).toHaveBeenCalledTimes(1);
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      staticChecks: [
+        { name: 'eslint', result: 'passed', exitStatus: 0 },
+        { name: 'core-parse', result: 'passed', exitStatus: 0 },
+        { name: 'duplication', result: 'failed', exitStatus: 1 },
+      ],
+    });
+    expect(output.chunks).toContain('Duplication gate found 1 clone.\n');
+    expect(output.chunks).toContain(
+      'Impact checks: duplication failed (exit 1).\n'
     );
   });
 
@@ -499,6 +795,26 @@ describe('scoped static-check impact executor', () => {
     ).toBe(true);
   });
 
+  it('keeps scoped coverage disabled for test-only and fallback runs', () => {
+    const direct = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'test/core/changed.test.js'],
+    });
+    const fallback = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/example.js', 'infra/main.tf'],
+      runImpl: (_command, args) => {
+        if (args.includes('--exclude-standard'))
+          return { status: 0, stdout: 'test/core/fallback.test.js\0' };
+        return { status: 0, stdout: '' };
+      },
+    });
+
+    expect(direct.runCoverage).not.toHaveBeenCalled();
+    expect(fallback.runCoverage).not.toHaveBeenCalled();
+    expect(fallback.output.report()).not.toHaveProperty('scopedCoverage');
+  });
+
   it('skips static gates when no changed paths are found', () => {
     const { result, output, runCommand } = runHandle({
       createHandle: createRunScopedCheckImpactHandle,
@@ -512,6 +828,85 @@ describe('scoped static-check impact executor', () => {
       staticChecks: [],
     });
     expect(runCommand).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('composed scoped impact diagnostics', () => {
+  it('surfaces parse, clone, and uncovered-branch locations in one scoped run', () => {
+    const changedFile = 'src/core/changed.js';
+    const parseLocation =
+      'src/core/changed.js contains parser function parseInput; keep parse logic in boundary modules.\n';
+    const cloneLocation =
+      'src/core/changed.js:12-18 ↔ src/core/other.js:31-37\n';
+    const { result, output, runCommand } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', changedFile],
+      runImpl: (command, args) => {
+        if (args.includes('--findRelatedTests'))
+          return { status: 0, stdout: 'test/core/related.test.js\n' };
+        if (args.some(argument => argument.endsWith('/eslint.js')))
+          return { status: 0, stdout: 'lint passed\n' };
+        if (args[1] === 'core-parse')
+          return { status: 1, stdout: parseLocation };
+        if (args[1] === 'duplication')
+          return { status: 1, stderr: cloneLocation };
+        return { status: 0, stdout: 'tests passed\n' };
+      },
+      coverageImpl: (_tests, sourceFiles) => ({
+        status: 0,
+        coverage: Object.fromEntries(
+          sourceFiles.map(sourceFile => [
+            path.resolve(sourceFile),
+            {
+              statementMap: { 0: { start: { line: 8 } } },
+              s: { 0: 1 },
+              branchMap: {
+                0: {
+                  line: 20,
+                  locations: [{ start: { line: 20 } }, { start: { line: 21 } }],
+                },
+              },
+              b: { 0: [1, 0] },
+            },
+          ])
+        ),
+      }),
+    });
+
+    expect(result).toEqual({ exitCode: 1 });
+    expect(
+      runCommand.mock.calls.map(([, command, args]) => [command, args])
+    ).toEqual(
+      expect.arrayContaining([
+        ['npm', ['run', 'core-parse']],
+        ['npm', ['run', 'duplication']],
+      ])
+    );
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      exitStatus: 1,
+      staticChecks: [
+        { name: 'eslint', result: 'passed', exitStatus: 0 },
+        { name: 'core-parse', result: 'failed', exitStatus: 1 },
+        { name: 'duplication', result: 'failed', exitStatus: 1 },
+      ],
+      scopedCoverage: {
+        files: [
+          {
+            file: changedFile,
+            uncoveredBranches: [{ line: 21, arm: 2 }],
+          },
+        ],
+      },
+    });
+    expect(output.chunks).toContain(parseLocation);
+    expect(output.chunks).toContain(cloneLocation);
+    expect(output.chunks).toContain(
+      'Impact checks: core-parse failed (exit 1).\n'
+    );
+    expect(output.chunks).toContain(
+      'Impact checks: duplication failed (exit 1).\n'
+    );
   });
 });
 

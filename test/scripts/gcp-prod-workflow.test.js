@@ -36,4 +36,59 @@ describe('gcp-prod workflow database selection', () => {
       'gh variable set OBJECT_MINUTE_RENTAL_SEARCH_URL'
     );
   });
+
+  it('keeps production deployment chained to a successful gcp-test without smoke metadata', async () => {
+    const source = readFileSync('.github/workflows/gcp-prod.yml', 'utf8');
+
+    expect(source).toContain('workflows: ["gcp-test"]');
+    expect(source).toContain(
+      "github.event.workflow_run.conclusion == 'success'"
+    );
+    expect(source).not.toContain('get-author-uuid-v2-deployment');
+    expect(source).not.toContain('smoke deployment metadata');
+    expect(source).not.toContain('id-token: write');
+  });
+
+  it('captures GCP registry evidence only after the default-branch apply succeeds', () => {
+    const source = readFileSync('.github/workflows/gcp-prod.yml', 'utf8');
+    const applyIndex = source.indexOf('id: terraform_apply');
+    const completionTimeIndex = source.indexOf(
+      'name: Record Terraform Apply completion time'
+    );
+    const captureIndex = source.indexOf(
+      'name: Capture GCP production endpoint registry evidence'
+    );
+    const uploadIndex = source.indexOf(
+      'name: Upload GCP production endpoint registry evidence'
+    );
+
+    expect(applyIndex).toBeGreaterThan(-1);
+    expect(completionTimeIndex).toBeGreaterThan(applyIndex);
+    expect(captureIndex).toBeGreaterThan(completionTimeIndex);
+    expect(uploadIndex).toBeGreaterThan(captureIndex);
+    expect(source).toContain(
+      'TERRAFORM_APPLY_OUTCOME: ${{ steps.terraform_apply.outcome }}'
+    );
+    expect(source).toContain(
+      'TERRAFORM_APPLY_COMPLETED_AT: ${{ steps.terraform_apply_completed_at.outputs.completed_at }}'
+    );
+    expect(source).toContain(
+      'github.event.workflow_run.head_branch == github.event.repository.default_branch'
+    );
+    expect(source).toContain(
+      'github.ref_name == github.event.repository.default_branch'
+    );
+    expect(source).toContain(
+      'FUNCTION_ENDPOINT_REGISTRY_URL="$(terraform output -raw function_endpoint_registry_url)"'
+    );
+    expect(source).toContain(
+      'node ../.github/scripts/write-gcp-function-endpoint-registry-evidence.js'
+    );
+    expect(source).toContain(
+      "if: steps.registry_evidence.outcome == 'success'"
+    );
+    expect(source).toContain('name: gcp-function-endpoint-registry-evidence');
+    expect(source).toContain('if-no-files-found: error');
+    expect(source).toContain('retention-days: 90');
+  });
 });

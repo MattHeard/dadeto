@@ -1,6 +1,8 @@
 import {
   aggregateReuseNotes,
   createAgentReuseReportHandle,
+  parseAgentReuseReportArguments,
+  parseEligibleTaskIds,
   parseReuseNotes,
 } from '../../../src/core/local/agentReuseReport.js';
 
@@ -29,6 +31,57 @@ const validRecord = {
   },
   sourceNote: 'notes/agents/example.md',
 };
+
+describe('parseAgentReuseReportArguments', () => {
+  it('supports default and explicit input paths with an optional manifest', () => {
+    expect(parseAgentReuseReportArguments([])).toEqual({
+      inputPath: 'notes/agents/reuse-events.jsonl',
+      eligibleTasksPath: undefined,
+    });
+    expect(
+      parseAgentReuseReportArguments([
+        'events.jsonl',
+        '--eligible-tasks',
+        'eligible.json',
+      ])
+    ).toEqual({
+      inputPath: 'events.jsonl',
+      eligibleTasksPath: 'eligible.json',
+    });
+    expect(
+      parseAgentReuseReportArguments(['--eligible-tasks', 'eligible.json'])
+    ).toEqual({
+      inputPath: 'notes/agents/reuse-events.jsonl',
+      eligibleTasksPath: 'eligible.json',
+    });
+  });
+
+  it('rejects missing manifest paths, repeated paths, and unknown options', () => {
+    expect(parseAgentReuseReportArguments(['--eligible-tasks'])).toEqual({
+      inputPath: 'notes/agents/reuse-events.jsonl',
+      error: '--eligible-tasks requires a JSON manifest path.',
+    });
+    expect(
+      parseAgentReuseReportArguments(['--eligible-tasks', '--other'])
+    ).toMatchObject({
+      error: '--eligible-tasks requires a JSON manifest path.',
+    });
+    expect(
+      parseAgentReuseReportArguments([
+        '--eligible-tasks',
+        'one.json',
+        '--eligible-tasks',
+        'two.json',
+      ])
+    ).toMatchObject({ error: 'Use --eligible-tasks only once.' });
+    expect(parseAgentReuseReportArguments(['--other'])).toMatchObject({
+      error: 'Unknown option: --other',
+    });
+    expect(
+      parseAgentReuseReportArguments(['one.json', 'two.json'])
+    ).toMatchObject({ error: 'Provide only one reuse-events JSONL path.' });
+  });
+});
 
 describe('parseReuseNotes', () => {
   it('accepts a valid record and blank lines', () => {
@@ -95,6 +148,7 @@ describe('parseReuseNotes', () => {
       schemaVersion: 2,
       taskId: '',
       feature: 5,
+      sourceNote: '../outside.md',
       reusedModules: ['../outside.js', null],
       newModules: ['/absolute.js', ''],
       consideredButRejected: [null, { modulePath: '/outside.js', reason: '' }],
@@ -108,7 +162,10 @@ describe('parseReuseNotes', () => {
     const result = parseReuseNotes(JSON.stringify(record));
 
     expect(result.records).toEqual([]);
-    expect(result.errors).toHaveLength(11);
+    expect(result.errors).toHaveLength(12);
+    expect(result.errors).toContain(
+      'Line 1: sourceNote must be a repository-relative path'
+    );
   });
 
   it('rejects non-object values and non-array fields', () => {
@@ -145,6 +202,24 @@ describe('parseReuseNotes', () => {
   });
 });
 
+describe('parseEligibleTaskIds', () => {
+  it('normalizes unique task IDs and rejects malformed manifests', () => {
+    expect(parseEligibleTaskIds('[" task-1 ","task-2"]')).toEqual({
+      taskIds: ['task-1', 'task-2'],
+      errors: [],
+    });
+    expect(parseEligibleTaskIds('not json').errors[0]).toMatch('invalid JSON');
+    expect(parseEligibleTaskIds('{"taskIds":[]}').errors).toContain(
+      'Eligibility manifest: expected an array of task IDs'
+    );
+    expect(parseEligibleTaskIds('["",3,"task-1","task-1"]').errors).toEqual([
+      'Eligibility manifest: item 1 must be a non-empty task ID',
+      'Eligibility manifest: item 2 must be a non-empty task ID',
+      'Eligibility manifest: duplicate task ID task-1',
+    ]);
+  });
+});
+
 describe('aggregateReuseNotes', () => {
   it('counts friction categories and links evidence notes', () => {
     const report = aggregateReuseNotes([validRecord]);
@@ -178,6 +253,64 @@ describe('aggregateReuseNotes', () => {
       aggregateReuseNotes([{ ...validRecord, integrationFriction: [] }])
     ).toContain('| api | 0 |');
   });
+
+  it('reports unknown eligibility without a manifest', () => {
+    const report = aggregateReuseNotes([validRecord]);
+
+    expect(report).toContain('| Latest valid reuse events | 1 |');
+    expect(report).toContain('| Superseded historical events | 0 |');
+    expect(report).toContain('| Eligible task list | unknown (not provided) |');
+    expect(report).toContain('| Eligible tasks missing events | unknown |');
+  });
+
+  it('compares eligible tasks with latest events and source-note evidence', () => {
+    const updatedRecord = {
+      ...validRecord,
+      sourceNote: 'notes/agents/current.md',
+    };
+    const missingNoteRecord = {
+      ...validRecord,
+      taskId: 'missing-note',
+      sourceNote: 'notes/agents/missing.md',
+    };
+    const uncheckedNoteRecord = {
+      ...validRecord,
+      taskId: 'unchecked-note',
+      sourceNote: 'notes/agents/unchecked.md',
+    };
+    const report = aggregateReuseNotes(
+      [validRecord, updatedRecord, missingNoteRecord, uncheckedNoteRecord],
+      {
+        eligibleTaskIds: [
+          validRecord.taskId,
+          'missing-note',
+          'unchecked-note',
+          'no-event',
+        ],
+        sourceNoteExists: sourceNotePath => {
+          if (sourceNotePath.endsWith('current.md')) return true;
+          if (sourceNotePath.endsWith('missing.md')) return false;
+          throw new Error('Could not inspect source note');
+        },
+      }
+    );
+
+    expect(report).toContain('| Latest valid reuse events | 3 |');
+    expect(report).toContain('| Superseded historical events | 1 |');
+    expect(report).toContain('| Eligible tasks with latest valid event | 3 |');
+    expect(report).toContain('| Eligible tasks missing events | 1 |');
+    expect(report).toContain('| Eligible event source notes found | 1 |');
+    expect(report).toContain('| Eligible event source notes missing | 1 |');
+    expect(report).toContain('| Eligible event source notes unchecked | 1 |');
+  });
+
+  it('marks source-note checks unknown when no lookup is provided', () => {
+    const report = aggregateReuseNotes([validRecord], {
+      eligibleTaskIds: [validRecord.taskId],
+    });
+
+    expect(report).toContain('| Eligible event source notes unchecked | 1 |');
+  });
 });
 
 describe('createAgentReuseReportHandle', () => {
@@ -192,5 +325,30 @@ describe('createAgentReuseReportHandle', () => {
       exitCode: 0,
       output: expect.stringContaining('| api | 1 |'),
     });
+  });
+
+  it('rejects an invalid eligible-task manifest', () => {
+    const handle = createAgentReuseReportHandle();
+
+    expect(handle(JSON.stringify(validRecord), '{').exitCode).toBe(1);
+    expect(handle(JSON.stringify(validRecord), '{').output).toMatch(
+      'Eligibility manifest: invalid JSON'
+    );
+  });
+
+  it('checks source-note existence through an injected lookup', () => {
+    const handle = createAgentReuseReportHandle({
+      sourceNoteExists: sourceNotePath =>
+        sourceNotePath === validRecord.sourceNote,
+    });
+    const result = handle(
+      JSON.stringify(validRecord),
+      JSON.stringify([validRecord.taskId])
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain(
+      '| Eligible event source notes found | 1 |'
+    );
   });
 });

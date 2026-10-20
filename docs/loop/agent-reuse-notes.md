@@ -21,7 +21,8 @@ Each record uses schema version 1 and contains:
   only when the feature's required capabilities and supplied capabilities can
   be described; otherwise use `null` and explain why. This is a subjective
   signal, not a line-count metric or a target to maximize.
-- `sourceNote`: a path to the contemporaneous task note or other evidence.
+- `sourceNote`: a repository-relative path to the contemporaneous task note or
+  other evidence.
 
 Copy this starter record and fill only evidence you can support:
 
@@ -41,5 +42,27 @@ valid. When no suitable component exists, say so as `missing-capability`; do
 not describe that as discoverability or API friction.
 
 Run `npm run agents:reuse-report` to validate the JSONL entries and print
-counts by friction category with links to the source notes. Pass a different
-JSONL path as the first argument when validating a temporary file.
+counts by friction category with links to the source notes. The report also
+counts latest valid events and superseded historical events. Without a known
+set of eligible tasks, eligibility and source-note coverage are reported as
+unknown; the set of observed events is not used as a substitute denominator.
+
+When a completed-task inventory is available, pass it as a JSON array of unique
+task IDs with `--eligible-tasks`:
+
+```sh
+npm run agents:reuse-report -- --eligible-tasks notes/agents/eligible-tasks.json
+```
+
+Each eligible task is compared with the latest valid event for that task. The
+report counts eligible tasks missing events and checks whether source-note
+paths for matched events exist in the repository. To validate a different
+reuse JSONL file too, pass its path as the first argument:
+
+```sh
+npm run agents:reuse-report -- /tmp/reuse-events.jsonl --eligible-tasks /tmp/eligible-tasks.json
+```
+
+Do not make up an eligibility list to fill the report. If there is no
+authoritative completed-task inventory, leave it out so coverage remains
+explicitly unknown.

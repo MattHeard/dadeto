@@ -1,0 +1,7 @@
+# Scoped impact coverage report
+
+- **Unexpected hurdle:** Scoped coverage must merge Istanbul counters from each bounded test shard; one-shard tests did not exercise that path.
+- **Diagnosis:** The real `check:impact:run` command verified that Jest accepts per-file `--collectCoverageFrom` arguments and emits the selected file's report. Its first report exposed uncovered branches in the new merge logic. The aggregate check later found that the new Istanbul data shapes needed explicit JSDoc types.
+- **Fix:** Inject coverage execution at the local boundary, collect only changed core files in a temporary directory, merge shard counters, and report missed statement lines and branch arms. Type the coverage records and run results explicitly. Test-only runs and conservative fallback remain without coverage.
+- **Evidence:** `npm run tsdoc:check` passed after the type fix. `DADETO_JEST_POOL_DIR=/tmp/dadeto-rank4-jest-pool npm run check:impact:run -- --files src/core/local/checkImpactPlan.js` passed ESLint, core parsing, duplication, and both related suites (2 suites / 37 tests); it reported no uncovered lines or branch arms for the changed core file. `npm run check` passed all 10 gates; its selected Jest run passed 3 suites / 39 tests, including the pre-existing dirty `test/core/browser/main.import.test.js`.
+- **Next-time guidance:** Preserve the bounded shard model when adding scoped coverage, exercise multi-shard aggregation, and treat this report as targeted diagnostics rather than repository-wide coverage evidence.

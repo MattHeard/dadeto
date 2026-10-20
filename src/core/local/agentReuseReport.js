@@ -4,15 +4,111 @@
 const FRICTION_CATEGORIES = ['discoverability', 'api', 'missing-capability'];
 
 /**
- * Create a pure handler for agent reuse notes.
- * @returns {(content: string) => {exitCode: number, output: string}} Handler that formats a report or validation errors.
+ * Parse the report command arguments.
+ * @param {string[]} args Command-line arguments.
+ * @returns {{inputPath: string, eligibleTasksPath?: string, error?: string}} Parsed paths or an error.
  */
-export function createAgentReuseReportHandle() {
-  return function handleAgentReuseReport(content) {
+export function parseAgentReuseReportArguments(args) {
+  let inputPath = 'notes/agents/reuse-events.jsonl';
+  let hasInputPath = false;
+  let eligibleTasksPath;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === '--eligible-tasks') {
+      if (eligibleTasksPath !== undefined) {
+        return { inputPath, error: 'Use --eligible-tasks only once.' };
+      }
+      const nextArgument = args[index + 1];
+      if (!nextArgument || nextArgument.startsWith('--')) {
+        return {
+          inputPath,
+          error: '--eligible-tasks requires a JSON manifest path.',
+        };
+      }
+      eligibleTasksPath = nextArgument;
+      index += 1;
+    } else if (argument.startsWith('-')) {
+      return { inputPath, error: `Unknown option: ${argument}` };
+    } else if (hasInputPath) {
+      return { inputPath, error: 'Provide only one reuse-events JSONL path.' };
+    } else {
+      inputPath = argument;
+      hasInputPath = true;
+    }
+  }
+  return { inputPath, eligibleTasksPath };
+}
+
+/**
+ * Create a pure handler for agent reuse notes.
+ * @param {{sourceNoteExists?: (sourceNotePath: string) => boolean | undefined}} [options] Optional repository evidence lookup.
+ * @returns {(content: string, eligibleTasksContent?: string) => {exitCode: number, output: string}} Handler that formats a report or validation errors.
+ */
+export function createAgentReuseReportHandle(options = {}) {
+  return function handleAgentReuseReport(content, eligibleTasksContent) {
     const { records, errors } = parseReuseNotes(content);
     if (errors.length) return { exitCode: 1, output: errors.join('\n') };
-    return { exitCode: 0, output: aggregateReuseNotes(records) };
+    let eligibleTaskIds;
+    if (eligibleTasksContent !== undefined) {
+      const eligibility = parseEligibleTaskIds(eligibleTasksContent);
+      if (eligibility.errors.length) {
+        return { exitCode: 1, output: eligibility.errors.join('\n') };
+      }
+      eligibleTaskIds = eligibility.taskIds;
+    }
+    return {
+      exitCode: 0,
+      output: aggregateReuseNotes(records, {
+        eligibleTaskIds,
+        sourceNoteExists: options.sourceNoteExists,
+      }),
+    };
   };
+}
+
+/**
+ * Parse a JSON array of task IDs that are expected to have reuse records.
+ * @param {string} content JSON manifest content.
+ * @returns {{taskIds: string[], errors: string[]}} Normalized IDs and validation errors.
+ */
+export function parseEligibleTaskIds(content) {
+  let candidate;
+  try {
+    candidate = JSON.parse(content);
+  } catch (error) {
+    return {
+      taskIds: [],
+      errors: [`Eligibility manifest: invalid JSON (${error.message})`],
+    };
+  }
+  if (!Array.isArray(candidate)) {
+    return {
+      taskIds: [],
+      errors: ['Eligibility manifest: expected an array of task IDs'],
+    };
+  }
+
+  /** @type {string[]} */
+  const taskIds = [];
+  /** @type {string[]} */
+  const errors = [];
+  const seen = new Set();
+  candidate.forEach((value, index) => {
+    if (typeof value !== 'string' || !value.trim()) {
+      errors.push(
+        `Eligibility manifest: item ${index + 1} must be a non-empty task ID`
+      );
+      return;
+    }
+    const taskId = value.trim();
+    if (seen.has(taskId)) {
+      errors.push(`Eligibility manifest: duplicate task ID ${taskId}`);
+      return;
+    }
+    seen.add(taskId);
+    taskIds.push(taskId);
+  });
+  return { taskIds, errors };
 }
 
 /**
@@ -66,6 +162,9 @@ function validateRecord(record, lineNumber) {
     if (typeof candidate[field] !== 'string' || !candidate[field].trim()) {
       errors.push(`${prefix}: ${field} must be a non-empty string`);
     }
+  }
+  if (!isRepoPath(candidate.sourceNote)) {
+    errors.push(`${prefix}: sourceNote must be a repository-relative path`);
   }
   validatePathList(candidate.reusedModules, 'reusedModules', prefix, errors);
   validatePathList(candidate.newModules, 'newModules', prefix, errors);
@@ -170,9 +269,11 @@ function validateEstimate(estimate, prefix, errors) {
 /**
  * Aggregate examples by friction category, using the latest record per task.
  * @param {ReuseNote[]} records Valid records.
+ * @param {{eligibleTaskIds?: string[], sourceNoteExists?: (sourceNotePath: string) => boolean | undefined}} [options] Eligibility and source-note evidence inputs.
  * @returns {string} Markdown report.
  */
-export function aggregateReuseNotes(records) {
+export function aggregateReuseNotes(records, options = {}) {
+  const { eligibleTaskIds } = options;
   /** @type {Map<string, ReuseNote>} */
   const latestRecords = new Map();
   records.forEach(record => latestRecords.set(record.taskId, record));
@@ -194,7 +295,7 @@ export function aggregateReuseNotes(records) {
     }
   }
 
-  return [
+  const report = [
     '| Friction category | Count | Examples |',
     '| --- | ---: | --- |',
     ...FRICTION_CATEGORIES.map(category =>
@@ -204,7 +305,63 @@ export function aggregateReuseNotes(records) {
         '|',
       ].join(' ')
     ),
-  ].join('\n');
+  ];
+  report.push(
+    '',
+    '## Reuse coverage',
+    '',
+    '| Measure | Result |',
+    '| --- | ---: |'
+  );
+  report.push(
+    `| Latest valid reuse events | ${latestRecords.size} |`,
+    `| Superseded historical events | ${records.length - latestRecords.size} |`
+  );
+
+  if (eligibleTaskIds === undefined) {
+    report.push(
+      '| Eligible task list | unknown (not provided) |',
+      '| Eligible tasks missing events | unknown |',
+      '| Eligible event source notes found | unknown |',
+      '| Eligible event source notes missing | unknown |'
+    );
+  } else {
+    const missingTaskIds = eligibleTaskIds.filter(
+      taskId => !latestRecords.has(taskId)
+    );
+    const eventRecords = eligibleTaskIds
+      .map(taskId => latestRecords.get(taskId))
+      .filter(record => record !== undefined);
+    const sourceNoteCounts = eventRecords.reduce(
+      (counts, record) => {
+        if (typeof options.sourceNoteExists !== 'function') {
+          counts.unknown += 1;
+        } else {
+          let exists;
+          try {
+            exists = options.sourceNoteExists(record.sourceNote);
+          } catch {
+            exists = undefined;
+          }
+          if (exists === true) counts.found += 1;
+          else if (exists === false) counts.missing += 1;
+          else counts.unknown += 1;
+        }
+        return counts;
+      },
+      { found: 0, missing: 0, unknown: 0 }
+    );
+    report.push(
+      `| Eligible tasks | ${eligibleTaskIds.length} |`,
+      `| Eligible tasks with latest valid event | ${eventRecords.length} |`,
+      `| Eligible tasks missing events | ${missingTaskIds.length} |`,
+      `| Eligible event source notes found | ${sourceNoteCounts.found} |`,
+      `| Eligible event source notes missing | ${sourceNoteCounts.missing} |`,
+      `| Eligible event source notes unchecked | ${sourceNoteCounts.unknown} |`
+    );
+  }
+
+  return report.join('\n');
 }
 
 /**

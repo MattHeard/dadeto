@@ -100,12 +100,12 @@ describe('cloud browser entrypoints', () => {
     expect(mainTf).toContain('entry_point                  = "handleTrigger"');
   });
 
-  it('uploads root browser wrappers instead of deep core modules', async () => {
-    await expect(readFile('infra/admin-core.js', 'utf8')).resolves.toBe(
+  it('defines root browser wrappers instead of deep core modules', async () => {
+    await expect(readFile('src/browser/admin-core.js', 'utf8')).resolves.toBe(
       "export * from '../core/browser/admin-core.js';\n"
     );
     await expect(
-      readFile('infra/load-static-config-core.js', 'utf8')
+      readFile('src/browser/load-static-config-core.js', 'utf8')
     ).resolves.toBe(
       "export * from '../core/browser/load-static-config-core.js';\n"
     );
@@ -248,8 +248,8 @@ describe('cloud browser entrypoints', () => {
     );
   });
 
-  it('keeps the root logging wrapper pointed at the uploaded core tree', async () => {
-    await expect(readFile('infra/logging.js', 'utf8')).resolves.toBe(
+  it('keeps the root logging wrapper pointed at the core browser module', async () => {
+    await expect(readFile('src/browser/logging.js', 'utf8')).resolves.toBe(
       "export * from '../core/browser/browser-core.js';\n"
     );
   });

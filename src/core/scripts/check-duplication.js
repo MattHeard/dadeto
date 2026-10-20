@@ -167,9 +167,70 @@ function handleCloneFailure(report, relativeReportPath, stderr) {
   if (summary) {
     stderr.write(`${summary}\n`);
   }
+  const cloneLocations = summarizeCloneLocations(report);
+  if (cloneLocations) {
+    stderr.write(`${cloneLocations}\n`);
+  }
 
   stderr.write(`See ${relativeReportPath} for the detailed clone report.\n`);
   return { exitCode: 1, clones };
+}
+
+/**
+ * Show a bounded set of source locations from the clone report.
+ * @param {Record<string, unknown>} report Parsed report payload.
+ * @returns {string} Readable locations or an empty string when unavailable.
+ */
+function summarizeCloneLocations(report) {
+  const duplicates = /** @type {unknown[]} */ (
+    Array.isArray(report.duplicates) ? report.duplicates : []
+  );
+  const locations = [];
+  for (const value of duplicates) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+    const clone = /** @type {{firstFile?: unknown, secondFile?: unknown}} */ (
+      value
+    );
+    const first = formatClonePosition(clone.firstFile);
+    const second = formatClonePosition(clone.secondFile);
+    if (!first || !second) continue;
+    locations.push(`  ${first} ↔ ${second}`);
+    if (locations.length === 5) break;
+  }
+  if (locations.length === 0) return '';
+  const remaining = Math.max(0, duplicates.length - locations.length);
+  const suffix = remaining
+    ? `\n  ${remaining} more clone(s); see detailed report.`
+    : '';
+  return `Clone locations (up to 5 shown):\n${locations.join('\n')}${suffix}`;
+}
+
+/**
+ * Format one safe file and line range from a clone report.
+ * @param {unknown} value Clone file location.
+ * @returns {string} File and line range or an empty string when malformed.
+ */
+function formatClonePosition(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return '';
+  const location =
+    /** @type {{name?: unknown, start?: unknown, end?: unknown}} */ (value);
+  if (
+    typeof location.name !== 'string' ||
+    location.name.length === 0 ||
+    location.name !== location.name.trim() ||
+    location.name.includes(String.fromCharCode(10)) ||
+    location.name.includes(String.fromCharCode(13)) ||
+    typeof location.start !== 'number' ||
+    typeof location.end !== 'number' ||
+    !Number.isSafeInteger(location.start) ||
+    !Number.isSafeInteger(location.end) ||
+    location.start < 1 ||
+    location.end < location.start
+  ) {
+    return '';
+  }
+  const range = location.end > location.start ? `-${location.end}` : '';
+  return `${location.name}:${location.start}${range}`;
 }
 
 /**

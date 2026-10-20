@@ -36,12 +36,32 @@ resource "google_service_account" "playwright" {
   display_name = "Playwright E2E runner (${var.environment})"
 }
 
+resource "google_project_service" "playwright_iamcredentials" {
+  count = local.playwright_enabled ? 1 : 0
+
+  project            = var.project_id
+  service            = "iamcredentials.googleapis.com"
+  disable_on_destroy = false
+}
+
 resource "google_service_account_iam_member" "tf_can_actas_playwright" {
   count = local.playwright_enabled ? 1 : 0
 
   service_account_id = google_service_account.playwright[0].name
   role               = "roles/iam.serviceAccountUser"
   member             = local.terraform_service_account_member
+}
+
+# The disposable Playwright identity can sign short-lived Firebase tenant
+# custom tokens as itself, without granting it project-level IAM roles.
+resource "google_service_account_iam_member" "playwright_can_sign_test_tokens" {
+  count = local.playwright_enabled ? 1 : 0
+
+  service_account_id = google_service_account.playwright[0].name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:${google_service_account.playwright[0].email}"
+
+  depends_on = [google_project_service.playwright_iamcredentials]
 }
 
 resource "google_project_iam_member" "pw_artifact_pull" {
@@ -293,6 +313,31 @@ resource "google_cloud_run_v2_job" "playwright" {
         }
 
         env {
+          name  = "GET_AUTHOR_UUID_V2_URL"
+          value = google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri
+        }
+
+        env {
+          name  = "GET_AUTHOR_UUID_V2_TENANT_ID"
+          value = google_identity_platform_tenant.environment.name
+        }
+
+        env {
+          name  = "GET_AUTHOR_UUID_V2_TEST_SIGNER_SERVICE_ACCOUNT"
+          value = google_service_account.playwright[0].email
+        }
+
+        env {
+          name  = "FIREBASE_PROJECT_ID"
+          value = var.project_id
+        }
+
+        env {
+          name  = "FIREBASE_API_KEY"
+          value = data.google_firebase_web_app_config.frontend.api_key
+        }
+
+        env {
           name  = "REPORT_BUCKET"
           value = local.reports_bucket_name
         }
@@ -351,6 +396,7 @@ resource "google_cloud_run_v2_job" "playwright" {
 
   depends_on = [
     google_service_account_iam_member.tf_can_actas_playwright,
+    google_service_account_iam_member.playwright_can_sign_test_tokens,
     google_project_iam_member.tf_run_admin,
     google_storage_bucket_iam_member.reports_writer,
     google_secret_manager_secret_iam_member.playwright_webhook_accessor,
