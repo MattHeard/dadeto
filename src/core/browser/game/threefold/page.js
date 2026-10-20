@@ -35,14 +35,15 @@ const SILT_MARGIN_PAGE_COPY = {
     ['#chapter-subtitle', 'The Silt Margin'],
     ['#chapter-tag', 'SMALL WORLD · THE SILT MARGIN'],
     ['#chapter-eyebrow', 'A CROSSING THROUGH THE CHOIR'],
-    ['#chapter-heading', 'Guide the guardian, or grow through it.'],
+    ['#chapter-heading', 'Reroute the dew, or grow through the root.'],
     [
       '#chapter-description',
-      'At 2.26 cm tall, Mara reaches a Choir signal root guarded by a small ' +
-        'creature. Guide it aside and send the signal, or grow through it and ' +
-        'leave the signal disrupted. The choice persists in this region’s save.',
+      'At 2.26 cm tall, Mara can guide the guardian aside, open the fine valve, ' +
+        'and send a signal after the dew channel drains. Growing one rung breaks ' +
+        'the root arch and crosses the rivulet, but kills the guardian and ' +
+        'disrupts the Choir signal. Water and consequences persist in this save.',
     ],
-    ['#interact-label', 'E · GUIDE OR SEND SIGNAL'],
+    ['#interact-label', 'E · GUIDE · OPEN VALVE · SEND SIGNAL'],
     ['#scene-link', 'Return to the Tidal Archive'],
     [
       '#game-footer',
@@ -50,7 +51,7 @@ const SILT_MARGIN_PAGE_COPY = {
     ],
   ]),
   href: '/threefold/?scene=sluice',
-  ariaLabel: 'Guide the guardian aside or send the Choir signal',
+  ariaLabel: 'Reroute the dew or grow through the root crossing',
 };
 
 /**

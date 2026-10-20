@@ -37,7 +37,8 @@ const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
 const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
 const SIMULATION_SCHEMA_VERSION = 6;
 const SLUICE_SIMULATION_SCHEMA_VERSION = 4;
-const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
+const LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
+const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 2;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.small-world-sluice';
@@ -150,13 +151,17 @@ export function restoreThreefoldSimulation(serialized) {
       throw new RangeError('Sluice save version is unsupported.');
     if (
       isSiltMarginScene &&
-      envelope.schemaVersion !== SILT_MARGIN_SIMULATION_SCHEMA_VERSION
+      ![
+        LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION,
+        SILT_MARGIN_SIMULATION_SCHEMA_VERSION,
+      ].includes(envelope.schemaVersion)
     )
       throw new RangeError('Silt Margin save version is unsupported.');
     const legacyV1 =
       !isSiltMarginScene &&
       envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
     const legacyV2 =
+      !isSiltMarginScene &&
       envelope.schemaVersion === PREVIOUS_SIMULATION_SCHEMA_VERSION;
     const state = envelope.state ?? envelope;
     if (!legacyV1 && !Object.hasOwn(state, 'encounter'))

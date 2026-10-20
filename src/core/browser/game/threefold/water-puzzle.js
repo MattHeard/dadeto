@@ -1,7 +1,9 @@
 import { heightAtScale } from './spatial.js';
 import {
-  flowWaterThroughPort,
-  getWaterSurfaceElevationMeters,
+  advanceTwoChamberWaterPuzzle,
+  createTwoChamberWaterValveOperator,
+  getTwoChamberWaterSurfaceElevations,
+  normalizeTwoChamberWaterPuzzle,
 } from './water.js';
 
 const VALVE_SCALE = -2;
@@ -45,65 +47,25 @@ export function createThreefoldSluicePuzzle() {
  * @returns {ReturnType<typeof createThreefoldSluicePuzzle>} Canonical independent puzzle state.
  */
 export function normalizeThreefoldSluicePuzzle(candidate) {
-  if (!candidate || typeof candidate !== 'object')
-    throw new TypeError('THREEFOLD sluice state must be an object.');
-  const { chambers, port, crossingSurfaceElevationMeters } =
-    /** @type {Record<string, any>} */ (candidate);
-  if (
-    !Array.isArray(chambers) ||
-    chambers.length !== 2 ||
-    !port ||
-    typeof port !== 'object' ||
-    typeof port.open !== 'boolean' ||
-    port.areaSquareMeters !== CLOSED_PORT.areaSquareMeters ||
-    port.sillElevationMeters !== CLOSED_PORT.sillElevationMeters ||
-    crossingSurfaceElevationMeters !== CROSSING_SURFACE_ELEVATION_METERS
-  )
-    throw new RangeError('THREEFOLD sluice configuration is inconsistent.');
-
-  const normalizedChambers = [UPPER_CHAMBER, LOWER_CHAMBER].map(
-    (authored, index) => {
-      const chamber = chambers[index];
-      if (
-        !chamber ||
-        chamber.id !== authored.id ||
-        chamber.floorElevationMeters !== authored.floorElevationMeters ||
-        chamber.areaSquareMeters !== authored.areaSquareMeters
-      )
-        throw new RangeError('THREEFOLD sluice chamber is inconsistent.');
-      const normalized = {
-        ...authored,
-        volumeCubicMeters: chamber.volumeCubicMeters,
-      };
-      getWaterSurfaceElevationMeters(normalized);
-      return normalized;
-    }
-  );
-  const totalVolume = normalizedChambers.reduce(
-    (total, chamber) => total + chamber.volumeCubicMeters,
-    0
-  );
-  if (Math.abs(totalVolume - TOTAL_PUZZLE_VOLUME_CUBIC_METERS) > 1e-9)
-    throw new RangeError('THREEFOLD sluice water volume is not conserved.');
-
-  return {
-    chambers: normalizedChambers,
-    port: { ...CLOSED_PORT, open: port.open },
+  return normalizeTwoChamberWaterPuzzle(candidate, {
+    chambers: [UPPER_CHAMBER, LOWER_CHAMBER],
+    port: CLOSED_PORT,
     crossingSurfaceElevationMeters: CROSSING_SURFACE_ELEVATION_METERS,
-  };
+    totalVolumeCubicMeters: TOTAL_PUZZLE_VOLUME_CUBIC_METERS,
+    totalVolumeTolerance: 1e-9,
+    name: 'THREEFOLD sluice',
+  });
 }
 
+const operateSluiceValveAtScale =
+  createTwoChamberWaterValveOperator(VALVE_SCALE);
 /**
- * Toggle the sluice valve. Its small service handle is reachable only at scale -2.
+ * Toggle the sluice valve. Its service handle is reachable only at scale -2.
  * @param {ReturnType<typeof createThreefoldSluicePuzzle>} state Current puzzle.
  * @param {number} playerScale Current rendered player scale.
  * @returns {ReturnType<typeof createThreefoldSluicePuzzle>} Updated puzzle or the unchanged state when the valve is out of reach.
  */
-export function operateThreefoldSluiceValve(state, playerScale) {
-  heightAtScale(playerScale);
-  if (playerScale !== VALVE_SCALE) return state;
-  return { ...state, port: { ...state.port, open: !state.port.open } };
-}
+export const operateThreefoldSluiceValve = operateSluiceValveAtScale;
 
 /**
  * Advance the sluice puzzle by an explicit amount of simulation time.
@@ -111,16 +73,7 @@ export function operateThreefoldSluiceValve(state, playerScale) {
  * @param {number} durationSeconds Explicit elapsed game time.
  * @returns {ReturnType<typeof createThreefoldSluicePuzzle>} Updated water volumes or the unchanged state when no water moved.
  */
-export function advanceThreefoldSluicePuzzle(state, durationSeconds) {
-  const flow = flowWaterThroughPort(
-    state.chambers[0],
-    state.chambers[1],
-    state.port,
-    durationSeconds
-  );
-  if (flow.transferredVolumeCubicMeters === 0) return state;
-  return { ...state, chambers: flow.chambers };
-}
+export const advanceThreefoldSluicePuzzle = advanceTwoChamberWaterPuzzle;
 
 /**
  * Derive the sluice puzzle view and whether the lower crossing is available.
@@ -130,12 +83,8 @@ export function advanceThreefoldSluicePuzzle(state, durationSeconds) {
  */
 export function getThreefoldSluicePuzzleStatus(state, playerScale) {
   heightAtScale(playerScale);
-  const upperWaterSurfaceElevationMeters = getWaterSurfaceElevationMeters(
-    state.chambers[0]
-  );
-  const lowerWaterSurfaceElevationMeters = getWaterSurfaceElevationMeters(
-    state.chambers[1]
-  );
+  const [upperWaterSurfaceElevationMeters, lowerWaterSurfaceElevationMeters] =
+    getTwoChamberWaterSurfaceElevations(state);
   const lowerBasinRaised =
     lowerWaterSurfaceElevationMeters >= state.crossingSurfaceElevationMeters;
   return {

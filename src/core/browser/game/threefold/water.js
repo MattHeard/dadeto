@@ -1,5 +1,11 @@
+import { heightAtScale } from './spatial.js';
+
 const GRAVITY_METERS_PER_SECOND_SQUARED = 9.80665;
 const DISCHARGE_COEFFICIENT = 0.62;
+
+/** @typedef {{id: string, floorElevationMeters: number, areaSquareMeters: number, volumeCubicMeters: number}} WaterPuzzleChamber */
+/** @typedef {{open: boolean, areaSquareMeters: number, sillElevationMeters: number}} WaterPuzzlePort */
+/** @typedef {{chambers: WaterPuzzleChamber[], port: WaterPuzzlePort, crossingSurfaceElevationMeters: number}} TwoChamberWaterPuzzle */
 
 /**
  * Advance water through one openable port between two physical chambers.
@@ -147,6 +153,115 @@ function waterSurfaceElevation(chamber) {
 export function getWaterSurfaceElevationMeters(chamber) {
   assertChamber(chamber);
   return waterSurfaceElevation(chamber);
+}
+
+/**
+ * Normalize the shared state shape for a two-chamber water puzzle.
+ * @param {unknown} candidate Candidate puzzle state.
+ * @param {{chambers: WaterPuzzleChamber[], port: WaterPuzzlePort, crossingSurfaceElevationMeters: number, totalVolumeCubicMeters: number, totalVolumeTolerance: number, name: string}} authored Authored puzzle configuration.
+ * @returns {TwoChamberWaterPuzzle} Canonical validated state.
+ */
+export function normalizeTwoChamberWaterPuzzle(candidate, authored) {
+  if (!candidate || typeof candidate !== 'object')
+    throw new TypeError(`${authored.name} state must be an object.`);
+  const { chambers, port, crossingSurfaceElevationMeters } =
+    /** @type {Record<string, any>} */ (candidate);
+  if (
+    !Array.isArray(chambers) ||
+    chambers.length !== authored.chambers.length ||
+    !port ||
+    typeof port !== 'object' ||
+    typeof port.open !== 'boolean' ||
+    port.areaSquareMeters !== authored.port.areaSquareMeters ||
+    port.sillElevationMeters !== authored.port.sillElevationMeters ||
+    crossingSurfaceElevationMeters !== authored.crossingSurfaceElevationMeters
+  )
+    throw new RangeError(`${authored.name} configuration is inconsistent.`);
+
+  const normalizedChambers = authored.chambers.map((configuration, index) => {
+    const chamber = chambers[index];
+    if (
+      !chamber ||
+      chamber.id !== configuration.id ||
+      chamber.floorElevationMeters !== configuration.floorElevationMeters ||
+      chamber.areaSquareMeters !== configuration.areaSquareMeters
+    )
+      throw new RangeError(`${authored.name} chamber is inconsistent.`);
+    const normalized = {
+      ...configuration,
+      volumeCubicMeters: chamber.volumeCubicMeters,
+    };
+    getWaterSurfaceElevationMeters(normalized);
+    return normalized;
+  });
+  const totalVolume = normalizedChambers.reduce(
+    (total, chamber) => total + chamber.volumeCubicMeters,
+    0
+  );
+  if (
+    Math.abs(totalVolume - authored.totalVolumeCubicMeters) >
+    authored.totalVolumeTolerance
+  )
+    throw new RangeError(`${authored.name} water volume is not conserved.`);
+  return {
+    chambers: normalizedChambers,
+    port: { ...authored.port, open: port.open },
+    crossingSurfaceElevationMeters: authored.crossingSurfaceElevationMeters,
+  };
+}
+
+/**
+ * Toggle a water-puzzle valve when the player is at its authored scale.
+ * The caller validates physical scale and interaction reach.
+ * @param {TwoChamberWaterPuzzle} state Current puzzle.
+ * @param {number} playerScale Current scale.
+ * @param {number} valveScale Scale at which the valve can be used.
+ * @returns {TwoChamberWaterPuzzle} Updated puzzle or the original state.
+ */
+export function operateTwoChamberWaterValve(state, playerScale, valveScale) {
+  if (playerScale !== valveScale) return state;
+  return { ...state, port: { ...state.port, open: !state.port.open } };
+}
+
+/**
+ * Create a valve operation that validates scale and enforces its service rung.
+ * @param {number} valveScale Authored scale at which the valve can be reached.
+ * @returns {(state: TwoChamberWaterPuzzle, playerScale: number) => TwoChamberWaterPuzzle} Scale-checked valve operator.
+ */
+export function createTwoChamberWaterValveOperator(valveScale) {
+  return function operateWaterPuzzleValve(state, playerScale) {
+    heightAtScale(playerScale);
+    return operateTwoChamberWaterValve(state, playerScale, valveScale);
+  };
+}
+
+/**
+ * Advance a two-chamber puzzle through the shared physical port solver.
+ * @param {TwoChamberWaterPuzzle} state Current puzzle.
+ * @param {number} durationSeconds Explicit simulated duration.
+ * @returns {TwoChamberWaterPuzzle} Updated puzzle or the original state when water did not move.
+ */
+export function advanceTwoChamberWaterPuzzle(state, durationSeconds) {
+  const flow = flowWaterThroughPort(
+    state.chambers[0],
+    state.chambers[1],
+    state.port,
+    durationSeconds
+  );
+  if (flow.transferredVolumeCubicMeters === 0) return state;
+  return { ...state, chambers: flow.chambers };
+}
+
+/**
+ * Read both authored chamber surface elevations.
+ * @param {TwoChamberWaterPuzzle} state Current water puzzle.
+ * @returns {[number, number]} First and second surface elevations in metres.
+ */
+export function getTwoChamberWaterSurfaceElevations(state) {
+  return [
+    getWaterSurfaceElevationMeters(state.chambers[0]),
+    getWaterSurfaceElevationMeters(state.chambers[1]),
+  ];
 }
 
 /**

@@ -1,8 +1,16 @@
 import { createScaleState } from './spatial.js';
+import {
+  createThreefoldSiltMarginWaterPuzzle,
+  getThreefoldSiltMarginWaterStatus,
+  normalizeThreefoldSiltMarginWaterPuzzle,
+} from './silt-margin-water.js';
 
 export const THREEFOLD_SILT_MARGIN_SCENE_ID = 'silt-margin';
 export const THREEFOLD_SILT_MARGIN_GUARDIAN_ID = 'silt-margin-guardian';
 export const THREEFOLD_SILT_MARGIN_SIGNAL_ID = 'silt-margin-choir-signal';
+export const THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID = 'silt-margin-root-arch';
+export const THREEFOLD_SILT_MARGIN_DEW_CROSSING_ID = 'silt-margin-dew-crossing';
+export const THREEFOLD_SILT_MARGIN_FINE_VALVE_ID = 'silt-margin-fine-valve';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 0.32, y: 0.18 } };
 const GUARDIAN_BOUNDS = {
@@ -13,7 +21,15 @@ const SIGNAL_BOUNDS = {
   min: { x: 0.248, y: 0.076, z: 0 },
   max: { x: 0.26, y: 0.104, z: 0.02 },
 };
-/** @typedef {{guardian: 'present'|'guided-aside'|'killed', signal: 'blocked'|'sent'|'disrupted'}} ThreefoldSiltMarginState */
+const ROOT_ARCH_BOUNDS = {
+  min: { x: 0.134, y: 0.073, z: 0.03 },
+  max: { x: 0.158, y: 0.107, z: 0.06 },
+};
+const DEW_CROSSING_BOUNDS = {
+  min: { x: 0.16, y: 0, z: 0 },
+  max: { x: 0.216, y: 0.18, z: 0.045 },
+};
+/** @typedef {{guardian: 'present'|'guided-aside'|'killed', signal: 'blocked'|'sent'|'disrupted', waterPuzzle: ReturnType<typeof createThreefoldSiltMarginWaterPuzzle>}} ThreefoldSiltMarginState */
 /** @typedef {{min: {x: number, y: number}, max: {x: number, y: number}}} ThreefoldPlanarBounds */
 /** @typedef {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} ThreefoldSolidBounds */
 /** @typedef {{id: string, bounds: ThreefoldSolidBounds}} ThreefoldSolidObject */
@@ -41,7 +57,13 @@ export function createThreefoldSiltMarginScene() {
     ),
     baseBodyWidthMeters: 0.4,
     areas: [{ id: 'silt-margin', bounds: copyBounds() }],
-    geometry: [],
+    geometry: [
+      { id: THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID, bounds: copyRootArchBounds() },
+      {
+        id: THREEFOLD_SILT_MARGIN_DEW_CROSSING_ID,
+        bounds: copyDewCrossingBounds(),
+      },
+    ],
     decorations: [
       {
         id: 'silt-margin-dew-pool',
@@ -59,6 +81,14 @@ export function createThreefoldSiltMarginScene() {
       },
     ],
     interactables: [
+      {
+        id: THREEFOLD_SILT_MARGIN_FINE_VALVE_ID,
+        position: { x: 0.138, y: 0.09 },
+        bounds: {
+          min: { x: 0.135, y: 0.087, z: 0 },
+          max: { x: 0.141, y: 0.093, z: 0.012 },
+        },
+      },
       {
         id: THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
         position: { x: 0.128, y: 0.09 },
@@ -84,7 +114,11 @@ export function createThreefoldSiltMarginScene() {
  * @returns {ThreefoldSiltMarginState} Opening puzzle state.
  */
 export function createThreefoldSiltMarginState() {
-  return { guardian: 'present', signal: 'blocked' };
+  return {
+    guardian: 'present',
+    signal: 'blocked',
+    waterPuzzle: createThreefoldSiltMarginWaterPuzzle(),
+  };
 }
 
 /**
@@ -98,16 +132,47 @@ export function normalizeThreefoldSiltMarginState(candidate) {
   const state = /** @type {Record<string, unknown>} */ (candidate);
   const guardian = state.guardian;
   const signal = state.signal;
+  const waterPuzzle = normalizeThreefoldSiltMarginWaterPuzzle(
+    state.waterPuzzle ??
+      createThreefoldSiltMarginWaterPuzzle({ crossingOpen: signal === 'sent' })
+  );
   const consistent =
     (guardian === 'present' && signal === 'blocked') ||
     (guardian === 'guided-aside' &&
       (signal === 'blocked' || signal === 'sent')) ||
     (guardian === 'killed' && signal === 'disrupted');
   if (!consistent) throw new RangeError('Silt Margin state is inconsistent.');
+  if (
+    signal === 'sent' &&
+    !getThreefoldSiltMarginWaterStatus(waterPuzzle).crossingAvailable
+  )
+    throw new RangeError(
+      'The Choir signal cannot be sent across a flooded crossing.'
+    );
   return /** @type {ThreefoldSiltMarginState} */ ({
     guardian,
     signal,
+    waterPuzzle,
   });
+}
+
+/**
+ * Copy the growth-sensitive root arch that spans the dew channel.
+ * @returns {ThreefoldSolidBounds} Independent arch bounds.
+ */
+function copyRootArchBounds() {
+  return { min: { ...ROOT_ARCH_BOUNDS.min }, max: { ...ROOT_ARCH_BOUNDS.max } };
+}
+
+/**
+ * Copy the water crossing's movement barrier.
+ * @returns {ThreefoldSolidBounds} Independent crossing bounds.
+ */
+function copyDewCrossingBounds() {
+  return {
+    min: { ...DEW_CROSSING_BOUNDS.min },
+    max: { ...DEW_CROSSING_BOUNDS.max },
+  };
 }
 
 /**

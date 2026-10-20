@@ -255,7 +255,7 @@ describe('THREEFOLD page adapter', () => {
     expect(runtime.getState().player.scale).toBe(-4);
     expect(runtime.getSnapshot().world.map.name).toBe('THE SILT MARGIN');
     expect(nodes.get('#chapter-heading').textContent).toContain(
-      'Guide the guardian'
+      'Reroute the dew'
     );
     expect(nodes.get('#scene-link')).toMatchObject({
       textContent: 'Return to the Tidal Archive',

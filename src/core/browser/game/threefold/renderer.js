@@ -5,8 +5,10 @@ import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import {
   THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
+  THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID,
   THREEFOLD_SILT_MARGIN_SIGNAL_ID,
 } from './silt-margin.js';
+import { getThreefoldSiltMarginWaterStatus } from './silt-margin-water.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import { presentThreefoldTestimony } from './testimony.js';
@@ -219,14 +221,23 @@ function renderThreefoldSiltMarginFrame(state) {
   const guardian = state.siltMargin.guardian;
   const signal = state.siltMargin.signal;
   const growth = previewThreefoldGrowthEffects(state);
+  const water = getThreefoldSiltMarginWaterStatus(state.siltMargin.waterPuzzle);
+  const rootArchBroken = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID
+  );
+  const waterHeight = Math.max(
+    8,
+    snapCanvasCoordinate((water.upstreamSurfaceElevationMeters / 0.04) * 16)
+  );
+  const waterY = 88 - waterHeight;
   const status =
     guardian === 'killed'
-      ? 'GUARDIAN KILLED · CHOIR DISRUPTED'
+      ? 'ROOT BROKEN · GUARDIAN KILLED · CHOIR DISRUPTED'
       : guardian === 'guided-aside'
         ? signal === 'sent'
-          ? 'GUARDIAN GUIDED · SIGNAL SENT'
-          : 'GUARDIAN GUIDED · REACH THE ROOT'
-        : 'GUARDIAN BLOCKS THE CHOIR · GROW OR GUIDE';
+          ? 'DEW DIVERTED · GUARDIAN SAFE · SIGNAL SENT'
+          : 'GUARDIAN GUIDED · OPEN THE FINE VALVE'
+        : 'DEW BLOCKS THE ROOT · GROW OR OPEN THE VALVE';
   const frame = createThreefoldFramePayload({
     world: createSmallWorldFrameWorld(
       state.scene.id,
@@ -272,7 +283,23 @@ function renderThreefoldSiltMarginFrame(state) {
         index % 2 === 0 ? '#526e4b' : '#71915b'
       )
     ),
-    createThreefoldRectShape([88, 60, 24, 16], '#25a9b8'),
+    ...(!rootArchBroken
+      ? [
+          createThreefoldRectShape(
+            [64, 48, 8, 24],
+            growth.geometryIds.includes(THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID)
+              ? '#e16b5a'
+              : '#8b7950'
+          ),
+          createThreefoldRectShape([72, 48, 8, 8], '#8b7950'),
+          createThreefoldRectShape([80, 48, 8, 24], '#8b7950'),
+        ]
+      : [
+          createThreefoldRectShape([64, 72, 8, 8], '#8b7950'),
+          createThreefoldRectShape([80, 72, 8, 8], '#8b7950'),
+        ]),
+    createThreefoldRectShape([88, waterY, 24, waterHeight], '#25a9b8'),
+    createThreefoldRectShape([72, 88, 8, 8], '#e9d88d'),
     createThreefoldRectShape([112, 60, 8, 24], '#526e4b'),
     createThreefoldRectShape([120, 52, 8, 40], rootColor),
     createThreefoldRectShape([112, 52, 8, 8], rootColor),
@@ -283,12 +310,14 @@ function renderThreefoldSiltMarginFrame(state) {
     captionShape(
       { x: 8, y: 126 },
       guardian === 'killed'
-        ? 'A GROWTH KILLED THE GUARDIAN'
+        ? 'ROOT BROKEN · CHOIR SIGNAL DISRUPTED'
         : guardian === 'guided-aside'
           ? signal === 'sent'
-            ? 'THE CHOIR SIGNAL CROSSED'
-            : 'THE SIGNAL ROOT IS OPEN'
-          : 'GROW THROUGH OR GUIDE THE GUARDIAN'
+            ? 'DEW DIVERTED · THE CHOIR SIGNAL CROSSED'
+            : water.crossingAvailable
+              ? 'CROSSING OPEN · REACH THE CHOIR ROOT'
+              : 'OPEN THE FINE VALVE · WAIT FOR THE DEW'
+          : 'GROW THROUGH THE ROOT OR GUIDE THE GUARDIAN'
     ),
     captionShape(
       { x: 8, y: 136 },
@@ -303,6 +332,9 @@ function renderThreefoldSiltMarginFrame(state) {
     elapsedGameSeconds: state.elapsedGameSeconds,
     guardian,
     signal,
+    siltMarginWater: water,
+    rootArchBroken,
+    growthPreviewGeometryIds: growth.geometryIds,
     growthPreviewCreatureIds: growth.creatureIds,
     guardianId: THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
     signalId: THREEFOLD_SILT_MARGIN_SIGNAL_ID,

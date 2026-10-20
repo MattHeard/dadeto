@@ -1,4 +1,7 @@
-import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
+import {
+  createThreefoldSiltMarginScene,
+  normalizeThreefoldSiltMarginState,
+} from '../../../../src/core/browser/game/threefold/silt-margin.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import {
   createThreefoldSimulationSaveStore,
@@ -45,6 +48,14 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(frame.threefold).toMatchObject({
       guardian: 'present',
       signal: 'blocked',
+      rootArchBroken: false,
+      siltMarginWater: {
+        upstreamSurfaceElevationMeters: 0.04,
+        downstreamSurfaceElevationMeters: 0,
+        valveOpen: false,
+        crossingAvailable: false,
+      },
+      growthPreviewGeometryIds: ['silt-margin-root-arch'],
       growthPreviewCreatureIds: ['silt-margin-guardian'],
     });
     expect(
@@ -71,13 +82,26 @@ describe('THREEFOLD Silt Margin crossing', () => {
   test('guides the guardian aside and sends the signal after reaching its root', () => {
     let state = createSiltMarginRun();
     state = stepThreefoldSimulation(state, { type: 'interact' });
-    expect(state.siltMargin).toEqual({
+    expect(state.siltMargin).toMatchObject({
       guardian: 'guided-aside',
       signal: 'blocked',
     });
     expect(
       renderThreefoldFrame(state).threefold.growthPreviewCreatureIds
     ).toEqual([]);
+
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.siltMargin.waterPuzzle.port.open).toBe(true);
+    expect(
+      state.siltMargin.waterPuzzle.chambers[0].volumeCubicMeters
+    ).toBeLessThan(0.00004);
+    state = stepThreefoldSimulation(state, {
+      type: 'wait',
+      elapsedGameMinutes: 1,
+    });
+    expect(
+      renderThreefoldFrame(state).threefold.siltMarginWater.crossingAvailable
+    ).toBe(true);
 
     for (let step = 0; step < 46; step += 1)
       state = stepThreefoldSimulation(state, {
@@ -86,20 +110,46 @@ describe('THREEFOLD Silt Margin crossing', () => {
       });
     state = stepThreefoldSimulation(state, { type: 'interact' });
 
-    expect(state.siltMargin).toEqual({
+    expect(state.siltMargin).toMatchObject({
       guardian: 'guided-aside',
       signal: 'sent',
     });
+    expect(renderThreefoldFrame(state).threefold.signal).toBe('sent');
     expect(state.encounter.growthDeaths).toBeUndefined();
-    expect(state.elapsedGameSeconds).toBe(48 * 15);
+    expect(state.elapsedGameSeconds).toBe(795);
   });
 
-  test('keeps growth through the guardian available and records the disruption', () => {
+  test('blocks the rivulet before diversion and growth breaks the root arch as a second solution', () => {
     let state = createSiltMarginRun();
+    for (let step = 0; step < 20; step += 1)
+      state = stepThreefoldSimulation(state, {
+        type: 'move',
+        direction: 'right',
+      });
+    expect(state.player.position.x).toBeLessThan(0.16);
+
+    let sideRoute = createSiltMarginRun();
+    for (let step = 0; step < 30; step += 1)
+      sideRoute = stepThreefoldSimulation(sideRoute, {
+        type: 'move',
+        direction: 'down',
+      });
+    expect(sideRoute.player.position.y).toBeGreaterThan(0.12);
+    for (let step = 0; step < 20; step += 1)
+      sideRoute = stepThreefoldSimulation(sideRoute, {
+        type: 'move',
+        direction: 'right',
+      });
+    expect(sideRoute.player.position.x).toBeLessThan(0.16);
+
+    state = createSiltMarginRun();
     state = stepThreefoldSimulation(state, { type: 'grow' });
 
     expect(state.player.scale).toBe(-3);
-    expect(state.siltMargin).toEqual({
+    expect(state.player.destroyedGeometryIds).toContain(
+      'silt-margin-root-arch'
+    );
+    expect(state.siltMargin).toMatchObject({
       guardian: 'killed',
       signal: 'disrupted',
     });
@@ -109,9 +159,73 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(
       renderThreefoldFrame(state).threefold.growthPreviewCreatureIds
     ).toEqual([]);
+    expect(renderThreefoldFrame(state).threefold.rootArchBroken).toBe(true);
+    expect(
+      stepThreefoldSimulation(state, { type: 'move', direction: 'right' })
+        .player.position.x
+    ).toBeGreaterThan(state.player.position.x);
     expect(
       restoreThreefoldSimulation(serializeThreefoldSimulation(state))
     ).toEqual(state);
+  });
+
+  test('migrates schema-v1 branches and rejects non-conserved dew saves', () => {
+    expect(
+      normalizeThreefoldSiltMarginState({
+        guardian: 'guided-aside',
+        signal: 'blocked',
+      })
+    ).toMatchObject({ guardian: 'guided-aside', signal: 'blocked' });
+    expect(
+      normalizeThreefoldSiltMarginState({
+        guardian: 'guided-aside',
+        signal: 'sent',
+      })
+    ).toMatchObject({ guardian: 'guided-aside', signal: 'sent' });
+    expect(() => normalizeThreefoldSiltMarginState(null)).toThrow(
+      'Silt Margin state is invalid.'
+    );
+
+    const envelope = JSON.parse(
+      serializeThreefoldSimulation(createSiltMarginRun())
+    );
+    expect(envelope.schemaVersion).toBe(2);
+    envelope.schemaVersion = 1;
+    delete envelope.state.siltMargin.waterPuzzle;
+    const migrated = restoreThreefoldSimulation(JSON.stringify(envelope));
+    expect(migrated.siltMargin.waterPuzzle.chambers[0].volumeCubicMeters).toBe(
+      0.00004
+    );
+
+    const completedLegacy = JSON.parse(
+      serializeThreefoldSimulation(createSiltMarginRun())
+    );
+    completedLegacy.schemaVersion = 1;
+    completedLegacy.state.siltMargin.guardian = 'guided-aside';
+    completedLegacy.state.siltMargin.signal = 'sent';
+    delete completedLegacy.state.siltMargin.waterPuzzle;
+    const restoredSignal = restoreThreefoldSimulation(
+      JSON.stringify(completedLegacy)
+    );
+    expect(restoredSignal.siltMargin.signal).toBe('sent');
+    expect(
+      renderThreefoldFrame(restoredSignal).threefold.siltMarginWater
+        .crossingAvailable
+    ).toBe(true);
+
+    const unsupportedVersion = JSON.parse(
+      serializeThreefoldSimulation(createSiltMarginRun())
+    );
+    unsupportedVersion.schemaVersion = 3;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(unsupportedVersion))
+    ).toBeNull();
+
+    const invalidWater = JSON.parse(
+      serializeThreefoldSimulation(createSiltMarginRun())
+    );
+    invalidWater.state.siltMargin.waterPuzzle.chambers[0].volumeCubicMeters = 0.000039;
+    expect(restoreThreefoldSimulation(JSON.stringify(invalidWater))).toBeNull();
   });
 
   test('advances only supported commands and explicit waits on the region clock', () => {

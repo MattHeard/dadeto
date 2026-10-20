@@ -19,8 +19,16 @@ import {
   normalizeThreefoldSiltMarginState,
   THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
   THREEFOLD_SILT_MARGIN_SCENE_ID,
+  THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID,
+  THREEFOLD_SILT_MARGIN_DEW_CROSSING_ID,
+  THREEFOLD_SILT_MARGIN_FINE_VALVE_ID,
   THREEFOLD_SILT_MARGIN_SIGNAL_ID,
 } from './silt-margin.js';
+import {
+  advanceThreefoldSiltMarginWater,
+  getThreefoldSiltMarginWaterStatus,
+  operateThreefoldSiltMarginValve,
+} from './silt-margin-water.js';
 import {
   advanceThreefoldSluicePuzzle,
   createThreefoldSluicePuzzle,
@@ -468,6 +476,7 @@ function stepSiltMarginScene(state, action) {
       : [];
   const player = applySmallWorldPhysicalAction(state, action);
   let siltMargin = state.siltMargin;
+  let waterPuzzle = siltMargin.waterPuzzle;
   let encounter = state.encounter;
   if (action.type === 'grow') {
     if (
@@ -487,13 +496,25 @@ function stepSiltMarginScene(state, action) {
     ) {
       siltMargin = { ...siltMargin, guardian: 'guided-aside' };
     } else if (
+      isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_FINE_VALVE_ID)
+    ) {
+      waterPuzzle = operateThreefoldSiltMarginValve(
+        waterPuzzle,
+        state.player.scale
+      );
+    } else if (
       siltMargin.guardian === 'guided-aside' &&
       siltMargin.signal === 'blocked' &&
+      getThreefoldSiltMarginWaterStatus(waterPuzzle).crossingAvailable &&
       isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_SIGNAL_ID)
     ) {
       siltMargin = { ...siltMargin, signal: 'sent' };
     }
   }
+  siltMargin = {
+    ...siltMargin,
+    waterPuzzle: advanceThreefoldSiltMarginWater(waterPuzzle, durationSeconds),
+  };
 
   return /** @type {SiltMarginSimulationState} */ (
     commitSmallWorldAction(state, player, durationSeconds, {
@@ -614,9 +635,15 @@ function movePlayerAtScene(state, direction) {
  * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Growth-sensitive geometry.
  */
 function growthGeometry(state) {
-  return state.scene.id === THREEFOLD_SLUICE_SCENE_ID
-    ? state.scene.geometry.filter(({ id }) => id !== 'sluice-crossing-barrier')
-    : state.scene.geometry;
+  if (state.scene.id === THREEFOLD_SLUICE_SCENE_ID)
+    return state.scene.geometry.filter(
+      ({ id }) => id !== 'sluice-crossing-barrier'
+    );
+  if (isSiltMarginSimulationState(state))
+    return state.scene.geometry.filter(
+      ({ id }) => id !== THREEFOLD_SILT_MARGIN_DEW_CROSSING_ID
+    );
+  return state.scene.geometry;
 }
 
 /**
@@ -625,11 +652,30 @@ function growthGeometry(state) {
  * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Geometry active for movement.
  */
 function movementGeometry(state) {
-  if (!isSluiceSimulationState(state)) return state.scene.geometry;
-  return getThreefoldSluicePuzzleStatus(state.sluicePuzzle, state.player.scale)
-    .crossingAvailable
-    ? growthGeometry(state)
-    : state.scene.geometry;
+  if (isSluiceSimulationState(state))
+    return getThreefoldSluicePuzzleStatus(
+      state.sluicePuzzle,
+      state.player.scale
+    ).crossingAvailable
+      ? growthGeometry(state)
+      : state.scene.geometry;
+  if (isSiltMarginSimulationState(state)) {
+    const overRootArch =
+      state.player.scale >= -3 &&
+      state.player.destroyedGeometryIds.includes(
+        THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID
+      );
+    const crossingOpen =
+      overRootArch ||
+      getThreefoldSiltMarginWaterStatus(state.siltMargin.waterPuzzle)
+        .crossingAvailable;
+    return crossingOpen
+      ? state.scene.geometry.filter(
+          ({ id }) => id !== THREEFOLD_SILT_MARGIN_DEW_CROSSING_ID
+        )
+      : state.scene.geometry;
+  }
+  return state.scene.geometry;
 }
 
 /**
