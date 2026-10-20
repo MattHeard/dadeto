@@ -4,6 +4,7 @@ import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { getThreefoldGateOutcome } from './outcome.js';
+import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import {
   isSluiceSimulationState,
   previewThreefoldGrowthEffects,
@@ -12,7 +13,7 @@ import { heightAtScale, projectGeometryForScale } from './spatial.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
-const GRID_PIXELS = 4;
+const GRID_PIXELS = 8;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean}} ThreefoldSpriteShape */
@@ -141,6 +142,9 @@ export function renderThreefoldFrame(state) {
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
     closedBy: state.episode.closedBy ?? null,
+    witnessLedger: (state.episode.witnessLedger || []).map(
+      presentThreefoldWitnessEntry
+    ),
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
     growthPreviewCreatureIds: creatureIds,
@@ -200,6 +204,7 @@ function renderThreefoldSluiceFrame(state) {
     lowerWaterSurfaceElevationMeters: water.lowerWaterSurfaceElevationMeters,
     lowerBasinRaised: water.lowerBasinRaised,
     crossingAvailable: water.crossingAvailable,
+    witnessLedger: [],
   };
   return alignThreefoldFrame(frame);
 }
@@ -215,7 +220,7 @@ function alignThreefoldFrame(frame) {
 }
 
 /**
- * Align all visible THREEFOLD canvas art to a four-pixel logical lattice.
+ * Align all visible THREEFOLD canvas art to an eight-pixel logical lattice.
  * Simulation coordinates and fluid levels remain continuous; only the final
  * handheld presentation is quantized.
  * @param {ThreefoldSpriteShape[]} shapes Mosslight canvas shapes.
@@ -238,7 +243,7 @@ function snapCanvasShapesToGrid(shapes) {
 }
 
 /**
- * Snap a canvas coordinate to the nearest four-pixel line.
+ * Snap a canvas coordinate to the nearest eight-pixel line.
  * @param {number} value Logical-screen position.
  * @returns {number} Grid-aligned logical-screen position.
  */
@@ -253,7 +258,7 @@ function snapCanvasCoordinate(value) {
  */
 function snapCanvasDimension(value) {
   if (value === 0) return 0;
-  return Math.max(GRID_PIXELS, snapCanvasCoordinate(value));
+  return Math.max(GRID_PIXELS, Math.ceil(value / GRID_PIXELS) * GRID_PIXELS);
 }
 
 /**

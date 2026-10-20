@@ -4,6 +4,7 @@ import {
 } from '../mosslight-valley/pagePresenter.js';
 import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
+import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
 /**
  * Start the standalone THREEFOLD handheld page.
@@ -27,6 +28,16 @@ export function startThreefoldPage(options) {
     ...createMosslightPageEnvironment(options),
     createRuntime: (/** @type {Record<string, any>} */ runtimeOptions) =>
       createThreefoldRuntime({ ...runtimeOptions, storage, scene }),
+    drawFrame: (
+      /** @type {any} */ context,
+      /** @type {Record<string, any>} */ frame
+    ) => {
+      (options.drawFrame || drawGameFrame)(context, frame);
+      renderThreefoldWitnessLedger(
+        options.documentObj,
+        frame.threefold?.witnessLedger || []
+      );
+    },
     saveFilename: 'threefold-save.json',
   });
 }
@@ -79,4 +90,65 @@ function configureSluicePage(documentObj) {
     'aria-label',
     'Operate the sluice service valve'
   );
+  const witnessLedger = documentObj?.querySelector?.('#witness-ledger');
+  if (witnessLedger) witnessLedger.hidden = true;
+}
+
+/**
+ * Render factual event history beside the shared Mosslight screen.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {Array<ReturnType<typeof import('./witness-ledger.js').presentThreefoldWitnessEntry>>} entries Player-facing journal events.
+ * @returns {void}
+ */
+function renderThreefoldWitnessLedger(documentObj, entries) {
+  const list = documentObj?.querySelector?.('#witness-ledger-entries');
+  if (!list) return;
+  list.replaceChildren();
+  if (entries.length === 0) {
+    const item = documentObj.createElement('li');
+    item.textContent = 'No gate events recorded yet.';
+    list.appendChild(item);
+    return;
+  }
+  entries.forEach(entry =>
+    list.appendChild(createWitnessListItem(documentObj, entry))
+  );
+}
+
+/**
+ * Create one text-only, accessible journal event without injecting markup.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {{title: string, intention: string, knowledge: string, consequence: string, relation: string|null}} entry Presented event.
+ * @returns {any} List item node.
+ */
+function createWitnessListItem(documentObj, entry) {
+  const item = documentObj.createElement('li');
+  const article = documentObj.createElement('div');
+  article.className = 'witness-event';
+  const title = documentObj.createElement('strong');
+  title.textContent = entry.title;
+  article.appendChild(title);
+  appendWitnessField(documentObj, article, 'Choice', entry.intention);
+  appendWitnessField(documentObj, article, 'Knowledge', entry.knowledge);
+  appendWitnessField(documentObj, article, 'Consequence', entry.consequence);
+  if (entry.relation)
+    appendWitnessField(documentObj, article, 'History', entry.relation);
+  item.appendChild(article);
+  return item;
+}
+
+/**
+ * Add one labeled, escaped text field to an event.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {any} parent Event article node.
+ * @param {string} label Field label.
+ * @param {string} value Field content.
+ * @returns {void}
+ */
+function appendWitnessField(documentObj, parent, label, value) {
+  const paragraph = documentObj.createElement('p');
+  const heading = documentObj.createElement('strong');
+  heading.textContent = `${label}: `;
+  paragraph.append(heading, documentObj.createTextNode(value));
+  parent.appendChild(paragraph);
 }

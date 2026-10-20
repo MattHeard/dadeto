@@ -25,6 +25,8 @@ import {
   recordThreefoldGrowthDeaths,
   resolveGatehouseRat,
 } from './encounter.js';
+import { getThreefoldGateOutcome } from './outcome.js';
+import { appendThreefoldWitnessEntry } from './witness-ledger.js';
 import {
   changeScale,
   growThroughGeometry,
@@ -42,6 +44,7 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /** @typedef {{scene: ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, sluicePuzzle: ReturnType<typeof createThreefoldSluicePuzzle>, elapsedGameSeconds: number}} SluiceSimulationState */
 /** @typedef {BrokenGateSimulationState|SluiceSimulationState} ThreefoldSimulationState */
 /** @typedef {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} ThreefoldCrisisThresholds */
+/** @typedef {{type: string, direction?: string, elapsedGameMinutes?: number, preActionFrame?: Record<string, any>}} ThreefoldWorldAction */
 
 /**
  * Create a fresh deterministic simulation for the canonical Broken Gate.
@@ -149,10 +152,22 @@ export function previewThreefoldGrowthEffects(state) {
  * Every movement/scale attempt takes a quarter in-game minute, including a
  * blocked or unavailable attempt. Menus, pause, and unknown commands are inert.
  * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
- * @param {{type: string, direction?: string, elapsedGameMinutes?: number}|null|undefined} action One bounded player command.
+ * @param {ThreefoldWorldAction|null|undefined} action One bounded player command.
  * @returns {ReturnType<typeof createThreefoldSimulation>} New simulation state, or the original for inert commands.
  */
 export function stepThreefoldSimulation(state, action) {
+  const nextState = stepThreefoldAction(state, action);
+  if (!action || !state || !nextState || state === nextState) return nextState;
+  return recordGateWitnessEvent(state, nextState, action);
+}
+
+/**
+ * Apply a command without adding witness records.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @param {ThreefoldWorldAction|null|undefined} action One bounded player command.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated simulation.
+ */
+function stepThreefoldAction(state, action) {
   if (isEpisodeClosed(state)) return state;
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
@@ -229,6 +244,158 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   return state;
+}
+
+/**
+ * Record the authored gate breach, later visible outcomes, and repair as facts.
+ * @param {ReturnType<typeof createThreefoldSimulation>} before Prior simulation.
+ * @param {ReturnType<typeof createThreefoldSimulation>} after Resulting simulation.
+ * @param {ThreefoldWorldAction} action Chosen world command and its visible pre-action frame.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Result with appended witness history when consequential.
+ */
+function recordGateWitnessEvent(before, after, action) {
+  if (isSluiceSimulationState(before)) return after;
+  const entry = createWitnessEntry(before, after, action);
+  if (!entry) return after;
+  return {
+    ...after,
+    episode: appendThreefoldWitnessEntry(after.episode, entry),
+  };
+}
+
+/**
+ * Build one ordered record from pre-action knowledge and the resulting facts.
+ * @param {ReturnType<typeof createThreefoldSimulation>} before Prior simulation.
+ * @param {ReturnType<typeof createThreefoldSimulation>} after Resulting simulation.
+ * @param {ThreefoldWorldAction} action Chosen world command and visible pre-action frame.
+ * @returns {Record<string, any>|null} Deterministic witness entry, if this action creates one.
+ */
+function createWitnessEntry(before, after, action) {
+  const ledger = before.episode.witnessLedger || [];
+  const damagedGeometryIds = after.player.destroyedGeometryIds
+    .filter(
+      (/** @type {string} */ id) =>
+        !before.player.destroyedGeometryIds.includes(id) &&
+        isGateRepairGeometryId(id)
+    )
+    .sort();
+  const repairedGate =
+    before.episode.gateRepaired !== true && after.episode.gateRepaired === true;
+  const breach = [...ledger]
+    .reverse()
+    .find(
+      entry =>
+        entry.type === 'choice' &&
+        entry.consequence.damagedGeometryIds.some(isGateRepairGeometryId)
+    );
+  let type = /** @type {'choice'|'observation'|'repair'|null} */ (null);
+  let intention = '';
+  let intendedOutcome = '';
+  let relatedEventId = null;
+  if (damagedGeometryIds.length > 0) {
+    type = 'choice';
+    intention = 'Increase Mara scale by one rung.';
+    intendedOutcome =
+      'Grow by one scale step; the visible preview lists the affected pieces and beings.';
+  } else if (repairedGate) {
+    type = 'repair';
+    intention = 'Repair the relief gate at its locking pawl.';
+    intendedOutcome = 'Restore the relief gate mechanism.';
+    relatedEventId = breach?.id ?? null;
+  } else if (breach && hasVisibleGateOutcomeChanged(before, after)) {
+    type = 'observation';
+    intention = describeChosenAction(action);
+    intendedOutcome =
+      'Observe the deterministic gate, channel, and settlement outcomes after this action.';
+    relatedEventId = breach.id;
+  }
+  if (!type) return null;
+  const frame = action.preActionFrame || {};
+  const displayedState = frame.threefold || {};
+  const preview = previewThreefoldGrowthEffects(before);
+  const gateOutcome = getThreefoldGateOutcome(before);
+  const afterGateOutcome = getThreefoldGateOutcome(after);
+  return {
+    id: `witness-${ledger.length + 1}`,
+    type,
+    atGameMinute: after.crisis.elapsedMinutes,
+    action: action.type,
+    intention,
+    intendedOutcome,
+    knowledge: {
+      scale: displayedState.scale ?? before.player.scale,
+      crisisStage: displayedState.crisisStage ?? before.crisis.stage,
+      elapsedMinutes:
+        displayedState.elapsedMinutes ?? before.crisis.elapsedMinutes,
+      displayedStatus: typeof frame.toast === 'string' ? frame.toast : null,
+      previewedGeometryIds:
+        displayedState.growthPreviewIds ?? preview.geometryIds,
+      previewedOccupantIds:
+        displayedState.growthPreviewOccupantIds ?? preview.occupantIds,
+      previewedCreatureIds:
+        displayedState.growthPreviewCreatureIds ?? preview.creatureIds,
+      gateState: displayedState.gateState ?? gateOutcome.gateState,
+      drainageState: displayedState.drainageState ?? gateOutcome.drainageState,
+      passengers: before.episode.passengers,
+      ferry: before.episode.ferry,
+      latchfolk: before.episode.latchfolk,
+    },
+    consequence: {
+      scale: after.player.scale,
+      crisisStage: after.crisis.stage,
+      elapsedMinutes: after.crisis.elapsedMinutes,
+      damagedGeometryIds,
+      gateState: afterGateOutcome.gateState,
+      drainageState: afterGateOutcome.drainageState,
+      passengers: after.episode.passengers,
+      ferry: after.episode.ferry,
+      latchfolk: after.episode.latchfolk,
+    },
+    relatedEventId,
+  };
+}
+
+/**
+ * Identify geometry whose damage affects the authored gate outcome.
+ * @param {string} id Physical geometry identifier.
+ * @returns {boolean} Whether this geometry represents a breachable gate part.
+ */
+function isGateRepairGeometryId(id) {
+  return (
+    id === THREEFOLD_GATE_REPAIR_GEOMETRY_IDS[0] ||
+    id === THREEFOLD_GATE_REPAIR_GEOMETRY_IDS[1]
+  );
+}
+
+/**
+ * Check for newly visible effects of a previously recorded gate breach.
+ * @param {ReturnType<typeof createThreefoldSimulation>} before Prior simulation.
+ * @param {ReturnType<typeof createThreefoldSimulation>} after Resulting simulation.
+ * @returns {boolean} Whether a new crisis or gate consequence was observed.
+ */
+function hasVisibleGateOutcomeChanged(before, after) {
+  const beforeGate = getThreefoldGateOutcome(before);
+  const afterGate = getThreefoldGateOutcome(after);
+  return (
+    before.crisis.stage !== after.crisis.stage ||
+    beforeGate.drainageState !== afterGate.drainageState ||
+    before.episode.passengers !== after.episode.passengers ||
+    before.episode.ferry !== after.episode.ferry ||
+    before.episode.latchfolk !== after.episode.latchfolk
+  );
+}
+
+/**
+ * Describe the exact operation observed when a gate outcome changes.
+ * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Chosen command.
+ * @returns {string} Player-selected operation without inferred motive.
+ */
+function describeChosenAction(action) {
+  if (action.type === 'wait')
+    return `Wait ${action.elapsedGameMinutes ?? 0} in-game minutes.`;
+  if (action.type === 'move')
+    return `Move ${action.direction || 'through the scene'}.`;
+  return `Choose ${action.type}.`;
 }
 
 /**

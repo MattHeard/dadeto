@@ -54,8 +54,48 @@ describe('THREEFOLD page adapter', () => {
   test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
     expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
     expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
+    expect(THREEFOLD_CSS).toContain(
+      'grid-template-columns: repeat(4, minmax(0, 1fr))'
+    );
     expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
     expect(THREEFOLD_CSS).toContain('transform: none');
+    expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
+    expect(THREEFOLD_HTML).toContain('aria-live="polite"');
+  });
+
+  test('updates the accessible witness ledger beside the shared screen', () => {
+    const { documentObj, list } = createLedgerDocument();
+    const drawFrame = jest.fn();
+    startThreefoldPage({
+      documentObj,
+      windowObj: { localStorage: {} },
+      navigatorObj: {},
+      drawFrame,
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          witnessLedger: [
+            {
+              title: 'LATER REPAIR · 9.75 GAME MINUTES',
+              intention: 'Repair the relief gate.',
+              knowledge: 'Known then: channel flooded.',
+              consequence: 'Observed: passengers lost; gate repaired.',
+              relation: 'Linked to witness-1.',
+            },
+          ],
+        },
+      }
+    );
+
+    expect(drawFrame).toHaveBeenCalledTimes(1);
+    expect(list.children).toHaveLength(1);
+    expect(collectText(list.children)).toContain(
+      'Known then: channel flooded.'
+    );
+    expect(collectText(list.children)).toContain('Linked to witness-1.');
   });
 
   test('uses the supplied storage and shared Mosslight page presenter', () => {
@@ -122,6 +162,7 @@ describe('THREEFOLD page adapter', () => {
         '#scene-link',
         '#game-footer',
         '#interact-control',
+        '#witness-ledger',
       ].map(selector => [selector, { setAttribute: jest.fn() }])
     );
     const documentObj = {
@@ -148,6 +189,7 @@ describe('THREEFOLD page adapter', () => {
       'aria-label',
       'Operate the sluice service valve'
     );
+    expect(elements.get('#witness-ledger').hidden).toBe(true);
   });
 
   test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
@@ -174,3 +216,57 @@ describe('THREEFOLD page adapter', () => {
     ).toBe('small-world-sluice');
   });
 });
+
+/**
+ * Create the minimum DOM surface used by the text-only ledger renderer.
+ * @returns {{documentObj: any, list: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}}} Fake document and event list.
+ */
+function createLedgerDocument() {
+  const list = {
+    children: [],
+    replaceChildren() {
+      this.children = [];
+    },
+    appendChild(node) {
+      this.children.push(node);
+    },
+  };
+  return {
+    list,
+    documentObj: {
+      querySelector: selector =>
+        selector === '#witness-ledger-entries' ? list : null,
+      createElement: tag => createFakeNode(tag),
+      createTextNode: textContent => ({ textContent }),
+    },
+  };
+}
+
+/**
+ * Build a text-only node for the page-presenter regression.
+ * @param {string} tag HTML element name.
+ * @returns {any} Minimal node adapter.
+ */
+function createFakeNode(tag) {
+  return {
+    tag,
+    children: [],
+    appendChild(node) {
+      this.children.push(node);
+    },
+    append(...nodes) {
+      this.children.push(...nodes);
+    },
+  };
+}
+
+/**
+ * Gather accessible text from the fake ledger tree.
+ * @param {any[]} nodes Tree nodes.
+ * @returns {string} Joined text content.
+ */
+function collectText(nodes) {
+  return nodes
+    .map(node => `${node.textContent || ''}${collectText(node.children || [])}`)
+    .join(' ');
+}

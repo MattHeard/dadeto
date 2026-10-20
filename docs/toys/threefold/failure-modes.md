@@ -16,7 +16,9 @@
 - Hydraulic conservation regression: an open port transfers water uphill, creates or loses volume, drains below its sill, or produces different physical flow because only the rendered scale changed.
 - Sluice-puzzle regression: the valve toggles away from scale −2, water changes without explicit elapsed game time, the lower crossing opens below its physical surface threshold, water levels vary with rendered scale, or the first puzzle changes the Broken Gate's visual-only flood behavior.
 - Sluice integration regression: `/threefold/?scene=sluice` opens the Broken Gate or shares its save key; an out-of-range valve interaction opens the port; pause or browser wall time advances the chambers; the barrier can be crossed below 0.3 metres or while Mara is smaller than scale −1; save migration loses water or accepts non-conserved/invalid chamber data.
-- Grid presentation regression: any rendered THREEFOLD canvas shape has a non-four-pixel origin or size, CSS control placement drifts from the eight-pixel page grid, or rendering changes physical simulation state.
+- Grid presentation regression: any rendered THREEFOLD canvas shape has a non-eight-pixel origin or size, CSS control placement drifts from the eight-pixel page grid, scale changes disappear after display quantization, or rendering changes physical simulation state.
+- Witness-ledger regression: the recorded pre-action preview differs from the visible frame, an event claims an unselected operation or unsupported motive, observation or repair loses its breach link, legacy saves fail to default to an empty ledger, or accessible output scores a choice.
+- Testimony-model limitation: conflicting accounts or unresolved responsibilities must not be flattened into one observation or adjudicated by the renderer. Keep those requirements open until authored evidence supports each speaker and relationship.
 
 ## Detection Signals
 

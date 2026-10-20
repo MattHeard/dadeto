@@ -1,9 +1,11 @@
 import { heightAtScale } from './spatial.js';
-
-const PASSENGER_OUTCOMES = new Set(['aboard', 'partial', 'evacuated', 'lost']);
-const FERRY_OUTCOMES = new Set(['afloat', 'lost']);
-const LATCHFOLK_OUTCOMES = new Set(['unwarned', 'warned', 'safe', 'lost']);
-const EPISODE_CLOSURES = new Set(['reported', 'departed']);
+import {
+  EPISODE_CLOSURES,
+  FERRY_OUTCOMES,
+  LATCHFOLK_OUTCOMES,
+  PASSENGER_OUTCOMES,
+} from './episode-values.js';
+import { normalizeThreefoldWitnessLedger } from './witness-ledger.js';
 export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
 /** Stable identifier for the authored Latchfolk watchkeeper interactable. */
 export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
@@ -15,12 +17,18 @@ const MOORING_ID = 'ferry-mooring-line';
 const UPLAND_ROAD_ID = 'upland-road-exit';
 const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
+/** @typedef {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, gateRepairedBeforeSurge?: true, closedBy?: 'reported'|'departed', witnessLedger?: Array<Record<string, any>>}} ThreefoldEpisodeState */
+
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
- * @returns {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, gateRepairedBeforeSurge?: true, closedBy?: 'reported'|'departed'}} Initial episode state.
+ * @returns {ThreefoldEpisodeState} Initial episode state.
  */
 export function createThreefoldEpisodeState() {
-  return { passengers: 'aboard', ferry: 'afloat', latchfolk: 'unwarned' };
+  return {
+    passengers: 'aboard',
+    ferry: 'afloat',
+    latchfolk: 'unwarned',
+  };
 }
 
 /**
@@ -160,6 +168,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
     state.closedBy === undefined && withdrawn === true
       ? 'departed'
       : state.closedBy;
+  const witnessLedger = normalizeThreefoldWitnessLedger(state.witnessLedger);
   if (
     typeof state.passengers !== 'string' ||
     !PASSENGER_OUTCOMES.has(state.passengers) ||
@@ -186,6 +195,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
     ...(gateRepaired ? { gateRepaired: true } : {}),
     ...(gateRepairedBeforeSurge ? { gateRepairedBeforeSurge: true } : {}),
     ...(closedBy ? { closedBy } : {}),
+    ...(witnessLedger.length > 0 ? { witnessLedger } : {}),
   });
 }
 

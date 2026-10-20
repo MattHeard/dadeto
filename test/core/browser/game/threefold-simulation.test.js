@@ -176,7 +176,7 @@ describe('THREEFOLD gatehouse simulation', () => {
     });
 
     expect(state.crisis.elapsedMinutes).toBe(3.75);
-    expect(state.episode).toEqual({
+    expect(state.episode).toMatchObject({
       passengers: 'evacuated',
       ferry: 'afloat',
       latchfolk: 'unwarned',
@@ -187,7 +187,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       elapsedGameMinutes: 5.5,
     });
     expect(surge.crisis.stage).toBe('surge');
-    expect(surge.episode).toEqual({
+    expect(surge.episode).toMatchObject({
       passengers: 'evacuated',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -219,7 +219,7 @@ describe('THREEFOLD gatehouse simulation', () => {
     });
 
     expect(state.crisis.elapsedMinutes).toBe(5);
-    expect(state.episode).toEqual({
+    expect(state.episode).toMatchObject({
       passengers: 'aboard',
       ferry: 'afloat',
       latchfolk: 'warned',
@@ -233,7 +233,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       type: 'wait',
       elapsedGameMinutes: 3.75,
     });
-    expect(surge.episode).toEqual({
+    expect(surge.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'safe',

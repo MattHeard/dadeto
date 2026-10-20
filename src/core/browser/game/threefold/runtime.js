@@ -11,6 +11,7 @@ import {
 } from './simulation.js';
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
+import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 
 const CRISIS_THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -75,15 +76,21 @@ export function createThreefoldRuntime(options = {}) {
    */
   function applyInput(actions) {
     const pressed = new Set(actions);
+    /**
+     * Apply one action using the current visible frame as pre-action knowledge.
+     * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Chosen normalized command.
+     * @returns {ReturnType<typeof stepThreefoldSimulation>} Updated simulation state.
+     */
+    const dispatchAction = action =>
+      stepThreefoldSimulation(state, { ...action, preActionFrame: frame() });
     const direction = DIRECTIONS.find(action => pressed.has(action));
-    if (direction)
-      state = stepThreefoldSimulation(state, { type: 'move', direction });
+    if (direction) state = dispatchAction({ type: 'move', direction });
     else if (pressed.has('a') && !previousActions.has('a')) {
       const growsThroughRat =
         previewThreefoldGrowthEffects(state).creatureIds.includes(
           'gatehouse-rat'
         );
-      state = stepThreefoldSimulation(state, {
+      state = dispatchAction({
         type: growsThroughRat
           ? 'grow'
           : isGatehouseRatInReach(state)
@@ -91,12 +98,11 @@ export function createThreefoldRuntime(options = {}) {
             : 'grow',
       });
     } else if (pressed.has('b') && !previousActions.has('b'))
-      state = stepThreefoldSimulation(state, { type: 'shrink' });
+      state = dispatchAction({ type: 'shrink' });
     else if (pressed.has('interact') && !previousActions.has('interact'))
-      state = stepThreefoldSimulation(state, { type: 'interact' });
+      state = dispatchAction({ type: 'interact' });
     else if (pressed.has('x') && !previousActions.has('x'))
-      state = stepThreefoldSimulation(
-        state,
+      state = dispatchAction(
         isGatehouseRatInReach(state)
           ? { type: 'bypass' }
           : { type: 'wait', elapsedGameMinutes: WAIT_MINUTES }
@@ -138,14 +144,18 @@ export function createThreefoldRuntime(options = {}) {
       const action = typeof command === 'string' ? command : command?.type;
       const normalized = normalizeCommand(action, command);
       if (normalized) {
-        state = stepThreefoldSimulation(state, normalized);
+        state = stepThreefoldSimulation(state, {
+          ...normalized,
+          preActionFrame: frame(),
+        });
         save.save?.(state);
       }
       return frame();
     },
     getSnapshot: snapshot,
     getState: () => state,
-    getJournal: () => [],
+    getJournal: () =>
+      (state.episode.witnessLedger || []).map(presentThreefoldWitnessEntry),
     save() {
       save.save?.(state);
       return state;

@@ -163,7 +163,7 @@ body {
 
 .utility-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--threefold-layout-grid);
 }
 
@@ -171,6 +171,43 @@ body {
   min-height: 48px;
   padding: 8px 16px;
   border-radius: 8px;
+}
+
+.witness-ledger {
+  padding: 8px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.witness-ledger summary {
+  color: var(--moss);
+  cursor: pointer;
+}
+
+.witness-ledger ol {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-left: 24px;
+}
+
+.witness-ledger li {
+  padding: 8px;
+  border-left: 4px solid var(--moss);
+  background: #102823;
+}
+
+.witness-event {
+  display: grid;
+  gap: 8px;
+}
+
+.witness-event p {
+  margin: 0;
+}
+
+.witness-event strong {
+  color: var(--ink);
 }
 
 .slot-picker {
@@ -282,6 +319,10 @@ footer {
 }
 
 @media (max-width: 350px) {
+  .utility-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .touch-pad {
     grid-template-columns: 120px 112px;
     gap: 8px;

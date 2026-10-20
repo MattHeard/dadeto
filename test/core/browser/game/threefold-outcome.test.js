@@ -113,7 +113,7 @@ describe('THREEFOLD gate outcome', () => {
     state = moveToLockingPawl(state);
     const repaired = stepThreefoldSimulation(state, { type: 'interact' });
 
-    expect(repaired.episode).toEqual({
+    expect(repaired.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -137,7 +137,19 @@ describe('THREEFOLD gate outcome', () => {
       elapsedGameMinutes:
         THRESHOLDS.aftermathAtMinutes - repaired.crisis.elapsedMinutes,
     });
-    expect(aftermath.episode).toEqual(repaired.episode);
+    expect(aftermath.episode).toMatchObject({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+      gateRepaired: true,
+    });
+    expect(
+      aftermath.episode.witnessLedger.slice(
+        0,
+        repaired.episode.witnessLedger.length
+      )
+    ).toEqual(repaired.episode.witnessLedger);
+    expect(aftermath.episode.witnessLedger.at(-1).type).toBe('observation');
     expect(getThreefoldGateOutcome(aftermath)).toEqual({
       gateState: 'repaired',
       drainageState: 'receded',

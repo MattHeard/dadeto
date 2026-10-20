@@ -34,7 +34,7 @@ function createWithdrawnSimulation(episode = {}) {
 }
 
 describe('THREEFOLD canvas grid', () => {
-  test('snaps both scenes to a four-pixel logical grid without changing fluid state', () => {
+  test('snaps both scenes to an eight-pixel logical grid without changing fluid state', () => {
     const brokenGate = createThreefoldSimulation(THRESHOLDS);
     const sluice = createThreefoldSimulation(
       THRESHOLDS,
@@ -46,11 +46,11 @@ describe('THREEFOLD canvas grid', () => {
       const frame = renderThreefoldFrame(state);
       expect(frame).toMatchObject({ width: 160, height: 144, pixelated: true });
       for (const shape of frame.shapes) {
-        expect(shape.x % 4).toBe(0);
-        expect(shape.y % 4).toBe(0);
+        expect(shape.x % 8).toBe(0);
+        expect(shape.y % 8).toBe(0);
         if (shape.type === 'rect') {
-          expect(shape.width % 4).toBe(0);
-          expect(shape.height % 4).toBe(0);
+          expect(shape.width % 8).toBe(0);
+          expect(shape.height % 8).toBe(0);
         }
       }
     }
@@ -95,8 +95,8 @@ describe('THREEFOLD status display', () => {
         type: 'rect',
         x: 128,
         y: 8,
-        width: 28,
-        height: 4,
+        width: 32,
+        height: 8,
         fill: '#315744',
       })
     );
@@ -106,7 +106,7 @@ describe('THREEFOLD status display', () => {
         x: 128,
         y: 8,
         width: 0,
-        height: 4,
+        height: 8,
         fill: '#bfd77c',
       })
     );
@@ -204,7 +204,9 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
 
     expect(smallerAvatarBounds).toEqual(avatarBounds);
-    expect(smallerWall.width).toBeGreaterThan(wall.width);
+    expect(smallerWall.width * smallerWall.height).toBeGreaterThan(
+      wall.width * wall.height
+    );
     expect(
       humanScale.threefold.heightMeters / smallerScale.threefold.heightMeters
     ).toBeCloseTo(3);
@@ -241,7 +243,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
         x: 128,
         y: 8,
         width: 16,
-        height: 4,
+        height: 8,
         fill: '#e16b5a',
       })
     );
@@ -530,7 +532,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
 
   test.each([
     [4, 'urgent', 8, '#e9d88d'],
-    [15, 'aftermath', 28, '#e16b5a'],
+    [15, 'aftermath', 32, '#e16b5a'],
   ])(
     'shows %s crisis progress in the tide meter',
     (minutes, stage, width, fill) => {
@@ -547,7 +549,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
           x: 128,
           y: 8,
           width,
-          height: 4,
+          height: 8,
           fill,
         })
       );

@@ -11,6 +11,8 @@
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-water.test.js` to exercise the water-transfer primitive. An open port moves water down the physical surface-height gradient, conserves cubic-metre volume, and stops at the port sill or hydrostatic equalization. Closed ports, equal surfaces, zero-duration steps, and dry sources leave both chambers unchanged. The solver drives the Tidal Archive puzzle; Broken Gate floodwater remains a visual consequence only.
 
+Run `npm run test:impact -- --files test/core/browser/game/threefold-witness-ledger.test.js test/core/browser/game/threefold-episode.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-simulation.test.js test/core/browser/game/threefold-outcome.test.js` to cover pre-action knowledge, gate choice, deterministic consequences, linked repair, journal accessibility, v5 roundtrips, legacy migration, and eight-pixel rendering. Legacy episode expectations should assert outcome fields independently from the growing ledger; post-breach outcome changes append linked observation facts.
+
 ## Small-World Sluice Puzzle Model
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-sluice-integration.test.js test/core/browser/game/threefold-water-puzzle.test.js test/core/browser/game/threefold-water.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js` to cover the playable route, input, water transfer, rendering, and save migration. The valve toggles only within reach at scale −2; explicit action time moves conserved water, and the crossing barrier clears only when the lower surface reaches 0.3 metres and Mara is at scale −1 or larger. Save schema v4 stores the validated puzzle and elapsed game seconds under a separate key; schema-v1 through schema-v3 Broken Gate saves remain supported. Never connect the Broken Gate's visual-only flood to this hydraulic solver.
@@ -18,7 +20,8 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-sluice-inte
 ## Expected Observable Outputs
 
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
-- Every rendered canvas shape is positioned and sized on a four-logical-pixel grid; terrain flecks and both scenes' water surfaces follow the same grid while the simulation values stay continuous.
+- Every rendered canvas shape is positioned and sized on an eight-logical-pixel grid; terrain flecks and both scenes' water surfaces follow the same grid while the simulation values stay continuous and the scale change remains visible.
+- A relief-gate breach records what the frame showed before the action, the selected growth step, and resulting gate/channel/settlement facts. Later observed changes and repair link to the original breach; the accessible Witness Ledger uses text nodes and adds no moral score. Legacy saves without a ledger load with an empty history.
 - The standalone page uses eight-pixel spacing and control sizes, including the narrow-phone layout, and the face/system buttons are not rotated.
 - The opening view reports scale 0, Anchor 8, and the rising crisis stage.
 - At the starting position, the west wall is highlighted and the HUD says `A BREAKS WEST WALL`; pressing A still performs the growth. At positions where the next rung hits no intact geometry, the regular message remains and no structure is highlighted.

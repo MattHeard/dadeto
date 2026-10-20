@@ -29,7 +29,8 @@ const SAVE_SCHEMA_VERSION = 1;
 const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
 const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
 const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
-const SIMULATION_SCHEMA_VERSION = 4;
+const SIMULATION_SCHEMA_VERSION = 5;
+const SLUICE_SIMULATION_SCHEMA_VERSION = 4;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.small-world-sluice';
@@ -93,7 +94,9 @@ export function serializeThreefoldSimulation(simulation) {
   }
   return JSON.stringify({
     game: GAME_ID,
-    schemaVersion: SIMULATION_SCHEMA_VERSION,
+    schemaVersion: isSluiceSimulationState(simulation)
+      ? SLUICE_SIMULATION_SCHEMA_VERSION
+      : SIMULATION_SCHEMA_VERSION,
     sceneId: simulation.scene.id,
     state,
   });
@@ -111,7 +114,10 @@ export function restoreThreefoldSimulation(serialized) {
     const isSluiceScene = envelope.sceneId === THREEFOLD_SLUICE_SCENE_ID;
     if (!isSluiceScene && envelope.sceneId !== 'broken-gate')
       throw new RangeError('Unknown scene.');
-    if (isSluiceScene && envelope.schemaVersion !== SIMULATION_SCHEMA_VERSION)
+    if (
+      isSluiceScene &&
+      envelope.schemaVersion !== SLUICE_SIMULATION_SCHEMA_VERSION
+    )
       throw new RangeError('Sluice save version is unsupported.');
     const legacyV1 =
       envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
@@ -272,12 +278,7 @@ function readSimulationEnvelope(serialized) {
   const envelope = readSaveEnvelope(serialized);
   return envelope &&
     envelope.game === GAME_ID &&
-    [
-      LEGACY_SIMULATION_SCHEMA_VERSION,
-      PREVIOUS_SIMULATION_SCHEMA_VERSION,
-      SIMULATION_SCHEMA_VERSION,
-      SIMULATION_SCHEMA_VERSION - 1,
-    ].includes(envelope.schemaVersion)
+    [1, 2, 3, 4, SIMULATION_SCHEMA_VERSION].includes(envelope.schemaVersion)
     ? envelope
     : null;
 }
