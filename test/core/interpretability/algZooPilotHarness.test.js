@@ -101,6 +101,7 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(first.pairs.every(pair => pair.sessionOrder.length === 2)).toBe(
       true
     );
+    expect(first.protocolVersion).toBe('1.0.1');
     expect(() => createAlgZooPilotSchedule(-1)).toThrow(RangeError);
   });
 
@@ -130,6 +131,7 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(first.valid).toBe(true);
     expect(first.json).toBe(second.json);
     expect(first.manifest.status).toBe('prelaunch-not-launched');
+    expect(first.manifest.protocolVersion).toBe('1.0.1');
     expect(first.manifest.launchReady).toBe(true);
     expect(first.schedule.pairs).toHaveLength(16);
     expect(first.schedule.pairs[0].sessions.control.budget).toEqual({
@@ -145,6 +147,15 @@ describe('AlgZoo shared-map pilot harness', () => {
     );
     expect(invalid.valid).toBe(false);
     expect(invalid.errors).toContainEqual({ code: 'invalid-manifest-hash' });
+
+    const invalidProtocolHash = createAlgZooPilotPlan(
+      { ...configuration, protocolSha256: 'not-a-sha256' },
+      fixture
+    );
+    expect(invalidProtocolHash.valid).toBe(false);
+    expect(invalidProtocolHash.errors).toContainEqual({
+      code: 'invalid-manifest-hash',
+    });
 
     expect(createAlgZooPilotPlan({}, fixture).valid).toBe(false);
     for (const orderSeed of [-1, 0x100000000, 1.5]) {

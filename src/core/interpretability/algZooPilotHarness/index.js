@@ -70,7 +70,7 @@ export function createAlgZooPilotSchedule(seed) {
       },
     };
   });
-  return { valid: true, protocolVersion: '1.0.0', targetOrder, pairs };
+  return { valid: true, protocolVersion: '1.0.1', targetOrder, pairs };
 }
 
 /**
