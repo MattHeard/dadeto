@@ -4,7 +4,7 @@
 
 Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/) or enter the small-world Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice).
 
-Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold.” The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
+Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
 ## Input
 
@@ -45,7 +45,7 @@ The ferry mooring, Latchfolk watchkeeper, upland road, relief-gate locking pawl,
 
 The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, crisis stage, encounter fate, and passenger, ferry, and Latchfolk outcomes; the frame data also records the rat action cause. Canvas shapes, page spacing, and touch controls align to an eight-pixel grid. The display snaps the visual placement and size of actors and water; the simulation keeps continuous physical positions and water values. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale. The rat is rendered at its physical size. When Mara fits inside it, the frame highlights the rat and names the growth consequence; otherwise, it names fight/bypass controls only when she is close enough at −2 or −1.
 
-On the Broken Gate route, open **Witness ledger** below the controls to review the gate decision facts. The entry separates what the screen showed before the action, the chosen growth operation, and the deterministic consequences. Later observations and a locking-pawl repair link back to the breach. It records no inferred motive or morality score. Older saves start with an empty ledger.
+On the Broken Gate route, open **Testimony and unresolved responsibility** below the controls to compare attributed statements. The dock worker says they shouted the warning toward the lower path; the Latchfolk watchkeeper says no warning that the gate would fail reached their post before the surge. Each account shows its own source. The game leaves responsibility for relaying the warning unresolved because no relay duty is established. These statements are kept apart from the **Witness ledger**, which records what the screen showed before a choice, the chosen operation, and deterministic consequences. Older saves restore the authored accounts; imported saves cannot change a statement or supply a verdict.
 
 ### Example
 

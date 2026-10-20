@@ -272,7 +272,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       elapsedMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes,
       stage: 'aftermath',
     });
-    expect(withdrawn.episode).toEqual({
+    expect(withdrawn.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -319,7 +319,7 @@ describe('THREEFOLD gatehouse simulation', () => {
 
     const withdrawn = stepThreefoldSimulation(atRoad, { type: 'interact' });
 
-    expect(withdrawn.episode).toEqual({
+    expect(withdrawn.episode).toMatchObject({
       passengers: 'evacuated',
       ferry: 'lost',
       latchfolk: 'safe',
@@ -354,7 +354,7 @@ describe('THREEFOLD gatehouse simulation', () => {
   test('out-of-range and post-surge interactions cannot evacuate passengers', () => {
     const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
     const outOfRange = stepThreefoldSimulation(initial, { type: 'interact' });
-    expect(outOfRange.episode).toEqual({
+    expect(outOfRange.episode).toMatchObject({
       passengers: 'aboard',
       ferry: 'afloat',
       latchfolk: 'unwarned',
@@ -379,7 +379,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       type: 'interact',
     });
 
-    expect(late.episode).toEqual({
+    expect(late.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -432,7 +432,7 @@ describe('THREEFOLD gatehouse simulation', () => {
       { type: 'wait', elapsedGameMinutes: 9 }
     );
 
-    expect(state.episode).toEqual({
+    expect(state.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -518,7 +518,7 @@ describe('THREEFOLD staged passenger rescue', () => {
     expect(outOfRange.episode.passengers).toBe('aboard');
 
     const partial = stepThreefoldSimulation(atMooring, { type: 'interact' });
-    expect(partial.episode).toEqual({
+    expect(partial.episode).toMatchObject({
       passengers: 'partial',
       ferry: 'afloat',
       latchfolk: 'unwarned',
@@ -535,7 +535,7 @@ describe('THREEFOLD staged passenger rescue', () => {
       type: 'wait',
       elapsedGameMinutes: 8.5,
     });
-    expect(completeSurge.episode).toEqual({
+    expect(completeSurge.episode).toMatchObject({
       passengers: 'evacuated',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -545,7 +545,7 @@ describe('THREEFOLD staged passenger rescue', () => {
       type: 'wait',
       elapsedGameMinutes: 8.75,
     });
-    expect(partialSurge.episode).toEqual({
+    expect(partialSurge.episode).toMatchObject({
       passengers: 'partial',
       ferry: 'lost',
       latchfolk: 'lost',

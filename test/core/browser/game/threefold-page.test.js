@@ -72,6 +72,63 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_CSS).toContain('transform: none');
     expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
     expect(THREEFOLD_HTML).toContain('aria-live="polite"');
+    expect(THREEFOLD_HTML).toContain('<details id="testimony"');
+    expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
+  });
+
+  test('renders both attributed accounts and keeps the responsibility open', () => {
+    const { documentObj, testimonyList, responsibility } =
+      createLedgerDocument();
+    startThreefoldPage({
+      documentObj,
+      windowObj: {},
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          testimony: {
+            accounts: [
+              {
+                speaker: 'Dock worker',
+                statement: 'I shouted toward the lower path.',
+                evidence: [
+                  {
+                    label: 'Opening callout',
+                    text: 'The gate will not hold.',
+                  },
+                ],
+              },
+              {
+                speaker: 'Latchfolk watchkeeper',
+                statement: 'No warning reached my post.',
+                evidence: [
+                  {
+                    label: 'Watchkeeper account',
+                    text: 'No warning reached my post.',
+                  },
+                ],
+              },
+            ],
+            responsibility: {
+              question: 'Who was responsible for relaying the warning?',
+              status: 'unresolved',
+            },
+          },
+        },
+      }
+    );
+
+    const testimonyText = collectText(testimonyList.children);
+    expect(testimonyText).toContain('Dock worker');
+    expect(testimonyText).toContain('Latchfolk watchkeeper');
+    expect(testimonyText).toContain('Opening callout');
+    expect(testimonyText).toContain('Watchkeeper account');
+    expect(responsibility.textContent).toBe(
+      'Who was responsible for relaying the warning? Status: unresolved.'
+    );
   });
 
   test('updates the accessible witness ledger beside the shared screen', () => {
@@ -212,6 +269,7 @@ describe('THREEFOLD page adapter', () => {
         '#game-footer',
         '#interact-control',
         '#witness-ledger',
+        '#testimony',
       ].map(selector => [selector, { setAttribute: jest.fn() }])
     );
     const documentObj = {
@@ -239,6 +297,7 @@ describe('THREEFOLD page adapter', () => {
       'Operate the sluice service valve'
     );
     expect(elements.get('#witness-ledger').hidden).toBe(true);
+    expect(elements.get('#testimony').hidden).toBe(true);
   });
 
   test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
@@ -267,8 +326,8 @@ describe('THREEFOLD page adapter', () => {
 });
 
 /**
- * Create the minimum DOM surface used by the text-only ledger renderer.
- * @returns {{documentObj: any, list: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}}} Fake document and event list.
+ * Create the minimum DOM surface used by the text-only ledger and testimony renderers.
+ * @returns {{documentObj: any, list: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}, testimonyList: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}, responsibility: {textContent: string}}} Fake document and lists.
  */
 function createLedgerDocument() {
   const list = {
@@ -280,11 +339,27 @@ function createLedgerDocument() {
       this.children.push(node);
     },
   };
+  const testimonyList = {
+    children: [],
+    replaceChildren() {
+      this.children = [];
+    },
+    appendChild(node) {
+      this.children.push(node);
+    },
+  };
+  const responsibility = { textContent: '' };
   return {
     list,
+    testimonyList,
+    responsibility,
     documentObj: {
-      querySelector: selector =>
-        selector === '#witness-ledger-entries' ? list : null,
+      querySelector: selector => {
+        if (selector === '#witness-ledger-entries') return list;
+        if (selector === '#testimony-accounts') return testimonyList;
+        if (selector === '#testimony-responsibility') return responsibility;
+        return null;
+      },
       createElement: tag => createFakeNode(tag),
       createTextNode: textContent => ({ textContent }),
     },

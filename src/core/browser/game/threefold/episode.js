@@ -6,6 +6,7 @@ import {
   PASSENGER_OUTCOMES,
 } from './episode-values.js';
 import { normalizeThreefoldWitnessLedger } from './witness-ledger.js';
+import { createThreefoldTestimony } from './testimony.js';
 export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
 /** Stable identifier for the authored Latchfolk watchkeeper interactable. */
 export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
@@ -17,17 +18,21 @@ const MOORING_ID = 'ferry-mooring-line';
 const UPLAND_ROAD_ID = 'upland-road-exit';
 const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
-/** @typedef {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, gateRepairedBeforeSurge?: true, closedBy?: 'reported'|'departed', witnessLedger?: Array<Record<string, any>>}} ThreefoldEpisodeState */
+/** @typedef {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, gateRepairedBeforeSurge?: true, closedBy?: 'reported'|'departed', witnessLedger?: Array<Record<string, any>>, testimony?: ReturnType<import('./testimony.js').createThreefoldTestimony>}} ThreefoldEpisodeState */
 
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
+ * @param {object} [options] Scene-specific authored data options.
+ * @param {boolean} [options.includeTestimony] Whether to include Broken Gate testimony; false keeps the separate sluice scene isolated.
  * @returns {ThreefoldEpisodeState} Initial episode state.
  */
-export function createThreefoldEpisodeState() {
+export function createThreefoldEpisodeState(options = {}) {
+  const includeTestimony = options.includeTestimony ?? true;
   return {
     passengers: 'aboard',
     ferry: 'afloat',
     latchfolk: 'unwarned',
+    ...(includeTestimony ? { testimony: createThreefoldTestimony() } : {}),
   };
 }
 
@@ -149,9 +154,12 @@ export function advanceThreefoldEpisode(episode, crisis) {
 /**
  * Rebuild and validate saved passenger, ferry, and withdrawal outcomes.
  * @param {unknown} candidate Saved episode state.
+ * @param {object} [options] Scene-specific normalization options.
+ * @param {boolean} [options.includeTestimony] Whether to reconstruct Broken Gate testimony; false omits it for the separate sluice scene.
  * @returns {ReturnType<typeof createThreefoldEpisodeState>} Canonical episode state.
  */
-export function normalizeThreefoldEpisodeState(candidate) {
+export function normalizeThreefoldEpisodeState(candidate, options = {}) {
+  const includeTestimony = options.includeTestimony ?? true;
   if (!candidate || typeof candidate !== 'object')
     throw new TypeError('Episode outcome state is required.');
   const state = /** @type {Record<string, unknown>} */ (candidate);
@@ -169,6 +177,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
       ? 'departed'
       : state.closedBy;
   const witnessLedger = normalizeThreefoldWitnessLedger(state.witnessLedger);
+  const testimony = includeTestimony ? createThreefoldTestimony() : undefined;
   if (
     typeof state.passengers !== 'string' ||
     !PASSENGER_OUTCOMES.has(state.passengers) ||
@@ -196,6 +205,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
     ...(gateRepairedBeforeSurge ? { gateRepairedBeforeSurge: true } : {}),
     ...(closedBy ? { closedBy } : {}),
     ...(witnessLedger.length > 0 ? { witnessLedger } : {}),
+    ...(testimony ? { testimony } : {}),
   });
 }
 

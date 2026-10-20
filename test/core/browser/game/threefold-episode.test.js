@@ -16,7 +16,7 @@ describe('THREEFOLD episode save state', () => {
         passengers: 'aboard',
         ferry: 'afloat',
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'aboard',
       ferry: 'afloat',
       latchfolk: 'unwarned',
@@ -30,7 +30,7 @@ describe('THREEFOLD episode save state', () => {
         ferry: 'lost',
         latchfolk: 'warned',
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'evacuated',
       ferry: 'lost',
       latchfolk: 'warned',
@@ -43,7 +43,7 @@ describe('THREEFOLD episode save state', () => {
         passengers: 'partial',
         ferry: 'afloat',
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'partial',
       ferry: 'afloat',
       latchfolk: 'unwarned',
@@ -70,7 +70,7 @@ describe('THREEFOLD episode save state', () => {
         latchfolk: 'lost',
         withdrawn: true,
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -87,7 +87,7 @@ describe('THREEFOLD episode save state', () => {
         latchfolk: 'safe',
         closedBy: 'reported',
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'evacuated',
       ferry: 'lost',
       latchfolk: 'safe',
@@ -103,7 +103,7 @@ describe('THREEFOLD episode save state', () => {
         latchfolk: 'lost',
         gateRepaired: true,
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -120,7 +120,7 @@ describe('THREEFOLD episode save state', () => {
         gateRepaired: true,
         gateRepairedBeforeSurge: true,
       })
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'aboard',
       ferry: 'afloat',
       latchfolk: 'unwarned',
