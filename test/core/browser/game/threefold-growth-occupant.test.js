@@ -448,6 +448,16 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
         text: 'A KILLS 1 CREATURE',
       })
     );
+
+    expect(previewThreefoldGrowthEffects(state).creatureIds).toEqual([
+      'growth-creature-a',
+    ]);
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+    expect(grown.encounter).toEqual({
+      ratFate: 'present',
+      ratAction: null,
+      growthDeaths: [{ creatureId: 'growth-creature-a', cause: 'growth' }],
+    });
   });
 
   test('previews, commits, and restores two structures and both beings together', () => {
