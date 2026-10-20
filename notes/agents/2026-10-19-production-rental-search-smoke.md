@@ -41,3 +41,22 @@ The runner only prepares the live evidence step; it does not establish current
 production health. After separate authorization, execute the smoke, retain the
 redacted output and command result, then report the production observation on
 the Rank 4 Notion page and owning Bead.
+
+## Authorized production verification — 2026-10-20
+
+The first authorized run exposed a false failure: the registry value omits a
+trailing slash, while Playwright normalizes the response URL to include one.
+Comparing URL `.href` values preserves the canonical endpoint check. The next
+run showed that browser JavaScript cannot read the `Access-Control-Allow-Origin`
+response header. The smoke now checks whether the browser fetch succeeded and
+uses Playwright's response headers to verify the exact allowed origin, including
+for the invalid-input response.
+
+The corrected production smoke passed: registry HTTP 200, page HTTP 200,
+preflight HTTP 204, valid browser search HTTP 200, and invalid `{}` HTTP 400
+with `valid: false` and the configured origin. The valid search reads Firestore
+commitments and the GCS schedule; it does not create a reservation. Output
+contains statuses and hosts only. The smoke runner regression suite passes
+(1 suite, 6 tests). The final timestamped smoke run succeeded from
+`2026-10-20T07:28:19Z` to `2026-10-20T07:28:22Z`. `npm run check` passed all
+10 local gates after the runner correction; duplication found 0 clones.

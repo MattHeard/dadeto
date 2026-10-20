@@ -64,13 +64,17 @@ function createFetch({
 
 /**
  * Create a minimal browser adapter that exposes only smoke-runner observations.
- * @param {{status?: number, allowOrigin?: string, pageEndpoint?: string}} [options] Browser response overrides.
+ * @param {{status?: number, allowOrigin?: string, invalidStatus?: number, invalidAllowOrigin?: string, invalidFetchSucceeded?: boolean, pageEndpoint?: string, responseUrl?: string}} [options] Browser response overrides.
  * @returns {{chromium: object, calls: {goto: jest.Mock, fill: jest.Mock, click: jest.Mock, evaluate: jest.Mock, close: jest.Mock}}} Browser fixture.
  */
 function createBrowser({
   status = 200,
   allowOrigin = siteOrigin,
+  invalidStatus = 400,
+  invalidAllowOrigin = siteOrigin,
+  invalidFetchSucceeded = true,
   pageEndpoint = functionUrl,
+  responseUrl = `${functionUrl}/`,
 } = {}) {
   const calls = {
     goto: jest.fn(),
@@ -80,12 +84,18 @@ function createBrowser({
     close: jest.fn(),
   };
   const browserResponse = {
-    url: () => functionUrl,
-    request: () => ({ method: () => 'POST' }),
+    url: () => responseUrl,
+    request: () => ({ method: () => 'POST', url: () => functionUrl }),
     status: () => status,
     headers: () => ({ 'access-control-allow-origin': allowOrigin }),
     json: async () => ({ valid: true, results: [] }),
   };
+  const invalidBrowserResponse = {
+    ...browserResponse,
+    status: () => invalidStatus,
+    headers: () => ({ 'access-control-allow-origin': invalidAllowOrigin }),
+  };
+  let responseIndex = 0;
   const page = {
     goto: calls.goto,
     locator: selector => ({
@@ -96,17 +106,20 @@ function createBrowser({
       fill: calls.fill,
     }),
     waitForResponse: async predicate => {
-      if (!predicate(browserResponse))
+      const response = [browserResponse, invalidBrowserResponse][
+        responseIndex++
+      ];
+      if (!response || !predicate(response))
         throw new Error('No browser POST response.');
-      return browserResponse;
+      return response;
     },
     getByRole: () => ({ click: calls.click }),
     waitForFunction: jest.fn(),
     evaluate: async (_callback, endpoint) => {
       calls.evaluate(endpoint);
       return {
-        status: 400,
-        allowOrigin,
+        fetchSucceeded: invalidFetchSucceeded,
+        status: invalidStatus,
         valid: false,
       };
     },
@@ -247,5 +260,45 @@ describe('production rental search browser smoke', () => {
     ).rejects.toThrow('did not allow the browser request');
 
     expect(chromium.launch).not.toHaveBeenCalled();
+  });
+
+  it('rejects a browser response from a different endpoint', async () => {
+    const fetchFn = createFetch();
+    const { chromium } = createBrowser({
+      responseUrl: 'https://unexpected.example.run.app/',
+    });
+
+    await expect(
+      main({
+        argv: ['--execute'],
+        environment: {
+          PRODUCTION_SITE_ORIGIN: siteOrigin,
+          FUNCTION_ENDPOINT_REGISTRY_URL: registryUrl,
+        },
+        fetchFn,
+        chromium,
+        writeLine: () => {},
+      })
+    ).rejects.toThrow('noncanonical rental search endpoint');
+  });
+
+  it('rejects invalid-input responses without the production CORS origin', async () => {
+    const fetchFn = createFetch();
+    const { chromium } = createBrowser({
+      invalidAllowOrigin: 'https://unexpected.example',
+    });
+
+    await expect(
+      main({
+        argv: ['--execute'],
+        environment: {
+          PRODUCTION_SITE_ORIGIN: siteOrigin,
+          FUNCTION_ENDPOINT_REGISTRY_URL: registryUrl,
+        },
+        fetchFn,
+        chromium,
+        writeLine: () => {},
+      })
+    ).rejects.toThrow('did not allow the production origin');
   });
 });

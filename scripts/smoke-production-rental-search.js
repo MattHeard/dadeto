@@ -112,7 +112,7 @@ export async function runProductionRentalSearchSmoke({
     await fillSearchForm(page, clock());
     await page.getByRole('button', { name: 'Search' }).click();
     const searchResponse = await responsePromise;
-    if (searchResponse.url() !== functionUrl) {
+    if (new URL(searchResponse.url()).href !== new URL(functionUrl).href) {
       throw new Error(
         'Browser submitted to a noncanonical rental search endpoint.'
       );
@@ -135,22 +135,36 @@ export async function runProductionRentalSearchSmoke({
       { timeout: REQUEST_TIMEOUT_MS }
     );
 
+    const invalidResponsePromise = page.waitForResponse(
+      response =>
+        response.request().method() === 'POST' &&
+        new URL(response.request().url()).href ===
+          new URL(functionUrl).href,
+      { timeout: REQUEST_TIMEOUT_MS }
+    );
     const invalidInput = await page.evaluate(async endpoint => {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}',
-      });
-      const body = await response.json();
-      return {
-        status: response.status,
-        allowOrigin: response.headers.get('access-control-allow-origin'),
-        valid: body.valid === true,
-      };
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        });
+        const body = await response.json();
+        return {
+          fetchSucceeded: true,
+          status: response.status,
+          valid: body.valid === true,
+        };
+      } catch {
+        return { fetchSucceeded: false, status: null, valid: null };
+      }
     }, functionUrl);
+    const invalidResponse = await invalidResponsePromise;
+    requireStatus(invalidResponse, 400, 'Browser invalid-input request');
+    requireCorsResponse(invalidResponse, origin);
     if (
-      invalidInput.status !== 400 ||
-      invalidInput.allowOrigin !== origin ||
+      !invalidInput.fetchSucceeded ||
+      invalidInput.status !== invalidResponse.status() ||
       invalidInput.valid
     ) {
       throw new Error('Invalid browser request did not fail safely with HTTP 400.');
