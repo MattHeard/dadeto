@@ -1,10 +1,17 @@
-import { createInterpretabilitySchemasV1 } from '../../../src/core/interpretability/interpretability.js';
+import {
+  createInterpretabilitySchemasV1,
+  createInterpretabilitySchemasV2,
+} from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod, loadOptionalTestZod } from './testZod.js';
 
 const fallbackSchemas =
   createInterpretabilitySchemasV1(
     createTestZod()
   ).interpretabilityJsonSchemasV1;
+const fallbackSchemasV2 =
+  createInterpretabilitySchemasV2(
+    createTestZod()
+  ).interpretabilityJsonSchemasV2;
 
 describe('optional Zod test double contract', () => {
   it('generates the strict and optional JSON Schema behavior used by production', () => {
@@ -49,6 +56,41 @@ describe('optional Zod test double contract', () => {
       loaded.zod
     ).interpretabilityJsonSchemasV1;
     expect(fallbackSchemas).toEqual(zodSchemas);
+    const zodSchemasV2 = createInterpretabilitySchemasV2(
+      loaded.zod
+    ).interpretabilityJsonSchemasV2;
+    expect(fallbackSchemasV2).toEqual(zodSchemasV2);
+  });
+
+  it('exposes strict V2 recurrent component, position, and observation schemas', () => {
+    expect(fallbackSchemasV2.recurrentNeuronComponent).toMatchObject({
+      type: 'object',
+      properties: {
+        schemaVersion: { const: 2, type: 'number' },
+        kind: { const: 'recurrent-neuron', type: 'string' },
+      },
+      additionalProperties: false,
+    });
+    expect(fallbackSchemasV2.recurrentActivationPosition.required).toEqual(
+      expect.arrayContaining([
+        'schemaVersion',
+        'id',
+        'componentId',
+        'timeStepIndex',
+      ])
+    );
+    expect(fallbackSchemasV2.activationObservation.required).toEqual(
+      expect.arrayContaining([
+        'schemaVersion',
+        'id',
+        'activationPositionId',
+        'experimentId',
+        'inputSequenceId',
+        'runId',
+        'value',
+        'numericPrecision',
+      ])
+    );
   });
 
   it('supports strict objects, optional fields, refinements, and safeParse', () => {

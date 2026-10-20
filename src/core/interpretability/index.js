@@ -1,12 +1,9 @@
 /**
- * Construct interpretability schemas with a caller-provided Zod API. Keeping
- * Zod outside core preserves core's dependency boundary while retaining Zod's
- * parsing and JSON Schema generation behavior.
+ * Construct the shared pinned model schema with a caller-provided Zod API.
  * @param {any} z Injected Zod namespace.
- * @returns {Record<string, any>} Runtime schemas and their JSON Schema forms.
+ * @returns {{commitRevision: any, pinnedModel: any}} Shared model schemas.
  */
-export function createInterpretabilitySchemasV1(z) {
-  const schemaVersion = z.literal(1);
+function createPinnedModelSchema(z) {
   const commitRevision = z.string().regex(/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/);
   const tokenizer = z
     .object({
@@ -24,6 +21,19 @@ export function createInterpretabilitySchemasV1(z) {
       tokenizer,
     })
     .strict();
+  return { commitRevision, pinnedModel };
+}
+
+/**
+ * Construct interpretability schemas with a caller-provided Zod API. Keeping
+ * Zod outside core preserves core's dependency boundary while retaining Zod's
+ * parsing and JSON Schema generation behavior.
+ * @param {any} z Injected Zod namespace.
+ * @returns {Record<string, any>} Runtime schemas and their JSON Schema forms.
+ */
+export function createInterpretabilitySchemasV1(z) {
+  const schemaVersion = z.literal(1);
+  const { commitRevision, pinnedModel } = createPinnedModelSchema(z);
   const mechanismBase = {
     schemaVersion,
     id: z.string().min(1),
@@ -216,6 +226,195 @@ export function createInterpretabilitySchemasV1(z) {
       mechanisticEstimate: z.toJSONSchema(mechanisticEstimateSchemaV1),
     }),
   });
+}
+
+/**
+ * Construct strict schemas for stable recurrent neuron and activation identities.
+ * @param {any} z Injected Zod namespace.
+ * @returns {Record<string, any>} V2 runtime schemas and JSON Schema forms.
+ */
+export function createInterpretabilitySchemasV2(z) {
+  const schemaVersion = z.literal(2);
+  const { pinnedModel } = createPinnedModelSchema(z);
+  const recurrentNeuronComponentSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:component:/),
+      kind: z.literal('recurrent-neuron'),
+      model: pinnedModel,
+      sourceId: z.string().min(1),
+      layerIndex: z.number().int().nonnegative(),
+      activationHook: z.string().min(1),
+      neuronIndex: z.number().int().nonnegative(),
+    })
+    .strict();
+  const recurrentActivationPositionSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:position:/),
+      componentId: z.string().regex(/^atlas:v2:component:/),
+      timeStepIndex: z.number().int().nonnegative(),
+    })
+    .strict();
+  const activationObservationSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:observation:/),
+      activationPositionId: z.string().regex(/^atlas:v2:position:/),
+      experimentId: z.string().min(1),
+      inputSequenceId: z.string().min(1),
+      runId: z.string().min(1),
+      value: z.number(),
+      numericPrecision: z.enum(['float16', 'bfloat16', 'float32', 'float64']),
+    })
+    .strict();
+
+  return Object.freeze({
+    recurrentNeuronComponentSchemaV2,
+    recurrentActivationPositionSchemaV2,
+    activationObservationSchemaV2,
+    interpretabilityJsonSchemasV2: Object.freeze({
+      recurrentNeuronComponent: z.toJSONSchema(
+        recurrentNeuronComponentSchemaV2
+      ),
+      recurrentActivationPosition: z.toJSONSchema(
+        recurrentActivationPositionSchemaV2
+      ),
+      activationObservation: z.toJSONSchema(activationObservationSchemaV2),
+    }),
+  });
+}
+
+/**
+ * Encode an ordered, versioned identity tuple as a stable public identifier.
+ * @param {string} category Identity category.
+ * @param {Array<string|number>} identity Canonically ordered identity fields.
+ * @returns {string} Namespaced deterministic identifier.
+ */
+function canonicalIdentityId(category, identity) {
+  return `atlas:v2:${category}:${encodeURIComponent(JSON.stringify(identity))}`;
+}
+
+/**
+ * Derive the stable ID for a recurrent hidden-neuron component.
+ * @param {Record<string, any>} model Pinned model and checkpoint identity.
+ * @param {string} sourceId Source-local neuron namespace.
+ * @param {{layerIndex: number, activationHook: string, neuronIndex: number}} coordinates Neuron coordinates.
+ * @returns {Record<string, any>} Versioned recurrent component record.
+ */
+export function createRecurrentNeuronComponentV2(model, sourceId, coordinates) {
+  return {
+    schemaVersion: 2,
+    id: canonicalIdentityId('component', [
+      model.modelId,
+      model.repository,
+      model.revision,
+      model.architecture,
+      sourceId,
+      coordinates.layerIndex,
+      coordinates.activationHook,
+      coordinates.neuronIndex,
+    ]),
+    kind: 'recurrent-neuron',
+    model,
+    sourceId,
+    layerIndex: coordinates.layerIndex,
+    activationHook: coordinates.activationHook,
+    neuronIndex: coordinates.neuronIndex,
+  };
+}
+
+/**
+ * Derive a stable ID for a component's zero-based recurrent activation position.
+ * @param {{componentId: string, timeStepIndex: number}} identity Position coordinates.
+ * @returns {Record<string, any>} Versioned recurrent position record.
+ */
+export function createRecurrentActivationPositionV2({
+  componentId,
+  timeStepIndex,
+}) {
+  return {
+    schemaVersion: 2,
+    id: canonicalIdentityId('position', [componentId, timeStepIndex]),
+    componentId,
+    timeStepIndex,
+  };
+}
+
+/**
+ * Derive a stable ID for one input- and run-specific activation measurement.
+ * @param {string} activationPositionId Recurrent position identity.
+ * @param {string} experimentId Experiment identity.
+ * @param {{inputSequenceId: string, runId: string, value: number, numericPrecision: string}} measurement Input-specific measured value and run identity.
+ * @returns {Record<string, any>} Versioned activation observation.
+ */
+export function createActivationObservationV2(
+  activationPositionId,
+  experimentId,
+  measurement
+) {
+  return {
+    schemaVersion: 2,
+    id: canonicalIdentityId('observation', [
+      activationPositionId,
+      experimentId,
+      measurement.inputSequenceId,
+      measurement.runId,
+    ]),
+    activationPositionId,
+    experimentId,
+    inputSequenceId: measurement.inputSequenceId,
+    runId: measurement.runId,
+    value: measurement.value,
+    numericPrecision: measurement.numericPrecision,
+  };
+}
+
+/**
+ * Migrate one V1 recurrent-state mechanism without rewriting graph references.
+ * @param {Record<string, any>} record Legacy V1 mechanism.
+ * @param {{mechanismSchemaV1?: any, recurrentNeuronComponentSchemaV2?: any, recurrentActivationPositionSchemaV2?: any}} [schemas] Injected validators.
+ * @returns {{valid: true, component: Record<string, any>, position: Record<string, any>, observations: Array<never>}|{valid: false, errors: Array<{code: string}>}} Migration result.
+ */
+export function migrateRecurrentStateMechanismV1ToV2(record, schemas) {
+  const legacyResult = schemas?.mechanismSchemaV1?.safeParse(record);
+  if (!legacyResult?.success) {
+    return { valid: false, errors: [{ code: 'invalid-v1-mechanism' }] };
+  }
+  if (legacyResult.data.kind !== 'recurrent-state') {
+    return {
+      valid: false,
+      errors: [{ code: 'unsupported-v1-mechanism-kind' }],
+    };
+  }
+
+  const legacy = legacyResult.data;
+  const component = createRecurrentNeuronComponentV2(
+    legacy.model,
+    legacy.sourceId,
+    {
+      layerIndex: legacy.layerIndex,
+      activationHook: legacy.activationHook,
+      neuronIndex: legacy.neuronIndex,
+    }
+  );
+  const position = createRecurrentActivationPositionV2({
+    componentId: component.id,
+    timeStepIndex: legacy.timeStep,
+  });
+  const componentResult =
+    schemas?.recurrentNeuronComponentSchemaV2?.safeParse(component);
+  const positionResult =
+    schemas?.recurrentActivationPositionSchemaV2?.safeParse(position);
+  if (!componentResult?.success || !positionResult?.success) {
+    return { valid: false, errors: [{ code: 'invalid-v2-migration' }] };
+  }
+  return {
+    valid: true,
+    component: componentResult.data,
+    position: positionResult.data,
+    observations: [],
+  };
 }
 
 /** @typedef {Record<string, any>} InterpretabilityRecord */
