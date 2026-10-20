@@ -236,19 +236,21 @@ function createMemoryAdapter(initialJson, serviceSchemas = schemas) {
   let storedJson = initialJson;
   const loadPermissions = [];
   const savePermissions = [];
-  const service = createInterpretabilityResearchServiceV1({
-    loadBundle: async allowEffects => {
-      loadPermissions.push(allowEffects);
-      return storedJson;
-    },
-    saveBundle: async (allowEffects, json) => {
-      savePermissions.push(allowEffects);
-      storedJson = json;
-    },
-    schemas: serviceSchemas,
-  });
+  const createService = () =>
+    createInterpretabilityResearchServiceV1({
+      loadBundle: async allowEffects => {
+        loadPermissions.push(allowEffects);
+        return storedJson;
+      },
+      saveBundle: async (allowEffects, json) => {
+        savePermissions.push(allowEffects);
+        storedJson = json;
+      },
+      schemas: serviceSchemas,
+    });
   return {
-    service,
+    service: createService(),
+    createService,
     loadPermissions,
     savePermissions,
     getStoredJson: () => storedJson,
@@ -481,6 +483,99 @@ describe('permission-aware interpretability research service V1', () => {
     );
     expect(rejected.valid).toBe(false);
     expect(memory.savePermissions).toHaveLength(1);
+  });
+
+  it('lets a fresh investigator session reuse persisted evidence through the service', async () => {
+    const sourceGraph = createEvidenceGraph();
+    const initialGraph = {
+      ...sourceGraph,
+      hypotheses: [{ ...sourceGraph.hypotheses[0], evidenceIds: [] }],
+      experiments: [],
+      estimates: [],
+      evidence: [],
+      edges: [sourceGraph.edges[0]],
+    };
+    const memory = createMemoryAdapter(createPortableBundle(initialGraph));
+    const investigatorA = memory.service;
+    const investigatorB = memory.createService();
+    const allowEffectsA = createAllowEffects();
+    const allowEffectsB = createAllowEffects();
+    const firstSubmission = {
+      experiment: sourceGraph.experiments[0],
+      evidence: [sourceGraph.evidence[0]],
+      edges: sourceGraph.edges.slice(1),
+    };
+
+    const savedA = await investigatorA.submitExperiment(
+      allowEffectsA,
+      firstSubmission
+    );
+    expect(savedA.valid).toBe(true);
+
+    const afterA = importInterpretabilityResearchBundleV2(
+      memory.getStoredJson(),
+      schemas
+    );
+    expect(afterA.valid).toBe(true);
+    if (!afterA.valid) return;
+    const originalEvidence = afterA.bundle.evidenceGraph.evidence.find(
+      record => record.id === 'evidence-a'
+    );
+    expect(originalEvidence).toBeDefined();
+    if (!originalEvidence) return;
+    const originalEvidenceJson = JSON.stringify(originalEvidence);
+
+    const retrieved = await investigatorB.readContext(allowEffectsB, {
+      mechanismId: 'mechanism-a',
+      maxDepth: 2,
+      pageSize: 20,
+    });
+    expect(retrieved.valid).toBe(true);
+    if (!retrieved.valid) return;
+    const priorEvidence = retrieved.items.find(
+      item => item.id === originalEvidence.id
+    );
+    expect(priorEvidence?.record.authorId).toBe('investigator-a');
+    if (!priorEvidence) return;
+
+    const followUp = createSubmission(14);
+    const derivedPrediction = `Follow-up test based on retrieved finding: ${priorEvidence.record.summary}`;
+    followUp.experiment.predictions[0].expected = derivedPrediction;
+    const savedB = await investigatorB.submitExperiment(
+      allowEffectsB,
+      followUp
+    );
+    expect(savedB.valid).toBe(true);
+
+    const afterB = importInterpretabilityResearchBundleV2(
+      memory.getStoredJson(),
+      schemas
+    );
+    expect(afterB.valid).toBe(true);
+    if (!afterB.valid) return;
+    const graph = afterB.bundle.evidenceGraph;
+    expect(
+      JSON.stringify(graph.evidence.find(record => record.id === 'evidence-a'))
+    ).toBe(originalEvidenceJson);
+    expect(
+      graph.experiments.find(record => record.id === 'experiment-b')
+        ?.predictions[0].expected
+    ).toBe(derivedPrediction);
+    expect(graph.edges).toContainEqual(
+      expect.objectContaining({
+        id: 'edge-b-depends-on-a',
+        fromId: 'experiment-b',
+        toId: 'evidence-a',
+        relation: 'depends-on',
+        authorId: 'investigator-b',
+      })
+    );
+    expect(memory.loadPermissions).toEqual([
+      allowEffectsA,
+      allowEffectsB,
+      allowEffectsB,
+    ]);
+    expect(memory.savePermissions).toEqual([allowEffectsA, allowEffectsB]);
   });
 
   it('persists a validated estimate with V3 identity lineage and the same permission token', async () => {
