@@ -1,0 +1,7 @@
+# Portable Atlas recurrent-mechanism lineage links
+
+- Unexpected hurdle: the V2 bundle correctly preserved old evidence references and canonical identities as separate subgraphs, but offered no portable link between a legacy recurrent-state ID and its V2 component/position. Adding that link changes the outer document shape.
+- Diagnosis: the existing V1-to-V2 migration already derives the canonical component and activation position without rewriting the legacy ID; the bundle lacked a versioned place to carry that correspondence.
+- Fix: keep V2 export unchanged and add a V3 envelope with sorted `mechanismIdentityLinks`. Derive each link with the existing migration and injected V1/V2 schemas, require the mapped component and step position to exist, validate imported links against the derived mapping, and leave V1 hypothesis/evidence references untouched. The importer continues to accept V2 envelopes.
+- Evidence: 6 focused suites / 56 tests passed; changed-core scoped coverage has no uncovered lines or branches; ESLint, core-parse and duplication passed (0 clones); `npm run tsdoc:check` and all 10 gates in `npm run check` passed.
+- Next-time guidance: preserve the existing Jest test path when changing a suite; the impact selector attempted to open both the removed and replacement path after a rename. Run `npm run tsdoc:check` early for injected schema contracts. Rank 4 still needs a concrete two-investigator evidence-reuse loop and the 100-native-neuron acceptance.

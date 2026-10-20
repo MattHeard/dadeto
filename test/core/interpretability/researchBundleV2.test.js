@@ -5,6 +5,7 @@ import {
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
   exportInterpretabilityResearchBundleV2,
+  exportInterpretabilityResearchBundleV3,
   importInterpretabilityResearchBundleV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
@@ -20,25 +21,33 @@ const evidenceSchemas = createInterpretabilitySchemasV1(z);
 const identitySchemas = createInterpretabilitySchemasV2(z);
 const schemas = {
   evidenceGraphSchemasV1: evidenceSchemas,
-  identityGraphSchemaV2: identitySchemas.identityGraphSchemaV2,
+  identityGraphSchemasV2: identitySchemas,
 };
+
+const legacyMechanismFixtures = [
+  { id: 'legacy-neuron-0', neuronIndex: 0, timeStep: 9 },
+  { id: 'legacy-neuron-1', neuronIndex: 1, timeStep: 9 },
+  { id: 'legacy-neuron-0-step-0', neuronIndex: 0, timeStep: 0 },
+];
 
 /**
  * Create V1 evidence records that refer to one another through typed IDs.
  * @returns {Record<string, any>} Versioned V1 graph.
  */
 function createEvidenceGraph() {
-  const mechanisms = [0, 1].map(neuronIndex => ({
-    schemaVersion: 1,
-    id: `legacy-neuron-${neuronIndex}`,
-    model,
-    layerIndex: 0,
-    activationHook: 'rnn.hidden_state',
-    kind: 'recurrent-state',
-    sourceId: 'alg-zoo-m16-10',
-    neuronIndex,
-    timeStep: 9,
-  }));
+  const mechanisms = legacyMechanismFixtures.map(
+    ({ id, neuronIndex, timeStep }) => ({
+      schemaVersion: 1,
+      id,
+      model,
+      layerIndex: 0,
+      activationHook: 'rnn.hidden_state',
+      kind: 'recurrent-state',
+      sourceId: 'alg-zoo-m16-10',
+      neuronIndex,
+      timeStep,
+    })
+  );
   const hypotheses = mechanisms.map((mechanism, index) => ({
     schemaVersion: 1,
     id: `hypothesis-${index}`,
@@ -115,11 +124,16 @@ function createIdentityGraph() {
       neuronIndex,
     })
   );
-  const activationPositions = components.map(component =>
-    createRecurrentActivationPositionV2({
-      componentId: component.id,
-      timeStepIndex: 9,
-    })
+  const activationPositions = legacyMechanismFixtures.map(
+    ({ neuronIndex, timeStep }) => {
+      const component = components.find(
+        entry => entry.neuronIndex === neuronIndex
+      );
+      return createRecurrentActivationPositionV2({
+        componentId: component.id,
+        timeStepIndex: timeStep,
+      });
+    }
   );
   const observations = activationPositions.map((position, index) =>
     createActivationObservationV2(position.id, `experiment-${index}`, {
@@ -145,14 +159,23 @@ describe('portable research bundle V2', () => {
       identityGraph: createIdentityGraph(),
     };
     const original = JSON.parse(JSON.stringify(bundle));
-    const exported = exportInterpretabilityResearchBundleV2(bundle, schemas);
+    const exported = exportInterpretabilityResearchBundleV3(bundle, schemas);
     expect(exported.valid).toBe(true);
     if (!exported.valid) return;
 
     const envelope = JSON.parse(exported.json);
-    expect(envelope.schemaVersion).toBe(2);
+    expect(envelope.schemaVersion).toBe(3);
     expect(envelope.evidenceGraph.schemaVersion).toBe(1);
     expect(envelope.identityGraph.schemaVersion).toBe(2);
+    expect(envelope.mechanismIdentityLinks).toHaveLength(3);
+    const neuronZeroLinks = envelope.mechanismIdentityLinks.filter(link =>
+      link.legacyMechanismId.startsWith('legacy-neuron-0')
+    );
+    expect(neuronZeroLinks).toHaveLength(2);
+    expect(new Set(neuronZeroLinks.map(link => link.componentId)).size).toBe(1);
+    expect(
+      new Set(neuronZeroLinks.map(link => link.activationPositionId)).size
+    ).toBe(2);
 
     const reordered = {
       evidenceGraph: Object.fromEntries(
@@ -168,7 +191,7 @@ describe('portable research bundle V2', () => {
         ])
       ),
     };
-    expect(exportInterpretabilityResearchBundleV2(reordered, schemas)).toEqual(
+    expect(exportInterpretabilityResearchBundleV3(reordered, schemas)).toEqual(
       exported
     );
 
@@ -176,21 +199,265 @@ describe('portable research bundle V2', () => {
       exported.json,
       schemas
     );
+    const unorderedEnvelope = JSON.parse(exported.json);
+    unorderedEnvelope.evidenceGraph.mechanisms.reverse();
+    expect(
+      importInterpretabilityResearchBundleV2(
+        JSON.stringify(unorderedEnvelope),
+        schemas
+      ).valid
+    ).toBe(true);
     expect(imported.valid).toBe(true);
     if (!imported.valid) return;
     expect(
       imported.bundle.evidenceGraph.mechanisms.map(record => record.id)
-    ).toEqual(['legacy-neuron-0', 'legacy-neuron-1']);
-    expect(imported.bundle.evidenceGraph.hypotheses).toHaveLength(2);
-    expect(imported.bundle.evidenceGraph.experiments).toHaveLength(2);
+    ).toEqual(['legacy-neuron-0', 'legacy-neuron-0-step-0', 'legacy-neuron-1']);
+    expect(imported.bundle.evidenceGraph.hypotheses).toHaveLength(3);
+    expect(imported.bundle.evidenceGraph.experiments).toHaveLength(3);
     expect(imported.bundle.evidenceGraph.evidence[0].kind).toBe('negative');
     expect(imported.bundle.evidenceGraph.edges[0].relation).toBe('contradicts');
     expect(imported.bundle.identityGraph.components).toHaveLength(2);
-    expect(imported.bundle.identityGraph.activationPositions).toHaveLength(2);
-    expect(imported.bundle.identityGraph.observations).toHaveLength(2);
+    expect(imported.bundle.identityGraph.activationPositions).toHaveLength(3);
+    expect(imported.bundle.identityGraph.observations).toHaveLength(3);
+    expect(imported.bundle.mechanismIdentityLinks).toEqual(
+      envelope.mechanismIdentityLinks
+    );
+    expect(imported.bundle.evidenceGraph.hypotheses[0].mechanismIds).toEqual([
+      'legacy-neuron-0',
+    ]);
     expect(bundle).toEqual(original);
   });
 
+  it('imports legacy V2 bundle envelopes without lineage links', () => {
+    const exported = exportInterpretabilityResearchBundleV2(
+      {
+        evidenceGraph: createEvidenceGraph(),
+        identityGraph: createIdentityGraph(),
+      },
+      {
+        evidenceGraphSchemasV1: evidenceSchemas,
+        identityGraphSchemaV2: identitySchemas.identityGraphSchemaV2,
+      }
+    );
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const envelope = JSON.parse(exported.json);
+    expect(envelope.schemaVersion).toBe(2);
+    expect(envelope.mechanismIdentityLinks).toBeUndefined();
+    expect(
+      importInterpretabilityResearchBundleV2(JSON.stringify(envelope), schemas)
+    ).toMatchObject({
+      valid: true,
+      bundle: { mechanismIdentityLinks: [] },
+    });
+  });
+
+  it('rejects missing, duplicate, stale, or incorrect V3 mechanism links', () => {
+    const exported = exportInterpretabilityResearchBundleV3(
+      {
+        evidenceGraph: createEvidenceGraph(),
+        identityGraph: createIdentityGraph(),
+      },
+      schemas
+    );
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const validEnvelope = JSON.parse(exported.json);
+    const invalidLinks = [
+      [],
+      [
+        ...validEnvelope.mechanismIdentityLinks,
+        validEnvelope.mechanismIdentityLinks[0],
+      ],
+      [null, ...validEnvelope.mechanismIdentityLinks.slice(1)],
+      validEnvelope.mechanismIdentityLinks.map((link, index) =>
+        index === 0
+          ? { ...link, componentId: 'atlas:v2:component:wrong' }
+          : link
+      ),
+      validEnvelope.mechanismIdentityLinks.map((link, index) =>
+        index === 0 ? { ...link, extra: true } : link
+      ),
+    ];
+    for (const mechanismIdentityLinks of invalidLinks) {
+      expect(
+        importInterpretabilityResearchBundleV2(
+          JSON.stringify({ ...validEnvelope, mechanismIdentityLinks }),
+          schemas
+        )
+      ).toEqual({
+        valid: false,
+        errors: [{ code: 'invalid-mechanism-identity-links' }],
+      });
+    }
+  });
+
+  it('rejects export when a migrated component or position is missing', () => {
+    const graphWithoutComponent = createIdentityGraph();
+    const missingComponentId = graphWithoutComponent.components.find(
+      component => component.neuronIndex === 1
+    ).id;
+    const removedPositionIds = graphWithoutComponent.activationPositions
+      .filter(position => position.componentId === missingComponentId)
+      .map(position => position.id);
+    graphWithoutComponent.components = graphWithoutComponent.components.filter(
+      component => component.id !== missingComponentId
+    );
+    graphWithoutComponent.activationPositions =
+      graphWithoutComponent.activationPositions.filter(
+        position => position.componentId !== missingComponentId
+      );
+    graphWithoutComponent.observations =
+      graphWithoutComponent.observations.filter(
+        observation =>
+          !removedPositionIds.includes(observation.activationPositionId)
+      );
+    expect(
+      exportInterpretabilityResearchBundleV3(
+        {
+          evidenceGraph: createEvidenceGraph(),
+          identityGraph: graphWithoutComponent,
+        },
+        schemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [{ code: 'missing-lineage-component' }],
+        },
+      ],
+    });
+
+    const graphWithoutPosition = createIdentityGraph();
+    const missingPositionId = graphWithoutPosition.activationPositions.find(
+      position => position.timeStepIndex === 0
+    ).id;
+    graphWithoutPosition.activationPositions =
+      graphWithoutPosition.activationPositions.filter(
+        position => position.id !== missingPositionId
+      );
+    graphWithoutPosition.observations =
+      graphWithoutPosition.observations.filter(
+        observation => observation.activationPositionId !== missingPositionId
+      );
+    expect(
+      exportInterpretabilityResearchBundleV3(
+        {
+          evidenceGraph: createEvidenceGraph(),
+          identityGraph: graphWithoutPosition,
+        },
+        schemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [{ code: 'missing-lineage-position' }],
+        },
+      ],
+    });
+  });
+});
+
+describe('portable research bundle V3 lineage', () => {
+  it('exports an empty identity lineage when the V1 graph has no recurrent states', () => {
+    const exported = exportInterpretabilityResearchBundleV3(
+      {
+        evidenceGraph: {
+          mechanisms: [],
+          hypotheses: [],
+          experiments: [],
+          estimates: [],
+          evidence: [],
+          edges: [],
+        },
+        identityGraph: {
+          components: [],
+          activationPositions: [],
+          observations: [],
+          structuralConnections: [],
+          circuitSnapshots: [],
+        },
+      },
+      schemas
+    );
+    expect(exported).toMatchObject({ valid: true });
+    if (!exported.valid) return;
+    expect(
+      importInterpretabilityResearchBundleV2(exported.json, schemas)
+    ).toMatchObject({
+      valid: true,
+      bundle: { mechanismIdentityLinks: [] },
+    });
+  });
+
+  it('rejects V3 imports when lineage schema adapters are missing', () => {
+    const exported = exportInterpretabilityResearchBundleV3(
+      {
+        evidenceGraph: createEvidenceGraph(),
+        identityGraph: createIdentityGraph(),
+      },
+      schemas
+    );
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    expect(
+      importInterpretabilityResearchBundleV2(exported.json, {
+        ...schemas,
+        identityGraphSchemasV2: {
+          ...identitySchemas,
+          recurrentNeuronComponentSchemaV2: undefined,
+        },
+      })
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [{ code: 'missing-lineage-schemas' }],
+        },
+      ],
+    });
+  });
+
+  it('wraps migration failures when a legacy recurrent state cannot form V2 IDs', () => {
+    expect(
+      exportInterpretabilityResearchBundleV3(
+        {
+          evidenceGraph: createEvidenceGraph(),
+          identityGraph: createIdentityGraph(),
+        },
+        {
+          ...schemas,
+          identityGraphSchemasV2: {
+            ...identitySchemas,
+            recurrentNeuronComponentSchemaV2: {
+              safeParse: () => ({ success: false }),
+            },
+          },
+        }
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [
+            {
+              code: 'invalid-legacy-recurrent-state',
+              details: [{ code: 'invalid-v2-migration' }],
+            },
+          ],
+        },
+      ],
+    });
+  });
+});
+
+describe('portable research bundle validation', () => {
   it('returns stable failures for malformed envelopes and invalid subgraphs', () => {
     expect(importInterpretabilityResearchBundleV2(null, schemas)).toEqual({
       valid: false,
@@ -205,7 +472,7 @@ describe('portable research bundle V2', () => {
       errors: [{ code: 'invalid-document' }],
     });
     expect(
-      importInterpretabilityResearchBundleV2('{"schemaVersion":3}', schemas)
+      importInterpretabilityResearchBundleV2('{"schemaVersion":4}', schemas)
     ).toEqual({
       valid: false,
       errors: [{ code: 'unsupported-version' }],
@@ -222,7 +489,7 @@ describe('portable research bundle V2', () => {
       ],
     });
 
-    const validBundle = exportInterpretabilityResearchBundleV2(
+    const validBundle = exportInterpretabilityResearchBundleV3(
       {
         evidenceGraph: createEvidenceGraph(),
         identityGraph: createIdentityGraph(),
@@ -243,7 +510,7 @@ describe('portable research bundle V2', () => {
       errors: [{ code: 'invalid-identity-graph' }],
     });
 
-    const exported = exportInterpretabilityResearchBundleV2(
+    const exported = exportInterpretabilityResearchBundleV3(
       {
         evidenceGraph: createEvidenceGraph(),
         identityGraph: createIdentityGraph(),
@@ -283,12 +550,12 @@ describe('portable research bundle V2', () => {
   });
 
   it('rejects invalid exports and missing schema adapters with stable errors', () => {
-    expect(exportInterpretabilityResearchBundleV2(null, schemas)).toEqual({
+    expect(exportInterpretabilityResearchBundleV3(null, schemas)).toEqual({
       valid: false,
       errors: [{ code: 'invalid-research-bundle' }],
     });
     expect(
-      exportInterpretabilityResearchBundleV2(
+      exportInterpretabilityResearchBundleV3(
         { evidenceGraph: null, identityGraph: createIdentityGraph() },
         schemas
       )
@@ -297,7 +564,7 @@ describe('portable research bundle V2', () => {
       errors: [{ code: 'invalid-evidence-graph' }],
     });
     expect(
-      exportInterpretabilityResearchBundleV2(
+      exportInterpretabilityResearchBundleV3(
         {
           evidenceGraph: {
             hypotheses: [{ id: 'hypothesis', mechanismIds: ['absent'] }],
@@ -310,29 +577,69 @@ describe('portable research bundle V2', () => {
       valid: false,
       errors: [{ code: 'invalid-evidence-graph' }],
     });
+    const malformedMechanismGraph = createEvidenceGraph();
+    malformedMechanismGraph.mechanisms[0].timeStep = -1;
     expect(
-      exportInterpretabilityResearchBundleV2(
+      exportInterpretabilityResearchBundleV3(
         {
-          evidenceGraph: createEvidenceGraph(),
+          evidenceGraph: malformedMechanismGraph,
           identityGraph: createIdentityGraph(),
         },
-        { evidenceGraphSchemasV1: evidenceSchemas }
+        schemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-evidence-graph' }],
+    });
+    expect(
+      exportInterpretabilityResearchBundleV3(
+        {
+          evidenceGraph: createEvidenceGraph(),
+          identityGraph: { ...createIdentityGraph(), unsupported: true },
+        },
+        schemas
       )
     ).toMatchObject({
       valid: false,
       errors: [{ code: 'invalid-identity-graph' }],
     });
     expect(
-      exportInterpretabilityResearchBundleV2(
+      exportInterpretabilityResearchBundleV3(
         {
           evidenceGraph: createEvidenceGraph(),
           identityGraph: createIdentityGraph(),
         },
-        { identityGraphSchemaV2: identitySchemas.identityGraphSchemaV2 }
+        {
+          identityGraphSchemasV2: identitySchemas,
+        }
       )
     ).toMatchObject({
       valid: false,
       errors: [{ code: 'invalid-evidence-graph' }],
+    });
+
+    expect(
+      exportInterpretabilityResearchBundleV3(
+        {
+          evidenceGraph: createEvidenceGraph(),
+          identityGraph: createIdentityGraph(),
+        },
+        {
+          evidenceGraphSchemasV1: evidenceSchemas,
+          identityGraphSchemasV2: {
+            ...identitySchemas,
+            recurrentNeuronComponentSchemaV2: undefined,
+          },
+        }
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [{ code: 'missing-lineage-schemas' }],
+        },
+      ],
     });
   });
 });

@@ -1245,12 +1245,33 @@ function sortIdentityCollectionsV2(graph) {
 }
 
 /**
- * Export V1 evidence and V2 identities in one versioned research bundle.
+ * Export V1 evidence and V2 identities in a V2 bundle without cross-version links.
  * @param {{evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>}} bundle Portable research subgraphs.
- * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemaV2: any}} schemas Injected subgraph schemas.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemaV2?: any, identityGraphSchemasV2?: {identityGraphSchemaV2: any}}} schemas Injected subgraph schemas.
  * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
  */
 export function exportInterpretabilityResearchBundleV2(bundle, schemas) {
+  return exportInterpretabilityResearchBundle(bundle, schemas, 2);
+}
+
+/**
+ * Export V1 evidence and V2 identities with explicit recurrent-mechanism lineage.
+ * @param {{evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>}} bundle Portable research subgraphs.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
+ */
+export function exportInterpretabilityResearchBundleV3(bundle, schemas) {
+  return exportInterpretabilityResearchBundle(bundle, schemas, 3);
+}
+
+/**
+ * Validate portable subgraphs and serialize the selected outer envelope version.
+ * @param {Record<string, any>} bundle Portable research subgraphs.
+ * @param {Record<string, any>} schemas Injected subgraph schemas.
+ * @param {2|3} version Outer bundle version.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
+ */
+function exportInterpretabilityResearchBundle(bundle, schemas, version) {
   if (!bundle || typeof bundle !== 'object' || Array.isArray(bundle)) {
     return researchBundleFailure('invalid-research-bundle');
   }
@@ -1280,7 +1301,7 @@ export function exportInterpretabilityResearchBundleV2(bundle, schemas) {
   }
   const identityResult = validateInterpretabilityIdentityGraphV2(
     bundle.identityGraph,
-    schemas?.identityGraphSchemaV2
+    researchBundleIdentityGraphSchemaV2(schemas)
   );
   if (!identityResult.valid) {
     return researchBundleFailure(
@@ -1288,12 +1309,34 @@ export function exportInterpretabilityResearchBundleV2(bundle, schemas) {
       identityResult.errors
     );
   }
+  if (version === 2) {
+    return {
+      valid: true,
+      json: JSON.stringify({
+        schemaVersion: 2,
+        evidenceGraph: { schemaVersion: 1, ...evidenceResult.graph },
+        identityGraph: { schemaVersion: 2, ...identityResult.graph },
+      }),
+    };
+  }
+  const lineageResult = deriveMechanismIdentityLinksV3(
+    evidenceResult.graph,
+    identityResult.graph,
+    schemas
+  );
+  if (!lineageResult.valid) {
+    return researchBundleFailure(
+      'invalid-mechanism-identity-links',
+      lineageResult.errors
+    );
+  }
   return {
     valid: true,
     json: JSON.stringify({
-      schemaVersion: 2,
+      schemaVersion: 3,
       evidenceGraph: { schemaVersion: 1, ...evidenceResult.graph },
       identityGraph: { schemaVersion: 2, ...identityResult.graph },
+      mechanismIdentityLinks: lineageResult.links,
     }),
   };
 }
@@ -1301,8 +1344,8 @@ export function exportInterpretabilityResearchBundleV2(bundle, schemas) {
 /**
  * Import and validate both subgraphs in a portable research bundle.
  * @param {string} json Portable research bundle JSON.
- * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemaV2: any}} schemas Injected subgraph schemas.
- * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
+ * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, string>>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
  */
 export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (typeof json !== 'string') return researchBundleFailure('invalid-json');
@@ -1315,14 +1358,19 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
     return researchBundleFailure('invalid-document');
   }
-  if (envelope.schemaVersion !== 2) {
+  if (![2, 3].includes(envelope.schemaVersion)) {
     return researchBundleFailure('unsupported-version');
   }
-  if (
-    Object.keys(envelope).some(
-      key => !['schemaVersion', 'evidenceGraph', 'identityGraph'].includes(key)
-    )
-  ) {
+  const allowedKeys =
+    envelope.schemaVersion === 2
+      ? ['schemaVersion', 'evidenceGraph', 'identityGraph']
+      : [
+          'schemaVersion',
+          'evidenceGraph',
+          'identityGraph',
+          'mechanismIdentityLinks',
+        ];
+  if (Object.keys(envelope).some(key => !allowedKeys.includes(key))) {
     return researchBundleFailure('invalid-research-bundle');
   }
 
@@ -1341,7 +1389,7 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   }
   const identityResult = validateInterpretabilityIdentityGraphV2(
     envelope.identityGraph,
-    schemas?.identityGraphSchemaV2
+    researchBundleIdentityGraphSchemaV2(schemas)
   );
   if (!identityResult.valid) {
     return researchBundleFailure(
@@ -1349,13 +1397,177 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
       identityResult.errors
     );
   }
+  /** @type {Array<Record<string, string>>} */
+  let mechanismIdentityLinks = [];
+  if (envelope.schemaVersion === 3) {
+    const lineageResult = deriveMechanismIdentityLinksV3(
+      evidenceResult.graph,
+      identityResult.graph,
+      schemas
+    );
+    if (!lineageResult.valid) {
+      return researchBundleFailure(
+        'invalid-mechanism-identity-links',
+        lineageResult.errors
+      );
+    }
+    if (
+      !mechanismIdentityLinksMatchV3(
+        envelope.mechanismIdentityLinks,
+        lineageResult.links
+      )
+    ) {
+      return researchBundleFailure('invalid-mechanism-identity-links');
+    }
+    mechanismIdentityLinks = lineageResult.links;
+  }
   return {
     valid: true,
     bundle: {
       evidenceGraph: evidenceResult.graph,
       identityGraph: identityResult.graph,
+      mechanismIdentityLinks,
     },
   };
+}
+
+/**
+ * Resolve the injected V2 graph schema from either the legacy or full schema set.
+ * @param {Record<string, any>} schemas Bundle schema adapters.
+ * @returns {any} Injected V2 graph schema.
+ */
+function researchBundleIdentityGraphSchemaV2(schemas) {
+  return (
+    schemas?.identityGraphSchemasV2?.identityGraphSchemaV2 ??
+    schemas?.identityGraphSchemaV2
+  );
+}
+
+/**
+ * Derive and validate links from every V1 recurrent-state ID to its canonical V2 identity.
+ * @param {InterpretabilityGraphV1} evidenceGraph Validated V1 graph.
+ * @param {Record<string, any>} identityGraph Validated V2 graph.
+ * @param {Record<string, any>} schemas Injected migration schemas.
+ * @returns {{valid: true, links: Array<Record<string, string>>}|{valid: false, errors: Array<Record<string, any>>}} Canonical lineage links.
+ */
+function deriveMechanismIdentityLinksV3(evidenceGraph, identityGraph, schemas) {
+  const mechanisms = /** @type {Array<InterpretabilityRecord>} */ (
+    evidenceGraph.mechanisms
+  );
+  const legacyMechanisms = mechanisms.filter(
+    mechanism => mechanism.kind === 'recurrent-state'
+  );
+  if (legacyMechanisms.length === 0) return { valid: true, links: [] };
+
+  const evidenceSchemas = schemas?.evidenceGraphSchemasV1;
+  const identitySchemas = schemas?.identityGraphSchemasV2;
+  const migrationSchemas = {
+    mechanismSchemaV1: evidenceSchemas?.mechanismSchemaV1,
+    recurrentNeuronComponentSchemaV2:
+      identitySchemas?.recurrentNeuronComponentSchemaV2,
+    recurrentActivationPositionSchemaV2:
+      identitySchemas?.recurrentActivationPositionSchemaV2,
+  };
+  if (
+    Object.values(migrationSchemas).some(
+      schema => typeof schema?.safeParse !== 'function'
+    )
+  ) {
+    return { valid: false, errors: [{ code: 'missing-lineage-schemas' }] };
+  }
+
+  const links = [];
+  const components = /** @type {Array<Record<string, any>>} */ (
+    identityGraph.components
+  );
+  const activationPositions = /** @type {Array<Record<string, any>>} */ (
+    identityGraph.activationPositions
+  );
+  for (const mechanism of legacyMechanisms) {
+    const migrated = migrateRecurrentStateMechanismV1ToV2(
+      mechanism,
+      migrationSchemas
+    );
+    if (!migrated.valid) {
+      return {
+        valid: false,
+        errors: [
+          {
+            code: 'invalid-legacy-recurrent-state',
+            mechanismId: mechanism.id,
+            details: migrated.errors,
+          },
+        ],
+      };
+    }
+    if (!components.some(component => component.id === migrated.component.id)) {
+      return {
+        valid: false,
+        errors: [
+          { code: 'missing-lineage-component', mechanismId: mechanism.id },
+        ],
+      };
+    }
+    if (
+      !activationPositions.some(
+        position =>
+          position.id === migrated.position.id &&
+          position.componentId === migrated.component.id
+      )
+    ) {
+      return {
+        valid: false,
+        errors: [
+          { code: 'missing-lineage-position', mechanismId: mechanism.id },
+        ],
+      };
+    }
+    links.push({
+      legacyMechanismId: mechanism.id,
+      componentId: migrated.component.id,
+      activationPositionId: migrated.position.id,
+    });
+  }
+  // V1 graph validation guarantees that legacy mechanism IDs are unique.
+  links.sort((left, right) =>
+    left.legacyMechanismId < right.legacyMechanismId ? -1 : 1
+  );
+  return { valid: true, links };
+}
+
+/**
+ * Confirm supplied V3 links exactly cover the canonical migration result.
+ * @param {unknown} actual Links from the imported envelope.
+ * @param {Array<Record<string, string>>} expected Derived canonical links.
+ * @returns {boolean} Whether the links match by legacy mechanism ID.
+ */
+function mechanismIdentityLinksMatchV3(actual, expected) {
+  if (!Array.isArray(actual) || actual.length !== expected.length) return false;
+  const byLegacyMechanismId = new Map();
+  for (const link of actual) {
+    if (!link || typeof link !== 'object' || Array.isArray(link)) return false;
+    const keys = Object.keys(link).sort();
+    if (
+      keys.length !== 3 ||
+      keys[0] !== 'activationPositionId' ||
+      keys[1] !== 'componentId' ||
+      keys[2] !== 'legacyMechanismId' ||
+      typeof link.legacyMechanismId !== 'string' ||
+      typeof link.componentId !== 'string' ||
+      typeof link.activationPositionId !== 'string' ||
+      byLegacyMechanismId.has(link.legacyMechanismId)
+    ) {
+      return false;
+    }
+    byLegacyMechanismId.set(link.legacyMechanismId, link);
+  }
+  return expected.every(expectedLink => {
+    const actualLink = byLegacyMechanismId.get(expectedLink.legacyMechanismId);
+    return (
+      actualLink?.componentId === expectedLink.componentId &&
+      actualLink?.activationPositionId === expectedLink.activationPositionId
+    );
+  });
 }
 
 /**
