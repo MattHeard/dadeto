@@ -141,6 +141,21 @@ function createEvaluationFixture() {
   };
 }
 
+/**
+ * Assert that a report mutation is rejected with the expected validation code.
+ * @param {Record<string, any>} bundle Existing portable research bundle.
+ * @param {Record<string, any>} evaluation Mutated report record.
+ * @param {string} code Expected stable validation error.
+ */
+function expectEvaluationValidationError(bundle, evaluation, code) {
+  expect(appendAccuracyEvaluationV1(bundle, evaluation, schemas)).toMatchObject(
+    {
+      valid: false,
+      errors: expect.arrayContaining([expect.objectContaining({ code })]),
+    }
+  );
+}
+
 describe('portable held-out accuracy evaluations V4', () => {
   it('appends a validated report immutably and links every variant to its estimate', () => {
     const { bundle, evaluation } = createEvaluationFixture();
@@ -418,6 +433,83 @@ describe('portable held-out accuracy evaluations V4', () => {
       errors: expect.arrayContaining([
         expect.objectContaining({ code: 'unresolved-estimate-reference' }),
       ]),
+    });
+  });
+
+  it('rejects report summaries and provenance that disagree with variant rows', () => {
+    const { bundle, evaluation } = createEvaluationFixture();
+    const mutations = [
+      [
+        'invalid-accuracy-variant-provenance',
+        report => {
+          report.variants[0].heldOutSplitId = 'different-split';
+        },
+      ],
+      [
+        'invalid-accuracy-variant-provenance',
+        report => {
+          report.variants[0].samplingCompute += 1;
+        },
+      ],
+      [
+        'inconsistent-accuracy-overall-summary',
+        report => {
+          report.overall.mechanisticMse += 0.001;
+        },
+      ],
+      [
+        'inconsistent-accuracy-overall-summary',
+        report => {
+          report.overall.samplingMse += 0.001;
+        },
+      ],
+      [
+        'inconsistent-accuracy-scale-summary',
+        report => {
+          report.byNoiseScale[0].mechanisticMse += 0.001;
+        },
+      ],
+      [
+        'inconsistent-accuracy-scale-summary',
+        report => {
+          report.byNoiseScale[0].samplingMse += 0.001;
+        },
+      ],
+      [
+        'inconsistent-accuracy-reference-range',
+        report => {
+          report.referenceAccuracyRange.minimum += 0.001;
+        },
+      ],
+      [
+        'inconsistent-accuracy-reference-range',
+        report => {
+          report.referenceAccuracyRange.maximum += 0.001;
+        },
+      ],
+      [
+        'inconsistent-accuracy-reference-range',
+        report => {
+          report.referenceAccuracyRange.spread += 0.001;
+        },
+      ],
+    ];
+
+    for (const [code, mutate] of mutations) {
+      const invalid = structuredClone(evaluation);
+      mutate(invalid.report);
+      expectEvaluationValidationError(bundle, invalid, code);
+    }
+  });
+
+  it('accepts floating-point summary differences within the documented tolerance', () => {
+    const { bundle, evaluation } = createEvaluationFixture();
+    const rounded = structuredClone(evaluation);
+    rounded.report.overall.mechanisticMse += 5e-13;
+    rounded.report.referenceAccuracyRange.minimum += 5e-13;
+
+    expect(appendAccuracyEvaluationV1(bundle, rounded, schemas)).toMatchObject({
+      valid: true,
     });
   });
 

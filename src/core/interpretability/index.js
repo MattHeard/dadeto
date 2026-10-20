@@ -1256,6 +1256,7 @@ export function migrateNativeNeuronMechanismV1ToV2(record, schemas) {
 
 /** @typedef {Record<string, any>} InterpretabilityRecord */
 /** @typedef {Record<string, any>} AccuracyEvaluationRecordV1 */
+/** @typedef {{variantId: string, heldOutSplitId: string, noiseScale: number, referenceAccuracy: number, mechanisticEstimate: number, samplingEstimate: number, mechanisticCompute: number, samplingCompute: number}} AccuracyEvaluationVariantV1 */
 /** @typedef {{mechanisms?: Array<InterpretabilityRecord>, hypotheses?: Array<InterpretabilityRecord>, experiments?: Array<InterpretabilityRecord>, evidence?: Array<InterpretabilityRecord>, estimates?: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} InterpretabilityGraphV1 */
 /** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any, accuracyEvaluationSchemaV1: any}} InterpretabilitySchemasV1 */
 
@@ -1999,6 +2000,7 @@ function mechanismIdentityLinksMatchV3(actual, expected) {
 }
 
 const ACCURACY_REPORT_NOISE_SCALES_V1 = Object.freeze([0.01, 0.05, 0.1, 0.2]);
+const ACCURACY_REPORT_FLOAT_TOLERANCE_V1 = 1e-12;
 
 /**
  * Validate canonical report records and their links to submitted estimates.
@@ -2067,7 +2069,7 @@ function validateAccuracyEvaluationCollection(
  */
 function validateAccuracyEvaluationLinks(evaluation, estimates, errors) {
   const { report, estimateLinks } = evaluation;
-  /** @type {Array<{variantId: string, noiseScale: number, referenceAccuracy: number}>} */
+  /** @type {Array<AccuracyEvaluationVariantV1>} */
   const variants = report.variants;
   if (
     variants.length !== 32 ||
@@ -2099,6 +2101,7 @@ function validateAccuracyEvaluationLinks(evaluation, estimates, errors) {
       /** @type {number} */ (scaleCounts.get(variant.noiseScale)) + 1
     );
   }
+  validateAccuracyEvaluationVariantProvenance(evaluation, variants, errors);
   if (
     ACCURACY_REPORT_NOISE_SCALES_V1.some(
       noiseScale => scaleCounts.get(noiseScale) !== 8
@@ -2153,10 +2156,46 @@ function validateAccuracyEvaluationLinks(evaluation, estimates, errors) {
     });
   }
 
+  validateAccuracyEvaluationReportSummary(evaluation, variants, errors);
+}
+
+/**
+ * Validate that held-out variants share the report split and compute budget.
+ * @param {AccuracyEvaluationRecordV1} evaluation Persisted report.
+ * @param {Array<AccuracyEvaluationVariantV1>} variants Held-out variant rows.
+ * @param {Array<Record<string, any>>} errors Mutable validation errors.
+ */
+function validateAccuracyEvaluationVariantProvenance(
+  evaluation,
+  variants,
+  errors
+) {
+  const inconsistentVariant = variants.find(
+    variant =>
+      variant.heldOutSplitId !== evaluation.report.heldOutSplitId ||
+      variant.mechanisticCompute !== variant.samplingCompute
+  );
+  if (inconsistentVariant) {
+    errors.push({
+      code: 'invalid-accuracy-variant-provenance',
+      id: evaluation.id,
+      variantId: inconsistentVariant.variantId,
+    });
+  }
+}
+
+/**
+ * Validate MSE, accuracy range, and material-variation summaries against rows.
+ * @param {AccuracyEvaluationRecordV1} evaluation Persisted report.
+ * @param {Array<AccuracyEvaluationVariantV1>} variants Held-out variant rows.
+ * @param {Array<Record<string, any>>} errors Mutable validation errors.
+ */
+function validateAccuracyEvaluationReportSummary(evaluation, variants, errors) {
+  const { report } = evaluation;
   const scaleSummaries = new Map(
-    /** @type {Array<{noiseScale: number}>} */ (report.byNoiseScale).map(
-      summary => [summary.noiseScale, summary]
-    )
+    /** @type {Array<{noiseScale: number, mechanisticMse: number, samplingMse: number}>} */ (
+      report.byNoiseScale
+    ).map(summary => [summary.noiseScale, summary])
   );
   if (
     scaleSummaries.size !== ACCURACY_REPORT_NOISE_SCALES_V1.length ||
@@ -2166,17 +2205,107 @@ function validateAccuracyEvaluationLinks(evaluation, estimates, errors) {
   ) {
     errors.push({ code: 'invalid-accuracy-scale-summary', id: evaluation.id });
   }
-  const accuracyValues = /** @type {Array<{referenceAccuracy: number}>} */ (
-    variants
-  ).map(variant => variant.referenceAccuracy);
-  const referenceSpread =
-    Math.max(...accuracyValues) - Math.min(...accuracyValues);
+  for (const noiseScale of ACCURACY_REPORT_NOISE_SCALES_V1) {
+    const summary = scaleSummaries.get(noiseScale);
+    if (!summary) continue;
+    const scaleVariants = variants.filter(
+      variant => variant.noiseScale === noiseScale
+    );
+    if (
+      !accuracyReportMseMatches(
+        summary.mechanisticMse,
+        scaleVariants,
+        'mechanisticEstimate'
+      ) ||
+      !accuracyReportMseMatches(
+        summary.samplingMse,
+        scaleVariants,
+        'samplingEstimate'
+      )
+    ) {
+      errors.push({
+        code: 'inconsistent-accuracy-scale-summary',
+        id: evaluation.id,
+        noiseScale,
+      });
+    }
+  }
+  const accuracyValues = variants.map(variant => variant.referenceAccuracy);
+  const minimumAccuracy = Math.min(...accuracyValues);
+  const maximumAccuracy = Math.max(...accuracyValues);
+  const referenceSpread = maximumAccuracy - minimumAccuracy;
+  if (
+    !accuracyReportValueMatches(
+      report.referenceAccuracyRange.minimum,
+      minimumAccuracy
+    ) ||
+    !accuracyReportValueMatches(
+      report.referenceAccuracyRange.maximum,
+      maximumAccuracy
+    ) ||
+    !accuracyReportValueMatches(
+      report.referenceAccuracyRange.spread,
+      referenceSpread
+    )
+  ) {
+    errors.push({
+      code: 'inconsistent-accuracy-reference-range',
+      id: evaluation.id,
+    });
+  }
+  if (
+    !accuracyReportMseMatches(
+      report.overall.mechanisticMse,
+      variants,
+      'mechanisticEstimate'
+    ) ||
+    !accuracyReportMseMatches(
+      report.overall.samplingMse,
+      variants,
+      'samplingEstimate'
+    )
+  ) {
+    errors.push({
+      code: 'inconsistent-accuracy-overall-summary',
+      id: evaluation.id,
+    });
+  }
   if (report.materialVariationMet !== referenceSpread >= 0.05) {
     errors.push({
       code: 'invalid-material-variation-result',
       id: evaluation.id,
     });
   }
+}
+
+/**
+ * Compare a report MSE with the mean squared error derived from its variants.
+ * The tolerance accounts for floating-point summation order after canonical sorting.
+ * @param {number} actual Reported MSE.
+ * @param {Array<AccuracyEvaluationVariantV1>} variants Held-out variant rows.
+ * @param {'mechanisticEstimate'|'samplingEstimate'} estimateField Estimate compared with reference accuracy.
+ * @returns {boolean} Whether the reported and derived MSE values agree.
+ */
+function accuracyReportMseMatches(actual, variants, estimateField) {
+  const squaredErrorSum = variants.reduce((sum, variant) => {
+    const difference = variant[estimateField] - variant.referenceAccuracy;
+    return sum + difference * difference;
+  }, 0);
+  const expected = squaredErrorSum / variants.length;
+  return accuracyReportValueMatches(actual, expected);
+}
+
+/**
+ * Compare two serialized summary values using the protocol's numeric tolerance.
+ * @param {number} actual Persisted report value.
+ * @param {number} expected Value recomputed from variant rows.
+ * @returns {boolean} Whether the values agree within tolerance.
+ */
+function accuracyReportValueMatches(actual, expected) {
+  return (
+    Math.abs(actual - expected) <=
+    ACCURACY_REPORT_FLOAT_TOLERANCE_V1 * Math.max(1, Math.abs(expected))
+  );
 }
 
 /**
