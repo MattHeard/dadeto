@@ -9,6 +9,7 @@ import {
   createTokenActivationPositionV2,
   exportInterpretabilityResearchBundleV2,
   exportInterpretabilityResearchBundleV3,
+  exportInterpretabilityResearchBundleV4,
   importInterpretabilityResearchBundleV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
@@ -261,6 +262,90 @@ function createPythiaNativeMechanismBundle() {
 }
 
 describe('portable research bundle V2', () => {
+  it('rejects activation observations that do not reference a bundle experiment', () => {
+    const evidenceGraph = createEvidenceGraph();
+    const identityGraph = createIdentityGraph();
+    const originalObservation = identityGraph.observations[0];
+    const unresolvedObservation = createActivationObservationV2(
+      originalObservation.activationPositionId,
+      'missing-experiment',
+      {
+        inputSequenceId: originalObservation.inputSequenceId,
+        runId: originalObservation.runId,
+        value: originalObservation.value,
+        numericPrecision: originalObservation.numericPrecision,
+      }
+    );
+    const validBundle = { evidenceGraph, identityGraph };
+    const bundleWithoutObservations = {
+      evidenceGraph,
+      identityGraph: { ...identityGraph, observations: [] },
+    };
+    const invalidBundle = {
+      evidenceGraph,
+      identityGraph: {
+        ...identityGraph,
+        observations: [
+          unresolvedObservation,
+          ...identityGraph.observations.slice(1),
+        ],
+      },
+    };
+    const expectedReferenceError = {
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-observation-experiment-references',
+          details: [
+            {
+              code: 'unresolved-observation-experiment',
+              observationId: unresolvedObservation.id,
+              experimentId: 'missing-experiment',
+            },
+          ],
+        },
+      ],
+    };
+
+    for (const exporter of [
+      exportInterpretabilityResearchBundleV2,
+      exportInterpretabilityResearchBundleV3,
+      exportInterpretabilityResearchBundleV4,
+    ]) {
+      const validExport = exporter(
+        { ...validBundle, accuracyEvaluations: [] },
+        schemas
+      );
+      expect(validExport.valid).toBe(true);
+      const emptyObservationExport = exporter(
+        { ...bundleWithoutObservations, accuracyEvaluations: [] },
+        schemas
+      );
+      expect(emptyObservationExport.valid).toBe(true);
+      if (emptyObservationExport.valid) {
+        expect(
+          importInterpretabilityResearchBundleV2(
+            emptyObservationExport.json,
+            schemas
+          ).valid
+        ).toBe(true);
+      }
+      expect(
+        exporter({ ...invalidBundle, accuracyEvaluations: [] }, schemas)
+      ).toEqual(expectedReferenceError);
+      if (!validExport.valid) continue;
+
+      const envelope = JSON.parse(validExport.json);
+      envelope.identityGraph.observations[0] = unresolvedObservation;
+      expect(
+        importInterpretabilityResearchBundleV2(
+          JSON.stringify(envelope),
+          schemas
+        )
+      ).toEqual(expectedReferenceError);
+    }
+  });
+
   it('round-trips V1 evidence and V2 identities in deterministic order', () => {
     const bundle = {
       evidenceGraph: createEvidenceGraph(),

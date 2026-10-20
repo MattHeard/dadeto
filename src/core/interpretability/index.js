@@ -1687,6 +1687,16 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
       identityResult.errors
     );
   }
+  const observationReferences = validateObservationExperimentReferences(
+    evidenceResult.graph,
+    identityResult.graph
+  );
+  if (!observationReferences.valid) {
+    return researchBundleFailure(
+      'invalid-observation-experiment-references',
+      observationReferences.errors
+    );
+  }
   if (
     version < 4 &&
     Array.isArray(bundle.accuracyEvaluations) &&
@@ -1804,6 +1814,16 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
     return researchBundleFailure(
       'invalid-identity-graph',
       identityResult.errors
+    );
+  }
+  const observationReferences = validateObservationExperimentReferences(
+    evidenceResult.graph,
+    identityResult.graph
+  );
+  if (!observationReferences.valid) {
+    return researchBundleFailure(
+      'invalid-observation-experiment-references',
+      observationReferences.errors
     );
   }
   /** @type {Array<Record<string, string>>} */
@@ -2418,6 +2438,35 @@ function researchBundleFailure(code, details) {
 }
 
 /**
+ * Require every portable activation observation to point to a V1 experiment.
+ * @param {InterpretabilityGraphV1 & {experiments: Array<InterpretabilityRecord>}} evidenceGraph Validated evidence graph.
+ * @param {Record<string, any>} identityGraph Validated V2 identity graph.
+ * @returns {{valid: true}|{valid: false, errors: Array<Record<string, string>>}} Cross-graph reference result.
+ */
+function validateObservationExperimentReferences(evidenceGraph, identityGraph) {
+  const experimentIds = new Set(
+    evidenceGraph.experiments.map(experiment => experiment.id)
+  );
+  const errors = identityGraph.observations.flatMap(
+    /**
+     * @param {Record<string, any>} observation Activation observation.
+     * @returns {Array<Record<string, string>>} Unresolved experiment reference errors.
+     */
+    observation =>
+      experimentIds.has(observation.experimentId)
+        ? []
+        : [
+            {
+              code: 'unresolved-observation-experiment',
+              observationId: observation.id,
+              experimentId: observation.experimentId,
+            },
+          ]
+  );
+  return errors.length === 0 ? { valid: true } : { valid: false, errors };
+}
+
+/**
  * Export a validated evidence graph as a versioned, deterministic JSON document.
  * Records must already pass their versioned schemas.
  * @param {InterpretabilityGraphV1} graph Versioned graph collections.
@@ -2443,7 +2492,7 @@ export function exportEvidenceGraphV1(graph) {
  * Import and validate a portable V1 graph using caller-provided schemas.
  * @param {string} json Portable graph JSON document.
  * @param {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any}} schemas Caller-provided record validators.
- * @returns {{valid: true, graph: InterpretabilityGraphV1}|{valid: false, errors: Array<Record<string, string|number|undefined>>}} Reconstructed graph or validation errors.
+ * @returns {{valid: true, graph: InterpretabilityGraphV1 & {experiments: Array<InterpretabilityRecord>}}|{valid: false, errors: Array<Record<string, string|number|undefined>>}} Reconstructed graph or validation errors.
  */
 export function importEvidenceGraphV1(json, schemas) {
   if (typeof json !== 'string') {
