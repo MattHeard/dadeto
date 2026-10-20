@@ -2,6 +2,7 @@ import {
   createThreefoldSiltMarginScene,
   normalizeThreefoldSiltMarginState,
 } from '../../../../src/core/browser/game/threefold/silt-margin.js';
+import { createThreefoldSiltMarginWaterPuzzle } from '../../../../src/core/browser/game/threefold/silt-margin-water.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import {
   createThreefoldSimulationSaveStore,
@@ -167,6 +168,39 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(
       restoreThreefoldSimulation(serializeThreefoldSimulation(state))
     ).toEqual(state);
+  });
+
+  test('does not repeat guardian consequences or send a disrupted signal', () => {
+    let state = createSiltMarginRun();
+    state = stepThreefoldSimulation(state, { type: 'grow' });
+    const growthDeaths = state.encounter.growthDeaths;
+    state = stepThreefoldSimulation(state, { type: 'grow' });
+
+    expect(state.siltMargin).toMatchObject({
+      guardian: 'killed',
+      signal: 'disrupted',
+    });
+    expect(state.encounter.growthDeaths).toEqual(growthDeaths);
+
+    for (let step = 0; step < 46; step += 1)
+      state = stepThreefoldSimulation(state, {
+        type: 'move',
+        direction: 'right',
+      });
+    const interaction = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(interaction.siltMargin.signal).toBe('disrupted');
+  });
+
+  test('rejects a saved sent signal while the crossing remains flooded', () => {
+    expect(() =>
+      normalizeThreefoldSiltMarginState({
+        guardian: 'guided-aside',
+        signal: 'sent',
+        waterPuzzle: createThreefoldSiltMarginWaterPuzzle({
+          crossingOpen: false,
+        }),
+      })
+    ).toThrow('The Choir signal cannot be sent across a flooded crossing.');
   });
 
   test('migrates schema-v1 branches and rejects non-conserved dew saves', () => {
