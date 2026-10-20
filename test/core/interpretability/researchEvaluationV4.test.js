@@ -596,3 +596,97 @@ describe('portable held-out accuracy evaluations V4', () => {
     expect(savePermissions).toEqual([token, token]);
   });
 });
+
+describe('permission-aware held-out accuracy report reads', () => {
+  it('reads persisted reports with the same permission token, including negative results', async () => {
+    const { bundle, evaluation } = createEvaluationFixture();
+    const initial = exportInterpretabilityResearchBundleV4(
+      { ...bundle, accuracyEvaluations: [evaluation] },
+      schemas
+    );
+    if (!initial.valid) throw new Error('Synthetic bundle fixture invalid.');
+    const loadPermissions = [];
+    const savePermissions = [];
+    const service = createInterpretabilityResearchServiceV1({
+      loadBundle: async token => {
+        loadPermissions.push(token);
+        return initial.json;
+      },
+      saveBundle: async token => savePermissions.push(token),
+      schemas,
+    });
+    const token = Object.freeze({ testPermission: true });
+
+    const result = await service.readEvaluations(token);
+
+    expect(result).toMatchObject({
+      valid: true,
+      evaluations: [evaluation],
+    });
+    if (result.valid) {
+      expect(
+        result.evaluations[0].report.overall.mechanisticMse
+      ).toBeGreaterThan(result.evaluations[0].report.overall.samplingMse);
+    }
+    expect(loadPermissions).toEqual([token]);
+    expect(savePermissions).toEqual([]);
+  });
+
+  it('returns an empty evaluation list when reading a legacy V3 bundle', async () => {
+    const { bundle } = createEvaluationFixture();
+    const legacy = exportInterpretabilityResearchBundleV3(bundle, schemas);
+    if (!legacy.valid) throw new Error('Legacy bundle fixture invalid.');
+    const permissions = [];
+    const service = createInterpretabilityResearchServiceV1({
+      loadBundle: async token => {
+        permissions.push(token);
+        return legacy.json;
+      },
+      saveBundle: async () => {},
+      schemas,
+    });
+    const token = Object.freeze({ testPermission: true });
+
+    await expect(service.readEvaluations(token)).resolves.toEqual({
+      valid: true,
+      evaluations: [],
+    });
+    expect(permissions).toEqual([token]);
+  });
+
+  it('rejects semantically tampered reports when reading stored bundles', async () => {
+    const { bundle, evaluation } = createEvaluationFixture();
+    const initial = exportInterpretabilityResearchBundleV4(
+      { ...bundle, accuracyEvaluations: [evaluation] },
+      schemas
+    );
+    if (!initial.valid) throw new Error('Synthetic bundle fixture invalid.');
+    const envelope = JSON.parse(initial.json);
+    envelope.accuracyEvaluations[0].report.overall.samplingMse += 0.001;
+    let saves = 0;
+    const service = createInterpretabilityResearchServiceV1({
+      loadBundle: async () => JSON.stringify(envelope),
+      saveBundle: async () => {
+        saves += 1;
+      },
+      schemas,
+    });
+
+    await expect(
+      service.readEvaluations(Object.freeze({ testPermission: true }))
+    ).resolves.toMatchObject({
+      valid: false,
+      errors: [
+        expect.objectContaining({
+          code: 'invalid-accuracy-evaluations',
+          details: expect.arrayContaining([
+            expect.objectContaining({
+              code: 'inconsistent-accuracy-overall-summary',
+            }),
+          ]),
+        }),
+      ],
+    });
+    expect(saves).toBe(0);
+  });
+});

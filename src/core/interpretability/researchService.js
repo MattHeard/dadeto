@@ -17,6 +17,7 @@ import {
 /** @typedef {Parameters<typeof appendAccuracyEvaluationV1>[1]} AccuracyEvaluation */
 /** @typedef {ReturnType<typeof importInterpretabilityResearchBundleV2>} BundleImportResult */
 /** @typedef {Extract<BundleImportResult, {valid: true}>['bundle']} ResearchBundle */
+/** @typedef {{valid: true, evaluations: Array<AccuracyEvaluation>}|Extract<BundleImportResult, {valid: false}>} AccuracyEvaluationsServiceResult */
 /** @typedef {(bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation, schemas: ResearchSchemas) => any} ResearchAppender */
 /** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof exportInterpretabilityResearchBundleV4>} BundleOperationResult */
 /** @typedef {BundleImportResult|BundleOperationResult} ResearchServiceResult */
@@ -26,7 +27,7 @@ import {
 /**
  * Create the pure Atlas read/submission service over injected bundle storage.
  * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas}} options Storage capabilities and caller-provided schema adapters.
- * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>}} Permission-aware service methods.
+ * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>}} Permission-aware service methods.
  */
 export function createInterpretabilityResearchServiceV1({
   loadBundle,
@@ -89,6 +90,11 @@ export function createInterpretabilityResearchServiceV1({
           ) ?? null;
         return { ...context, mechanismIdentityLink };
       }),
+    readEvaluations: allowEffects =>
+      withBundle(allowEffects, bundle => ({
+        valid: true,
+        evaluations: bundle.accuracyEvaluations,
+      })),
     submitExperiment: (allowEffects, submission) =>
       submitGraphRecord(allowEffects, appendExperimentSubmissionV1, submission),
     submitEstimate: (allowEffects, estimate) =>
