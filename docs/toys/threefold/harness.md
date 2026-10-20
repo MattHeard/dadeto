@@ -18,6 +18,8 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-sluice-inte
 ## Expected Observable Outputs
 
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
+- Every rendered canvas shape is positioned and sized on a four-logical-pixel grid; terrain flecks and both scenes' water surfaces follow the same grid while the simulation values stay continuous.
+- The standalone page uses eight-pixel spacing and control sizes, including the narrow-phone layout, and the face/system buttons are not rotated.
 - The opening view reports scale 0, Anchor 8, and the rising crisis stage.
 - At the starting position, the west wall is highlighted and the HUD says `A BREAKS WEST WALL`; pressing A still performs the growth. At positions where the next rung hits no intact geometry, the regular message remains and no structure is highlighted.
 - Enter the watchkeeper bounds from outside while at scale −2, then grow: the frame highlights the watchkeeper and says `A KILLS LATCHFOLK` even though Mara's smaller body is already inside their volume. A remains available, commits `lost`, and save/import preserves the identity outcome. No warning appears for an already safe/lost watchkeeper, locked growth, or when the next body misses their bounds.

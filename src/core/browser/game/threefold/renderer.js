@@ -12,6 +12,7 @@ import { heightAtScale, projectGeometryForScale } from './spatial.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
+const GRID_PIXELS = 4;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean}} ThreefoldSpriteShape */
@@ -146,7 +147,7 @@ export function renderThreefoldFrame(state) {
     ratFate: state.encounter.ratFate,
     ratAction: state.encounter.ratAction,
   };
-  return frame;
+  return alignThreefoldFrame(frame);
 }
 
 /**
@@ -200,7 +201,59 @@ function renderThreefoldSluiceFrame(state) {
     lowerBasinRaised: water.lowerBasinRaised,
     crossingAvailable: water.crossingAvailable,
   };
+  return alignThreefoldFrame(frame);
+}
+
+/**
+ * Snap a complete THREEFOLD frame after all presentation layers are added.
+ * @param {Record<string, any>} frame Completed Mosslight-compatible frame.
+ * @returns {Record<string, any>} Frame with aligned canvas shapes.
+ */
+function alignThreefoldFrame(frame) {
+  frame.shapes = snapCanvasShapesToGrid(frame.shapes);
   return frame;
+}
+
+/**
+ * Align all visible THREEFOLD canvas art to a four-pixel logical lattice.
+ * Simulation coordinates and fluid levels remain continuous; only the final
+ * handheld presentation is quantized.
+ * @param {ThreefoldSpriteShape[]} shapes Mosslight canvas shapes.
+ * @returns {ThreefoldSpriteShape[]} Canvas shapes placed on the display grid.
+ */
+function snapCanvasShapesToGrid(shapes) {
+  return shapes.map(shape => {
+    const snapped = {
+      ...shape,
+      x: snapCanvasCoordinate(shape.x),
+      y: snapCanvasCoordinate(shape.y),
+    };
+    if (shape.type !== 'rect') return snapped;
+    return {
+      ...snapped,
+      width: snapCanvasDimension(/** @type {number} */ (shape.width)),
+      height: snapCanvasDimension(/** @type {number} */ (shape.height)),
+    };
+  });
+}
+
+/**
+ * Snap a canvas coordinate to the nearest four-pixel line.
+ * @param {number} value Logical-screen position.
+ * @returns {number} Grid-aligned logical-screen position.
+ */
+function snapCanvasCoordinate(value) {
+  return Math.round(value / GRID_PIXELS) * GRID_PIXELS;
+}
+
+/**
+ * Snap a positive shape dimension to a visible grid cell.
+ * @param {number} value Logical-screen size.
+ * @returns {number} Grid-aligned dimension, preserving a zero-width bar.
+ */
+function snapCanvasDimension(value) {
+  if (value === 0) return 0;
+  return Math.max(GRID_PIXELS, snapCanvasCoordinate(value));
 }
 
 /**

@@ -1,4 +1,5 @@
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
+import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 import {
@@ -32,27 +33,33 @@ function createWithdrawnSimulation(episode = {}) {
   );
 }
 
-describe('THREEFOLD Mosslight handheld frame', () => {
-  test('renders the authored rat and names fight/bypass when it is in reach', () => {
-    const scene = createBrokenGateScene();
-    scene.spawn = createScaleState({ x: 3.15, y: 4 }, { scale: -1 });
-    const state = stepThreefoldSimulation(
-      createThreefoldSimulation(THRESHOLDS, scene),
-      { type: 'shrink' }
+describe('THREEFOLD canvas grid', () => {
+  test('snaps both scenes to a four-pixel logical grid without changing fluid state', () => {
+    const brokenGate = createThreefoldSimulation(THRESHOLDS);
+    const sluice = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
     );
-    const frame = renderThreefoldFrame(state);
+    const fluidBeforeRender = JSON.parse(JSON.stringify(sluice.sluicePuzzle));
 
-    expect(frame.world.map.objects.map(object => object.id)).toContain(
-      'gatehouse-rat'
-    );
-    expect(
-      frame.shapes.filter(shape => shape.geometryId === 'gatehouse-rat')
-    ).toHaveLength(4);
-    expect(frame.threefold.ratFate).toBe('present');
-    expect(frame.quickAction).toBe('fight');
-    expect(frame.toast).toContain('RAT IN REACH · A FIGHT · X BYPASS');
+    for (const state of [brokenGate, sluice]) {
+      const frame = renderThreefoldFrame(state);
+      expect(frame).toMatchObject({ width: 160, height: 144, pixelated: true });
+      for (const shape of frame.shapes) {
+        expect(shape.x % 4).toBe(0);
+        expect(shape.y % 4).toBe(0);
+        if (shape.type === 'rect') {
+          expect(shape.width % 4).toBe(0);
+          expect(shape.height % 4).toBe(0);
+        }
+      }
+    }
+
+    expect(sluice.sluicePuzzle).toEqual(fluidBeforeRender);
   });
+});
 
+describe('THREEFOLD status display', () => {
   test('uses the shared pixelated 160x144 frame and exposes current status', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
     const frame = renderThreefoldFrame(state);
@@ -86,9 +93,9 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         type: 'rect',
-        x: 126,
+        x: 128,
         y: 8,
-        width: 26,
+        width: 28,
         height: 4,
         fill: '#315744',
       })
@@ -96,13 +103,35 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         type: 'rect',
-        x: 126,
+        x: 128,
         y: 8,
         width: 0,
         height: 4,
         fill: '#bfd77c',
       })
     );
+  });
+});
+
+describe('THREEFOLD Mosslight handheld frame', () => {
+  test('renders the authored rat and names fight/bypass when it is in reach', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState({ x: 3.15, y: 4 }, { scale: -1 });
+    const state = stepThreefoldSimulation(
+      createThreefoldSimulation(THRESHOLDS, scene),
+      { type: 'shrink' }
+    );
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'gatehouse-rat'
+    );
+    expect(
+      frame.shapes.filter(shape => shape.geometryId === 'gatehouse-rat')
+    ).toHaveLength(4);
+    expect(frame.threefold.ratFate).toBe('present');
+    expect(frame.quickAction).toBe('fight');
+    expect(frame.toast).toContain('RAT IN REACH · A FIGHT · X BYPASS');
   });
 
   test('previews the geometry destroyed by growth without changing the simulation', () => {
@@ -175,8 +204,10 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
 
     expect(smallerAvatarBounds).toEqual(avatarBounds);
-    expect((smallerWall?.width ?? 0) / (wall?.width ?? 0)).toBeCloseTo(3);
-    expect((smallerWall?.height ?? 0) / (wall?.height ?? 0)).toBeCloseTo(3);
+    expect(smallerWall.width).toBeGreaterThan(wall.width);
+    expect(
+      humanScale.threefold.heightMeters / smallerScale.threefold.heightMeters
+    ).toBeCloseTo(3);
   });
 
   test('omits geometry already destroyed by growth and shows the updated tide stage', () => {
@@ -207,7 +238,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         type: 'rect',
-        x: 126,
+        x: 128,
         y: 8,
         width: 16,
         height: 4,
@@ -498,8 +529,8 @@ describe('THREEFOLD Mosslight handheld frame', () => {
   });
 
   test.each([
-    [4, 'urgent', 7, '#e9d88d'],
-    [15, 'aftermath', 26, '#e16b5a'],
+    [4, 'urgent', 8, '#e9d88d'],
+    [15, 'aftermath', 28, '#e16b5a'],
   ])(
     'shows %s crisis progress in the tide meter',
     (minutes, stage, width, fill) => {
@@ -513,7 +544,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
       expect(frame.shapes).toContainEqual(
         expect.objectContaining({
           type: 'rect',
-          x: 126,
+          x: 128,
           y: 8,
           width,
           height: 4,

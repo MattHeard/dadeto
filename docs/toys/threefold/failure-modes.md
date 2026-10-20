@@ -16,6 +16,7 @@
 - Hydraulic conservation regression: an open port transfers water uphill, creates or loses volume, drains below its sill, or produces different physical flow because only the rendered scale changed.
 - Sluice-puzzle regression: the valve toggles away from scale −2, water changes without explicit elapsed game time, the lower crossing opens below its physical surface threshold, water levels vary with rendered scale, or the first puzzle changes the Broken Gate's visual-only flood behavior.
 - Sluice integration regression: `/threefold/?scene=sluice` opens the Broken Gate or shares its save key; an out-of-range valve interaction opens the port; pause or browser wall time advances the chambers; the barrier can be crossed below 0.3 metres or while Mara is smaller than scale −1; save migration loses water or accepts non-conserved/invalid chamber data.
+- Grid presentation regression: any rendered THREEFOLD canvas shape has a non-four-pixel origin or size, CSS control placement drifts from the eight-pixel page grid, or rendering changes physical simulation state.
 
 ## Detection Signals
 
@@ -31,6 +32,7 @@
 - Water transfer does not conserve the total chamber volume, or the same SI-unit state yields a different result across rendered scales.
 - The sluice puzzle cannot be operated at scale −2, advances while closed, opens its crossing before the lower basin reaches 0.3 metres, or changes the Broken Gate flood outcome.
 - The small-world route shows the Broken Gate copy, water changes without explicit game actions, the crossing barrier remains after both height and scale requirements are met, or its save overwrites the Broken Gate record.
+- The canvas has fractional/off-grid shape coordinates, the touch buttons are tilted, or resizing changes stored positions or hydraulic values.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook

@@ -8,6 +8,13 @@ const THREEFOLD_HTML = readFileSync(
   ),
   'utf8'
 );
+const THREEFOLD_CSS = readFileSync(
+  new URL(
+    '../../../../src/content/pages/threefold/styles.css',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 const mockStartMosslightPage = jest.fn(() => () => {});
 
@@ -42,6 +49,13 @@ describe('THREEFOLD page adapter', () => {
       'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
     );
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
+  });
+
+  test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
+    expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
+    expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
+    expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
+    expect(THREEFOLD_CSS).toContain('transform: none');
   });
 
   test('uses the supplied storage and shared Mosslight page presenter', () => {
