@@ -258,11 +258,77 @@ describe('THREEFOLD page adapter', () => {
       'Reroute the dew'
     );
     expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Return to the Tidal Archive',
-      href: '/threefold/?scene=sluice',
+      textContent: 'Continue to the Lantern Ward',
+      href: '/threefold/?scene=lantern-ward',
     });
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
+  });
+
+  test('routes the Lantern Ward after the Silt Margin and isolates its controls', () => {
+    const selectors = [
+      '#chapter-subtitle',
+      '#chapter-tag',
+      '#chapter-eyebrow',
+      '#chapter-heading',
+      '#chapter-description',
+      '#interact-label',
+      '#scene-link',
+      '#game-footer',
+      '#a-control-label',
+      '#b-control-label',
+      '#e-control-label',
+      '#interact-control',
+      '#witness-ledger',
+      '#testimony',
+    ];
+    const nodes = new Map(
+      selectors.map(selector => [
+        selector,
+        {
+          textContent: '',
+          hidden: false,
+          href: '',
+          setAttribute: jest.fn(),
+        },
+      ])
+    );
+    const documentObj = { querySelector: selector => nodes.get(selector) };
+    startThreefoldPage({
+      documentObj,
+      windowObj: { location: { search: '?scene=lantern-ward' } },
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const runtime = page.createRuntime({});
+
+    expect(runtime.getState().scene.id).toBe('lantern-ward');
+    expect(runtime.getState().player.scale).toBe(3);
+    expect(runtime.getSnapshot().world.map.name).toBe('THE LANTERN WARD');
+    expect(nodes.get('#chapter-heading').textContent).toContain(
+      'At +3, one more rung'
+    );
+    expect(nodes.get('#chapter-description').textContent).toContain(
+      'Mira and Tov'
+    );
+    expect(nodes.get('#scene-link')).toMatchObject({
+      textContent: 'Return to the Silt Margin',
+      href: '/threefold/?scene=silt-margin',
+    });
+    expect(nodes.get('#a-control-label').textContent).toBe('GROW');
+    expect(nodes.get('#b-control-label').textContent).toBe('SHRINK');
+    expect(nodes.get('#interact-control').hidden).toBe(true);
+    expect(nodes.get('#witness-ledger').hidden).toBe(true);
+    expect(nodes.get('#testimony').hidden).toBe(true);
+    expect(runtime.getState().scene.id).toBe('lantern-ward');
+
+    expect(() =>
+      startThreefoldPage({
+        documentObj: { querySelector: () => null },
+        windowObj: { location: { search: '?scene=lantern-ward' } },
+        navigatorObj: {},
+      })
+    ).not.toThrow();
   });
 
   test('tolerates a document without the witness ledger list', () => {

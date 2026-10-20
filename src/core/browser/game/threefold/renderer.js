@@ -15,6 +15,7 @@ import { presentThreefoldTestimony } from './testimony.js';
 import {
   isSluiceSimulationState,
   isSiltMarginSimulationState,
+  isLanternWardSimulationState,
   previewThreefoldGrowthEffects,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
@@ -46,8 +47,16 @@ export function renderThreefoldFrame(state) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
   if (isSiltMarginSimulationState(state))
     return renderThreefoldSiltMarginFrame(state);
+  const isLanternWard = isLanternWardSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
-  const gateOutcome = getThreefoldGateOutcome(state);
+  const gateOutcome = isLanternWard
+    ? {
+        gateState: null,
+        drainageState: /** @type {'dry'|'at-risk'|'flooded'|'receded'} */ (
+          'dry'
+        ),
+      }
+    : getThreefoldGateOutcome(state);
   const growthPreview = previewThreefoldGrowthEffects(state);
   const { geometryIds, occupantIds, creatureIds } = growthPreview;
   const growthPreviewSet = new Set([
@@ -59,7 +68,7 @@ export function renderThreefoldFrame(state) {
   const frame = createThreefoldFramePayload({
     world,
     dialogue:
-      state.crisis.elapsedMinutes === 0
+      !isLanternWard && state.crisis.elapsedMinutes === 0
         ? {
             actorId: 'dock-worker',
             lines: [
@@ -76,10 +85,14 @@ export function renderThreefoldFrame(state) {
       : isGatehouseRatInReach(state)
         ? 'fight'
         : 'grow',
-    toast: getThreefoldToast(state, gateOutcome.drainageState),
+    toast: isLanternWard
+      ? getLanternWardToast(state)
+      : getThreefoldToast(state, gateOutcome.drainageState),
     presentation: {
       palette: PALETTE,
-      status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
+      status: isLanternWard
+        ? `SCALE ${formatScale(state.player.scale)} · ${heightMeters.toFixed(2)} M TALL`
+        : `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
     },
     spriteRenderer: (
       /** @type {Parameters<typeof spriteShapes>[0]} */ actor,
@@ -101,26 +114,31 @@ export function renderThreefoldFrame(state) {
       }));
     },
   });
-  frame.quest = 'The Broken Gate';
+  frame.quest = isLanternWard ? 'The Lantern Ward' : 'The Broken Gate';
   const tideProgress =
     state.crisis.elapsedMinutes / state.crisis.thresholds.aftermathAtMinutes;
-  frame.shapes.push(
-    { type: 'rect', x: 104, y: 4, width: 52, height: 12, fill: PALETTE[0] },
-    {
-      type: 'text',
-      x: 107,
-      y: 11,
-      text: 'TIDE',
-      fill: PALETTE[2],
-      font: '5px monospace',
-    },
-    tideBar(26, PALETTE[1]),
-    tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
-  );
+  if (!isLanternWard)
+    frame.shapes.push(
+      { type: 'rect', x: 104, y: 4, width: 52, height: 12, fill: PALETTE[0] },
+      {
+        type: 'text',
+        x: 107,
+        y: 11,
+        text: 'TIDE',
+        fill: PALETTE[2],
+        font: '5px monospace',
+      },
+      tideBar(26, PALETTE[1]),
+      tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
+    );
   const growthLabels = [
-    geometryIds.length > 0 ? getGrowthPreviewLabel(geometryIds) : null,
+    geometryIds.length > 0
+      ? getGrowthPreviewLabel(geometryIds, state.scene.geometry)
+      : null,
     occupantIds.length > 0 ? 'A KILLS LATCHFOLK' : null,
-    creatureIds.length > 0 ? getCreatureGrowthPreviewLabel(creatureIds) : null,
+    creatureIds.length > 0
+      ? getCreatureGrowthPreviewLabel(creatureIds, state.scene.creatures)
+      : null,
   ].filter(label => label !== null);
   growthLabels.forEach((text, index) => {
     const y = 17 + index * 12;
@@ -141,9 +159,13 @@ export function renderThreefoldFrame(state) {
     heightMeters,
     anchor: state.player.anchor,
     maximumAnchor: state.player.maximumAnchor,
-    crisisStage: state.crisis.stage,
-    elapsedMinutes: state.crisis.elapsedMinutes,
-    tideProgress,
+    ...(isLanternWard
+      ? { elapsedGameSeconds: state.elapsedGameSeconds }
+      : {
+          crisisStage: state.crisis.stage,
+          elapsedMinutes: state.crisis.elapsedMinutes,
+          tideProgress,
+        }),
     gateState: gateOutcome.gateState,
     drainageState: gateOutcome.drainageState,
     passengers: state.episode.passengers,
@@ -159,7 +181,7 @@ export function renderThreefoldFrame(state) {
     witnessLedger: (state.episode.witnessLedger || []).map(
       presentThreefoldWitnessEntry
     ),
-    testimony: presentThreefoldTestimony(),
+    testimony: isLanternWard ? null : presentThreefoldTestimony(),
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
     growthPreviewCreatureIds: creatureIds,
@@ -698,7 +720,9 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
-  const { drainageState } = getThreefoldGateOutcome(state);
+  const drainageState = isLanternWardSimulationState(state)
+    ? 'dry'
+    : getThreefoldGateOutcome(state).drainageState;
   const { geometry } = projectGeometryForScale(player, scene.geometry);
   const growthDeathIds = new Set(
     (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
@@ -728,7 +752,9 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     mapId: scene.id,
     location: scene.id,
     map: {
-      name: 'BROKEN GATE',
+      name: isLanternWardSimulationState(state)
+        ? 'LANTERN WARD'
+        : 'BROKEN GATE',
       width: mapWidth,
       height: mapHeight,
       blocked: [],
@@ -779,7 +805,9 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
       y: VIEW_ORIGIN.y + player.position.y / heightMeters,
       facing: 'down',
     },
-    time: crisis.elapsedMinutes / 60,
+    time: isLanternWardSimulationState(state)
+      ? state.elapsedGameSeconds / 3600
+      : crisis.elapsedMinutes / 60,
     day: 1,
     flags: {},
     npcs: [],
@@ -865,34 +893,79 @@ function screenFootprint(actor, camera, heightMeters) {
 }
 
 /**
- * Identify the known structures affected by the next growth action.
- * @param {string[]} geometryIds Identifiers returned by the growth preview.
+ * Identify the authored structures affected by the next growth action.
+ * @param {string[]} geometryIds Geometry affected by the next growth action.
+ * @param {Array<{id: string, displayName?: string}>} geometry Authored scene structures.
  * @returns {string} Compact handheld message.
  */
-function getGrowthPreviewLabel(geometryIds) {
-  const labels = geometryIds.map(id =>
-    id
-      .replace(/^gatehouse-/, '')
-      .replaceAll('-', ' ')
-      .toUpperCase()
-  );
+function getGrowthPreviewLabel(geometryIds, geometry) {
+  const displayNames = geometryIds.map(id => {
+    const object = geometry.find(item => item.id === id);
+    return object?.displayName;
+  });
+  const labels = displayNames.every(name => typeof name === 'string')
+    ? displayNames
+    : geometryIds.map(id =>
+        id
+          .replace(/^gatehouse-/, '')
+          .replaceAll('-', ' ')
+          .toUpperCase()
+      );
   const shown =
-    labels.length > 1 ? `${labels[0]} +${labels.length - 1}` : labels[0];
+    labels.length > 1
+      ? displayNames.every(name => typeof name === 'string')
+        ? labels.join(' + ')
+        : `${labels[0]} +${labels.length - 1}`
+      : labels[0];
   return `A BREAKS ${shown}`;
 }
 
 /**
- * Describe the creature outcomes while keeping the rat's established label.
- * @param {string[]} creatureIds Sorted creatures affected by the next growth action.
+ * Describe creature outcomes, preserving the established rat label.
+ * @param {string[]} creatureIds Creatures affected by the next growth action.
+ * @param {Array<{id: string, displayName?: string}>} creatures Authored scene residents.
  * @returns {string} Compact handheld message.
  */
-function getCreatureGrowthPreviewLabel(creatureIds) {
+function getCreatureGrowthPreviewLabel(creatureIds, creatures) {
   if (creatureIds.length === 1 && creatureIds[0] === 'gatehouse-rat')
     return 'A KILLS RAT';
+  const names = creatureIds.map(id => {
+    const creature = creatures.find(item => item.id === id);
+    return /** @type {{displayName?: string}|undefined} */ (creature)
+      ?.displayName;
+  });
+  if (names.every(name => typeof name === 'string'))
+    return `A KILLS ${names.join(' + ')}`;
   const creatureCount = creatureIds.length;
   const countLabel =
     creatureCount === 1 ? '1 CREATURE' : `${creatureCount} CREATURES`;
   return `A KILLS ${countLabel}`;
+}
+
+/**
+ * Describe the Lantern Ward's current preview or persisted consequences.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current district state.
+ * @returns {string} Compact city-scale status without Broken Gate language.
+ */
+function getLanternWardToast(state) {
+  const residents = new Map(
+    state.scene.creatures.map(creature => [
+      creature.id,
+      /** @type {{displayName?: string}} */ (creature).displayName,
+    ])
+  );
+  const lostResidents = (state.encounter.growthDeaths ?? [])
+    .map(({ creatureId }) => residents.get(creatureId))
+    .filter(Boolean);
+  const damagedStructures = state.scene.geometry
+    .filter(object => state.player.destroyedGeometryIds.includes(object.id))
+    .map(object => /** @type {{displayName?: string}} */ (object).displayName);
+  if (lostResidents.length > 0 || damagedStructures.length > 0)
+    return `WARD GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;
+  const growth = previewThreefoldGrowthEffects(state);
+  if (growth.geometryIds.length > 0 || growth.creatureIds.length > 0)
+    return 'A GROW · THE WARD AND ITS RESIDENTS ARE AT RISK';
+  return 'LANTERN WARD · A GROW · B SHRINK';
 }
 
 /**

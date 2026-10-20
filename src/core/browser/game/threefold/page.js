@@ -5,6 +5,7 @@ import {
 import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { createThreefoldSiltMarginScene } from './silt-margin.js';
+import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
 const renderedTestimonyByList = new WeakMap();
@@ -44,14 +45,40 @@ const SILT_MARGIN_PAGE_COPY = {
         'disrupts the Choir signal. Water and consequences persist in this save.',
     ],
     ['#interact-label', 'E · GUIDE · OPEN VALVE · SEND SIGNAL'],
-    ['#scene-link', 'Return to the Tidal Archive'],
+    ['#scene-link', 'Continue to the Lantern Ward'],
     [
       '#game-footer',
       'Every movement and scale change advances the region clock by 15 game seconds.',
     ],
   ]),
-  href: '/threefold/?scene=sluice',
-  ariaLabel: 'Reroute the dew or grow through the root crossing',
+  href: '/threefold/?scene=lantern-ward',
+  ariaLabel:
+    'Guide the guardian, open the fine valve, or send the Choir signal',
+};
+const LANTERN_WARD_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'The Lantern Ward'],
+    ['#chapter-tag', 'HIGH WORLD · THE LANTERN WARD'],
+    ['#chapter-eyebrow', 'A CITY BENEATH THE TOWER'],
+    ['#chapter-heading', 'At +3, one more rung changes the whole ward.'],
+    [
+      '#chapter-description',
+      'Canal homes and the north glassworks stand within Mara’s next growth ' +
+        'footprint. Mira and Tov live there. A shows the buildings and people ' +
+        'at risk while keeping growth available; B lets Mara step down to +2.',
+    ],
+    ['#interact-label', 'A · GROW · B · SHRINK'],
+    ['#a-control-label', 'GROW'],
+    ['#b-control-label', 'SHRINK'],
+    ['#e-control-label', 'NO DISTRICT ACTION'],
+    ['#scene-link', 'Return to the Silt Margin'],
+    [
+      '#game-footer',
+      'City geometry and resident fates persist in the Lantern Ward save.',
+    ],
+  ]),
+  href: '/threefold/?scene=silt-margin',
+  ariaLabel: 'No district interaction is available',
 };
 
 /**
@@ -65,6 +92,8 @@ export function startThreefoldPage(options) {
     configureSluicePage(options.documentObj);
   else if (scene?.id === 'silt-margin')
     configureSiltMarginPage(options.documentObj);
+  else if (scene?.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID)
+    configureLanternWardPage(options.documentObj);
   let storage = options.storage;
   if (!storage) {
     try {
@@ -99,7 +128,7 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
@@ -107,6 +136,8 @@ function sceneFromLocation(windowObj) {
   const sceneId = new URLSearchParams(search).get('scene');
   if (sceneId === 'sluice') return createThreefoldSluiceScene();
   if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
+  if (sceneId === 'lantern-ward')
+    return lanternWard.createThreefoldLanternWardScene();
   return undefined;
 }
 
@@ -126,6 +157,17 @@ function configureSluicePage(documentObj) {
  */
 function configureSiltMarginPage(documentObj) {
   configureAlternateScenePage(documentObj, SILT_MARGIN_PAGE_COPY);
+}
+
+/**
+ * Replace the default Broken Gate copy with the Lantern Ward district description.
+ * @param {any} documentObj Injected browser document.
+ * @returns {void}
+ */
+function configureLanternWardPage(documentObj) {
+  configureAlternateScenePage(documentObj, LANTERN_WARD_PAGE_COPY);
+  const interactControl = documentObj?.querySelector?.('#interact-control');
+  if (interactControl) interactControl.hidden = true;
 }
 
 /**

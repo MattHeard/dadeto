@@ -11,6 +11,7 @@ import {
   THREEFOLD_LATCHFOLK_INTERACTABLE_ID,
 } from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
+import * as lanternWard from './lantern-ward.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
 import {
@@ -59,7 +60,8 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /** @typedef {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>}} BrokenGateSimulationState */
 /** @typedef {{scene: ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, sluicePuzzle: ReturnType<typeof createThreefoldSluicePuzzle>, elapsedGameSeconds: number}} SluiceSimulationState */
 /** @typedef {{scene: ReturnType<typeof createThreefoldSiltMarginScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, siltMargin: ReturnType<typeof createThreefoldSiltMarginState>, elapsedGameSeconds: number}} SiltMarginSimulationState */
-/** @typedef {BrokenGateSimulationState|SluiceSimulationState|SiltMarginSimulationState} ThreefoldSimulationState */
+/** @typedef {{scene: ReturnType<typeof lanternWard.createThreefoldLanternWardScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} LanternWardSimulationState */
+/** @typedef {BrokenGateSimulationState|SluiceSimulationState|SiltMarginSimulationState|LanternWardSimulationState} ThreefoldSimulationState */
 /** @typedef {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} ThreefoldCrisisThresholds */
 /** @typedef {{type: string, direction?: string, elapsedGameMinutes?: number, preActionFrame?: Record<string, any>}} ThreefoldWorldAction */
 
@@ -85,12 +87,18 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /**
  * @overload
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof lanternWard.createThreefoldLanternWardScene>} scene Authored Lantern Ward district.
+ * @returns {LanternWardSimulationState} Initial Lantern Ward simulation state.
+ */
+/**
+ * @overload
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial state for either authored scene.
  */
 /**
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial player, world, crisis, episode, and encounter state.
  */
 export function createThreefoldSimulation(
@@ -104,7 +112,8 @@ export function createThreefoldSimulation(
     episode: createThreefoldEpisodeState({
       includeTestimony:
         scene.id !== THREEFOLD_SLUICE_SCENE_ID &&
-        scene.id !== THREEFOLD_SILT_MARGIN_SCENE_ID,
+        scene.id !== THREEFOLD_SILT_MARGIN_SCENE_ID &&
+        scene.id !== lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID,
     }),
     encounter: createThreefoldEncounter(),
   };
@@ -122,6 +131,11 @@ export function createThreefoldSimulation(
       elapsedGameSeconds: 0,
     });
   }
+  if (scene.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID)
+    return /** @type {LanternWardSimulationState} */ ({
+      ...state,
+      elapsedGameSeconds: 0,
+    });
   return /** @type {BrokenGateSimulationState} */ (state);
 }
 
@@ -177,7 +191,10 @@ export function previewThreefoldGrowthEffects(state) {
     )
       return false;
     if (growthDeathIds.has(creature.id)) return false;
-    return isPlayerInsideCreature(state, creature);
+    return (
+      /** @type {{growthRule?: string}} */ (creature).growthRule ===
+        'overlap' || isPlayerInsideCreature(state, creature)
+    );
   });
   const creatureIds = previewGrowthOverlapIds(
     player,
@@ -211,6 +228,8 @@ function stepThreefoldAction(state, action) {
   if (isEpisodeClosed(state)) return state;
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
+  if (isLanternWardSimulationState(state))
+    return stepLanternWardScene(state, action);
   if (isSiltMarginSimulationState(state))
     return stepSiltMarginScene(state, action);
   if (isSluiceSimulationState(state)) return stepSluiceScene(state, action);
@@ -292,8 +311,7 @@ function stepThreefoldAction(state, action) {
  * @returns {ReturnType<typeof createThreefoldSimulation>} Result with appended witness history when consequential.
  */
 function recordGateWitnessEvent(before, after, action) {
-  if (isSluiceSimulationState(before) || isSiltMarginSimulationState(before))
-    return after;
+  if (before.scene.id !== 'broken-gate') return after;
   const entry = createWitnessEntry(before, after, action);
   if (!entry) return after;
   return {
@@ -446,16 +464,19 @@ function describeChosenAction(action) {
  * @returns {ReturnType<typeof createThreefoldSimulation>} Updated sluice state.
  */
 function stepSluiceScene(state, action) {
-  const durationSeconds = smallWorldActionDurationSeconds(action);
-  if (durationSeconds === null) return state;
-
-  const player = applySmallWorldPhysicalAction(state, action);
-  let sluicePuzzle = state.sluicePuzzle;
-  if (action.type === 'interact' && canReachSluiceValve(state))
-    sluicePuzzle = operateThreefoldSluiceValve(sluicePuzzle, player.scale);
-
-  return commitSmallWorldAction(state, player, durationSeconds, {
-    sluicePuzzle: advanceThreefoldSluicePuzzle(sluicePuzzle, durationSeconds),
+  return commitSmallWorldSceneAction(state, action, prepared => {
+    let sluicePuzzle = state.sluicePuzzle;
+    if (action.type === 'interact' && canReachSluiceValve(state))
+      sluicePuzzle = operateThreefoldSluiceValve(
+        sluicePuzzle,
+        prepared.player.scale
+      );
+    return {
+      sluicePuzzle: advanceThreefoldSluicePuzzle(
+        sluicePuzzle,
+        prepared.durationSeconds
+      ),
+    };
   });
 }
 
@@ -467,66 +488,104 @@ function stepSluiceScene(state, action) {
  * @returns {SiltMarginSimulationState} Updated Silt Margin state.
  */
 function stepSiltMarginScene(state, action) {
-  const durationSeconds = smallWorldActionDurationSeconds(action);
-  if (durationSeconds === null) return state;
-
-  const creatureIds =
-    action.type === 'grow'
-      ? previewThreefoldGrowthEffects(state).creatureIds
-      : [];
-  const player = applySmallWorldPhysicalAction(state, action);
-  let siltMargin = state.siltMargin;
-  let waterPuzzle = siltMargin.waterPuzzle;
-  let encounter = state.encounter;
-  if (action.type === 'grow') {
-    if (
-      player !== state.player &&
-      creatureIds.includes(THREEFOLD_SILT_MARGIN_GUARDIAN_ID)
-    ) {
-      encounter = recordThreefoldGrowthDeaths(encounter, creatureIds);
-      siltMargin = normalizeThreefoldSiltMarginState({
-        guardian: 'killed',
-        signal: 'disrupted',
-      });
-    }
-  } else if (action.type === 'interact') {
-    if (
-      siltMargin.guardian === 'present' &&
-      isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_GUARDIAN_ID)
-    ) {
-      siltMargin = { ...siltMargin, guardian: 'guided-aside' };
-    } else if (
-      isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_FINE_VALVE_ID)
-    ) {
-      waterPuzzle = operateThreefoldSiltMarginValve(
-        waterPuzzle,
-        state.player.scale
-      );
-    } else if (
-      siltMargin.guardian === 'guided-aside' &&
-      siltMargin.signal === 'blocked' &&
-      getThreefoldSiltMarginWaterStatus(waterPuzzle).crossingAvailable &&
-      isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_SIGNAL_ID)
-    ) {
-      siltMargin = { ...siltMargin, signal: 'sent' };
-    }
-  }
-  siltMargin = {
-    ...siltMargin,
-    waterPuzzle: advanceThreefoldSiltMarginWater(waterPuzzle, durationSeconds),
-  };
-
   return /** @type {SiltMarginSimulationState} */ (
-    commitSmallWorldAction(state, player, durationSeconds, {
-      encounter,
-      siltMargin,
+    commitSmallWorldSceneAction(state, action, prepared => {
+      let siltMargin = state.siltMargin;
+      let waterPuzzle = siltMargin.waterPuzzle;
+      let encounter = state.encounter;
+      if (prepared.creatureIds.includes(THREEFOLD_SILT_MARGIN_GUARDIAN_ID)) {
+        encounter = recordThreefoldGrowthDeaths(
+          encounter,
+          prepared.creatureIds
+        );
+        siltMargin = normalizeThreefoldSiltMarginState({
+          guardian: 'killed',
+          signal: 'disrupted',
+        });
+      } else if (action.type === 'interact') {
+        if (
+          siltMargin.guardian === 'present' &&
+          isThreefoldInteractableInReach(
+            state,
+            THREEFOLD_SILT_MARGIN_GUARDIAN_ID
+          )
+        ) {
+          siltMargin = { ...siltMargin, guardian: 'guided-aside' };
+        } else if (
+          isThreefoldInteractableInReach(
+            state,
+            THREEFOLD_SILT_MARGIN_FINE_VALVE_ID
+          )
+        ) {
+          waterPuzzle = operateThreefoldSiltMarginValve(
+            waterPuzzle,
+            state.player.scale
+          );
+        } else if (
+          siltMargin.guardian === 'guided-aside' &&
+          siltMargin.signal === 'blocked' &&
+          getThreefoldSiltMarginWaterStatus(waterPuzzle).crossingAvailable &&
+          isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_SIGNAL_ID)
+        ) {
+          siltMargin = { ...siltMargin, signal: 'sent' };
+        }
+      }
+      return {
+        encounter,
+        siltMargin: {
+          ...siltMargin,
+          waterPuzzle: advanceThreefoldSiltMarginWater(
+            waterPuzzle,
+            prepared.durationSeconds
+          ),
+        },
+      };
     })
   );
 }
 
 /**
+ * Apply Lantern Ward movement and scale changes without invoking Broken Gate
+ * episode or crisis consequences. Resident fates are recorded from the same
+ * overlap preview used by the handheld warning.
+ * @param {LanternWardSimulationState} state Current district state.
+ * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
+ * @returns {LanternWardSimulationState} Updated district state.
+ */
+function stepLanternWardScene(state, action) {
+  if (action.type === 'interact') return state;
+  return /** @type {LanternWardSimulationState} */ (
+    commitSmallWorldSceneAction(state, action, ({ creatureIds }) => ({
+      encounter:
+        creatureIds.length > 0
+          ? recordThreefoldGrowthDeaths(state.encounter, creatureIds)
+          : state.encounter,
+    }))
+  );
+}
+
+/**
+ * Resolve and commit one small-world action with scene-specific state changes.
+ * @param {SluiceSimulationState|SiltMarginSimulationState|LanternWardSimulationState} state Current region.
+ * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
+ * @param {(prepared: {durationSeconds: number, player: ReturnType<typeof import('./spatial.js').createScaleState>, creatureIds: string[]}) => Record<string, any>} updateScene Region-specific consequences.
+ * @returns {SluiceSimulationState|SiltMarginSimulationState|LanternWardSimulationState} Updated scene or the original for unsupported actions.
+ */
+function commitSmallWorldSceneAction(state, action, updateScene) {
+  const durationSeconds = smallWorldActionDurationSeconds(action);
+  if (durationSeconds === null) return state;
+  const player = applySmallWorldPhysicalAction(state, action);
+  const creatureIds =
+    action.type === 'grow' && player !== state.player
+      ? previewThreefoldGrowthEffects(state).creatureIds
+      : [];
+  const sceneChanges = updateScene({ durationSeconds, player, creatureIds });
+  return commitSmallWorldAction(state, player, durationSeconds, sceneChanges);
+}
+
+/**
  * Apply shared movement and scale changes for a small-world scene.
- * @param {SluiceSimulationState|SiltMarginSimulationState} state Current scene.
+ * @param {SluiceSimulationState|SiltMarginSimulationState|LanternWardSimulationState} state Current scene.
  * @param {{type: string, direction?: string}} action Player command.
  * @returns {ReturnType<typeof import('./spatial.js').createScaleState>} Updated player.
  */
@@ -587,11 +646,11 @@ function recoverSmallWorldAnchor(player, elapsedGameSeconds) {
 
 /**
  * Commit a small-world action with shared Anchor recovery and elapsed seconds.
- * @param {SluiceSimulationState|SiltMarginSimulationState} state Prior scene state.
+ * @param {SluiceSimulationState|SiltMarginSimulationState|LanternWardSimulationState} state Prior scene state.
  * @param {ReturnType<typeof import('./spatial.js').createScaleState>} player Action result.
  * @param {number} durationSeconds Explicit game-time cost.
  * @param {Record<string, any>} sceneChanges Scene-specific state changes.
- * @returns {SluiceSimulationState|SiltMarginSimulationState} Updated scene state.
+ * @returns {SluiceSimulationState|SiltMarginSimulationState|LanternWardSimulationState} Updated scene state.
  */
 function commitSmallWorldAction(state, player, durationSeconds, sceneChanges) {
   return {
@@ -694,6 +753,15 @@ export function isSluiceSimulationState(state) {
  */
 export function isSiltMarginSimulationState(state) {
   return state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID;
+}
+
+/**
+ * Narrow a simulation by its authored Lantern Ward scene discriminator.
+ * @param {ThreefoldSimulationState} state Current simulation.
+ * @returns {state is LanternWardSimulationState} Whether the state uses the district-scale route.
+ */
+export function isLanternWardSimulationState(state) {
+  return state.scene.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID;
 }
 
 /**

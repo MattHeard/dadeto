@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), then continue to the Silt Margin.
+Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), continue to the Silt Margin, then reach the Lantern Ward.
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -84,3 +84,9 @@ Continue from the Tidal Archive to open [/threefold/?scene=silt-margin](/threefo
 The dew channel blocks the walkable route. Mara can stay at scale −4, reach the fine valve and press E, then press X to wait while water drains through the channel. The crossing opens when the upstream surface reaches 0.025 metres; the water volume remains conserved. After crossing, reach the guardian and press E to guide it aside, then reach the Choir root and press E to send the signal. As another route, press A to grow to scale −3: the preview shows the root arch and guardian that growth will break or kill. Committing growth opens a way across the channel, kills the guardian, and disrupts the Choir signal. These geometry and social outcomes persist. Movement, scale changes, and interactions advance 15 game seconds; waits use their explicit duration, and browser time never advances the simulation.
 
 The Silt Margin saves its branch, conserved water state, and elapsed seconds in schema v2 under a key separate from both the Broken Gate and Tidal Archive. Schema-v1 saves migrate, and export/import uses the same scene-specific codec.
+
+## Lantern Ward
+
+Continue from the Silt Margin to open [/threefold/?scene=lantern-ward](/threefold/?scene=lantern-ward). Mara starts at scale +3 with +4 unlocked. The 160 × 144 Mosslight screen previews both canal homes and the glassworks, as well as Mira and Tov, before A grows. A remains growth and commits the displayed building damage and resident losses; B shrinks to +2. The district has its own elapsed game time and does not advance Broken Gate's crisis or episode outcomes.
+
+The Lantern Ward export includes the district's destroyed buildings and resident fates. Its browser save key is separate from Broken Gate, the Tidal Archive, and the Silt Margin. Importing a district save restores the authored Lantern Ward route and rejects unsupported schema versions.
