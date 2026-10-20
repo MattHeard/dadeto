@@ -989,6 +989,7 @@ export function migrateRecurrentStateMechanismV1ToV2(record, schemas) {
 
 /** @typedef {Record<string, any>} InterpretabilityRecord */
 /** @typedef {{mechanisms?: Array<InterpretabilityRecord>, hypotheses?: Array<InterpretabilityRecord>, experiments?: Array<InterpretabilityRecord>, evidence?: Array<InterpretabilityRecord>, estimates?: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} InterpretabilityGraphV1 */
+/** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any}} InterpretabilitySchemasV1 */
 
 /** @type {Record<string, Array<string>>} */
 const referenceFieldsByType = {
@@ -1241,6 +1242,133 @@ function sortIdentityCollectionsV2(graph) {
       sortGraphRecords(graph[collection]),
     ])
   );
+}
+
+/**
+ * Export V1 evidence and V2 identities in one versioned research bundle.
+ * @param {{evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>}} bundle Portable research subgraphs.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemaV2: any}} schemas Injected subgraph schemas.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
+ */
+export function exportInterpretabilityResearchBundleV2(bundle, schemas) {
+  if (!bundle || typeof bundle !== 'object' || Array.isArray(bundle)) {
+    return researchBundleFailure('invalid-research-bundle');
+  }
+  if (
+    !bundle.evidenceGraph ||
+    typeof bundle.evidenceGraph !== 'object' ||
+    Array.isArray(bundle.evidenceGraph)
+  ) {
+    return researchBundleFailure('invalid-evidence-graph');
+  }
+  const evidenceExport = exportEvidenceGraphV1(bundle.evidenceGraph);
+  if (!evidenceExport.valid) {
+    return researchBundleFailure(
+      'invalid-evidence-graph',
+      evidenceExport.errors
+    );
+  }
+  const evidenceResult = importEvidenceGraphV1(
+    evidenceExport.json,
+    schemas?.evidenceGraphSchemasV1
+  );
+  if (!evidenceResult.valid) {
+    return researchBundleFailure(
+      'invalid-evidence-graph',
+      evidenceResult.errors
+    );
+  }
+  const identityResult = validateInterpretabilityIdentityGraphV2(
+    bundle.identityGraph,
+    schemas?.identityGraphSchemaV2
+  );
+  if (!identityResult.valid) {
+    return researchBundleFailure(
+      'invalid-identity-graph',
+      identityResult.errors
+    );
+  }
+  return {
+    valid: true,
+    json: JSON.stringify({
+      schemaVersion: 2,
+      evidenceGraph: { schemaVersion: 1, ...evidenceResult.graph },
+      identityGraph: { schemaVersion: 2, ...identityResult.graph },
+    }),
+  };
+}
+
+/**
+ * Import and validate both subgraphs in a portable research bundle.
+ * @param {string} json Portable research bundle JSON.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemaV2: any}} schemas Injected subgraph schemas.
+ * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
+ */
+export function importInterpretabilityResearchBundleV2(json, schemas) {
+  if (typeof json !== 'string') return researchBundleFailure('invalid-json');
+  let envelope;
+  try {
+    envelope = JSON.parse(json);
+  } catch {
+    return researchBundleFailure('invalid-json');
+  }
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
+    return researchBundleFailure('invalid-document');
+  }
+  if (envelope.schemaVersion !== 2) {
+    return researchBundleFailure('unsupported-version');
+  }
+  if (
+    Object.keys(envelope).some(
+      key => !['schemaVersion', 'evidenceGraph', 'identityGraph'].includes(key)
+    )
+  ) {
+    return researchBundleFailure('invalid-research-bundle');
+  }
+
+  const evidenceResult = importEvidenceGraphV1(
+    JSON.stringify(envelope.evidenceGraph),
+    schemas?.evidenceGraphSchemasV1
+  );
+  if (!evidenceResult.valid) {
+    return researchBundleFailure(
+      'invalid-evidence-graph',
+      evidenceResult.errors
+    );
+  }
+  if (envelope.identityGraph?.schemaVersion !== 2) {
+    return researchBundleFailure('invalid-identity-graph');
+  }
+  const identityResult = validateInterpretabilityIdentityGraphV2(
+    envelope.identityGraph,
+    schemas?.identityGraphSchemaV2
+  );
+  if (!identityResult.valid) {
+    return researchBundleFailure(
+      'invalid-identity-graph',
+      identityResult.errors
+    );
+  }
+  return {
+    valid: true,
+    bundle: {
+      evidenceGraph: evidenceResult.graph,
+      identityGraph: identityResult.graph,
+    },
+  };
+}
+
+/**
+ * Wrap a nested graph failure in its stable research-bundle category.
+ * @param {string} code Bundle error category.
+ * @param {Array<Record<string, any>>} [details] Nested graph errors.
+ * @returns {{valid: false, errors: Array<Record<string, any>>}} Failure result.
+ */
+function researchBundleFailure(code, details) {
+  return {
+    valid: false,
+    errors: [{ code, ...(details ? { details } : {}) }],
+  };
 }
 
 /**
