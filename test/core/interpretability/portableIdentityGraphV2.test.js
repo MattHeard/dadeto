@@ -50,6 +50,47 @@ const schemas = createInterpretabilitySchemasV2(
 const identityGraphSchemaV2 = schemas.identityGraphSchemaV2;
 
 /**
+ * Assert the pinned Pythia artifact covers one contiguous native-neuron slice.
+ * @param {Record<string, any>} artifact Recorded replay artifact.
+ * @returns {number[]} Sorted native-neuron indices.
+ */
+function assertPythiaNativeNeuronIndexRange(artifact) {
+  const components = artifact.activation.components;
+  const neuronIndices = components
+    .map(componentRecord => componentRecord.neuronIndex)
+    .sort((left, right) => left - right);
+  const identityConfigs = new Set(
+    components.map(componentRecord =>
+      JSON.stringify({
+        modelId: componentRecord.model.modelId,
+        revision: componentRecord.model.revision,
+        layerIndex: componentRecord.layerIndex,
+        activationHook: componentRecord.activationHook,
+      })
+    )
+  );
+
+  expect(neuronIndices).toEqual(
+    Array.from({ length: 512 }, (_, index) => index)
+  );
+  expect(identityConfigs.size).toBe(1);
+  expect(components[0]).toMatchObject({
+    model: {
+      modelId: 'EleutherAI/pythia-14m',
+      revision: '94f7c35d5e9f2e9bac8ca839329f505b4d007d5d',
+    },
+    layerIndex: 0,
+    activationHook:
+      'gpt_neox.layers.0.mlp.dense_h_to_4h.output+configured-gelu',
+  });
+  expect(artifact.repeatability).toEqual({
+    exactMatch: true,
+    maximumAbsoluteDifference: 0,
+  });
+  return neuronIndices;
+}
+
+/**
  * Create one canonical AlgZoo recurrent-neuron record.
  * @param {number} neuronIndex Hidden neuron index.
  * @param {Record<string, any>} [componentModel] Pinned checkpoint metadata.
@@ -117,6 +158,9 @@ async function completeGraph() {
 
 describe('portable V2 interpretability identity graph', () => {
   it('round-trips the Pythia native-neuron token activation artifact', () => {
+    const sourceNeuronIndices = assertPythiaNativeNeuronIndexRange(
+      pythiaActivationArtifact
+    );
     const sourceComponents = pythiaActivationArtifact.activation.components;
     const componentsBySourceId = new Map(
       sourceComponents.map(sourceComponent => [
@@ -197,6 +241,11 @@ describe('portable V2 interpretability identity graph', () => {
     expect(new Set(imported.graph.components.map(entry => entry.id)).size).toBe(
       512
     );
+    expect(
+      imported.graph.components
+        .map(component => component.neuronIndex)
+        .sort((left, right) => left - right)
+    ).toEqual(sourceNeuronIndices);
     expect(
       new Set(imported.graph.activationPositions.map(entry => entry.id)).size
     ).toBe(512);
