@@ -29,6 +29,60 @@ const model = {
   revision: 'a'.repeat(40),
   architecture: 'RecurrentNeuralNetwork',
 };
+
+// SHA-256 values were computed from the public ARC GCS objects named by
+// alg-zoo commit 4433f505a90e85a37d35d34f80f6cccf4a37cef4. The run ID below
+// is Atlas-local, derived from the official model configuration and seed.
+const algZooSeedTwoM1610Checkpoints = [
+  {
+    trainingSequences: 0,
+    sha256: '5ca02c3ce8cbf5d9c357179f2e24a03337c6569817213842f3e1b94d1873221d',
+  },
+  {
+    trainingSequences: 1048576,
+    sha256: 'cfc372378699b7457e3e70711bb2cf8d87d1d9d926d040bc66e236963d79712b',
+  },
+  {
+    trainingSequences: 2097152,
+    sha256: '064a2ed33419a6e295b0d93724fee0b7c978b4f9a50d25d614d1744247963d87',
+  },
+  {
+    trainingSequences: 4194304,
+    sha256: '2ed74de9a327619c4a0b6b57d795407f3e56673d0c07f4961810acffab117253',
+  },
+  {
+    trainingSequences: 8388608,
+    sha256: 'f25629cb7de1c9cc512b239e7116f2cec21dca6406596bf44c0cd65d5575513a',
+  },
+  {
+    trainingSequences: 16777216,
+    sha256: 'db8872b44314b3dfd2081c89ab23e28177ed0b2a85d2e43858798f976cec86b9',
+  },
+  {
+    trainingSequences: 33554432,
+    sha256: '19b3d268dc56e31f56fecd3164ee22e1b14a81e2806a3bc7b5a4840d27236c23',
+  },
+  {
+    trainingSequences: 67108864,
+    sha256: 'c5e4749ddcd7df90e7b376ef8259715fc17eb18efe26a493eea379ac9be8dd56',
+  },
+  {
+    trainingSequences: 134217728,
+    sha256: '89a5e71e34141a167323b0a494e72d2200d44c8b218cc9dbcd50c9ef0f0322bf',
+  },
+  {
+    trainingSequences: 268435456,
+    sha256: '1762c69c2de3574f52c296daecd5c097f69614e8a6104bab6647522702c107c7',
+  },
+  {
+    trainingSequences: 536870912,
+    sha256: 'da4254d0f603332e1034e8a4d59d4ef3b9eda1f4279d06d4ccf6403eac1d5603',
+  },
+  {
+    trainingSequences: 1073741824,
+    sha256: '2da5093777d7943ed27e3df62c321eedb498e9d69a67a200b20a77361d0f997f',
+  },
+];
 const z = createTestZod();
 const evidenceSchemas = createInterpretabilitySchemasV1(z);
 const identitySchemas = createInterpretabilitySchemasV2(z);
@@ -593,26 +647,34 @@ describe('portable research bundle V3 lineage', () => {
   });
 
   it('round-trips checkpoint hashes and training progress across twelve snapshots', () => {
-    const trainingSequences = [
-      0,
-      ...Array.from({ length: 11 }, (_, index) => 2 ** (index + 20)),
-    ];
-    const checkpointModels = trainingSequences.map((value, index) => ({
+    const publishedModel = {
       ...model,
-      checkpoint: {
-        sha256: (index + 1).toString(16).padStart(64, '0'),
-        trainingRunId: 'm16-10-training-run-a',
-        trainingProgress: { metric: 'training-sequences', value },
-      },
-    }));
+      modelId: 'arc/alg-zoo/2nd-argmax/m16-10/seed-2',
+      repository: 'https://github.com/alignment-research-center/alg-zoo',
+      revision: '4433f505a90e85a37d35d34f80f6cccf4a37cef4',
+    };
+    const trainingRunId = 'arc-algzoo-2nd-argmax-m16-10-seed-2';
+    const checkpointModels = algZooSeedTwoM1610Checkpoints.map(
+      ({ trainingSequences, sha256 }) => ({
+        ...publishedModel,
+        checkpoint: {
+          sha256,
+          trainingRunId,
+          trainingProgress: {
+            metric: 'training-sequences',
+            value: trainingSequences,
+          },
+        },
+      })
+    );
     const independentModel = {
-      ...model,
+      ...publishedModel,
       checkpoint: {
         sha256: 'f'.repeat(64),
-        trainingRunId: 'm16-10-training-run-b',
+        trainingRunId: 'arc-algzoo-2nd-argmax-m16-10-independent-run',
         trainingProgress: {
           metric: 'training-sequences',
-          value: trainingSequences.at(-1),
+          value: algZooSeedTwoM1610Checkpoints.at(-1).trainingSequences,
         },
       },
     };
@@ -659,8 +721,12 @@ describe('portable research bundle V3 lineage', () => {
     if (!imported.valid) return;
 
     const roundTripped = imported.bundle.identityGraph.components;
-    const sameTrainingRun = roundTripped.slice(0, trainingSequences.length);
-    const independent = roundTripped.at(-1);
+    const sameTrainingRun = roundTripped.filter(
+      component => component.model.checkpoint.trainingRunId === trainingRunId
+    );
+    const independent = roundTripped.find(
+      component => component.model.checkpoint.trainingRunId !== trainingRunId
+    );
     expect(sameTrainingRun).toHaveLength(12);
     expect(new Set(sameTrainingRun.map(component => component.id)).size).toBe(
       12
@@ -669,16 +735,24 @@ describe('portable research bundle V3 lineage', () => {
       new Set(sameTrainingRun.map(component => component.coordinateId)).size
     ).toBe(1);
     expect(
-      sameTrainingRun.map(component => component.model.checkpoint)
+      sameTrainingRun
+        .map(component => component.model.checkpoint)
+        .sort(
+          (left, right) =>
+            left.trainingProgress.value - right.trainingProgress.value
+        )
     ).toEqual(
-      trainingSequences.map((value, index) => ({
-        sha256: (index + 1).toString(16).padStart(64, '0'),
-        trainingRunId: 'm16-10-training-run-a',
-        trainingProgress: { metric: 'training-sequences', value },
+      algZooSeedTwoM1610Checkpoints.map(({ trainingSequences, sha256 }) => ({
+        sha256,
+        trainingRunId,
+        trainingProgress: {
+          metric: 'training-sequences',
+          value: trainingSequences,
+        },
       }))
     );
     expect(independent.model.checkpoint.trainingRunId).toBe(
-      'm16-10-training-run-b'
+      'arc-algzoo-2nd-argmax-m16-10-independent-run'
     );
     expect(independent.coordinateId).not.toBe(sameTrainingRun[0].coordinateId);
     expect(independent.id).not.toBe(sameTrainingRun.at(-1).id);
