@@ -498,6 +498,100 @@ describe('portable research bundle V3 lineage', () => {
     ).toEqual(exported);
   });
 
+  it('round-trips native coordinate lineage across checkpoints without merging models', () => {
+    const source = pythiaActivationArtifact.activation.components[3];
+    const checkpointModels = [
+      source.model,
+      { ...source.model, revision: 'b'.repeat(40) },
+      {
+        ...source.model,
+        modelId: 'EleutherAI/pythia-14m-independent-model',
+        repository:
+          'https://huggingface.co/EleutherAI/pythia-14m-independent-model',
+        revision: 'c'.repeat(40),
+      },
+    ];
+    const mechanisms = checkpointModels.map((checkpointModel, index) => ({
+      schemaVersion: 1,
+      id: [
+        'pythia-checkpoint-a-neuron-3',
+        'pythia-checkpoint-b-neuron-3',
+        'pythia-independent-model-neuron-3',
+      ][index],
+      model: checkpointModel,
+      layerIndex: source.layerIndex,
+      activationHook: source.activationHook,
+      kind: 'native-neuron',
+      sourceId: source.sourceId,
+      neuronIndex: source.neuronIndex,
+    }));
+    const components = checkpointModels.map(checkpointModel =>
+      createNativeNeuronComponentV2(checkpointModel, source.sourceId, {
+        layerIndex: source.layerIndex,
+        activationHook: source.activationHook,
+        neuronIndex: source.neuronIndex,
+      })
+    );
+    const exported = exportInterpretabilityResearchBundleV3(
+      {
+        evidenceGraph: {
+          mechanisms,
+          hypotheses: [],
+          experiments: [],
+          estimates: [],
+          evidence: [],
+          edges: [],
+        },
+        identityGraph: {
+          components,
+          activationPositions: [],
+          observations: [],
+          structuralConnections: [],
+          circuitSnapshots: [],
+        },
+      },
+      schemas
+    );
+
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const imported = importInterpretabilityResearchBundleV2(
+      exported.json,
+      schemas
+    );
+    expect(imported.valid).toBe(true);
+    if (!imported.valid) return;
+
+    const componentByRevision = Object.fromEntries(
+      imported.bundle.identityGraph.components.map(component => [
+        component.model.revision,
+        component,
+      ])
+    );
+    const firstCheckpoint = componentByRevision[source.model.revision];
+    const secondCheckpoint = componentByRevision['b'.repeat(40)];
+    const independentModel = componentByRevision['c'.repeat(40)];
+    expect(firstCheckpoint.model.revision).toBe(source.model.revision);
+    expect(secondCheckpoint.model.revision).toBe('b'.repeat(40));
+    expect(independentModel.model.revision).toBe('c'.repeat(40));
+    expect(firstCheckpoint.coordinateId).toBe(secondCheckpoint.coordinateId);
+    expect(firstCheckpoint.id).not.toBe(secondCheckpoint.id);
+    expect(independentModel.coordinateId).not.toBe(
+      firstCheckpoint.coordinateId
+    );
+    expect(imported.bundle.mechanismIdentityLinks).toEqual(
+      mechanisms.map((mechanism, index) => ({
+        legacyMechanismId: mechanism.id,
+        componentId: components[index].id,
+      }))
+    );
+    expect(
+      imported.bundle.mechanismIdentityLinks.every(
+        link => !Object.hasOwn(link, 'activationPositionId')
+      )
+    ).toBe(true);
+  });
+
   it('rejects native lineage links whose canonical component is missing or altered', () => {
     const { bundle, mechanism, component } =
       createPythiaNativeMechanismBundle();
