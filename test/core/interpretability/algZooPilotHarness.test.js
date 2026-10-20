@@ -300,6 +300,10 @@ describe('AlgZoo shared-map pilot harness', () => {
     const pair = plan.schedule.pairs[1];
     const heldOut = [{ secret: 'held-out-only' }];
     const calls = [];
+    const scoreResults = [
+      { normalizedRmse: 0.08, perStepMaximum: 0.2 },
+      { normalizedRmse: 0.14, perStepMaximum: 0.31 },
+    ];
     const runner = createAlgZooPilotRunner({
       hashMapSnapshot: async entries => `hash-${entries.length}`,
       runInvestigator: async request => {
@@ -328,7 +332,7 @@ describe('AlgZoo shared-map pilot harness', () => {
       },
       scoreBlindedSubmissions: async request => {
         calls.push({ type: 'scorer', request });
-        return [{ passed: true }, { passed: false }];
+        return scoreResults;
       },
     });
     const earlierMap = [
@@ -367,6 +371,7 @@ describe('AlgZoo shared-map pilot harness', () => {
     ).toEqual([]);
     expect(scorerCall.request.heldOutEvaluationData).toBe(heldOut);
     expect(scorerCall.request.submissions).toHaveLength(2);
+    expect(result.blindedScores).toBe(scoreResults);
     for (const submission of scorerCall.request.submissions) {
       expect(submission).not.toHaveProperty('arm');
       expect(submission).not.toHaveProperty('pairOrder');
@@ -375,6 +380,17 @@ describe('AlgZoo shared-map pilot harness', () => {
       expect(submission).not.toHaveProperty('mapSnapshotHash');
     }
     expect(result.sessionRecords).toHaveLength(2);
+    expect(
+      result.sessionRecords.map(record => record.submission.causalEvidence)
+    ).toEqual(['not tested', 'not tested']);
+    expect(
+      result.sessionRecords.map(record => record.submission.hypothesis)
+    ).toEqual(['A reproducible hypothesis', 'A reproducible hypothesis']);
+    expect(
+      result.sessionRecords.every(
+        record => !('blindedScores' in record.submission)
+      )
+    ).toBe(true);
     expect(result.sessionRecords.every(record => record.mapSnapshotHash)).toBe(
       true
     );
