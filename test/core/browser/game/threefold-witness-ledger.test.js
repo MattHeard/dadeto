@@ -9,7 +9,10 @@ import {
   createThreefoldSimulation,
   stepThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/simulation.js';
-import { normalizeThreefoldWitnessLedger } from '../../../../src/core/browser/game/threefold/witness-ledger.js';
+import {
+  normalizeThreefoldWitnessLedger,
+  presentThreefoldWitnessEntry,
+} from '../../../../src/core/browser/game/threefold/witness-ledger.js';
 
 const THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -101,11 +104,57 @@ describe('THREEFOLD witness ledger', () => {
       },
       relatedEventId: choice.id,
     });
+    expect(presentThreefoldWitnessEntry(repair).title).toContain(
+      'LATER REPAIR'
+    );
     expect(state.episode.witnessLedger.map(entry => entry.id)).toEqual([
       'witness-1',
       'witness-2',
       'witness-3',
     ]);
+  });
+
+  test('keeps a legacy repair unlinked when no breach entry was saved', () => {
+    let { state } = forceReliefGateOpen();
+    state = { ...state, episode: { ...state.episode, witnessLedger: [] } };
+    state = moveToLockingPawl(state);
+    const beforeRepair = renderThreefoldFrame(state);
+    state = stepWithFrame(state, { type: 'interact' }, beforeRepair);
+
+    expect(state.episode.witnessLedger.at(-1)).toMatchObject({
+      type: 'repair',
+      relatedEventId: null,
+    });
+  });
+
+  test('presents later observations and falls back to a factual state summary', () => {
+    let { state } = forceReliefGateOpen();
+    const beforeSurge = renderThreefoldFrame(state);
+    state = stepWithFrame(
+      state,
+      { type: 'wait', elapsedGameMinutes: 9 - state.crisis.elapsedMinutes },
+      beforeSurge
+    );
+    const observation = state.episode.witnessLedger.at(-1);
+    const presented = presentThreefoldWitnessEntry({
+      ...observation,
+      knowledge: { ...observation.knowledge, displayedStatus: '' },
+    });
+
+    expect(presented.title).toContain('OBSERVATION');
+    expect(presented.knowledge).toMatch(/^Known then: scale /);
+  });
+
+  test('records a directionless move using its explicit game-time consequence', () => {
+    const { state } = forceReliefGateOpen();
+    const beforeMove = renderThreefoldFrame(state);
+    const moved = stepWithFrame(state, { type: 'move' }, beforeMove);
+
+    expect(moved.episode.witnessLedger.at(-1)).toMatchObject({
+      type: 'observation',
+      intention: 'Move through the scene.',
+      relatedEventId: 'witness-1',
+    });
   });
 
   test('persists entries in schema v5 while reading v4 and retaining sluice schema v4', () => {

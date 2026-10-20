@@ -17,6 +17,7 @@ const THREEFOLD_CSS = readFileSync(
 );
 
 const mockStartMosslightPage = jest.fn(() => () => {});
+const mockDrawGameFrame = jest.fn();
 
 jest.unstable_mockModule(
   '../../../../src/core/browser/game/mosslight-valley/pagePresenter.js',
@@ -35,13 +36,23 @@ jest.unstable_mockModule(
     startMosslightPage: mockStartMosslightPage,
   })
 );
+jest.unstable_mockModule(
+  '../../../../src/core/browser/game/mosslight-valley/renderer.js',
+  () => ({
+    drawGameFrame: mockDrawGameFrame,
+    toFramePayload: jest.fn(() => ({})),
+  })
+);
 
 const { startThreefoldPage } = await import(
   '../../../../src/core/browser/game/threefold/page.js'
 );
 
 describe('THREEFOLD page adapter', () => {
-  beforeEach(() => mockStartMosslightPage.mockClear());
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
 
   test('exposes an accessible touch interaction for each episode choice', () => {
     expect(THREEFOLD_HTML).toContain('data-action="interact"');
@@ -85,17 +96,55 @@ describe('THREEFOLD page adapter', () => {
               consequence: 'Observed: passengers lost; gate repaired.',
               relation: 'Linked to witness-1.',
             },
+            {
+              title: 'OBSERVATION · 9 GAME MINUTES',
+              intention: 'Wait 5 in-game minutes.',
+              knowledge: 'Known then: gate open.',
+              consequence: 'Observed: channel flooded.',
+              relation: null,
+            },
           ],
         },
       }
     );
 
     expect(drawFrame).toHaveBeenCalledTimes(1);
-    expect(list.children).toHaveLength(1);
+    expect(list.children).toHaveLength(2);
     expect(collectText(list.children)).toContain(
       'Known then: channel flooded.'
     );
     expect(collectText(list.children)).toContain('Linked to witness-1.');
+  });
+
+  test('uses the shared Mosslight renderer and shows the empty ledger state', () => {
+    const { documentObj, list } = createLedgerDocument();
+    startThreefoldPage({
+      documentObj,
+      windowObj: {},
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const context = {};
+    page.drawFrame(context, {});
+
+    expect(mockDrawGameFrame).toHaveBeenCalledWith(context, {});
+    expect(collectText(list.children)).toContain(
+      'No gate events recorded yet.'
+    );
+  });
+
+  test('tolerates a document without the witness ledger list', () => {
+    const drawFrame = jest.fn();
+    startThreefoldPage({
+      documentObj: { querySelector: () => null },
+      windowObj: {},
+      navigatorObj: {},
+      drawFrame,
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    expect(() => page.drawFrame({}, {})).not.toThrow();
+    expect(drawFrame).toHaveBeenCalled();
   });
 
   test('uses the supplied storage and shared Mosslight page presenter', () => {

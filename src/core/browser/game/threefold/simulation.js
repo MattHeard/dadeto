@@ -392,7 +392,7 @@ function hasVisibleGateOutcomeChanged(before, after) {
  */
 function describeChosenAction(action) {
   if (action.type === 'wait')
-    return `Wait ${action.elapsedGameMinutes ?? 0} in-game minutes.`;
+    return `Wait ${action.elapsedGameMinutes} in-game minutes.`;
   if (action.type === 'move')
     return `Move ${action.direction || 'through the scene'}.`;
   return `Choose ${action.type}.`;
