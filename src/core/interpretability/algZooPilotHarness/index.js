@@ -75,7 +75,7 @@ export function createAlgZooPilotSchedule(seed) {
       },
     };
   });
-  return { valid: true, protocolVersion: '1.0.2', targetOrder, pairs };
+  return { valid: true, protocolVersion: '1.0.3', targetOrder, pairs };
 }
 
 /**
@@ -323,6 +323,7 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
     restrictedRule: submission.restrictedRule,
     predictions: submission.predictions,
     causalEvidence: submission.causalEvidence,
+    causalInterventionResult: submission.causalInterventionResult,
     evidence: submission.evidence,
   };
 }

@@ -109,7 +109,7 @@ function requireExactFields(node, expectedFields) {
 }
 
 /**
- * Apply one protocol-v1.0.2 arithmetic operator.
+ * Apply one protocol-v1.0.3 arithmetic operator.
  * @param {string} operator Binary operator.
  * @param {number} left Left operand.
  * @param {number} right Right operand.

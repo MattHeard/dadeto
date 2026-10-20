@@ -108,6 +108,19 @@ function experimentSubmission() {
       runtime: { python: '3.12' },
       predictions: [{ target: 'activation', expected: 'lower' }],
       observations: [{ kind: 'negative', summary: 'Prediction did not hold.' }],
+      causalInterventionResult: {
+        schemaVersion: 1,
+        status: 'tested',
+        targetMechanismId: 'mechanism-a',
+        operation: 'set-activation-zero',
+        timeStepIndex: 3,
+        inputSequenceSha256: 'd'.repeat(64),
+        predictedOutputIndex: 4,
+        baselineOutputIndex: 2,
+        intervenedOutputIndex: 5,
+        causalScore: 0,
+        artifactSha256: 'e'.repeat(64),
+      },
       authorId: 'investigator-b',
       createdAt: '2026-10-17T10:00:00Z',
     },
@@ -170,6 +183,10 @@ function portableGraph() {
         id: 'experiment-rnn',
         mechanismIds: ['recurrent-state-10-step-4'],
         hypothesisIds: ['hypothesis-rnn'],
+        causalInterventionResult: {
+          ...experimentSubmission().experiment.causalInterventionResult,
+          targetMechanismId: 'recurrent-state-10-step-4',
+        },
       },
     ],
     estimates: [],
@@ -311,6 +328,9 @@ describe('appendExperimentSubmissionV1', () => {
     expect(result.valid).toBe(true);
     if (!result.valid) return;
     expect(result.graph.experiments).toHaveLength(2);
+    expect(result.graph.experiments.at(-1).causalInterventionResult).toEqual(
+      experimentSubmission().experiment.causalInterventionResult
+    );
     expect(result.graph.evidence.at(-1).kind).toBe('negative');
     expect(result.graph.evidence.at(-1).authorId).toBe('investigator-b');
     expect(result.graph.edges.at(-1).toId).toBe('evidence-b');

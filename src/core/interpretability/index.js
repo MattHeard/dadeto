@@ -86,6 +86,45 @@ export function createInterpretabilitySchemasV1(z) {
     })
     .strict();
 
+  const causalInterventionNotTestedSchemaV1 = z
+    .object({
+      schemaVersion,
+      status: z.literal('not-tested'),
+      reason: z.string().min(1).optional(),
+    })
+    .strict();
+  const causalInterventionTestedSchemaV1 = z
+    .object({
+      schemaVersion,
+      status: z.literal('tested'),
+      targetMechanismId: z.string().min(1),
+      operation: z.literal('set-activation-zero'),
+      timeStepIndex: z.number().int().min(0).max(9),
+      inputSequenceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+      predictedOutputIndex: z.number().int().min(0).max(9),
+      baselineOutputIndex: z.number().int().min(0).max(9),
+      intervenedOutputIndex: z.number().int().min(0).max(9),
+      causalScore: z.number().int().min(0).max(1),
+      artifactSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    })
+    .strict()
+    .refine(
+      /**
+       * @param {{causalScore: number, predictedOutputIndex: number, intervenedOutputIndex: number}} result Tested causal result.
+       * @returns {boolean} Whether the binary score matches the observed output.
+       */
+      result =>
+        result.causalScore ===
+        (result.predictedOutputIndex === result.intervenedOutputIndex ? 1 : 0),
+      {
+        message: 'causal score must match the predicted and intervened outputs',
+      }
+    );
+  const causalInterventionResultSchemaV1 = z.discriminatedUnion('status', [
+    causalInterventionNotTestedSchemaV1,
+    causalInterventionTestedSchemaV1,
+  ]);
+
   /**
    * Build one discriminated mechanism branch.
    * @param {string} kind Mechanism discriminator.
@@ -149,7 +188,19 @@ export function createInterpretabilitySchemasV1(z) {
       )
       .min(1),
     observations: z.array(observation),
-  });
+    causalInterventionResult: causalInterventionResultSchemaV1.optional(),
+  }).refine(
+    /**
+     * @param {{mechanismIds: Array<string>, causalInterventionResult?: {status: 'not-tested', reason?: string}|{status: 'tested', targetMechanismId: string}}} experiment Experiment record being validated.
+     * @returns {boolean} Whether a tested intervention targets one of its mechanisms.
+     */
+    experiment =>
+      experiment.causalInterventionResult?.status !== 'tested' ||
+      experiment.mechanismIds.includes(
+        experiment.causalInterventionResult.targetMechanismId
+      ),
+    { message: 'causal intervention target must be linked to the experiment' }
+  );
 
   const evidenceSchemaV1 = authoredRecord({
     schemaVersion,
@@ -305,6 +356,7 @@ export function createInterpretabilitySchemasV1(z) {
     mechanismSchemaV1,
     hypothesisSchemaV1,
     experimentSchemaV1,
+    causalInterventionResultSchemaV1,
     evidenceSchemaV1,
     evidenceEdgeSchemaV1,
     mechanisticEstimateSchemaV1,
@@ -313,6 +365,9 @@ export function createInterpretabilitySchemasV1(z) {
       mechanism: z.toJSONSchema(mechanismSchemaV1),
       hypothesis: z.toJSONSchema(hypothesisSchemaV1),
       experiment: z.toJSONSchema(experimentSchemaV1),
+      causalInterventionResult: z.toJSONSchema(
+        causalInterventionResultSchemaV1
+      ),
       evidence: z.toJSONSchema(evidenceSchemaV1),
       evidenceEdge: z.toJSONSchema(evidenceEdgeSchemaV1),
       mechanisticEstimate: z.toJSONSchema(mechanisticEstimateSchemaV1),
@@ -1299,7 +1354,7 @@ export function migrateNativeNeuronMechanismV1ToV2(record, schemas) {
 /** @typedef {Record<string, any>} AccuracyEvaluationRecordV1 */
 /** @typedef {{variantId: string, heldOutSplitId: string, noiseScale: number, referenceAccuracy: number, mechanisticEstimate: number, samplingEstimate: number, mechanisticCompute: number, samplingCompute: number}} AccuracyEvaluationVariantV1 */
 /** @typedef {{mechanisms?: Array<InterpretabilityRecord>, hypotheses?: Array<InterpretabilityRecord>, experiments?: Array<InterpretabilityRecord>, evidence?: Array<InterpretabilityRecord>, estimates?: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} InterpretabilityGraphV1 */
-/** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any, accuracyEvaluationSchemaV1: any}} InterpretabilitySchemasV1 */
+/** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, causalInterventionResultSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any, accuracyEvaluationSchemaV1: any}} InterpretabilitySchemasV1 */
 
 /** @type {Record<string, Array<string>>} */
 const referenceFieldsByType = {

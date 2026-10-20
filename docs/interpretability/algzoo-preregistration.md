@@ -1,13 +1,13 @@
 # AlgZoo M16,10 shared-map pilot preregistration
 
-**Protocol version:** 1.0.2
+**Protocol version:** 1.0.3
 
 **Status:** Frozen by the Git commit containing this document; no pilot outcomes have been collected or reviewed.
 **Scope:** Exploratory validation pilot only. This protocol does not claim a confirmatory test or completion of the broader interpretability experiment.
 
 ## Registration and change control
 
-The version 1.0.2 protocol is the exact file tracked by Git in the commit that introduces deterministic local prediction scoring. The commit and the SHA-256 of this file identify the preregistered version. Before any target assignment or outcome access, the launch manifest must record both values, the fixture hash, all model/tool versions and prompt hashes, randomization seeds or commitments, evaluator version, budgets, and access-control configuration. The manifest itself must be committed before assignment. If either file changes before assignment, increment the protocol version and freeze the replacement commit and hash. After assignment, preserve the frozen files and record any deviation as a dated, append-only amendment with its reason; do not silently revise outcomes, thresholds, exclusions, or analyses.
+The version 1.0.3 protocol adds typed causal-intervention records to the deterministic local prediction scoring protocol. The commit and the SHA-256 of this file identify the preregistered version. Before any target assignment or outcome access, the launch manifest must record both values, the fixture hash, all model/tool versions and prompt hashes, randomization seeds or commitments, evaluator version, budgets, and access-control configuration. The manifest itself must be committed before assignment. If either file changes before assignment, increment the protocol version and freeze the replacement commit and hash. After assignment, preserve the frozen files and record any deviation as a dated, append-only amendment with its reason; do not silently revise outcomes, thresholds, exclusions, or analyses.
 
 This is an exploratory pilot. It estimates feasibility, leakage, cost, outcome variability, and design inputs for a later confirmatory study. All analyses below are descriptive for this pilot; do not interpret a nonsignificant or unestimable effect as evidence of no effect. No pilot runs or experimental outcomes have been examined while writing this protocol.
 
@@ -53,6 +53,12 @@ Each session must submit, before seeing any held-out result:
 4. Claim provenance: public-background claims, new claims, retrieved map entry IDs, dependencies, and uncertainty.
 5. All attempted hypotheses, counterexamples, tool calls, and work records, including unsuccessful attempts.
 
+### Typed causal-intervention record
+
+Store causal-intervention results in the separate `causalInterventionResult` field on an experiment record; do not encode the result only in hypothesis text or the free-form `causalEvidence` field. The field is optional on existing experiment records so earlier records remain importable. New AlgZoo submissions include either a strict `not-tested` record (with an optional reason) or a strict `tested` record.
+
+A `tested` record names a `targetMechanismId` already listed by the experiment, the fixed `set-activation-zero` operation, and a zero-based time step from 0 through 9. It identifies the investigator-selected length-ten input by the lowercase SHA-256 of the UTF-8 bytes of its compact JSON array serialization. Record the predicted output index before intervention, the baseline output index without intervention, and the observed output index after intervention; each is an integer from 0 through 9. The binary `causalScore` is 1 exactly when the predicted and observed intervened output indices match, and 0 otherwise. `artifactSha256` identifies the replay artifact with the input and intervention details. This input is investigator-selected and is not part of the hidden held-out set. A tested record is not evidence of a held-out causal effect by itself.
+
 ### Restricted JSON prediction rule
 
 The submitted rule is one JSON object per syntax-tree node. Objects are strict: fields not listed for that operator are rejected. Every node counts toward the 64-node limit, including constants, variables, and the `input.index` expression subtree. JSON structure cannot contain executable code, loops, recursion, or references to shared nodes.
@@ -66,7 +72,7 @@ The submitted rule is one JSON object per syntax-tree node. Objects are strict: 
 | `negate`, `relu` | `value` | Unary negation or `max(0, value)`. |
 | `prefixSum`, `prefixMean`, `prefixMax`, `prefixMin` | none | The named reduction over `x[0..t]`, inclusive. |
 
-For example, `{"op":"add","left":{"op":"input","index":{"op":"time"}},"right":{"op":"constant","value":0.25}}` predicts the current input plus 0.25. Every input sequence has exactly ten finite numbers. Division by zero, an out-of-prefix index, a non-finite intermediate, malformed object, or more than 64 nodes invalidates that prediction; it is not clipped, imputed, or silently scored as zero. An invalid prediction is retained as an attempted failure. Prefix reductions are always nonempty because `t` starts at zero. No other operators are permitted in protocol 1.0.2.
+For example, `{"op":"add","left":{"op":"input","index":{"op":"time"}},"right":{"op":"constant","value":0.25}}` predicts the current input plus 0.25. Every input sequence has exactly ten finite numbers. Division by zero, an out-of-prefix index, a non-finite intermediate, malformed object, or more than 64 nodes invalidates that prediction; it is not clipped, imputed, or silently scored as zero. An invalid prediction is retained as an attempted failure. Prefix reductions are always nonempty because `t` starts at zero. No other operators are permitted in protocol 1.0.3.
 
 ### Deterministic held-out scorer
 

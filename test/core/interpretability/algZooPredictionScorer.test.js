@@ -311,6 +311,7 @@ describe('AlgZoo deterministic held-out scoring', () => {
           restrictedRule: { op: 'relu', value: currentInputRule },
           hypothesis: 'post-hoc hypothesis text',
           causalEvidence: { status: 'not-tested' },
+          causalInterventionResult: { status: 'not-tested' },
         },
         { targetUnit: 2, restrictedRule: { op: 'constant', value: 0 } },
         {
@@ -340,6 +341,7 @@ describe('AlgZoo deterministic held-out scoring', () => {
     );
     expect(results[0]).not.toHaveProperty('hypothesis');
     expect(results[0]).not.toHaveProperty('causalEvidence');
+    expect(results[0]).not.toHaveProperty('causalInterventionResult');
     expect(results[1]).toMatchObject({
       targetUnit: 2,
       predictionStatus: 'scored',

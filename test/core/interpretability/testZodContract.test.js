@@ -46,6 +46,12 @@ describe('optional Zod test double contract', () => {
         type: ['string', 'number', 'boolean'],
       },
     });
+    expect(
+      fallbackSchemas.experiment.properties.causalInterventionResult.oneOf
+    ).toHaveLength(2);
+    expect(fallbackSchemas.experiment.required).not.toContain(
+      'causalInterventionResult'
+    );
     expect(fallbackSchemas.accuracyEvaluation).toMatchObject({
       type: 'object',
       properties: {
