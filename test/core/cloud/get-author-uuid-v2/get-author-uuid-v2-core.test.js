@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import {
   createGetAuthorUuidV2ExpressHandle,
-  createGetAuthorUuidV2Handler,
+  createGetAuthorUuidV2Handler as createCoreHandler,
 } from '../../../../src/core/cloud/get-author-uuid-v2/get-author-uuid-v2-core.js';
 
 const authorizationHeader = name => {
@@ -29,6 +29,30 @@ function createDb() {
     collection,
     doc,
   };
+}
+
+/**
+ * Map fixture inputs to the grouped handler dependencies.
+ * @param {Record<string, any>} deps Test fixture.
+ * @returns {Function} Configured core handler.
+ */
+function createGetAuthorUuidV2Handler(deps) {
+  return createCoreHandler({
+    db: deps.db,
+    auth: deps.auth,
+    persistence: {
+      randomUUID: deps.randomUUID,
+      getAuthorDocument: deps.getAuthorDocument,
+      setAuthorDocument: deps.setAuthorDocument,
+    },
+    billing: deps.billingEnabled
+      ? {
+          enabled: true,
+          resolveBillingIdentity: deps.resolveBillingIdentity,
+          service: deps.billing,
+        }
+      : undefined,
+  });
 }
 
 describe('createGetAuthorUuidV2Handler', () => {
@@ -84,6 +108,46 @@ describe('createGetAuthorUuidV2Handler', () => {
       { uuid: 'uuid-1' },
       { merge: true }
     );
+  });
+
+  it('routes enabled billing through the billable operation handler', async () => {
+    const db = createDb();
+    db.get.mockResolvedValue({ data: () => undefined });
+    const billing = {
+      getCurrentPricingSnapshot: jest
+        .fn()
+        .mockResolvedValue({ snapshotId: 'price-1' }),
+      reserveOperation: jest.fn().mockResolvedValue({
+        status: 200,
+        body: { status: 'reserved', applied: true },
+      }),
+      resolveOperation: jest.fn().mockResolvedValue({
+        status: 200,
+        body: { status: 'settled' },
+      }),
+    };
+    const handler = createGetAuthorUuidV2Handler({
+      db,
+      auth: { verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }) },
+      randomUUID: jest.fn().mockReturnValue('author-uuid-1'),
+      setAuthorDocument: jest.fn().mockResolvedValue(),
+      billingEnabled: true,
+      billing,
+      resolveBillingIdentity: jest.fn().mockResolvedValue('api-key-1'),
+    });
+
+    await expect(
+      handler(allowEffects, {
+        get: name =>
+          name === 'authorization'
+            ? 'Bearer token'
+            : name === 'idempotency-key'
+              ? 'retry-1'
+              : null,
+      })
+    ).resolves.toEqual({ status: 200, body: { uuid: 'author-uuid-1' } });
+    expect(billing.reserveOperation).toHaveBeenCalledTimes(1);
+    expect(billing.resolveOperation).toHaveBeenCalledTimes(1);
   });
 
   it('rejects missing or invalid tokens', async () => {
@@ -197,7 +261,7 @@ describe('createGetAuthorUuidV2Handler', () => {
 
     expect(response.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Headers',
-      'Authorization'
+      'Authorization, Idempotency-Key'
     );
     expect(response.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Origin',
