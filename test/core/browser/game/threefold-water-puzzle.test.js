@@ -2,6 +2,7 @@ import {
   advanceThreefoldSluicePuzzle,
   createThreefoldSluicePuzzle,
   getThreefoldSluicePuzzleStatus,
+  normalizeThreefoldSluicePuzzle,
   operateThreefoldSluiceValve,
 } from '../../../../src/core/browser/game/threefold/water-puzzle.js';
 import { heightAtScale } from '../../../../src/core/browser/game/threefold/spatial.js';
@@ -42,6 +43,70 @@ describe('THREEFOLD small-world sluice puzzle model', () => {
     const puzzle = createThreefoldSluicePuzzle();
 
     expect(advanceThreefoldSluicePuzzle(puzzle, 60)).toBe(puzzle);
+  });
+
+  test('normalizes saved volumes while restoring the authored chamber and port data', () => {
+    const opened = operateThreefoldSluiceValve(
+      createThreefoldSluicePuzzle(),
+      -2
+    );
+    const advanced = advanceThreefoldSluicePuzzle(opened, 15);
+
+    expect(normalizeThreefoldSluicePuzzle(advanced)).toEqual(advanced);
+    expect(
+      normalizeThreefoldSluicePuzzle({
+        ...advanced,
+        chambers: advanced.chambers.map(chamber => ({
+          ...chamber,
+          unexpected: true,
+        })),
+        port: { ...advanced.port, unexpected: true },
+        unexpected: true,
+      })
+    ).toEqual(advanced);
+  });
+
+  test('rejects malformed saved configuration and non-conserved water', () => {
+    const puzzle = createThreefoldSluicePuzzle();
+
+    expect(() => normalizeThreefoldSluicePuzzle(null)).toThrow(TypeError);
+    expect(() =>
+      normalizeThreefoldSluicePuzzle({
+        ...puzzle,
+        chambers: [puzzle.chambers[0]],
+      })
+    ).toThrow(RangeError);
+    expect(() =>
+      normalizeThreefoldSluicePuzzle({
+        ...puzzle,
+        port: { ...puzzle.port, open: 1 },
+      })
+    ).toThrow(RangeError);
+    expect(() =>
+      normalizeThreefoldSluicePuzzle({
+        ...puzzle,
+        chambers: puzzle.chambers.map(chamber => ({
+          ...chamber,
+          volumeCubicMeters: 0.2,
+        })),
+      })
+    ).toThrow(RangeError);
+    expect(() =>
+      normalizeThreefoldSluicePuzzle({
+        ...puzzle,
+        chambers: puzzle.chambers.map((chamber, index) =>
+          index === 0 ? { ...chamber, id: 'altered' } : chamber
+        ),
+      })
+    ).toThrow(RangeError);
+    expect(() =>
+      normalizeThreefoldSluicePuzzle({
+        ...puzzle,
+        chambers: puzzle.chambers.map((chamber, index) =>
+          index === 0 ? { ...chamber, volumeCubicMeters: -1 } : chamber
+        ),
+      })
+    ).toThrow(RangeError);
   });
 
   test('raises the lower basin through explicit time steps while conserving volume', () => {

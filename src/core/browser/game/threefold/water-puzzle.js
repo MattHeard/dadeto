@@ -24,6 +24,8 @@ const CLOSED_PORT = {
   sillElevationMeters: 0.15,
 };
 const CROSSING_SURFACE_ELEVATION_METERS = 0.3;
+const TOTAL_PUZZLE_VOLUME_CUBIC_METERS =
+  UPPER_CHAMBER.volumeCubicMeters + LOWER_CHAMBER.volumeCubicMeters;
 
 /**
  * Create the authored two-chamber sluice puzzle in its closed starting state.
@@ -33,6 +35,60 @@ export function createThreefoldSluicePuzzle() {
   return {
     chambers: [{ ...UPPER_CHAMBER }, { ...LOWER_CHAMBER }],
     port: { ...CLOSED_PORT },
+    crossingSurfaceElevationMeters: CROSSING_SURFACE_ELEVATION_METERS,
+  };
+}
+
+/**
+ * Validate a persisted sluice puzzle and rebuild its authored physical constants.
+ * @param {unknown} candidate Candidate save state.
+ * @returns {ReturnType<typeof createThreefoldSluicePuzzle>} Canonical independent puzzle state.
+ */
+export function normalizeThreefoldSluicePuzzle(candidate) {
+  if (!candidate || typeof candidate !== 'object')
+    throw new TypeError('THREEFOLD sluice state must be an object.');
+  const { chambers, port, crossingSurfaceElevationMeters } =
+    /** @type {Record<string, any>} */ (candidate);
+  if (
+    !Array.isArray(chambers) ||
+    chambers.length !== 2 ||
+    !port ||
+    typeof port !== 'object' ||
+    typeof port.open !== 'boolean' ||
+    port.areaSquareMeters !== CLOSED_PORT.areaSquareMeters ||
+    port.sillElevationMeters !== CLOSED_PORT.sillElevationMeters ||
+    crossingSurfaceElevationMeters !== CROSSING_SURFACE_ELEVATION_METERS
+  )
+    throw new RangeError('THREEFOLD sluice configuration is inconsistent.');
+
+  const normalizedChambers = [UPPER_CHAMBER, LOWER_CHAMBER].map(
+    (authored, index) => {
+      const chamber = chambers[index];
+      if (
+        !chamber ||
+        chamber.id !== authored.id ||
+        chamber.floorElevationMeters !== authored.floorElevationMeters ||
+        chamber.areaSquareMeters !== authored.areaSquareMeters
+      )
+        throw new RangeError('THREEFOLD sluice chamber is inconsistent.');
+      const normalized = {
+        ...authored,
+        volumeCubicMeters: chamber.volumeCubicMeters,
+      };
+      getWaterSurfaceElevationMeters(normalized);
+      return normalized;
+    }
+  );
+  const totalVolume = normalizedChambers.reduce(
+    (total, chamber) => total + chamber.volumeCubicMeters,
+    0
+  );
+  if (Math.abs(totalVolume - TOTAL_PUZZLE_VOLUME_CUBIC_METERS) > 1e-9)
+    throw new RangeError('THREEFOLD sluice water volume is not conserved.');
+
+  return {
+    chambers: normalizedChambers,
+    port: { ...CLOSED_PORT, open: port.open },
     crossingSurfaceElevationMeters: CROSSING_SURFACE_ELEVATION_METERS,
   };
 }

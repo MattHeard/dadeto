@@ -3,6 +3,7 @@ import {
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
 } from './save.js';
+import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
 import {
   createThreefoldSimulation,
   previewThreefoldGrowthEffects,
@@ -28,10 +29,22 @@ const DIRECTIONS = ['up', 'down', 'left', 'right'];
 export function createThreefoldRuntime(options = {}) {
   const opts = options instanceof Map ? { env: options } : options;
   const env = opts.env || new Map();
+  const scene = opts.scene;
+  const createInitialState = () =>
+    createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
   const save =
     opts.save ||
-    createThreefoldSimulationSaveStore(opts.storage || createMapStorage(env));
-  let state = save.load?.() || createThreefoldSimulation(CRISIS_THRESHOLDS);
+    createThreefoldSimulationSaveStore(
+      opts.storage || createMapStorage(env),
+      scene?.id
+    );
+  const loadInitialState = () => {
+    const restored = save.load?.();
+    return restored?.scene.id === (scene?.id || 'broken-gate')
+      ? restored
+      : createInitialState();
+  };
+  let state = loadInitialState();
   let running = false;
   let accumulator = 0;
   let tick = 0;
@@ -42,9 +55,17 @@ export function createThreefoldRuntime(options = {}) {
     ...state,
     tick,
     world: {
-      map: { name: 'THE BROKEN GATE' },
+      map: {
+        name:
+          state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+            ? 'THE TIDAL ARCHIVE'
+            : 'THE BROKEN GATE',
+      },
       day: 1,
-      time: state.crisis.elapsedMinutes / 60,
+      time:
+        state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+          ? state.elapsedGameSeconds / 3600
+          : state.crisis.elapsedMinutes / 60,
     },
   });
 
@@ -131,11 +152,11 @@ export function createThreefoldRuntime(options = {}) {
     },
     listSaves: () => [],
     loadSlot() {
-      state = save.load?.() || createThreefoldSimulation(CRISIS_THRESHOLDS);
+      state = loadInitialState();
       return frame();
     },
     resetSave() {
-      state = createThreefoldSimulation(CRISIS_THRESHOLDS);
+      state = createInitialState();
       accumulator = 0;
       previousActions.clear();
       save.clear?.();
@@ -145,7 +166,8 @@ export function createThreefoldRuntime(options = {}) {
     exportSave: () => serializeThreefoldSimulation(state),
     importSave(/** @type {unknown} */ serialized) {
       const restored = restoreThreefoldSimulation(serialized);
-      if (!restored) throw new Error('Invalid THREEFOLD save data.');
+      if (!restored || restored.scene.id !== (scene?.id || 'broken-gate'))
+        throw new Error('Invalid THREEFOLD save data.');
       state = restored;
       save.save?.(state);
       return frame();

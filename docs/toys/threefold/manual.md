@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the standalone game at [/threefold/](/threefold/).
+Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/) or enter the small-world Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice).
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold.” The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -66,3 +66,11 @@ Movement, scale transitions, deliberate waiting, fighting, and bypassing advance
 Growing through the relief gate or its counterweight commits that geometry as rubble and forces the gate open. Before the surge, the screen warns that the lower drainage channel is at risk. At scale −2, reach the locking pawl before surge to restore the gate geometry and keep the lower channel dry. This does not stop the ferry, passenger, or Latchfolk outcomes from resolving independently as the crisis clock advances. If the gate stays forced open through surge, pixelated floodwater covers the drainage settlement; repairing after the ferry is lost restores the gate, but water remains through surge and recedes at aftermath. Outcomes use saved state and deterministic game time; the water is a visible consequence, not a fluid simulation.
 
 Both repairs use the locking pawl beside the gate at scale −2. A successful repair persists through save/export/import. Repairing after losses does not reverse ferry, passenger, or resident outcomes.
+
+## Tidal Archive
+
+The Tidal Archive is a separate route that uses the shared Mosslight 160 × 144 handheld renderer. Arrows move through the small-world scene; A grows, B shrinks, E operates the nearby service valve, X waits 15 in-game minutes, and Y saves. The valve only turns when Mara is within reach at scale −2. Movement, scale changes, and interactions advance 15 seconds of game time; a wait advances its requested duration. Water does not use the browser clock.
+
+The screen shows an upper reservoir and lower basin in metres. Open the valve and wait while water transfers through the port. Its cubic-metre volume is conserved; the lower crossing remains sealed until its water surface reaches 0.3 metres and Mara is at scale −1 or larger. The Broken Gate keeps its separate visual-only flood consequence.
+
+The Tidal Archive save is isolated from the Broken Gate save. Export/import includes the water volumes and explicit elapsed game seconds in schema v4. The earlier schema-v1 through schema-v3 Broken Gate saves still load through their existing migrations.

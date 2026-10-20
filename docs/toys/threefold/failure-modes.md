@@ -15,6 +15,7 @@
 - Closure regression: the destroyed signal station still files a report, the intact station cannot close by report after aftermath, or destroying the station also blocks departure through the upland road; closure method or station rubble is lost after save/import.
 - Hydraulic conservation regression: an open port transfers water uphill, creates or loses volume, drains below its sill, or produces different physical flow because only the rendered scale changed.
 - Sluice-puzzle regression: the valve toggles away from scale −2, water changes without explicit elapsed game time, the lower crossing opens below its physical surface threshold, water levels vary with rendered scale, or the first puzzle changes the Broken Gate's visual-only flood behavior.
+- Sluice integration regression: `/threefold/?scene=sluice` opens the Broken Gate or shares its save key; an out-of-range valve interaction opens the port; pause or browser wall time advances the chambers; the barrier can be crossed below 0.3 metres or while Mara is smaller than scale −1; save migration loses water or accepts non-conserved/invalid chamber data.
 
 ## Detection Signals
 
@@ -29,6 +30,7 @@
 - Signal-station rubble, report availability, or the post-storm closure route disagrees with the saved geometry and episode closure branch.
 - Water transfer does not conserve the total chamber volume, or the same SI-unit state yields a different result across rendered scales.
 - The sluice puzzle cannot be operated at scale −2, advances while closed, opens its crossing before the lower basin reaches 0.3 metres, or changes the Broken Gate flood outcome.
+- The small-world route shows the Broken Gate copy, water changes without explicit game actions, the crossing barrier remains after both height and scale requirements are met, or its save overwrites the Broken Gate record.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook
@@ -37,8 +39,9 @@
 2. Check generated route files before investigating the renderer.
 3. Verify simulation reducers without the page, then check input adaptation and storage injection separately.
 4. Keep crisis progression on explicit game commands; pause, menu, and accessibility operations must remain inert.
-5. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
-6. For interaction failures, verify target identity, range and eligibility independently from input mapping and save normalization; then check that episode outcomes resolve independently at surge, late repair, withdrawal, or post-storm closure.
+5. For sluice issues, check route selection and its save namespace, then test valve reach, explicit elapsed seconds, conserved SI-unit volumes, and the crossing's water/scale conditions independently.
+6. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
+7. For interaction failures, verify target identity, range and eligibility independently from input mapping and save normalization; then check that episode outcomes resolve independently at surge, late repair, withdrawal, or post-storm closure.
 
 ## Rat encounter checks
 

@@ -599,6 +599,7 @@ describe('THREEFOLD save migration', () => {
     const legacyV3 = JSON.parse(
       serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))
     );
+    legacyV3.schemaVersion = 3;
     delete legacyV3.state.encounter.growthDeaths;
 
     expect(legacyV3.schemaVersion).toBe(3);

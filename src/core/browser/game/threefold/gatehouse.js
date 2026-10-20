@@ -1,4 +1,7 @@
-import { createScaleState } from './spatial.js';
+import {
+  copyThreefoldGeometry,
+  createThreefoldPlayerSpawn,
+} from './scene-utils.js';
 
 const GATEHOUSE_AREAS = [
   {
@@ -120,25 +123,16 @@ const GATEHOUSE_INTERACTABLES = [
 /**
  * Create the contiguous canonical scene for THREEFOLD's first gatehouse.
  * Coordinates and geometry bounds use physical metres at every scale.
- * @returns {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
+ * @returns {{id: 'broken-gate', bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
  */
 export function createBrokenGateScene() {
   return {
     id: 'broken-gate',
     bounds: { min: { x: 0, y: 0 }, max: { x: 12, y: 9 } },
-    spawn: createScaleState(
-      { x: 3, y: 4 },
-      {
-        scale: 0,
-        anchor: 8,
-        maximumAnchor: 8,
-        minimumUnlockedScale: -2,
-        maximumUnlockedScale: 1,
-      }
-    ),
+    spawn: createThreefoldPlayerSpawn({ x: 3, y: 4 }, 0),
     baseBodyWidthMeters: 0.4,
     areas: GATEHOUSE_AREAS.map(copyArea),
-    geometry: GATEHOUSE_GEOMETRY.map(copyGeometry),
+    geometry: GATEHOUSE_GEOMETRY.map(copyThreefoldGeometry),
     interactables: GATEHOUSE_INTERACTABLES.map(copyInteractable),
     creatures: [copyCreature(GATEHOUSE_RAT)],
   };
@@ -179,16 +173,5 @@ function copyArea(area) {
   return {
     id: area.id,
     bounds: { min: { ...area.bounds.min }, max: { ...area.bounds.max } },
-  };
-}
-
-/**
- * @param {typeof GATEHOUSE_GEOMETRY[number]} object Authored geometry object.
- * @returns {typeof GATEHOUSE_GEOMETRY[number]} Independent geometry value.
- */
-function copyGeometry(object) {
-  return {
-    id: object.id,
-    bounds: { min: { ...object.bounds.min }, max: { ...object.bounds.max } },
   };
 }

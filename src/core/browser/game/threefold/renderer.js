@@ -1,15 +1,23 @@
+import { createRectShapeFromBounds } from '../../canvasShapes.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { getThreefoldGateOutcome } from './outcome.js';
-import { previewThreefoldGrowthEffects } from './simulation.js';
+import {
+  isSluiceSimulationState,
+  previewThreefoldGrowthEffects,
+} from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
+import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
-/** @typedef {{type: string, x: number, y: number, width: number, height: number, fill: string, geometryId?: string, growthPreview?: boolean}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean}} ThreefoldSpriteShape */
+const createThreefoldRectShape =
+  /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
+  (createRectShapeFromBounds);
 /** @type {Array<[number, number, number, number, string]>} */
 const RAT_SILHOUETTE = [
   [0.16, 0.3, 0.7, 0.62, '#b46b55'],
@@ -25,6 +33,7 @@ const RAT_SILHOUETTE = [
  * @returns {Record<string, any>} Shared 160x144 Mosslight frame plus THREEFOLD metadata.
  */
 export function renderThreefoldFrame(state) {
+  if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = getThreefoldGateOutcome(state);
   const growthPreview = previewThreefoldGrowthEffects(state);
@@ -35,57 +44,47 @@ export function renderThreefoldFrame(state) {
     ...creatureIds,
   ]);
   const world = createRenderWorld(state, heightMeters, growthPreviewSet);
-  const frame = toFramePayload(
-    {
-      world,
-      mode: 'world',
-      dialogue:
-        state.crisis.elapsedMinutes === 0
-          ? {
-              actorId: 'dock-worker',
-              lines: [
-                { text: 'The tide is climbing. That gate will not hold.' },
-              ],
-              index: 0,
-              choices: [],
-            }
-          : null,
-      battle: null,
-      journal: [],
-      inventory: {},
-      menu: null,
-      quickAction: creatureIds.includes('gatehouse-rat')
-        ? 'grow'
-        : isGatehouseRatInReach(state)
-          ? 'fight'
-          : 'grow',
-      ending: null,
-      tick: 0,
-      toast: getThreefoldToast(state, gateOutcome.drainageState),
-      presentation: {
-        palette: PALETTE,
-        status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
-      },
+  const frame = createThreefoldFramePayload({
+    world,
+    dialogue:
+      state.crisis.elapsedMinutes === 0
+        ? {
+            actorId: 'dock-worker',
+            lines: [{ text: 'The tide is climbing. That gate will not hold.' }],
+            index: 0,
+            choices: [],
+          }
+        : null,
+    quickAction: creatureIds.includes('gatehouse-rat')
+      ? 'grow'
+      : isGatehouseRatInReach(state)
+        ? 'fight'
+        : 'grow',
+    toast: getThreefoldToast(state, gateOutcome.drainageState),
+    presentation: {
+      palette: PALETTE,
+      status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
     },
-    {
-      frameType: 'threefold',
-      spriteRenderer: (actor, camera, tick) => {
-        const worldActor =
-          /** @type {typeof actor & {id: string, growthPreview?: boolean, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
-            actor
-          );
-        const bounds = worldActor.bounds;
-        if (typeof worldActor.id === 'string' && bounds)
-          return worldActor.id === 'gatehouse-rat'
-            ? ratSprite({ ...worldActor, bounds }, camera, heightMeters)
-            : geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
-        return spriteShapes(actor, camera, tick).map(shape => ({
-          ...shape,
-          actorId: 'mara',
-        }));
-      },
-    }
-  );
+    spriteRenderer: (
+      /** @type {Parameters<typeof spriteShapes>[0]} */ actor,
+      /** @type {Parameters<typeof spriteShapes>[1]} */ camera,
+      /** @type {Parameters<typeof spriteShapes>[2]} */ tick
+    ) => {
+      const worldActor =
+        /** @type {typeof actor & {id: string, growthPreview?: boolean, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
+          actor
+        );
+      const bounds = worldActor.bounds;
+      if (typeof worldActor.id === 'string' && bounds)
+        return worldActor.id === 'gatehouse-rat'
+          ? ratSprite({ ...worldActor, bounds }, camera, heightMeters)
+          : geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
+      return spriteShapes(actor, camera, tick).map(shape => ({
+        ...shape,
+        actorId: 'mara',
+      }));
+    },
+  });
   frame.quest = 'The Broken Gate';
   const tideProgress =
     state.crisis.elapsedMinutes / state.crisis.thresholds.aftermathAtMinutes;
@@ -148,6 +147,181 @@ export function renderThreefoldFrame(state) {
     ratAction: state.encounter.ratAction,
   };
   return frame;
+}
+
+/**
+ * Render the small-world water cutaway through Mosslight's shared frame contract.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'small-world-sluice'}}>} state Current sluice simulation.
+ * @returns {Record<string, any>} Pixelated 160x144 water puzzle frame.
+ */
+function renderThreefoldSluiceFrame(state) {
+  const heightMeters = heightAtScale(state.player.scale);
+  const water = getThreefoldSluicePuzzleStatus(
+    state.sluicePuzzle,
+    state.player.scale
+  );
+  const frame = createThreefoldFramePayload({
+    world: {
+      mapId: state.scene.id,
+      map: {
+        name: 'THE TIDAL ARCHIVE',
+        width: 14,
+        height: 9,
+        blocked: [],
+        exits: [],
+        objects: [],
+        palette: 'shore',
+      },
+      player: { x: 7, y: 4 },
+      npcs: [],
+      day: 1,
+      time: state.elapsedGameSeconds / 3600,
+      flags: {},
+    },
+    dialogue: null,
+    quickAction: 'interact',
+    toast: sluiceToast(water),
+    presentation: {
+      palette: PALETTE,
+      status: `SCALE ${formatScale(state.player.scale)} · WATER MOVES WITH GAME TIME`,
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Tidal Archive';
+  frame.toast = sluiceToast(water);
+  frame.shapes = sluiceShapes(state, water);
+  frame.threefold = {
+    scale: state.player.scale,
+    heightMeters,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    portOpen: water.portOpen,
+    upperWaterSurfaceElevationMeters: water.upperWaterSurfaceElevationMeters,
+    lowerWaterSurfaceElevationMeters: water.lowerWaterSurfaceElevationMeters,
+    lowerBasinRaised: water.lowerBasinRaised,
+    crossingAvailable: water.crossingAvailable,
+  };
+  return frame;
+}
+
+/**
+ * Apply shared Mosslight world-frame defaults to one THREEFOLD presentation.
+ * @param {Record<string, any>} options Scene frame inputs.
+ * @returns {Record<string, any>} Shared Mosslight canvas payload.
+ */
+function createThreefoldFramePayload(options) {
+  return toFramePayload(
+    {
+      world: options.world,
+      mode: 'world',
+      dialogue: options.dialogue,
+      battle: null,
+      journal: [],
+      inventory: {},
+      menu: null,
+      quickAction: options.quickAction,
+      ending: null,
+      tick: 0,
+      toast: options.toast,
+      presentation: options.presentation,
+    },
+    { frameType: 'threefold', spriteRenderer: options.spriteRenderer }
+  );
+}
+
+/**
+ * Draw the authored chamber cutaway and current physical water levels.
+ * @param {Record<string, any>} state Current sluice simulation.
+ * @param {ReturnType<typeof getThreefoldSluicePuzzleStatus>} water Current puzzle readout.
+ * @returns {ThreefoldSpriteShape[]} Shapes for Mosslight's pixel canvas.
+ */
+function sluiceShapes(state, water) {
+  const baseY = 94;
+  const pixelsPerMeter = 60;
+  const upperFloorY = baseY - 0.5 * pixelsPerMeter;
+  const upperSurfaceY =
+    baseY - water.upperWaterSurfaceElevationMeters * pixelsPerMeter;
+  const lowerSurfaceY =
+    baseY - water.lowerWaterSurfaceElevationMeters * pixelsPerMeter;
+  const playerX = 8 + (state.player.position.x / 6) * 144;
+  const playerY = 30 + ((4.5 - state.player.position.y) / 4.5) * 64;
+  const waterColor = '#25a9b8';
+  return [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 7, y: 12 }, 'THE TIDAL ARCHIVE', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    captionShape({ x: 11, y: 30 }, 'UPPER'),
+    captionShape({ x: 92, y: 50 }, 'LOWER'),
+    ...[14, 62].map(x =>
+      createThreefoldRectShape([x, 36, 5, upperFloorY - 36], PALETTE[1])
+    ),
+    createThreefoldRectShape([19, upperFloorY, 43, 4], PALETTE[1]),
+    createThreefoldRectShape(
+      [19, upperSurfaceY, 43, upperFloorY - upperSurfaceY],
+      waterColor
+    ),
+    ...[90, 138].map(x =>
+      createThreefoldRectShape([x, 56, 5, baseY - 56], PALETTE[1])
+    ),
+    createThreefoldRectShape([95, baseY, 43, 4], PALETTE[1]),
+    createThreefoldRectShape(
+      [95, lowerSurfaceY, 43, baseY - lowerSurfaceY],
+      waterColor
+    ),
+    createThreefoldRectShape([67, 83, 23, 4], PALETTE[1]),
+    createThreefoldRectShape(
+      [76, 79, 5, 12],
+      water.portOpen ? waterColor : '#e16b5a'
+    ),
+    createThreefoldRectShape(
+      [149, 54, 3, 43],
+      water.crossingAvailable ? waterColor : '#e16b5a'
+    ),
+    createThreefoldRectShape([playerX, playerY, 4, 4], '#e9d88d'),
+    captionShape({ x: 69, y: 102 }, water.portOpen ? 'OPEN' : 'VALVE'),
+    captionShape(
+      { x: 116, y: 106 },
+      water.crossingAvailable ? 'CROSS' : 'SEALED'
+    ),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      `PORT ${water.portOpen ? 'OPEN' : 'CLOSED'} · LOWER ${water.lowerBasinRaised ? 'RAISED' : 'LOW'}`
+    ),
+    captionShape(
+      { x: 8, y: 136 },
+      'ARROWS MOVE · A/B SCALE · E VALVE · X WAIT'
+    ),
+  ];
+}
+
+/**
+ * @param {{x: number, y: number}} position Text anchor.
+ * @param {string} text Display label.
+ * @param {boolean} [large] Whether this is the scene title.
+ * @returns {ThreefoldSpriteShape} Text for the shared pixel presenter.
+ */
+function captionShape(position, text, large = false) {
+  const { x, y } = position;
+  return {
+    type: 'text',
+    x,
+    y,
+    text,
+    fill: PALETTE[2],
+    font: large ? '6px monospace' : '5px monospace',
+  };
+}
+
+/**
+ * Summarize water and crossing readiness for accessibility/status surfaces.
+ * @param {ReturnType<typeof getThreefoldSluicePuzzleStatus>} water Current puzzle readout.
+ * @returns {string} Current sluice status.
+ */
+function sluiceToast(water) {
+  const crossing = water.crossingAvailable
+    ? 'CROSSING OPEN'
+    : 'CROSSING SEALED';
+  return `PORT ${water.portOpen ? 'OPEN' : 'CLOSED'} · ${crossing}`;
 }
 
 /**

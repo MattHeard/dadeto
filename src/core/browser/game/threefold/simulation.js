@@ -11,6 +11,13 @@ import {
   THREEFOLD_LATCHFOLK_INTERACTABLE_ID,
 } from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
+import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
+import {
+  advanceThreefoldSluicePuzzle,
+  createThreefoldSluicePuzzle,
+  getThreefoldSluicePuzzleStatus,
+  operateThreefoldSluiceValve,
+} from './water-puzzle.js';
 import {
   createThreefoldEncounter,
   isGatehouseRatInReach,
@@ -21,6 +28,7 @@ import {
 import {
   changeScale,
   growThroughGeometry,
+  heightAtScale,
   moveAtScale,
   previewGrowthDamageIds,
   previewGrowthOverlapIds,
@@ -30,23 +38,54 @@ import {
 const ACTION_GAME_MINUTES = 0.25;
 const ANCHOR_RECOVERY_MINUTES = 15;
 
+/** @typedef {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>}} BrokenGateSimulationState */
+/** @typedef {{scene: ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, sluicePuzzle: ReturnType<typeof createThreefoldSluicePuzzle>, elapsedGameSeconds: number}} SluiceSimulationState */
+/** @typedef {BrokenGateSimulationState|SluiceSimulationState} ThreefoldSimulationState */
+/** @typedef {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} ThreefoldCrisisThresholds */
+
 /**
- * Create a fresh deterministic simulation for the authored Broken Gate.
- * @param {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>} [scene] Canonical gatehouse scene.
- * @returns {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>}} Initial player, world, crisis, episode, and encounter state.
+ * Create a fresh deterministic simulation for the canonical Broken Gate.
+ * @overload
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof createBrokenGateScene>} [scene] Canonical Broken Gate scene.
+ * @returns {BrokenGateSimulationState} Initial Broken Gate simulation state.
+ */
+/**
+ * @overload
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>} scene Canonical sluice scene.
+ * @returns {SluiceSimulationState} Initial sluice simulation state.
+ */
+/**
+ * @overload
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>} [scene] Canonical scene.
+ * @returns {ThreefoldSimulationState} Initial state for either authored scene.
+ */
+/**
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>} [scene] Canonical scene.
+ * @returns {ThreefoldSimulationState} Initial player, world, crisis, episode, and encounter state.
  */
 export function createThreefoldSimulation(
   thresholds,
   scene = createBrokenGateScene()
 ) {
-  return {
+  const state = {
     scene,
     player: scene.spawn,
     crisis: createCrisisClock(thresholds),
     episode: createThreefoldEpisodeState(),
     encounter: createThreefoldEncounter(),
   };
+  if (scene.id === THREEFOLD_SLUICE_SCENE_ID) {
+    return /** @type {SluiceSimulationState} */ ({
+      ...state,
+      sluicePuzzle: createThreefoldSluicePuzzle(),
+      elapsedGameSeconds: 0,
+    });
+  }
+  return /** @type {BrokenGateSimulationState} */ (state);
 }
 
 /**
@@ -69,7 +108,7 @@ export function previewThreefoldGrowthEffects(state) {
   const { player, scene } = state;
   const geometryIds = previewGrowthDamageIds(
     player,
-    scene.geometry,
+    growthGeometry(state),
     scene.baseBodyWidthMeters
   );
   const watchkeeper = scene.interactables.find(
@@ -117,17 +156,13 @@ export function stepThreefoldSimulation(state, action) {
   if (isEpisodeClosed(state)) return state;
   if (!action || typeof action !== 'object') return state;
   if (action.type === 'menu' || action.type === 'pause') return state;
+  if (isSluiceSimulationState(state)) return stepSluiceScene(state, action);
   if (action.type === 'wait') return advanceWait(state, action);
   if (action.type === 'fight' || action.type === 'bypass')
     return resolveEncounterAction(state, action.type);
 
   if (action.type === 'move') {
-    const player = moveAtScale(
-      state.player,
-      typeof action.direction === 'string' ? action.direction : '',
-      state.scene.geometry,
-      state.scene
-    );
+    const player = movePlayerAtScene(state, action.direction);
     return applyPlayerAction(state, player, 'travel');
   }
 
@@ -135,7 +170,7 @@ export function stepThreefoldSimulation(state, action) {
     const { occupantIds, creatureIds } = previewThreefoldGrowthEffects(state);
     const player = growThroughGeometry(
       state.player,
-      state.scene.geometry,
+      growthGeometry(state),
       state.scene.baseBodyWidthMeters
     );
     let actionState = state;
@@ -194,6 +229,125 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   return state;
+}
+
+/**
+ * Apply one bounded action in the physically simulated small-world sluice.
+ * Every world action represents fifteen explicit game seconds; waits use their
+ * supplied in-game duration. No browser or wall-clock time enters this reducer.
+ * @param {SluiceSimulationState} state Current simulation.
+ * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated sluice state.
+ */
+function stepSluiceScene(state, action) {
+  const isWait = action.type === 'wait';
+  const elapsedGameMinutes = action.elapsedGameMinutes;
+  const durationSeconds = isWait
+    ? typeof elapsedGameMinutes === 'number'
+      ? elapsedGameMinutes * 60
+      : Number.NaN
+    : ACTION_GAME_MINUTES * 60;
+  if (
+    !['move', 'grow', 'shrink', 'interact', 'wait'].includes(action.type) ||
+    !Number.isFinite(durationSeconds) ||
+    durationSeconds <= 0
+  )
+    return state;
+
+  let player = state.player;
+  let sluicePuzzle = state.sluicePuzzle;
+  if (action.type === 'move')
+    player = movePlayerAtScene(state, action.direction);
+  else if (action.type === 'grow')
+    player = growThroughGeometry(
+      player,
+      growthGeometry(state),
+      state.scene.baseBodyWidthMeters
+    );
+  else if (action.type === 'shrink') player = changeScale(player, -1);
+  else if (action.type === 'interact' && canReachSluiceValve(state))
+    sluicePuzzle = operateThreefoldSluiceValve(sluicePuzzle, player.scale);
+
+  const playerWithRecovery = recoverAnchor(
+    player,
+    durationSeconds / 60,
+    ANCHOR_RECOVERY_MINUTES,
+    { inCombat: false }
+  );
+  return {
+    ...state,
+    player: playerWithRecovery,
+    sluicePuzzle: advanceThreefoldSluicePuzzle(sluicePuzzle, durationSeconds),
+    elapsedGameSeconds: state.elapsedGameSeconds + durationSeconds,
+  };
+}
+
+/**
+ * Check the scale and distance requirements for the service-valve interaction.
+ * @param {SluiceSimulationState} state Current simulation.
+ * @returns {boolean} Whether the player can reach the valve.
+ */
+function canReachSluiceValve(state) {
+  if (state.player.scale !== -2) return false;
+  const valve = state.scene.interactables.find(
+    ({ id }) => id === 'sluice-service-valve'
+  );
+  if (!valve) return false;
+  const reachMeters = heightAtScale(state.player.scale) * 0.55;
+  return (
+    Math.hypot(
+      state.player.position.x - valve.position.x,
+      state.player.position.y - valve.position.y
+    ) <= reachMeters
+  );
+}
+
+/**
+ * Move the player through the currently active scene geometry.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @param {unknown} direction Cardinal input candidate.
+ * @returns {ReturnType<typeof import('./spatial.js').createScaleState>} Updated player position.
+ */
+function movePlayerAtScene(state, direction) {
+  return moveAtScale(
+    state.player,
+    typeof direction === 'string' ? direction : '',
+    movementGeometry(state),
+    state.scene
+  );
+}
+
+/**
+ * Return geometry that can be damaged by scale growth.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Growth-sensitive geometry.
+ */
+function growthGeometry(state) {
+  return state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+    ? state.scene.geometry.filter(({ id }) => id !== 'sluice-crossing-barrier')
+    : state.scene.geometry;
+}
+
+/**
+ * Return collision geometry while the lower crossing is unavailable.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Geometry active for movement.
+ */
+function movementGeometry(state) {
+  if (!isSluiceSimulationState(state)) return state.scene.geometry;
+  return getThreefoldSluicePuzzleStatus(state.sluicePuzzle, state.player.scale)
+    .crossingAvailable
+    ? growthGeometry(state)
+    : state.scene.geometry;
+}
+
+/**
+ * Narrow a simulation by its authored scene discriminator.
+ * @param {ThreefoldSimulationState} state Current simulation.
+ * @returns {state is SluiceSimulationState} Whether the state owns hydraulic simulation data.
+ */
+export function isSluiceSimulationState(state) {
+  return state.scene.id === THREEFOLD_SLUICE_SCENE_ID;
 }
 
 /**

@@ -41,6 +41,7 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_HTML).toContain(
       'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
     );
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
   });
 
   test('uses the supplied storage and shared Mosslight page presenter', () => {
@@ -93,5 +94,69 @@ describe('THREEFOLD page adapter', () => {
     expect(page.createRuntime({ env: new Map() }).getState().scene.id).toBe(
       'broken-gate'
     );
+  });
+
+  test('selects the standalone sluice route and updates its Mosslight page copy', () => {
+    const elements = new Map(
+      [
+        '#chapter-subtitle',
+        '#chapter-tag',
+        '#chapter-eyebrow',
+        '#chapter-heading',
+        '#chapter-description',
+        '#interact-label',
+        '#scene-link',
+        '#game-footer',
+        '#interact-control',
+      ].map(selector => [selector, { setAttribute: jest.fn() }])
+    );
+    const documentObj = {
+      querySelector: selector => elements.get(selector),
+    };
+    const windowObj = {
+      location: { search: '?scene=sluice' },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    };
+    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const state = page.createRuntime({ env: new Map() }).getState();
+
+    expect(state.scene.id).toBe('small-world-sluice');
+    expect(elements.get('#chapter-subtitle').textContent).toBe(
+      'The Tidal Archive'
+    );
+    expect(elements.get('#scene-link').href).toBe('/threefold/');
+    expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+      'aria-label',
+      'Operate the sluice service valve'
+    );
+  });
+
+  test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
+    startThreefoldPage({
+      documentObj: { querySelector: () => null },
+      windowObj: { location: { search: '?scene=broken-gate' } },
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    expect(page.createRuntime({ env: new Map() }).getState().scene.id).toBe(
+      'broken-gate'
+    );
+
+    mockStartMosslightPage.mockClear();
+    startThreefoldPage({
+      documentObj: { querySelector: () => null },
+      windowObj: { location: { search: '?scene=sluice' } },
+      navigatorObj: {},
+    });
+    const sluicePage = mockStartMosslightPage.mock.calls[0][0];
+    expect(
+      sluicePage.createRuntime({ env: new Map() }).getState().scene.id
+    ).toBe('small-world-sluice');
   });
 });
