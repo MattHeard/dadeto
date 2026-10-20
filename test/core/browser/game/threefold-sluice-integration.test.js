@@ -86,6 +86,7 @@ describe('THREEFOLD playable small-world sluice', () => {
     );
     expect(opened.crisis.elapsedMinutes).toBe(0);
     expect(stepThreefoldSimulation(opened, { type: 'pause' })).toBe(opened);
+    expect(stepThreefoldSimulation(opened, { type: 'wait' })).toBe(opened);
     expect(
       stepThreefoldSimulation(opened, { type: 'wait', elapsedGameMinutes: 0 })
     ).toBe(opened);
@@ -192,6 +193,11 @@ describe('THREEFOLD playable small-world sluice', () => {
       },
     });
     expect(restored).toEqual(simulation);
+    expect(
+      restoreThreefoldSimulation(
+        JSON.stringify({ ...envelope, schemaVersion: 3 })
+      )
+    ).toBeNull();
     expect(runtime.getSnapshot().world.map.name).toBe('THE TIDAL ARCHIVE');
     expect(runtime.getSnapshot().world.time).toBe(0);
     sluiceStore.save(simulation);
