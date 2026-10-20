@@ -1,4 +1,45 @@
-import { createCheckImpactPlan } from '../../../src/core/local/checkImpactPlan.js';
+import path from 'node:path';
+import {
+  createCheckImpactPlan,
+  createScopedCoverageCommand,
+} from '../../../src/core/local/checkImpactPlan.js';
+
+describe('createScopedCoverageCommand', () => {
+  it('limits Jest coverage to requested files and renders a reproducible command', () => {
+    const result = createScopedCoverageCommand({
+      paths: { rootDir: '/repo', pathModule: path },
+      coverageDirectory: '/tmp/coverage',
+      selection: {
+        tests: ['test/core/example.test.js'],
+        sourceFiles: ['src/core/example.js'],
+      },
+      environment: { NODE_ENV: 'test' },
+    });
+
+    expect(result.args).toEqual([
+      '/repo/scripts/run-jest.js',
+      '--runInBand',
+      '--coverage',
+      '--coverageReporters=json',
+      '--coverageThreshold={"global":{"branches":0,"functions":0,"lines":0,"statements":0}}',
+      '--coverageDirectory',
+      '/tmp/coverage',
+      '--collectCoverageFrom=src/core/example.js',
+      '--runTestsByPath',
+      'test/core/example.test.js',
+    ]);
+    expect(result.command).toContain(
+      "'--coverageDirectory' '<temporary-coverage-dir>'"
+    );
+    expect(result.command).not.toContain('/tmp/coverage');
+    expect(result.options).toMatchObject({
+      cwd: '/repo',
+      timeout: 120 * 60 * 1000,
+      stdio: 'inherit',
+      env: { NODE_ENV: 'test', DADETO_COVERAGE_SHARD: '1' },
+    });
+  });
+});
 
 describe('createCheckImpactPlan', () => {
   it('reports that no tests are selected when there are no changes', () => {
@@ -37,6 +78,7 @@ describe('createCheckImpactPlan', () => {
       mode: 'selected',
       testSelection: 'related',
       tests: ['test/core/a.test.js'],
+      staticGates: ['eslint', 'core-parse', 'duplication'],
     });
 
     for (const changedPath of [

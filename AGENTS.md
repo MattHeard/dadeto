@@ -207,6 +207,12 @@ After completing meaningful work, add a concise note under `notes/agents/` cover
 - chosen fix,
 - next-time guidance or open questions.
 
+For a meaningful completed toy or feature, also append one evidence-backed v1
+reuse record to `notes/agents/reuse-events.jsonl`, following
+`docs/loop/agent-reuse-notes.md`. Empty lists and an unknown reuse estimate are
+valid; never infer reuse or invent rejected attempts or percentages. This is
+not a per-commit requirement.
+
 ## Notion inbox routing
 
 - The canonical Notion inbox list lives in `tracking/notion-codex.local.json` under `notion.inboxPageIds`.

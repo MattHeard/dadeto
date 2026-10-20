@@ -28,7 +28,7 @@ Use `npm run check:full` for the complete existing behavior: `npm test` (all uni
 
 Use `npm run test:impact -- --files <paths...>` for a reproducible test-only run. Add `-- --base <git-ref>` to include changes relative to a selected branch; `DADETO_CHECK_BASE` supplies the default base. `npm run check:impact` prints a plan only and does not execute tests.
 
-Use `npm run check:impact:run -- --files <paths...>` for selected unit tests plus changed-file ESLint and `core-parse` when core files changed. If the impact selector cannot safely scope a path, it runs the all-unit fallback and reports that static gates were not assessed. This diagnostic command does not prove global coverage or replace `npm run check`.
+Use `npm run check:impact:run -- --files <paths...>` for selected unit tests plus changed-file ESLint. For changed `src/core` files, Jest collects coverage only for the changed core files and reports uncovered lines and branch arms; the command also runs `core-parse` and the full `src/core` duplication scan (`npm run duplication`). Clone failures print up to five file/line pairs and the full JSON report path. Test-only runs and conservative all-unit fallback stay without coverage. This diagnostic command does not prove global coverage or replace `npm run check:full`.
 
 Use `npm run check -- --skip-tests` when impact tests have already been handled separately and only the local static gates are needed.
 
@@ -82,13 +82,17 @@ Reference workflow: `.github/workflows/gcp-test.yml` (Cloud Run Job execution + 
 ## Evidence retention expectations
 
 ### In PR descriptions
+
 Include:
+
 - **Summary** of user-visible and loop-value artifacts.
 - **Testing** section with exact commands and outcomes.
 - **Artifact pointers** (for example coverage/build reports, CI artifact names, workflow links).
 
 ### In issue (`bd`) comments
+
 Include:
+
 - exact command run,
 - pass/fail result,
 - key failing/passing output snippet,

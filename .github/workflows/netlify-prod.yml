@@ -28,6 +28,7 @@ jobs:
       - name: Configure production rental search endpoint from registry
         env:
           FUNCTION_ENDPOINT_REGISTRY_URL: https://storage.googleapis.com/irien-465710-function-endpoints/function-endpoints.json
+          FUNCTION_ENDPOINT_REGISTRY_EVIDENCE_PATH: ${{ runner.temp }}/function-endpoint-registry-observation.json
         run: node .github/scripts/fetch-function-endpoint-registry.js
 
       - run: npm run build:browser
@@ -45,7 +46,18 @@ jobs:
       - name: Deploy to Netlify production
         run: |
           echo "🟢 Starting production deploy…"
-          netlify deploy --prod --dir=public --message "GitHub ${{ github.sha }}"
+          netlify deploy --prod --dir=public --message "GitHub ${{ github.sha }}" --json > "$RUNNER_TEMP/netlify-deployment.json"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: Attach Netlify deployment identity to registry observation
+        run: node .github/scripts/attach-netlify-deployment-evidence.js "$RUNNER_TEMP/netlify-deployment.json" "$RUNNER_TEMP/function-endpoint-registry-observation.json"
+
+      - name: Upload function endpoint registry observation
+        uses: actions/upload-artifact@v6
+        with:
+          name: function-endpoint-registry-observation
+          path: ${{ runner.temp }}/function-endpoint-registry-observation.json
+          if-no-files-found: error
+          retention-days: 90

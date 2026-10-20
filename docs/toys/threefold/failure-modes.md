@@ -11,7 +11,7 @@
 ## Detection Signals
 
 - Error signatures/log lines: browser module import errors, an invalid-save message, or a failed storage operation.
-- Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; run returning to the opening state after reload.
+- Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; rat prompt appearing outside reach or failing to appear at scale −2/−1; rat fate returning to present after reload; run returning to the opening state after reload.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook
@@ -21,6 +21,12 @@
 3. Verify simulation reducers without the page, then check input adaptation and storage injection separately.
 4. Keep crisis progression on explicit game commands; pause, menu, and accessibility operations must remain inert.
 5. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
+
+## Rat encounter checks
+
+- Confirm Mara is at scale −2 or −1 and physically within reach of the authored rat before expecting A/Fight or X/Bypass prompts.
+- If A grows while the player expects a fight, or X waits while the player expects to pass the rat, check the canonical position, scale, and encounter fate supplied to the frame.
+- If a rat fate changes after reload, test both schema-v1 migration and schema-v2 roundtrip in `threefold-save.test.js` before investigating the browser storage adapter.
 
 ## Promoted from Real Failures
 

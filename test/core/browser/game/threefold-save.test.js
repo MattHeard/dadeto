@@ -168,6 +168,36 @@ describe('THREEFOLD complete-run save codec', () => {
     );
     expect(restored.crisis.stage).toBe('surge');
     expect(restored.crisis.elapsedMinutes).toBe(9.25);
+    expect(
+      JSON.parse(serializeThreefoldSimulation(simulation)).schemaVersion
+    ).toBe(2);
+  });
+
+  test.each(['present', 'repelled', 'bypassed', 'killed'])(
+    'roundtrips rat fate %s',
+    ratFate => {
+      const simulation = createThreefoldSimulation(CRISIS_THRESHOLDS);
+      simulation.encounter = { ratFate };
+
+      expect(
+        restoreThreefoldSimulation(serializeThreefoldSimulation(simulation))
+      ).toEqual(simulation);
+    }
+  );
+
+  test('migrates a schema-v1 run with an intact rat and rejects incomplete v2', () => {
+    const legacy = JSON.parse(
+      serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))
+    );
+    legacy.schemaVersion = 1;
+    delete legacy.state.encounter;
+
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacy)).encounter
+    ).toEqual({ ratFate: 'present' });
+
+    const incomplete = { ...legacy, schemaVersion: 2 };
+    expect(restoreThreefoldSimulation(JSON.stringify(incomplete))).toBeNull();
   });
 
   test('canonicalizes unordered destroyed geometry IDs on restore', () => {

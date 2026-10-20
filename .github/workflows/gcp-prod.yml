@@ -123,4 +123,34 @@ jobs:
         run: terraform plan -lock-timeout=5m -input=false -out=tfplan
 
       - name: Terraform Apply
+        id: terraform_apply
         run: terraform apply -lock-timeout=5m -auto-approve tfplan
+
+      - name: Record Terraform Apply completion time
+        id: terraform_apply_completed_at
+        run: echo "completed_at=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
+      - name: Capture GCP production endpoint registry evidence
+        id: registry_evidence
+        if: >-
+          (github.event_name == 'workflow_run' && github.event.workflow_run.head_branch == github.event.repository.default_branch) ||
+          (github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch)
+        env:
+          FUNCTION_ENDPOINT_REGISTRY_EVIDENCE_PATH: ${{ runner.temp }}/function-endpoint-registry-gcp-apply.json
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          SOURCE_COMMIT_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          TERRAFORM_APPLY_COMPLETED_AT: ${{ steps.terraform_apply_completed_at.outputs.completed_at }}
+          TERRAFORM_APPLY_OUTCOME: ${{ steps.terraform_apply.outcome }}
+        run: |
+          set -euo pipefail
+          FUNCTION_ENDPOINT_REGISTRY_URL="$(terraform output -raw function_endpoint_registry_url)" \
+            node ../.github/scripts/write-gcp-function-endpoint-registry-evidence.js
+
+      - name: Upload GCP production endpoint registry evidence
+        if: steps.registry_evidence.outcome == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: gcp-function-endpoint-registry-evidence
+          path: ${{ runner.temp }}/function-endpoint-registry-gcp-apply.json
+          if-no-files-found: error
+          retention-days: 90

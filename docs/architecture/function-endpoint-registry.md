@@ -23,6 +23,12 @@ The workflow's main-branch path filters and manual dispatch use the same registr
 3. Keep the value public and externally consumable. Never include internal-only endpoints, credentials, tokens, tenant data, or private service URLs.
 4. Validate the fresh production plan before applying. After publication, verify the unchanged anonymous HTTPS URL, JSON contract, `application/json`, and `no-store` metadata.
 
+## Deployment lineage evidence
+
+`src/core/build/function-endpoint-lineage.js` validates a machine-readable record that connects a successful GCP production Terraform apply and source commit to the registry object, then to a later Netlify deployment. The record includes the GCP run ID, apply result, source commit, completion time, and deployed function URLs; the stable registry URL, exact response body, GCP run/commit association, and optional GCS generation/ETag; and the Netlify build run ID, deployment ID/URL, source commit, start time, registry URL, and registry digest.
+
+The validator reuses `parseFunctionEndpointRegistry` for the schema, environment, and HTTPS function URLs. It hashes the exact registry response body, checks those URLs against the GCP deployment evidence, requires the Netlify build to start after the apply and to report the same registry digest, and compares a generation or ETag when the build explicitly pins one. This is an offline validation contract; it does not collect workflow metadata or prove endpoint health. Production workflow collection and independent health evidence remain separate requirements.
+
 ## Troubleshooting
 
 - **403:** check that the registry bucket's public reader binding still allows anonymous object reads.

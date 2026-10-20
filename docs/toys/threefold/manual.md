@@ -8,7 +8,7 @@ Before the first timed action, a dock worker warns, “The tide is climbing. Tha
 
 ## Input
 
-Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. B shrinks one step. X deliberately waits 15 in-game minutes. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
+Use the arrow keys or directional pad to move. A grows one unlocked scale step; growth can break through obstructing geometry and leave permanent rubble. When the gatehouse rat is in reach, A fights instead, and the frame shows that action. At scale −2 Mara can drive the rat off; one rung larger, at −1, the same fight kills it. B shrinks one step. X deliberately waits 15 in-game minutes except when the rat is in reach, where X bypasses it without killing it. Y saves. Save, Export, Import, Pause, Fullscreen, and Reset are also available on the page.
 
 Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale attempts add a quarter minute to recovery progress. Waiting can restore Anchor even after the crisis reaches aftermath; the crisis stage itself remains at aftermath.
 
@@ -39,7 +39,7 @@ Every 15 in-game minutes, Mara recovers one Anchor charge. Movement and scale at
 
 ## Output
 
-The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and crisis stage information. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale.
+The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and crisis stage information. A screen-space tide meter grows with deterministic in-game minutes and changes color by crisis stage; pausing and menus do not move it. Mara's sprite remains handheld-sized while geometry changes scale. The gatehouse rat appears at its authored physical size and the HUD names fight and bypass controls when they are available.
 
 ### Example
 
@@ -55,7 +55,7 @@ The standalone page renders a pixelated 160 × 144 frame with scale, Anchor, and
 
 ## Behavior
 
-Movement, scale transitions, and deliberate waiting advance the deterministic game-time crisis clock. The clock never uses browser wall time. Menu, pause, save, import/export, and reading this guide leave game time unchanged. The complete player/crisis state, including destroyed geometry, is stored locally and revalidated when loaded.
+Movement, scale transitions, deliberate waiting, fighting, and bypassing advance the deterministic game-time crisis clock. The clock never uses browser wall time. Fighting does not recover Anchor during its action. Menu, pause, save, import/export, and reading this guide leave game time unchanged. The complete player/crisis state, rat fate, and destroyed geometry are stored locally and revalidated when loaded; version-one saves migrate with the rat still present.
 
 ## Gate outcome
 
