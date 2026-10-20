@@ -4,6 +4,7 @@ import {
   serializeThreefoldSimulation,
 } from './save.js';
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
+import { THREEFOLD_SILT_MARGIN_SCENE_ID } from './silt-margin.js';
 import {
   createThreefoldSimulation,
   previewThreefoldGrowthEffects,
@@ -60,13 +61,17 @@ export function createThreefoldRuntime(options = {}) {
         name:
           state.scene.id === THREEFOLD_SLUICE_SCENE_ID
             ? 'THE TIDAL ARCHIVE'
-            : 'THE BROKEN GATE',
+            : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
+              ? 'THE SILT MARGIN'
+              : 'THE BROKEN GATE',
       },
       day: 1,
       time:
         state.scene.id === THREEFOLD_SLUICE_SCENE_ID
           ? state.elapsedGameSeconds / 3600
-          : state.crisis.elapsedMinutes / 60,
+          : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
+            ? state.elapsedGameSeconds / 3600
+            : state.crisis.elapsedMinutes / 60,
     },
   });
 

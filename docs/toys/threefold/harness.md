@@ -4,7 +4,7 @@
 
 1. Install prerequisites: `npm install`.
 2. Build the standalone page and copied game modules: `npm run build`.
-3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate or `/threefold/?scene=sluice` for the Tidal Archive.
+3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, or `/threefold/?scene=silt-margin` for Silt Margin.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
 ## Small-World Hydraulic Model
@@ -16,6 +16,10 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-witness-led
 ## Small-World Sluice Puzzle Model
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-sluice-integration.test.js test/core/browser/game/threefold-water-puzzle.test.js test/core/browser/game/threefold-water.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js` to cover the playable route, input, water transfer, rendering, and save migration. The valve toggles only within reach at scale −2; explicit action time moves conserved water, and the crossing barrier clears only when the lower surface reaches 0.3 metres and Mara is at scale −1 or larger. Save schema v4 stores the validated puzzle and elapsed game seconds under a separate key; schema-v1 through schema-v3 Broken Gate saves remain supported. Never connect the Broken Gate's visual-only flood to this hydraulic solver.
+
+## Silt Margin Crossing
+
+Run `npm run test:impact -- --files test/core/browser/game/threefold-silt-margin.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-runtime.test.js` to cover the route, scale, grid, two outcomes, explicit time, and isolated save key. Guidance must happen in reach before the Choir signal can be sent. Growth while Mara fits inside the guardian previews and persists its death and the disrupted signal. Export/import rejects inconsistent branch data.
 
 ## Expected Observable Outputs
 
@@ -30,6 +34,7 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-sluice-inte
 - At scale −2 or −1, reach the authored rat to see the in-frame `A FIGHT · X BYPASS` prompt. A repels it at −2 and kills it at −1; X bypasses without killing it. When Mara fits wholly inside the rat at scale −2, the frame highlights the growth consequence, A grows through and kills it, and X still bypasses. Each outcome advances game time and its action cause survives save/export/import; schema-v1 saves restore the rat as present and schema-v2 saves infer the prior fight/bypass cause for the schema-v3 save.
 - A visible TIDE meter starts empty, fills with deterministic crisis minutes, and changes color at the authored stages.
 - Open `/threefold/?scene=sluice` to enter the Tidal Archive through the shared 160 × 144 Mosslight frame. The diagram shows the two physical water levels, valve state, and sealed/open crossing.
+- Open `/threefold/?scene=silt-margin` to enter at scale −4 (2.26 cm). The grid-aligned handheld scene shows the guardian and Choir root. Guide the guardian with E, move to the root, and press E to send the signal; or grow through the guardian to persist its death and signal disruption. Rendering must not quantize the stored physical position.
 - At the starting valve, press E to open it. It is available only within reach at scale −2; the water advances during the action. Press X to wait 15 explicit in-game minutes; the upper reservoir drains and lower basin rises while the total cubic-metre volume remains constant. Pause and browser wall time do not move water.
 - Grow to scale −1. The crossing remains blocked until the lower surface reaches 0.3 metres, then the barrier is omitted from movement collision. Shrinking below −1 closes it again until Mara grows back to the required scale.
 - Save and reload or export/import the Tidal Archive. Its water and elapsed time restore from schema v4 without reading or overwriting the Broken Gate save key. Existing schema-v1, schema-v2, and schema-v3 Broken Gate saves continue to migrate.

@@ -1,4 +1,4 @@
-import { heightAtScale } from './spatial.js';
+import { isThreefoldInteractableInReach } from './scene-utils.js';
 import {
   EPISODE_CLOSURES,
   FERRY_OUTCOMES,
@@ -46,7 +46,7 @@ export function attemptThreefoldPassengerRescue(state) {
   if (
     (episode.passengers !== 'aboard' && episode.passengers !== 'partial') ||
     crisis.elapsedMinutes >= crisis.thresholds.surgeAtMinutes ||
-    !isWithinInteractionRange(state, MOORING_ID)
+    !isThreefoldInteractableInReach(state, MOORING_ID)
   )
     return episode;
   return {
@@ -65,7 +65,7 @@ export function attemptThreefoldLatchfolkWarning(state) {
   if (
     episode.latchfolk !== 'unwarned' ||
     crisis.elapsedMinutes >= crisis.thresholds.surgeAtMinutes ||
-    !isWithinInteractionRange(state, THREEFOLD_LATCHFOLK_INTERACTABLE_ID)
+    !isThreefoldInteractableInReach(state, THREEFOLD_LATCHFOLK_INTERACTABLE_ID)
   )
     return episode;
   return { ...episode, latchfolk: 'warned' };
@@ -78,7 +78,7 @@ export function attemptThreefoldLatchfolkWarning(state) {
  */
 export function attemptThreefoldWithdrawal(state) {
   const { episode } = state;
-  if (!isWithinInteractionRange(state, UPLAND_ROAD_ID)) return episode;
+  if (!isThreefoldInteractableInReach(state, UPLAND_ROAD_ID)) return episode;
   return { ...episode, withdrawn: true, closedBy: 'departed' };
 }
 
@@ -94,7 +94,7 @@ export function attemptThreefoldReport(state) {
     player.destroyedGeometryIds.includes(
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ) ||
-    !isWithinInteractionRange(state, 'signal-station-console')
+    !isThreefoldInteractableInReach(state, 'signal-station-console')
   )
     return episode;
   return { ...episode, closedBy: 'reported' };
@@ -118,7 +118,7 @@ export function attemptThreefoldGateRepair(state) {
     state.player.destroyedGeometryIds.includes(id)
   );
   if (!gateWasForcedOpen) return episode;
-  if (!isWithinInteractionRange(state, GATE_REPAIR_ID)) return episode;
+  if (!isThreefoldInteractableInReach(state, GATE_REPAIR_ID)) return episode;
   return {
     ...episode,
     gateRepaired: true,
@@ -207,22 +207,4 @@ export function normalizeThreefoldEpisodeState(candidate, options = {}) {
     ...(witnessLedger.length > 0 ? { witnessLedger } : {}),
     ...(testimony ? { testimony } : {}),
   });
-}
-
-/**
- * Check whether Mara can reach one authored interaction target at her current scale.
- * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
- * @param {string} id Authored interaction target identifier.
- * @returns {boolean} Whether the target exists and is within reach.
- */
-function isWithinInteractionRange(state, id) {
-  const target = state.scene.interactables.find(item => item.id === id);
-  if (!target) return false;
-  const reachMeters = heightAtScale(state.player.scale) * 0.55;
-  return (
-    Math.hypot(
-      state.player.position.x - target.position.x,
-      state.player.position.y - target.position.y
-    ) <= reachMeters
-  );
 }

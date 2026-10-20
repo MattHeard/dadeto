@@ -3,11 +3,16 @@ import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
+import {
+  THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
+  THREEFOLD_SILT_MARGIN_SIGNAL_ID,
+} from './silt-margin.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import { presentThreefoldTestimony } from './testimony.js';
 import {
   isSluiceSimulationState,
+  isSiltMarginSimulationState,
   previewThreefoldGrowthEffects,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
@@ -37,6 +42,8 @@ const RAT_SILHOUETTE = [
  */
 export function renderThreefoldFrame(state) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
+  if (isSiltMarginSimulationState(state))
+    return renderThreefoldSiltMarginFrame(state);
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = getThreefoldGateOutcome(state);
   const growthPreview = previewThreefoldGrowthEffects(state);
@@ -172,23 +179,12 @@ function renderThreefoldSluiceFrame(state) {
     state.player.scale
   );
   const frame = createThreefoldFramePayload({
-    world: {
-      mapId: state.scene.id,
-      map: {
-        name: 'THE TIDAL ARCHIVE',
-        width: 14,
-        height: 9,
-        blocked: [],
-        exits: [],
-        objects: [],
-        palette: 'shore',
-      },
-      player: { x: 7, y: 4 },
-      npcs: [],
-      day: 1,
-      time: state.elapsedGameSeconds / 3600,
-      flags: {},
-    },
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'THE TIDAL ARCHIVE',
+      state.elapsedGameSeconds,
+      { x: 7, y: 4 }
+    ),
     dialogue: null,
     quickAction: 'interact',
     toast: sluiceToast(water),
@@ -201,7 +197,7 @@ function renderThreefoldSluiceFrame(state) {
   frame.quest = 'The Tidal Archive';
   frame.toast = sluiceToast(water);
   frame.shapes = sluiceShapes(state, water);
-  frame.threefold = {
+  return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
     heightMeters,
     elapsedGameSeconds: state.elapsedGameSeconds,
@@ -211,8 +207,146 @@ function renderThreefoldSluiceFrame(state) {
     lowerBasinRaised: water.lowerBasinRaised,
     crossingAvailable: water.crossingAvailable,
     witnessLedger: [],
-  };
+  });
+}
+
+/**
+ * Render the Silt Margin branch through the shared 160×144 Mosslight renderer.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'silt-margin'}}>} state Current Silt Margin simulation.
+ * @returns {Record<string, any>} Mosslight frame and branch metadata.
+ */
+function renderThreefoldSiltMarginFrame(state) {
+  const guardian = state.siltMargin.guardian;
+  const signal = state.siltMargin.signal;
+  const growth = previewThreefoldGrowthEffects(state);
+  const status =
+    guardian === 'killed'
+      ? 'GUARDIAN KILLED · CHOIR DISRUPTED'
+      : guardian === 'guided-aside'
+        ? signal === 'sent'
+          ? 'GUARDIAN GUIDED · SIGNAL SENT'
+          : 'GUARDIAN GUIDED · REACH THE ROOT'
+        : 'GUARDIAN BLOCKS THE CHOIR · GROW OR GUIDE';
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'THE SILT MARGIN',
+      state.elapsedGameSeconds,
+      { x: 6, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: `MARA ${(heightAtScale(state.player.scale) * 100).toFixed(2)} CM · ${status}`,
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Silt Margin';
+  frame.toast = status;
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 0.32) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.18 - state.player.position.y) / 0.18) * 72
+  );
+  const guardianShapes =
+    guardian === 'present'
+      ? [
+          createThreefoldRectShape([56, 64, 16, 16], '#b46b55'),
+          createThreefoldRectShape([64, 56, 16, 8], '#d28b69'),
+          createThreefoldRectShape([56, 56, 8, 8], '#e9d88d'),
+          createThreefoldRectShape([72, 56, 8, 8], '#e9d88d'),
+        ]
+      : [];
+  const rootColor = signal === 'sent' ? '#25a9b8' : '#bfd77c';
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'THE SILT MARGIN', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    ...[16, 32, 48, 88, 104, 136].map((x, index) =>
+      createThreefoldRectShape(
+        [x, 36 + (index % 3) * 8, 8, 8],
+        index % 2 === 0 ? '#526e4b' : '#71915b'
+      )
+    ),
+    createThreefoldRectShape([88, 60, 24, 16], '#25a9b8'),
+    createThreefoldRectShape([112, 60, 8, 24], '#526e4b'),
+    createThreefoldRectShape([120, 52, 8, 40], rootColor),
+    createThreefoldRectShape([112, 52, 8, 8], rootColor),
+    createThreefoldRectShape([128, 44, 8, 16], rootColor),
+    ...guardianShapes,
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      guardian === 'killed'
+        ? 'A GROWTH KILLED THE GUARDIAN'
+        : guardian === 'guided-aside'
+          ? signal === 'sent'
+            ? 'THE CHOIR SIGNAL CROSSED'
+            : 'THE SIGNAL ROOT IS OPEN'
+          : 'GROW THROUGH OR GUIDE THE GUARDIAN'
+    ),
+    captionShape(
+      { x: 8, y: 136 },
+      'ARROWS MOVE · A GROW · B SHRINK · E INTERACT'
+    ),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    guardian,
+    signal,
+    growthPreviewCreatureIds: growth.creatureIds,
+    guardianId: THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
+    signalId: THREEFOLD_SILT_MARGIN_SIGNAL_ID,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Attach scene-specific metadata and align the finished small-world frame.
+ * @param {Record<string, any>} frame Completed Mosslight frame.
+ * @param {Record<string, any>} threefold Scene metadata.
+ * @returns {Record<string, any>} Grid-aligned THREEFOLD frame.
+ */
+function finishSmallWorldFrame(frame, threefold) {
+  frame.threefold = threefold;
   return alignThreefoldFrame(frame);
+}
+
+/**
+ * Build the common world-model input for selectable small-world regions.
+ * @param {string} mapId Authored region identifier.
+ * @param {string} name Visible map name.
+ * @param {number} elapsedGameSeconds Explicit in-world elapsed time.
+ * @param {{x: number, y: number}} player Grid-map player coordinate.
+ * @returns {Record<string, any>} Mosslight world model.
+ */
+function createSmallWorldFrameWorld(mapId, name, elapsedGameSeconds, player) {
+  return {
+    mapId,
+    map: {
+      name,
+      width: 14,
+      height: 9,
+      blocked: [],
+      exits: [],
+      objects: [],
+      palette: 'shore',
+    },
+    player,
+    npcs: [],
+    day: 1,
+    time: elapsedGameSeconds / 3600,
+    flags: {},
+  };
 }
 
 /**

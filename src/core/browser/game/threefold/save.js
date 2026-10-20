@@ -6,7 +6,13 @@ import {
   THREEFOLD_SLUICE_SCENE_ID,
 } from './sluice-scene.js';
 import {
+  createThreefoldSiltMarginScene,
+  normalizeThreefoldSiltMarginState,
+  THREEFOLD_SILT_MARGIN_SCENE_ID,
+} from './silt-margin.js';
+import {
   createThreefoldSimulation,
+  isSiltMarginSimulationState,
   isSluiceSimulationState,
 } from './simulation.js';
 import { createScaleState } from './spatial.js';
@@ -31,9 +37,12 @@ const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
 const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
 const SIMULATION_SCHEMA_VERSION = 6;
 const SLUICE_SIMULATION_SCHEMA_VERSION = 4;
+const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.small-world-sluice';
+const SILT_MARGIN_SIMULATION_SAVE_KEY =
+  'dadeto.threefold.simulation-save.v1.silt-margin';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -82,7 +91,9 @@ export function serializeThreefoldSimulation(simulation) {
     player: normalizeScaleState(simulation.player),
     crisis: normalizeCrisisClock(simulation.crisis),
     episode: normalizeThreefoldEpisodeState(simulation.episode, {
-      includeTestimony: !isSluiceSimulationState(simulation),
+      includeTestimony:
+        !isSluiceSimulationState(simulation) &&
+        !isSiltMarginSimulationState(simulation),
     }),
     encounter: normalizeThreefoldEncounter(simulation.encounter),
   });
@@ -90,6 +101,14 @@ export function serializeThreefoldSimulation(simulation) {
     state.sluicePuzzle = normalizeThreefoldSluicePuzzle(
       simulation.sluicePuzzle
     );
+  }
+  if (isSiltMarginSimulationState(simulation)) {
+    state.siltMargin = normalizeThreefoldSiltMarginState(simulation.siltMargin);
+  }
+  if (
+    isSluiceSimulationState(simulation) ||
+    isSiltMarginSimulationState(simulation)
+  ) {
     state.elapsedGameSeconds = normalizeElapsedGameSeconds(
       simulation.elapsedGameSeconds
     );
@@ -98,7 +117,9 @@ export function serializeThreefoldSimulation(simulation) {
     game: GAME_ID,
     schemaVersion: isSluiceSimulationState(simulation)
       ? SLUICE_SIMULATION_SCHEMA_VERSION
-      : SIMULATION_SCHEMA_VERSION,
+      : isSiltMarginSimulationState(simulation)
+        ? SILT_MARGIN_SIMULATION_SCHEMA_VERSION
+        : SIMULATION_SCHEMA_VERSION,
     sceneId: simulation.scene.id,
     state,
   });
@@ -114,14 +135,26 @@ export function restoreThreefoldSimulation(serialized) {
   if (!envelope) return null;
   try {
     const isSluiceScene = envelope.sceneId === THREEFOLD_SLUICE_SCENE_ID;
-    if (!isSluiceScene && envelope.sceneId !== 'broken-gate')
+    const isSiltMarginScene =
+      envelope.sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID;
+    if (
+      !isSluiceScene &&
+      !isSiltMarginScene &&
+      envelope.sceneId !== 'broken-gate'
+    )
       throw new RangeError('Unknown scene.');
     if (
       isSluiceScene &&
       envelope.schemaVersion !== SLUICE_SIMULATION_SCHEMA_VERSION
     )
       throw new RangeError('Sluice save version is unsupported.');
+    if (
+      isSiltMarginScene &&
+      envelope.schemaVersion !== SILT_MARGIN_SIMULATION_SCHEMA_VERSION
+    )
+      throw new RangeError('Silt Margin save version is unsupported.');
     const legacyV1 =
+      !isSiltMarginScene &&
       envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
     const legacyV2 =
       envelope.schemaVersion === PREVIOUS_SIMULATION_SCHEMA_VERSION;
@@ -131,8 +164,10 @@ export function restoreThreefoldSimulation(serialized) {
     const crisis = normalizeCrisisClock(state.crisis);
     const episode = normalizeThreefoldEpisodeState(
       state.episode ??
-        createThreefoldEpisodeState({ includeTestimony: !isSluiceScene }),
-      { includeTestimony: !isSluiceScene }
+        createThreefoldEpisodeState({
+          includeTestimony: !isSluiceScene && !isSiltMarginScene,
+        }),
+      { includeTestimony: !isSluiceScene && !isSiltMarginScene }
     );
     const player = normalizeScaleState(state.player);
     if (episode.withdrawn === true && crisis.stage !== 'aftermath')
@@ -168,10 +203,19 @@ export function restoreThreefoldSimulation(serialized) {
           ? migrateLegacyThreefoldEncounter(state.encounter)
           : normalizeThreefoldEncounter(state.encounter),
     };
-    if (!isSluiceScene)
+    if (!isSluiceScene && !isSiltMarginScene)
       return {
         ...restoredState,
         scene: createBrokenGateScene(),
+      };
+    if (isSiltMarginScene)
+      return {
+        ...restoredState,
+        scene: createThreefoldSiltMarginScene(),
+        siltMargin: normalizeThreefoldSiltMarginState(state.siltMargin),
+        elapsedGameSeconds: normalizeElapsedGameSeconds(
+          state.elapsedGameSeconds
+        ),
       };
     return {
       ...restoredState,
@@ -198,7 +242,9 @@ export function createThreefoldSimulationSaveStore(
     storage,
     sceneId === THREEFOLD_SLUICE_SCENE_ID
       ? SLUICE_SIMULATION_SAVE_KEY
-      : SIMULATION_SAVE_KEY,
+      : sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID
+        ? SILT_MARGIN_SIMULATION_SAVE_KEY
+        : SIMULATION_SAVE_KEY,
     serializeThreefoldSimulation,
     restoreThreefoldSimulation
   );
@@ -339,7 +385,7 @@ function normalizeCrisisClock(state) {
 }
 
 /**
- * Validate the explicit simulation time stored by the sluice scene.
+ * Validate explicit elapsed game seconds stored by a small-world scene.
  * @param {unknown} candidate Candidate elapsed time in seconds.
  * @returns {number} Non-negative finite in-game duration.
  */
@@ -349,6 +395,6 @@ function normalizeElapsedGameSeconds(candidate) {
     !Number.isFinite(candidate) ||
     candidate < 0
   )
-    throw new RangeError('Sluice elapsed game time is invalid.');
+    throw new RangeError('Small-world elapsed game time is invalid.');
   return candidate;
 }

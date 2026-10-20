@@ -4,9 +4,54 @@ import {
 } from '../mosslight-valley/pagePresenter.js';
 import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
+import { createThreefoldSiltMarginScene } from './silt-margin.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
 const renderedTestimonyByList = new WeakMap();
+const SLUICE_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'The Tidal Archive'],
+    ['#chapter-tag', 'SMALL WORLD · THE TIDAL ARCHIVE'],
+    ['#chapter-eyebrow', 'A LOCKED SLUICE'],
+    ['#chapter-heading', 'Raise the lower basin to reach the far bank.'],
+    [
+      '#chapter-description',
+      'At the smallest scale, open the service valve and let the water move. ' +
+        'Each action advances the physical simulation; grow to scale −1 to ' +
+        'cross once the basin reaches its marked level.',
+    ],
+    ['#interact-label', 'E · OPERATE THE VALVE'],
+    ['#scene-link', 'Continue into the Silt Margin'],
+    [
+      '#game-footer',
+      'Water moves only during explicit game actions, never from the browser clock.',
+    ],
+  ]),
+  href: '/threefold/?scene=silt-margin',
+  ariaLabel: 'Operate the sluice service valve',
+};
+const SILT_MARGIN_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'The Silt Margin'],
+    ['#chapter-tag', 'SMALL WORLD · THE SILT MARGIN'],
+    ['#chapter-eyebrow', 'A CROSSING THROUGH THE CHOIR'],
+    ['#chapter-heading', 'Guide the guardian, or grow through it.'],
+    [
+      '#chapter-description',
+      'At 2.26 cm tall, Mara reaches a Choir signal root guarded by a small ' +
+        'creature. Guide it aside and send the signal, or grow through it and ' +
+        'leave the signal disrupted. The choice persists in this region’s save.',
+    ],
+    ['#interact-label', 'E · GUIDE OR SEND SIGNAL'],
+    ['#scene-link', 'Return to the Tidal Archive'],
+    [
+      '#game-footer',
+      'Every movement and scale change advances the region clock by 15 game seconds.',
+    ],
+  ]),
+  href: '/threefold/?scene=sluice',
+  ariaLabel: 'Guide the guardian aside or send the Choir signal',
+};
 
 /**
  * Start the standalone THREEFOLD handheld page.
@@ -17,6 +62,8 @@ export function startThreefoldPage(options) {
   const scene = options.scene || sceneFromLocation(options.windowObj);
   if (scene?.id === 'small-world-sluice')
     configureSluicePage(options.documentObj);
+  else if (scene?.id === 'silt-margin')
+    configureSiltMarginPage(options.documentObj);
   let storage = options.storage;
   if (!storage) {
     try {
@@ -51,14 +98,15 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|undefined} Sluice scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
-  return typeof search === 'string' &&
-    new URLSearchParams(search).get('scene') === 'sluice'
-    ? createThreefoldSluiceScene()
-    : undefined;
+  if (typeof search !== 'string') return undefined;
+  const sceneId = new URLSearchParams(search).get('scene');
+  if (sceneId === 'sluice') return createThreefoldSluiceScene();
+  if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
+  return undefined;
 }
 
 /**
@@ -67,35 +115,34 @@ function sceneFromLocation(windowObj) {
  * @returns {void}
  */
 function configureSluicePage(documentObj) {
-  const updates = [
-    ['#chapter-subtitle', 'The Tidal Archive'],
-    ['#chapter-tag', 'SMALL WORLD · THE TIDAL ARCHIVE'],
-    ['#chapter-eyebrow', 'A LOCKED SLUICE'],
-    ['#chapter-heading', 'Raise the lower basin to reach the far bank.'],
-    [
-      '#chapter-description',
-      'At the smallest scale, open the service valve and let the water move. ' +
-        'Each action advances the physical simulation; grow to scale −1 to ' +
-        'cross once the basin reaches its marked level.',
-    ],
-    ['#interact-label', 'E · OPERATE THE VALVE'],
-    ['#scene-link', 'Return to the Broken Gate'],
-    [
-      '#game-footer',
-      'Water moves only during explicit game actions, never from the browser clock.',
-    ],
-  ];
+  configureAlternateScenePage(documentObj, SLUICE_PAGE_COPY);
+}
+
+/**
+ * Replace the default Broken Gate copy with the Silt Margin branch description.
+ * @param {any} documentObj Injected browser document.
+ * @returns {void}
+ */
+function configureSiltMarginPage(documentObj) {
+  configureAlternateScenePage(documentObj, SILT_MARGIN_PAGE_COPY);
+}
+
+/**
+ * Apply route-specific copy and hide Broken Gate-only records.
+ * @param {any} documentObj Injected browser document.
+ * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string}} copy Alternate scene copy and route.
+ * @returns {void}
+ */
+function configureAlternateScenePage(documentObj, copy) {
+  const { updates, href, ariaLabel } = copy;
   updates.forEach(([selector, text]) => {
     const element = documentObj?.querySelector?.(selector);
     if (element) element.textContent = text;
   });
   const sceneLink = documentObj?.querySelector?.('#scene-link');
-  if (sceneLink) sceneLink.href = '/threefold/';
+  if (sceneLink) sceneLink.href = href;
   const interactControl = documentObj?.querySelector?.('#interact-control');
-  interactControl?.setAttribute?.(
-    'aria-label',
-    'Operate the sluice service valve'
-  );
+  interactControl?.setAttribute?.('aria-label', ariaLabel);
   const witnessLedger = documentObj?.querySelector?.('#witness-ledger');
   if (witnessLedger) witnessLedger.hidden = true;
   const testimony = documentObj?.querySelector?.('#testimony');

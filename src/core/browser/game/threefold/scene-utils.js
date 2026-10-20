@@ -1,4 +1,4 @@
-import { createScaleState } from './spatial.js';
+import { createScaleState, heightAtScale } from './spatial.js';
 
 /**
  * Create the shared scale bounds used by THREEFOLD's authored region spawns.
@@ -14,6 +14,24 @@ export function createThreefoldPlayerSpawn(position, scale) {
     minimumUnlockedScale: -2,
     maximumUnlockedScale: 1,
   });
+}
+
+/**
+ * Check whether a player can reach an authored interaction in the current scene.
+ * @param {{player: {scale: number, position: {x: number, y: number}}, scene: {interactables: Array<{id: string, position: {x: number, y: number}}>} }} state Current scene state.
+ * @param {string} id Target identifier.
+ * @returns {boolean} Whether the target exists and is in physical reach.
+ */
+export function isThreefoldInteractableInReach(state, id) {
+  const target = state.scene.interactables.find(item => item.id === id);
+  if (!target) return false;
+  const reachMeters = heightAtScale(state.player.scale) * 0.55;
+  return (
+    Math.hypot(
+      state.player.position.x - target.position.x,
+      state.player.position.y - target.position.y
+    ) <= reachMeters
+  );
 }
 
 /**

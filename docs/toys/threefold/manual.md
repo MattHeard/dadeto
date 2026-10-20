@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/) or enter the small-world Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice).
+Explore Harrowfen's Broken Gate in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), then continue to the Silt Margin.
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -76,3 +76,11 @@ The Tidal Archive is a separate route that uses the shared Mosslight 160 × 144 
 The screen shows an upper reservoir and lower basin in metres. Open the valve and wait while water transfers through the port. Its cubic-metre volume is conserved; the lower crossing remains sealed until its water surface reaches 0.3 metres and Mara is at scale −1 or larger. The Broken Gate keeps its separate visual-only flood consequence.
 
 The Tidal Archive save is isolated from the Broken Gate save. Export/import includes the water volumes and explicit elapsed game seconds in schema v4. The earlier schema-v1 through schema-v3 Broken Gate saves still load through their existing migrations.
+
+## Silt Margin
+
+Continue from the Tidal Archive to open [/threefold/?scene=silt-margin](/threefold/?scene=silt-margin). Mara starts at scale −4, 2.26 cm tall. The scene uses the same 160 × 144 Mosslight renderer and eight-pixel screen grid; her movement and the region's physical bounds stay in continuous metres.
+
+The guardian blocks the Choir signal. Reach it and press E to guide it aside, then move to the signal root and press E again to send the signal. A grows through the guardian when Mara is inside its bounds. The frame previews that consequence; committing it records the guardian's growth death and disrupts the signal. Both outcomes persist. Movement, scale changes, and interactions advance 15 game seconds; waits use their explicit duration, and browser time never advances the simulation.
+
+The Silt Margin saves its branch state and elapsed seconds in schema v1 under a key separate from both the Broken Gate and Tidal Archive. Export/import uses the same scene-specific codec.

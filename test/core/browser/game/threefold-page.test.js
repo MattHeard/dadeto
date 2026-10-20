@@ -217,6 +217,54 @@ describe('THREEFOLD page adapter', () => {
     );
   });
 
+  test('routes the Silt Margin through the Mosslight page and configures its crossing copy', () => {
+    const selectors = [
+      '#chapter-subtitle',
+      '#chapter-tag',
+      '#chapter-eyebrow',
+      '#chapter-heading',
+      '#chapter-description',
+      '#interact-label',
+      '#scene-link',
+      '#game-footer',
+      '#interact-control',
+      '#witness-ledger',
+      '#testimony',
+    ];
+    const nodes = new Map(
+      selectors.map(selector => [
+        selector,
+        {
+          textContent: '',
+          hidden: false,
+          href: '',
+          setAttribute: jest.fn(),
+        },
+      ])
+    );
+    const documentObj = { querySelector: selector => nodes.get(selector) };
+    startThreefoldPage({
+      documentObj,
+      windowObj: { location: { search: '?scene=silt-margin' } },
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const runtime = page.createRuntime({});
+
+    expect(runtime.getState().scene.id).toBe('silt-margin');
+    expect(runtime.getState().player.scale).toBe(-4);
+    expect(runtime.getSnapshot().world.map.name).toBe('THE SILT MARGIN');
+    expect(nodes.get('#chapter-heading').textContent).toContain(
+      'Guide the guardian'
+    );
+    expect(nodes.get('#scene-link')).toMatchObject({
+      textContent: 'Return to the Tidal Archive',
+      href: '/threefold/?scene=sluice',
+    });
+    expect(nodes.get('#witness-ledger').hidden).toBe(true);
+    expect(nodes.get('#testimony').hidden).toBe(true);
+  });
+
   test('tolerates a document without the witness ledger list', () => {
     const drawFrame = jest.fn();
     startThreefoldPage({
@@ -318,7 +366,9 @@ describe('THREEFOLD page adapter', () => {
     expect(elements.get('#chapter-subtitle').textContent).toBe(
       'The Tidal Archive'
     );
-    expect(elements.get('#scene-link').href).toBe('/threefold/');
+    expect(elements.get('#scene-link').href).toBe(
+      '/threefold/?scene=silt-margin'
+    );
     expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
       'aria-label',
       'Operate the sluice service valve'
