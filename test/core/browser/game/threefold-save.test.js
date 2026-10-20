@@ -595,6 +595,18 @@ describe('THREEFOLD complete-run save codec', () => {
 });
 
 describe('THREEFOLD save migration', () => {
+  test('defaults a schema-v3 save without growth deaths to no additional deaths', () => {
+    const legacyV3 = JSON.parse(
+      serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))
+    );
+    delete legacyV3.state.encounter.growthDeaths;
+
+    expect(legacyV3.schemaVersion).toBe(3);
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacyV3)).encounter
+    ).toEqual({ ratFate: 'present', ratAction: null });
+  });
+
   test('migrates schema-v1 rat state and rejects malformed schema-v3 state', () => {
     const legacy = JSON.parse(
       serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))

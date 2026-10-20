@@ -14,7 +14,8 @@ import { createBrokenGateScene } from './gatehouse.js';
 import {
   createThreefoldEncounter,
   isGatehouseRatInReach,
-  isInsideGatehouseRat,
+  isPlayerInsideCreature,
+  recordThreefoldGrowthDeaths,
   resolveGatehouseRat,
 } from './encounter.js';
 import {
@@ -58,7 +59,7 @@ export function previewThreefoldGrowthDamageIds(state) {
 }
 
 /**
- * Return the known geometry and living occupant affected by the next growth step.
+ * Return the geometry, living occupant, and inside creatures affected by growth.
  * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
  * @returns {{geometryIds: string[], occupantIds: string[], creatureIds: string[]}} Sorted impacted identifiers.
  */
@@ -84,11 +85,23 @@ export function previewThreefoldGrowthEffects(state) {
           scene.baseBodyWidthMeters
         )
       : [];
-  const rat = scene.creatures.find(creature => creature.id === 'gatehouse-rat');
-  const creatureIds =
-    rat && state.encounter.ratFate === 'present' && isInsideGatehouseRat(state)
-      ? previewGrowthOverlapIds(player, [rat], scene.baseBodyWidthMeters)
-      : [];
+  const growthDeathIds = new Set(
+    (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
+  );
+  const eligibleCreatures = scene.creatures.filter(creature => {
+    if (
+      creature.id === 'gatehouse-rat' &&
+      state.encounter.ratFate !== 'present'
+    )
+      return false;
+    if (growthDeathIds.has(creature.id)) return false;
+    return isPlayerInsideCreature(state, creature);
+  });
+  const creatureIds = previewGrowthOverlapIds(
+    player,
+    eligibleCreatures,
+    scene.baseBodyWidthMeters
+  );
   return { geometryIds, occupantIds, creatureIds };
 }
 
@@ -134,15 +147,19 @@ export function stepThreefoldSimulation(state, action) {
           latchfolk: /** @type {'lost'} */ ('lost'),
         },
       };
-    if (creatureIds.includes('gatehouse-rat'))
+    if (creatureIds.length > 0) {
+      const encounter = creatureIds.includes('gatehouse-rat')
+        ? resolveGatehouseRat(
+            actionState.encounter,
+            'growth',
+            state.player.scale
+          )
+        : actionState.encounter;
       actionState = {
         ...actionState,
-        encounter: resolveGatehouseRat(
-          actionState.encounter,
-          'growth',
-          state.player.scale
-        ),
+        encounter: recordThreefoldGrowthDeaths(encounter, creatureIds),
       };
+    }
     return applyPlayerAction(actionState, player, 'interaction');
   }
 

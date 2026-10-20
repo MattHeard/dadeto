@@ -105,7 +105,7 @@ export function renderThreefoldFrame(state) {
   const growthLabels = [
     geometryIds.length > 0 ? getGrowthPreviewLabel(geometryIds) : null,
     occupantIds.length > 0 ? 'A KILLS LATCHFOLK' : null,
-    creatureIds.includes('gatehouse-rat') ? 'A KILLS RAT' : null,
+    creatureIds.length > 0 ? getCreatureGrowthPreviewLabel(creatureIds) : null,
   ].filter(label => label !== null);
   growthLabels.forEach((text, index) => {
     const y = 17 + index * 12;
@@ -296,15 +296,20 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
   const { drainageState } = getThreefoldGateOutcome(state);
   const { geometry } = projectGeometryForScale(player, scene.geometry);
-  const ratObjects =
-    state.encounter.ratFate === 'present'
-      ? scene.creatures
-          .filter(creature => creature.id === 'gatehouse-rat')
-          .map(creature => ({
-            ...creature,
-            growthPreview: growthPreviewIds.has(creature.id),
-          }))
-      : [];
+  const growthDeathIds = new Set(
+    (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
+  );
+  const creatureObjects = scene.creatures
+    .filter(
+      creature =>
+        !growthDeathIds.has(creature.id) &&
+        (creature.id !== 'gatehouse-rat' ||
+          state.encounter.ratFate === 'present')
+    )
+    .map(creature => ({
+      ...creature,
+      growthPreview: growthPreviewIds.has(creature.id),
+    }));
   const mapWidth = Math.max(
     14,
     Math.ceil((scene.bounds.max.x - scene.bounds.min.x) / heightMeters) +
@@ -350,7 +355,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
               },
             ]
           : []),
-        ...ratObjects,
+        ...creatureObjects,
         ...geometry.map(object => ({
           ...object,
           growthPreview: growthPreviewIds.has(object.id),
@@ -470,6 +475,20 @@ function getGrowthPreviewLabel(geometryIds) {
   const shown =
     labels.length > 1 ? `${labels[0]} +${labels.length - 1}` : labels[0];
   return `A BREAKS ${shown}`;
+}
+
+/**
+ * Describe the creature outcomes while keeping the rat's established label.
+ * @param {string[]} creatureIds Sorted creatures affected by the next growth action.
+ * @returns {string} Compact handheld message.
+ */
+function getCreatureGrowthPreviewLabel(creatureIds) {
+  if (creatureIds.length === 1 && creatureIds[0] === 'gatehouse-rat')
+    return 'A KILLS RAT';
+  const creatureCount = creatureIds.length;
+  const countLabel =
+    creatureCount === 1 ? '1 CREATURE' : `${creatureCount} CREATURES`;
+  return `A KILLS ${countLabel}`;
 }
 
 /**

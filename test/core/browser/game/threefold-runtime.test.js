@@ -70,6 +70,7 @@ describe('THREEFOLD handheld runtime', () => {
     expect(runtime.getState().encounter).toEqual({
       ratFate: 'killed',
       ratAction: 'growth',
+      growthDeaths: [{ creatureId: 'gatehouse-rat', cause: 'growth' }],
     });
     expect(didSave).toBe(true);
   });

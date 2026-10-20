@@ -2,7 +2,8 @@ import { heightAtScale } from './spatial.js';
 
 /** @typedef {'present'|'repelled'|'bypassed'|'killed'} RatFate */
 /** @typedef {null|'fight'|'bypass'|'growth'} RatAction */
-/** @typedef {{ratFate: RatFate, ratAction: RatAction}} ThreefoldEncounter */
+/** @typedef {{creatureId: string, cause: 'growth'}} ThreefoldGrowthDeath */
+/** @typedef {{ratFate: RatFate, ratAction: RatAction, growthDeaths?: ThreefoldGrowthDeath[]}} ThreefoldEncounter */
 
 /** @type {Set<string>} */
 const RAT_FATES = new Set(['present', 'repelled', 'bypassed', 'killed']);
@@ -44,17 +45,27 @@ export function isGatehouseRatInReach(simulation) {
 export function isInsideGatehouseRat(simulation) {
   const context = getPresentGatehouseRatContext(simulation);
   if (!context) return false;
-  const { rat, player } = context;
+  return isPlayerInsideCreature(simulation, context.rat);
+}
+
+/**
+ * Check whether Mara fits wholly inside one authored creature's bounds.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} simulation Current run.
+ * @param {ReturnType<import('./gatehouse.js').createBrokenGateScene>['creatures'][number]} creature Authored creature volume.
+ * @returns {boolean} Whether the current player body fits inside the creature.
+ */
+export function isPlayerInsideCreature(simulation, creature) {
+  const { player } = simulation;
   const halfWidth =
     (simulation.scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
   const tolerance = 1e-9;
   return (
-    player.position.x - halfWidth >= rat.bounds.min.x - tolerance &&
-    player.position.x + halfWidth <= rat.bounds.max.x + tolerance &&
-    player.position.y - halfWidth >= rat.bounds.min.y - tolerance &&
-    player.position.y + halfWidth <= rat.bounds.max.y + tolerance &&
+    player.position.x - halfWidth >= creature.bounds.min.x - tolerance &&
+    player.position.x + halfWidth <= creature.bounds.max.x + tolerance &&
+    player.position.y - halfWidth >= creature.bounds.min.y - tolerance &&
+    player.position.y + halfWidth <= creature.bounds.max.y + tolerance &&
     heightAtScale(player.scale) <=
-      rat.bounds.max.z - rat.bounds.min.z + tolerance
+      creature.bounds.max.z - creature.bounds.min.z + tolerance
   );
 }
 
@@ -67,14 +78,36 @@ export function isInsideGatehouseRat(simulation) {
  */
 export function resolveGatehouseRat(encounter, choice, scale) {
   if (encounter.ratFate !== 'present') return encounter;
-  if (choice === 'bypass') return { ratFate: 'bypassed', ratAction: 'bypass' };
-  if (choice === 'growth') return { ratFate: 'killed', ratAction: 'growth' };
+  if (choice === 'bypass')
+    return { ...encounter, ratFate: 'bypassed', ratAction: 'bypass' };
+  if (choice === 'growth')
+    return { ...encounter, ratFate: 'killed', ratAction: 'growth' };
   if (choice === 'fight')
     return {
+      ...encounter,
       ratFate: scale === -2 ? 'repelled' : 'killed',
       ratAction: 'fight',
     };
   return encounter;
+}
+
+/**
+ * Record stable, cause-tagged growth deaths without duplicating prior outcomes.
+ * @param {ThreefoldEncounter} encounter Current encounter state.
+ * @param {string[]} creatureIds Creatures affected by this growth action.
+ * @returns {ThreefoldEncounter} Canonical encounter with every growth death recorded.
+ */
+export function recordThreefoldGrowthDeaths(encounter, creatureIds) {
+  const deathsById = new Map(
+    (encounter.growthDeaths ?? []).map(death => [death.creatureId, death])
+  );
+  creatureIds.forEach(creatureId =>
+    deathsById.set(creatureId, { creatureId, cause: 'growth' })
+  );
+  return normalizeThreefoldEncounter({
+    ...encounter,
+    growthDeaths: Array.from(deathsById.values()),
+  });
 }
 
 /**
@@ -86,9 +119,10 @@ export function normalizeThreefoldEncounter(candidate) {
   if (candidate === undefined) return createThreefoldEncounter();
   if (!candidate || typeof candidate !== 'object')
     throw new RangeError('THREEFOLD encounter state is inconsistent.');
-  const state = /** @type {{ratFate?: unknown, ratAction?: unknown}} */ (
-    candidate
-  );
+  const state =
+    /** @type {{ratFate?: unknown, ratAction?: unknown, growthDeaths?: unknown}} */ (
+      candidate
+    );
   if (!isRatFate(state.ratFate) || !isRatAction(state.ratAction))
     throw new RangeError('THREEFOLD encounter state is inconsistent.');
   if (state.ratFate === 'killed') {
@@ -103,7 +137,14 @@ export function normalizeThreefoldEncounter(candidate) {
     if (state.ratAction !== expectedAction)
       throw new RangeError('THREEFOLD encounter state is inconsistent.');
   }
-  return { ratFate: state.ratFate, ratAction: state.ratAction };
+  const normalized = {
+    ratFate: state.ratFate,
+    ratAction: state.ratAction,
+  };
+  const growthDeaths = normalizeGrowthDeaths(state.growthDeaths);
+  return growthDeaths.length === 0
+    ? normalized
+    : { ...normalized, growthDeaths };
 }
 
 /**
@@ -146,6 +187,36 @@ function isRatAction(candidate) {
     candidate === null ||
     (typeof candidate === 'string' && RAT_ACTIONS.has(candidate))
   );
+}
+
+/**
+ * Validate and sort persisted growth-caused creature outcomes.
+ * @param {unknown} candidate Candidate saved outcomes.
+ * @returns {ThreefoldGrowthDeath[]} Canonical growth outcomes.
+ */
+function normalizeGrowthDeaths(candidate) {
+  if (candidate === undefined) return [];
+  if (!Array.isArray(candidate))
+    throw new RangeError('THREEFOLD creature outcome state is inconsistent.');
+  const deathsById = new Map();
+  candidate.forEach(item => {
+    if (!item || typeof item !== 'object')
+      throw new RangeError('THREEFOLD creature outcome state is inconsistent.');
+    const death = /** @type {{creatureId?: unknown, cause?: unknown}} */ (item);
+    if (
+      typeof death.creatureId !== 'string' ||
+      death.creatureId.trim().length === 0 ||
+      death.cause !== 'growth'
+    )
+      throw new RangeError('THREEFOLD creature outcome state is inconsistent.');
+    deathsById.set(death.creatureId, {
+      creatureId: death.creatureId,
+      cause: 'growth',
+    });
+  });
+  return Array.from(deathsById.keys())
+    .sort()
+    .map(creatureId => ({ creatureId, cause: 'growth' }));
 }
 
 /**

@@ -104,6 +104,84 @@ function createMixedGrowthState() {
 }
 
 /**
+ * Create a scene with two inside creatures plus intersecting and distant non-interior controls.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
+ */
+function createMultipleCreatureGrowthState() {
+  const state = createWatchkeeperGrowthState(
+    { x: 3.226, y: 4 },
+    'unwarned',
+    -2
+  );
+  state.scene.creatures.push(
+    {
+      id: 'growth-creature-a',
+      position: { x: 3.28, y: 4 },
+      bounds: {
+        min: { x: 3.18, y: 3.9, z: 0 },
+        max: { x: 3.38, y: 4.1, z: 0.21 },
+      },
+      interactionRadiusMeters: 0.1,
+    },
+    {
+      id: 'non-interior-creature',
+      position: { x: 3.3, y: 4 },
+      bounds: {
+        min: { x: 3.28, y: 3.9, z: 0 },
+        max: { x: 3.32, y: 4.1, z: 1 },
+      },
+      interactionRadiusMeters: 0.1,
+    },
+    {
+      id: 'non-interior-x-max-creature',
+      position: { x: 3.2, y: 4 },
+      bounds: {
+        min: { x: 3.18, y: 3.9, z: 0 },
+        max: { x: 3.21, y: 4.1, z: 1 },
+      },
+      interactionRadiusMeters: 0.1,
+    },
+    {
+      id: 'non-interior-y-min-creature',
+      position: { x: 3.28, y: 4.06 },
+      bounds: {
+        min: { x: 3.18, y: 4.03, z: 0 },
+        max: { x: 3.38, y: 4.1, z: 1 },
+      },
+      interactionRadiusMeters: 0.1,
+    },
+    {
+      id: 'non-interior-y-max-creature',
+      position: { x: 3.28, y: 3.95 },
+      bounds: {
+        min: { x: 3.18, y: 3.9, z: 0 },
+        max: { x: 3.38, y: 3.99, z: 1 },
+      },
+      interactionRadiusMeters: 0.1,
+    },
+    {
+      id: 'non-interior-height-creature',
+      position: { x: 3.28, y: 4 },
+      bounds: {
+        min: { x: 3.18, y: 3.9, z: 0 },
+        max: { x: 3.38, y: 4.1, z: 0.15 },
+      },
+      interactionRadiusMeters: 0.1,
+    },
+    {
+      id: 'non-overlap-creature',
+      position: { x: 3.55, y: 4 },
+      bounds: {
+        min: { x: 3.5, y: 3.9, z: 0 },
+        max: { x: 3.6, y: 4.1, z: 1 },
+      },
+      interactionRadiusMeters: 0.1,
+    }
+  );
+  return state;
+}
+
+/**
  * Create a synthetic district scene where +3 to +4 growth reaches two structures and one resident.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
  */
@@ -300,9 +378,76 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     expect(grown.encounter).toEqual({
       ratFate: 'killed',
       ratAction: 'growth',
+      growthDeaths: [{ creatureId: 'gatehouse-rat', cause: 'growth' }],
     });
     expect(restored?.episode.latchfolk).toBe('lost');
     expect(restored?.encounter).toEqual(grown.encounter);
+  });
+
+  test('records every inside creature growth death and restores sorted identity and cause', () => {
+    const state = createMultipleCreatureGrowthState();
+    const before = JSON.parse(JSON.stringify(state));
+    const preview = previewThreefoldGrowthEffects(state);
+
+    expect(preview.creatureIds).toEqual(['gatehouse-rat', 'growth-creature-a']);
+    expect(preview.creatureIds).not.toContain('non-interior-creature');
+    expect(preview.creatureIds).not.toContain('non-interior-x-max-creature');
+    expect(preview.creatureIds).not.toContain('non-interior-y-min-creature');
+    expect(preview.creatureIds).not.toContain('non-interior-y-max-creature');
+    expect(preview.creatureIds).not.toContain('non-interior-height-creature');
+    expect(preview.creatureIds).not.toContain('non-overlap-creature');
+    expect(state).toEqual(before);
+
+    const frame = renderThreefoldFrame(state);
+    expect(frame.threefold.growthPreviewCreatureIds).toEqual(
+      preview.creatureIds
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'growth-creature-a',
+        growthPreview: true,
+        fill: '#e16b5a',
+      })
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A KILLS 2 CREATURES',
+      })
+    );
+
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+    const deaths = [
+      { creatureId: 'gatehouse-rat', cause: 'growth' },
+      { creatureId: 'growth-creature-a', cause: 'growth' },
+    ];
+
+    expect(grown.encounter.growthDeaths).toEqual(deaths);
+    expect(grown.encounter.ratFate).toBe('killed');
+    expect(grown.encounter.ratAction).toBe('growth');
+    expect(previewThreefoldGrowthEffects(grown).creatureIds).toEqual([]);
+    expect(
+      renderThreefoldFrame(grown).world.map.objects.map(({ id }) => id)
+    ).not.toContain('growth-creature-a');
+    expect(restored?.encounter.growthDeaths).toEqual(deaths);
+    expect(previewThreefoldGrowthEffects(restored).creatureIds).toEqual([]);
+  });
+
+  test('labels a single non-rat growth death as a creature', () => {
+    const state = createMultipleCreatureGrowthState();
+    state.scene.creatures = state.scene.creatures.filter(
+      ({ id }) => id === 'growth-creature-a'
+    );
+
+    expect(renderThreefoldFrame(state).shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A KILLS 1 CREATURE',
+      })
+    );
   });
 
   test('previews, commits, and restores two structures and both beings together', () => {
@@ -339,6 +484,7 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     expect(grown.encounter).toEqual({
       ratFate: 'killed',
       ratAction: 'growth',
+      growthDeaths: [{ creatureId: 'gatehouse-rat', cause: 'growth' }],
     });
     expect(restored?.player.destroyedGeometryIds).toEqual(preview.geometryIds);
     expect(restored?.episode.latchfolk).toBe('lost');

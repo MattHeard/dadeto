@@ -5,6 +5,7 @@ import {
   isInsideGatehouseRat,
   migrateLegacyThreefoldEncounter,
   normalizeThreefoldEncounter,
+  recordThreefoldGrowthDeaths,
   resolveGatehouseRat,
 } from '../../../../src/core/browser/game/threefold/encounter.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
@@ -80,6 +81,7 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     expect(grown.encounter).toEqual({
       ratFate: 'killed',
       ratAction: 'growth',
+      growthDeaths: [{ creatureId: 'gatehouse-rat', cause: 'growth' }],
     });
     expect(grown.crisis.elapsedMinutes).toBeCloseTo(0.25);
   });
@@ -192,6 +194,57 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     expect(() => normalizeThreefoldEncounter({ ratFate: 'unknown' })).toThrow(
       'THREEFOLD encounter state is inconsistent.'
     );
+  });
+
+  test('normalizes stable growth-death identities and keeps them through rat actions', () => {
+    const growthDeaths = [
+      { creatureId: 'creature-b', cause: 'growth' },
+      { creatureId: 'creature-a', cause: 'growth' },
+    ];
+    const normalized = normalizeThreefoldEncounter({
+      ratFate: 'present',
+      ratAction: null,
+      growthDeaths,
+    });
+    const expectedDeaths = [
+      { creatureId: 'creature-a', cause: 'growth' },
+      { creatureId: 'creature-b', cause: 'growth' },
+    ];
+
+    expect(normalized.growthDeaths).toEqual(expectedDeaths);
+    expect(
+      recordThreefoldGrowthDeaths(normalized, ['creature-a', 'creature-c'])
+        .growthDeaths
+    ).toEqual([
+      ...expectedDeaths,
+      { creatureId: 'creature-c', cause: 'growth' },
+    ]);
+    expect(resolveGatehouseRat(normalized, 'bypass', -1).growthDeaths).toEqual(
+      expectedDeaths
+    );
+    expect(
+      normalizeThreefoldEncounter({
+        ratFate: 'present',
+        ratAction: null,
+        growthDeaths: [],
+      })
+    ).toEqual({ ratFate: 'present', ratAction: null });
+  });
+
+  test.each([
+    ['a non-array value', 'invalid'],
+    ['a non-object entry', [null]],
+    ['a non-string identity', [{ creatureId: 3, cause: 'growth' }]],
+    ['an empty identity', [{ creatureId: ' ', cause: 'growth' }]],
+    ['an unsupported cause', [{ creatureId: 'rat', cause: 'fight' }]],
+  ])('rejects growth deaths with %s', (_description, growthDeaths) => {
+    expect(() =>
+      normalizeThreefoldEncounter({
+        ratFate: 'present',
+        ratAction: null,
+        growthDeaths,
+      })
+    ).toThrow('THREEFOLD creature outcome state is inconsistent.');
   });
 
   test('rejects a killed rat paired with a nonlethal action', () => {
