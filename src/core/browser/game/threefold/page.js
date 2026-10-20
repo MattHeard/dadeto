@@ -6,6 +6,8 @@ import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
+const renderedTestimonyByList = new WeakMap();
+
 /**
  * Start the standalone THREEFOLD handheld page.
  * @param {Record<string, any>} options Injected browser and animation APIs.
@@ -110,6 +112,9 @@ function configureSluicePage(documentObj) {
 function renderThreefoldTestimony(documentObj, testimony) {
   const list = documentObj?.querySelector?.('#testimony-accounts');
   if (!list) return;
+  const signature = JSON.stringify(testimony);
+  if (renderedTestimonyByList.get(list) === signature) return;
+  renderedTestimonyByList.set(list, signature);
   list.replaceChildren();
   if (!testimony) return;
   testimony.accounts.forEach(account => {

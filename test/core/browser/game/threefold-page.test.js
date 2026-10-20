@@ -76,7 +76,7 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
   });
 
-  test('renders both attributed accounts and keeps the responsibility open', () => {
+  test('renders attributed accounts once and keeps the responsibility open', () => {
     const { documentObj, testimonyList, responsibility } =
       createLedgerDocument();
     startThreefoldPage({
@@ -85,43 +85,37 @@ describe('THREEFOLD page adapter', () => {
       navigatorObj: {},
     });
     const page = mockStartMosslightPage.mock.calls[0][0];
-    page.drawFrame(
-      {},
-      {
-        threefold: {
-          testimony: {
-            accounts: [
-              {
-                speaker: 'Dock worker',
-                statement: 'I shouted toward the lower path.',
-                evidence: [
-                  {
-                    label: 'Opening callout',
-                    text: 'The gate will not hold.',
-                  },
-                ],
-              },
-              {
-                speaker: 'Latchfolk watchkeeper',
-                statement: 'No warning reached my post.',
-                evidence: [
-                  {
-                    label: 'Watchkeeper account',
-                    text: 'No warning reached my post.',
-                  },
-                ],
-              },
-            ],
-            responsibility: {
-              question: 'Who was responsible for relaying the warning?',
-              status: 'unresolved',
-            },
-          },
+    const testimony = {
+      accounts: [
+        {
+          speaker: 'Dock worker',
+          statement: 'I shouted toward the lower path.',
+          evidence: [
+            { label: 'Opening callout', text: 'The gate will not hold.' },
+          ],
         },
-      }
-    );
+        {
+          speaker: 'Latchfolk watchkeeper',
+          statement: 'No warning reached my post.',
+          evidence: [
+            {
+              label: 'Watchkeeper account',
+              text: 'No warning reached my post.',
+            },
+          ],
+        },
+      ],
+      responsibility: {
+        question: 'Who was responsible for relaying the warning?',
+        status: 'unresolved',
+      },
+    };
+    page.drawFrame({}, { threefold: { testimony } });
+    const renderedAccounts = testimonyList.children;
+    page.drawFrame({}, { threefold: { testimony } });
 
     const testimonyText = collectText(testimonyList.children);
+    expect(testimonyList.children).toBe(renderedAccounts);
     expect(testimonyText).toContain('Dock worker');
     expect(testimonyText).toContain('Latchfolk watchkeeper');
     expect(testimonyText).toContain('Opening callout');

@@ -54,9 +54,8 @@ export function renderThreefoldFrame(state) {
         ? {
             actorId: 'dock-worker',
             lines: [
-              { text: 'The tide is climbing. That gate will not hold.' },
               {
-                text: 'I shouted that the gate would fail toward the lower path.',
+                text: 'The tide is climbing. That gate will not hold. I shouted that the gate would fail toward the lower path.',
               },
             ],
             index: 0,
