@@ -7,7 +7,10 @@ import {
   previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/simulation.js';
-import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
+import {
+  createScaleState,
+  projectGeometryForScale,
+} from '../../../../src/core/browser/game/threefold/spatial.js';
 import {
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
@@ -64,6 +67,39 @@ function createAdjacentLivingGrowthState() {
     min: { x: 2.84, y: 3.77, z: 0 },
     max: { x: 3.18, y: 4.23, z: 0.55 },
   };
+  return state;
+}
+
+/**
+ * Add two separate structures to the footprint that already reaches both beings.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Synthetic structures.
+ */
+function createGrowthStructures() {
+  return [
+    {
+      id: 'growth-beam-b',
+      bounds: {
+        min: { x: 3.28, y: 3.95, z: 0 },
+        max: { x: 3.3, y: 4.05, z: 1 },
+      },
+    },
+    {
+      id: 'growth-beam-a',
+      bounds: {
+        min: { x: 3.15, y: 3.95, z: 0 },
+        max: { x: 3.17, y: 4.05, z: 1 },
+      },
+    },
+  ];
+}
+
+/**
+ * Create one growth footprint that reaches two structures and both living beings.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
+ */
+function createMixedGrowthState() {
+  const state = createAdjacentLivingGrowthState();
+  state.scene.geometry.unshift(...createGrowthStructures());
   return state;
 }
 
@@ -220,5 +256,51 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     });
     expect(restored?.episode.latchfolk).toBe('lost');
     expect(restored?.encounter).toEqual(grown.encounter);
+  });
+
+  test('previews, commits, and restores two structures and both beings together', () => {
+    const state = createMixedGrowthState();
+    const before = JSON.parse(JSON.stringify(state));
+    const preview = {
+      geometryIds: ['growth-beam-a', 'growth-beam-b'],
+      occupantIds: [THREEFOLD_LATCHFOLK_INTERACTABLE_ID],
+      creatureIds: ['gatehouse-rat'],
+    };
+
+    expect(previewThreefoldGrowthEffects(state)).toEqual(preview);
+    expect(state).toEqual(before);
+
+    const frame = renderThreefoldFrame(state);
+    expect(frame.threefold).toMatchObject({
+      growthPreviewIds: preview.geometryIds,
+      growthPreviewOccupantIds: preview.occupantIds,
+      growthPreviewCreatureIds: preview.creatureIds,
+    });
+    preview.geometryIds.forEach(geometryId =>
+      expect(frame.shapes).toContainEqual(
+        expect.objectContaining({ geometryId, growthPreview: true })
+      )
+    );
+
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+
+    expect(grown.player.destroyedGeometryIds).toEqual(preview.geometryIds);
+    expect(grown.episode.latchfolk).toBe('lost');
+    expect(grown.encounter).toEqual({
+      ratFate: 'killed',
+      ratAction: 'growth',
+    });
+    expect(restored?.player.destroyedGeometryIds).toEqual(preview.geometryIds);
+    expect(restored?.episode.latchfolk).toBe('lost');
+    expect(restored?.encounter).toEqual(grown.encounter);
+    expect(
+      projectGeometryForScale(restored.player, [
+        ...restored.scene.geometry,
+        ...createGrowthStructures(),
+      ]).geometry.map(({ id }) => id)
+    ).not.toEqual(expect.arrayContaining(preview.geometryIds));
   });
 });

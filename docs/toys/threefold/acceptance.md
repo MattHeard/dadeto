@@ -7,6 +7,7 @@
 - [x] The standalone HTML declares a 160 × 144 canvas and all mapped handheld controls.
 - [x] Before growth, intact geometry intersected by the next rung is highlighted and named; the preview matches committed rubble, does not mutate state, and does not block A.
 - [x] Before growth, the living Latchfolk watchkeeper is highlighted and identified as at risk whenever the next body volume overlaps them, including after Mara enters their bounds at scale −2; A remains available, commits the same unique loss, and save/import preserves it. Safe, already-lost, absent, closed, locked-growth, and non-intersecting cases have no warning.
+- [x] In a synthetic gatehouse scene, one scale −2 growth preview identifies two separate structures, the rat, and the watchkeeper in stable sorted IDs without mutation; growth commits both rubble IDs and both fates, and save/import preserves the outcomes while the reloaded projection omits both structures.
 - [x] The gatehouse authors an independent 20.32 cm rat; at scale −2 a nearby fight repels it, at scale −1 a nearby fight kills it, and bypass preserves it. When Mara fits wholly inside the rat bounds at scale −2, the Mosslight frame previews lethal growth and A grows through it; X remains bypass. Each result advances game time and persists through export/import with its action cause.
 - [x] Complete-run schema v3 validates the rat fate/action pair, migrates v1 saves with the rat present and v2 saves from their prior fight/bypass causes, and rejects missing or inconsistent v3 encounter state.
 - [x] At the untouched start, the Mosslight frame shows the dock worker's warning and the open-ended goal to investigate the gate; the warning clears after the first timed action.
@@ -38,6 +39,7 @@ Pass only when every machine-checkable criterion is verified, the user can reach
 
 ## Current evidence
 
+- 2026-10-20: A synthetic mixed-impact regression proves one -2 to -1 growth step previews two non-overlapping structures plus the rat and watchkeeper in sorted IDs without mutation, then persists both rubble IDs and both fates through save/import. The focused suite passed (1 suite / 13 tests); final-diff `npm run check` passed all 10 gates across five all-unit fallback shards (959 suites / 6,622 tests), with zero clones and zero audit vulnerabilities. Exact-head Full Check for this slice is pending.
 - `npm run build` passed and produced the standalone artifacts listed above.
 - Matching GitHub [Full Check run 39183216540](https://github.com/MattHeard/dadeto/actions/runs/39183216540) succeeded for PR head `143bf317d751a2061a43a6b8e542471cd0744576` (the report records merge commit `53817c719f29d4b9eb115fb5a3ef54d041f38e46`). All 10 gates passed; the full suite passed 6,533 tests across 956 suites and all 48 coverage shards. Statements, branches, functions, and lines each measured 100%; all changed THREEFOLD files measured 100%, and the clone scanner detected zero clones.
 - Full-check artifact `full-check-39183216540` (artifact ID `12157655476`) contains `coverage/check-full-report.md`, `coverage/check-full-report.json`, and aggregate coverage reports.
