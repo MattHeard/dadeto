@@ -121,8 +121,7 @@ export function createCloudFunctionPackageVerifier(
     let importCount = 0;
 
     while (pending.length > 0) {
-      const filePath = pending.pop();
-      if (filePath === undefined) continue;
+      const filePath = /** @type {string} */ (pending.pop());
       if (visited.has(filePath)) continue;
       visited.add(filePath);
       const specifiers = readModuleSpecifiers(
@@ -325,9 +324,7 @@ function collectModuleSpecifiers(rootNode) {
  */
 function getPackageName(specifier) {
   const parts = specifier.split('/');
-  return specifier.startsWith('@')
-    ? parts.slice(0, 2).join('/')
-    : (parts[0] ?? specifier);
+  return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
 }
 
 /**

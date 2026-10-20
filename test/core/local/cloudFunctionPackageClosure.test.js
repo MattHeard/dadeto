@@ -30,6 +30,34 @@ describe('Cloud Function package closure', () => {
     expect(getCloudFunctionArchiveDirectories([])).toEqual([]);
   });
 
+  test('handles manifests without dependency sections', () => {
+    const packageRoot = createPackage({
+      'package.json': '{}',
+      'index.js': "import 'undeclared-helper';",
+    });
+
+    expect(inspectCloudFunctionPackage(packageRoot).issues).toContainEqual({
+      file: 'index.js',
+      specifier: 'undeclared-helper',
+      reason: 'external package undeclared-helper is not declared',
+    });
+  });
+
+  test('ignores null and non-object parser nodes and missing node types', () => {
+    const packageRoot = createPackage({ 'index.js': 'export {};' });
+    const verifier = createCloudFunctionPackageVerifier(() => ({
+      type: 'Program',
+      body: [null, 'unexpected-node', { type: null }],
+    }));
+
+    expect(verifier.inspectCloudFunctionPackage(packageRoot)).toEqual({
+      packageName: path.basename(packageRoot),
+      moduleCount: 1,
+      importCount: 0,
+      issues: [],
+    });
+  });
+
   test('resolves runtime imports, Node builtins, and declared scoped packages', () => {
     const packageRoot = createPackage({
       'package.json': JSON.stringify({

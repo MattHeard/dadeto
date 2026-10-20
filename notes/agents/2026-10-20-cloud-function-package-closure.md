@@ -26,7 +26,13 @@ The combined build and scan cost is about eight seconds when run locally. The ch
 - `npm run non-core-thin`, `npm run depcruise`, `npm run duplication`, and `npm run tsdoc:check`: passed; dependency cruiser found no boundary violations and jscpd found zero clones.
 - Final fast `npm run check`: all 10 gates passed; five serial impact shards passed 970 suites / 6,774 tests. This is local fast-check evidence, not full coverage evidence.
 
-The local Terraform wrapper permits formatting only and blocks `terraform init`, so Terraform's own archive provider could not be initialized in this environment. The workflow regression confirms the package checker runs after the build and before Terraform validation; the remote Terraform validation result remains required before closing the Bead.
+The local Terraform wrapper permits formatting only and blocks `terraform init`. The matching remote Terraform Validate run 39404553560 succeeded, including package build, generated dependency-closure verification, init, format, and validate. The matching Full Check run 39404553544 initially failed at 99.942% branch coverage with nine uncovered arms in the new verifier; the other gates passed.
+
+## Coverage follow-up
+
+The Full Check report exposed uncovered verifier edge cases that the fast check does not measure. Added tests for missing runtime dependency sections, default command options, null diagnostic specifiers, and invalid parser nodes; removed two defensive branches that cannot occur (`Array.pop()` while the queue is nonempty, and a fallback after splitting any string). The pop result is annotated with the queue invariant for the JSDoc type checker.
+
+Focused tests pass (2 suites / 15 tests), and the final local `npm run check` passes all 10 gates. A fresh matching remote Full Check run is required to confirm 100% branch coverage before closing `dadeto-0tvi`; record that terminal result in the Bead and Rank 2 spec.
 
 ## Hurdle and next-time guidance
 

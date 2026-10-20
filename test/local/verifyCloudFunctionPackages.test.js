@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { jest } from '@jest/globals';
 import { main } from '../../src/local/verify-cloud-function-packages.js';
 
 const temporaryRoots = [];
@@ -12,6 +13,28 @@ afterEach(() => {
 });
 
 describe('verify Cloud Function packages command', () => {
+  test('uses command defaults when called without options', async () => {
+    const root = createWorkspace({
+      'infra/function.tf':
+        'source_dir = "${path.module}/cloud-functions/probe"',
+      'infra/cloud-functions/probe/package.json': '{"dependencies":{}}',
+      'infra/cloud-functions/probe/index.js': 'export const ready = true;',
+    });
+    const originalDirectory = process.cwd();
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      process.chdir(root);
+      await expect(main()).resolves.toBe(0);
+      expect(log).toHaveBeenCalledWith(
+        expect.stringMatching(/Verified 1 Terraform Cloud Function packages/)
+      );
+    } finally {
+      process.chdir(originalDirectory);
+      log.mockRestore();
+    }
+  });
+
   test('checks each Terraform archive package and reports a summary', async () => {
     const root = createWorkspace({
       'infra/function.tf':
@@ -41,6 +64,20 @@ describe('verify Cloud Function packages command', () => {
     expect(lines).toEqual([
       'No Terraform Cloud Function archive directories were found.',
     ]);
+  });
+
+  test('prints package issues without a module specifier', async () => {
+    const root = createWorkspace({
+      'infra/function.tf':
+        'source_dir = "${path.module}/cloud-functions/probe"',
+      'infra/cloud-functions/probe/index.js': 'export const ready = true;',
+    });
+    const lines = [];
+
+    await expect(
+      main({ rootDirectory: root, writeLine: line => lines.push(line) })
+    ).resolves.toBe(1);
+    expect(lines).toContain('probe/package.json : missing package manifest');
   });
 
   test('prints package issues and fails for a missing generated module', async () => {
