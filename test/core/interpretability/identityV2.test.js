@@ -4,9 +4,11 @@ import {
   createCircuitStructuralSnapshotV2,
   createInterpretabilitySchemasV1,
   createInterpretabilitySchemasV2,
+  createNativeNeuronComponentV2,
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
   createStructuralConnectionV2,
+  createTokenActivationPositionV2,
   migrateRecurrentStateMechanismV1ToV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
@@ -407,6 +409,88 @@ describe('version 2 recurrent identities', () => {
       valid: false,
       errors: [{ code: 'invalid-v2-migration' }],
     });
+  });
+});
+
+describe('version 2 native-neuron and token identities', () => {
+  const nativeModel = {
+    modelId: 'EleutherAI/pythia-14m',
+    repository: 'https://huggingface.co/EleutherAI/pythia-14m',
+    revision: '94f7c35d5e9f2e9bac8ca839329f505b4d007d5d',
+    architecture: 'GPTNeoXForCausalLM',
+  };
+
+  it('derives checkpoint-specific native components and token positions', () => {
+    const coordinates = {
+      layerIndex: 0,
+      activationHook:
+        'gpt_neox.layers.0.mlp.dense_h_to_4h.output+configured-gelu',
+      neuronIndex: 3,
+    };
+    const neuron = createNativeNeuronComponentV2(
+      nativeModel,
+      'EleutherAI/pythia-14m',
+      coordinates
+    );
+    const sameNeuron = createNativeNeuronComponentV2(
+      nativeModel,
+      'EleutherAI/pythia-14m',
+      coordinates
+    );
+    const otherCheckpoint = createNativeNeuronComponentV2(
+      { ...nativeModel, revision: 'b'.repeat(40) },
+      'EleutherAI/pythia-14m',
+      coordinates
+    );
+    const tokenSix = createTokenActivationPositionV2({
+      componentId: neuron.id,
+      tokenPositionIndex: 6,
+    });
+    const tokenFive = createTokenActivationPositionV2({
+      componentId: neuron.id,
+      tokenPositionIndex: 5,
+    });
+    const tokenObservation = createActivationObservationV2(
+      tokenSix.id,
+      'experiment-pythia',
+      {
+        inputSequenceId: 'sequence-pythia',
+        runId: 'repeat-1',
+        value: -0.25,
+        numericPrecision: 'float32',
+        tokenId: 15,
+      }
+    );
+
+    expect(schemasV2.nativeNeuronComponentSchemaV2.parse(neuron)).toEqual(
+      neuron
+    );
+    expect(sameNeuron.id).toBe(neuron.id);
+    expect(otherCheckpoint.id).not.toBe(neuron.id);
+    expect(otherCheckpoint.coordinateId).toBe(neuron.coordinateId);
+    expect(schemasV2.tokenActivationPositionSchemaV2.parse(tokenSix)).toEqual(
+      tokenSix
+    );
+    expect(tokenSix.id).not.toBe(tokenFive.id);
+    expect(
+      schemasV2.activationObservationSchemaV2.parse(tokenObservation)
+    ).toEqual(tokenObservation);
+    expect(
+      schemasV2.activationObservationSchemaV2.safeParse({
+        ...tokenObservation,
+        tokenId: -1,
+      }).success
+    ).toBe(false);
+    expect(
+      schemasV2.identityGraphSchemaV2.safeParse({
+        schemaVersion: 2,
+        components: [neuron],
+        activationPositions: [tokenSix],
+        observations: [],
+        structuralConnections: [],
+        circuitSnapshots: [],
+      }).success
+    ).toBe(true);
   });
 });
 

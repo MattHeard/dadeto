@@ -263,6 +263,32 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
         );
       }
     );
+  const nativeNeuronComponentSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:component:/),
+      coordinateId: z.string().regex(/^atlas:v2:component-coordinate:/),
+      kind: z.literal('native-neuron'),
+      model: pinnedModel,
+      sourceId: z.string().min(1),
+      layerIndex: z.number().int().nonnegative(),
+      activationHook: z.string().min(1),
+      neuronIndex: z.number().int().nonnegative(),
+    })
+    .strict()
+    .refine(
+      /**
+       * @param {Record<string, any>} component Component to validate.
+       * @returns {boolean} Whether both IDs match their structured identity.
+       */
+      component => {
+        const expected = nativeNeuronComponentIdentities(component);
+        return (
+          component.id === expected.id &&
+          component.coordinateId === expected.coordinateId
+        );
+      }
+    );
   const recurrentActivationPositionSchemaV2 = z
     .object({
       schemaVersion,
@@ -278,6 +304,22 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
        */
       position => position.id === recurrentActivationPositionId(position)
     );
+  const tokenActivationPositionSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:position:/),
+      componentId: z.string().regex(/^atlas:v2:component:/),
+      kind: z.literal('token'),
+      tokenPositionIndex: z.number().int().nonnegative(),
+    })
+    .strict()
+    .refine(
+      /**
+       * @param {{id: string, componentId: string, tokenPositionIndex: number}} position Position to validate.
+       * @returns {boolean} Whether the position ID matches its identity.
+       */
+      position => position.id === tokenActivationPositionId(position)
+    );
   const activationObservationSchemaV2 = z
     .object({
       schemaVersion,
@@ -288,6 +330,7 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
       runId: z.string().min(1),
       value: z.number(),
       numericPrecision: z.enum(['float16', 'bfloat16', 'float32', 'float64']),
+      tokenId: z.number().int().nonnegative().optional(),
     })
     .strict()
     .refine(
@@ -352,7 +395,9 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
     z,
     {
       recurrentNeuronComponentSchemaV2,
+      nativeNeuronComponentSchemaV2,
       recurrentActivationPositionSchemaV2,
+      tokenActivationPositionSchemaV2,
       activationObservationSchemaV2,
       structuralConnectionSchemaV2,
       circuitStructuralSnapshotSchemaV2,
@@ -362,7 +407,9 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
 
   return Object.freeze({
     recurrentNeuronComponentSchemaV2,
+    nativeNeuronComponentSchemaV2,
     recurrentActivationPositionSchemaV2,
+    tokenActivationPositionSchemaV2,
     activationObservationSchemaV2,
     structuralConnectionSchemaV2,
     circuitStructuralSnapshotSchemaV2,
@@ -371,9 +418,11 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
       recurrentNeuronComponent: z.toJSONSchema(
         recurrentNeuronComponentSchemaV2
       ),
+      nativeNeuronComponent: z.toJSONSchema(nativeNeuronComponentSchemaV2),
       recurrentActivationPosition: z.toJSONSchema(
         recurrentActivationPositionSchemaV2
       ),
+      tokenActivationPosition: z.toJSONSchema(tokenActivationPositionSchemaV2),
       activationObservation: z.toJSONSchema(activationObservationSchemaV2),
       structuralConnection: z.toJSONSchema(structuralConnectionSchemaV2),
       circuitStructuralSnapshot: z.toJSONSchema(
@@ -395,8 +444,18 @@ function createIdentityGraphSchemaV2(z, schemas, hashCanonicalIdentity) {
   return z
     .object({
       schemaVersion: z.literal(2),
-      components: z.array(schemas.recurrentNeuronComponentSchemaV2),
-      activationPositions: z.array(schemas.recurrentActivationPositionSchemaV2),
+      components: z.array(
+        z.union([
+          schemas.recurrentNeuronComponentSchemaV2,
+          schemas.nativeNeuronComponentSchemaV2,
+        ])
+      ),
+      activationPositions: z.array(
+        z.union([
+          schemas.recurrentActivationPositionSchemaV2,
+          schemas.tokenActivationPositionSchemaV2,
+        ])
+      ),
       observations: z.array(schemas.activationObservationSchemaV2),
       structuralConnections: z.array(schemas.structuralConnectionSchemaV2),
       circuitSnapshots: z.array(schemas.circuitStructuralSnapshotSchemaV2),
@@ -730,6 +789,41 @@ function recurrentNeuronComponentIdentities(component) {
 }
 
 /**
+ * Derive checkpoint-specific and longitudinal native-neuron component IDs.
+ * @param {Record<string, any>} component Native component fields.
+ * @returns {{id: string, coordinateId: string}} Canonical component identities.
+ */
+function nativeNeuronComponentIdentities(component) {
+  const coordinateIdentity = [
+    'native-neuron',
+    component.model.modelId,
+    component.model.repository,
+    component.model.architecture,
+    component.sourceId,
+    component.layerIndex,
+    component.activationHook,
+    component.neuronIndex,
+  ];
+  return {
+    id: canonicalIdentityId('component', [
+      'native-neuron',
+      component.model.modelId,
+      component.model.repository,
+      component.model.revision,
+      component.model.architecture,
+      component.sourceId,
+      component.layerIndex,
+      component.activationHook,
+      component.neuronIndex,
+    ]),
+    coordinateId: canonicalIdentityId(
+      'component-coordinate',
+      coordinateIdentity
+    ),
+  };
+}
+
+/**
  * Derive one recurrent activation position ID.
  * @param {{componentId: string, timeStepIndex: number}} position Position fields.
  * @returns {string} Canonical position ID.
@@ -738,6 +832,19 @@ function recurrentActivationPositionId(position) {
   return canonicalIdentityId('position', [
     position.componentId,
     position.timeStepIndex,
+  ]);
+}
+
+/**
+ * Derive one token activation position ID.
+ * @param {{componentId: string, tokenPositionIndex: number}} position Position fields.
+ * @returns {string} Canonical token position ID.
+ */
+function tokenActivationPositionId(position) {
+  return canonicalIdentityId('position', [
+    position.componentId,
+    'token',
+    position.tokenPositionIndex,
   ]);
 }
 
@@ -825,6 +932,31 @@ export function createRecurrentNeuronComponentV2(model, sourceId, coordinates) {
 }
 
 /**
+ * Derive the stable ID for a native hidden-neuron component.
+ * @param {Record<string, any>} model Pinned model and checkpoint identity.
+ * @param {string} sourceId Source-local neuron namespace.
+ * @param {{layerIndex: number, activationHook: string, neuronIndex: number}} coordinates Neuron coordinates.
+ * @returns {Record<string, any>} Versioned native-neuron component record.
+ */
+export function createNativeNeuronComponentV2(model, sourceId, coordinates) {
+  const identities = nativeNeuronComponentIdentities({
+    model,
+    sourceId,
+    ...coordinates,
+  });
+  return {
+    schemaVersion: 2,
+    ...identities,
+    kind: 'native-neuron',
+    model,
+    sourceId,
+    layerIndex: coordinates.layerIndex,
+    activationHook: coordinates.activationHook,
+    neuronIndex: coordinates.neuronIndex,
+  };
+}
+
+/**
  * Derive a stable ID for a component's zero-based recurrent activation position.
  * @param {{componentId: string, timeStepIndex: number}} identity Position coordinates.
  * @returns {Record<string, any>} Versioned recurrent position record.
@@ -842,10 +974,28 @@ export function createRecurrentActivationPositionV2({
 }
 
 /**
+ * Derive a stable ID for a component's zero-based token activation position.
+ * @param {{componentId: string, tokenPositionIndex: number}} identity Position coordinates.
+ * @returns {Record<string, any>} Versioned token position record.
+ */
+export function createTokenActivationPositionV2({
+  componentId,
+  tokenPositionIndex,
+}) {
+  return {
+    schemaVersion: 2,
+    id: tokenActivationPositionId({ componentId, tokenPositionIndex }),
+    componentId,
+    kind: 'token',
+    tokenPositionIndex,
+  };
+}
+
+/**
  * Derive a stable ID for one input- and run-specific activation measurement.
  * @param {string} activationPositionId Recurrent position identity.
  * @param {string} experimentId Experiment identity.
- * @param {{inputSequenceId: string, runId: string, value: number, numericPrecision: string}} measurement Input-specific measured value and run identity.
+ * @param {{inputSequenceId: string, runId: string, value: number, numericPrecision: string, tokenId?: number}} measurement Input-specific measured value and run identity.
  * @returns {Record<string, any>} Versioned activation observation.
  */
 export function createActivationObservationV2(
@@ -867,6 +1017,9 @@ export function createActivationObservationV2(
     runId: measurement.runId,
     value: measurement.value,
     numericPrecision: measurement.numericPrecision,
+    ...(measurement.tokenId === undefined
+      ? {}
+      : { tokenId: measurement.tokenId }),
   };
 }
 

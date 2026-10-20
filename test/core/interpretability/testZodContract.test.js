@@ -71,12 +71,29 @@ describe('optional Zod test double contract', () => {
       },
       additionalProperties: false,
     });
+    expect(fallbackSchemasV2.nativeNeuronComponent).toMatchObject({
+      type: 'object',
+      properties: {
+        schemaVersion: { const: 2, type: 'number' },
+        kind: { const: 'native-neuron', type: 'string' },
+      },
+      additionalProperties: false,
+    });
     expect(fallbackSchemasV2.recurrentActivationPosition.required).toEqual(
       expect.arrayContaining([
         'schemaVersion',
         'id',
         'componentId',
         'timeStepIndex',
+      ])
+    );
+    expect(fallbackSchemasV2.tokenActivationPosition.required).toEqual(
+      expect.arrayContaining([
+        'schemaVersion',
+        'id',
+        'componentId',
+        'kind',
+        'tokenPositionIndex',
       ])
     );
     expect(fallbackSchemasV2.activationObservation.required).toEqual(
@@ -90,6 +107,9 @@ describe('optional Zod test double contract', () => {
         'value',
         'numericPrecision',
       ])
+    );
+    expect(fallbackSchemasV2.activationObservation.required).not.toContain(
+      'tokenId'
     );
   });
 

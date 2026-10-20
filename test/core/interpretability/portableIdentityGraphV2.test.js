@@ -4,9 +4,11 @@ import {
   createActivationObservationV2,
   createCircuitStructuralSnapshotV2,
   createInterpretabilitySchemasV2,
+  createNativeNeuronComponentV2,
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
   createStructuralConnectionV2,
+  createTokenActivationPositionV2,
   exportInterpretabilityIdentityGraphV2,
   importInterpretabilityIdentityGraphV2,
   validateInterpretabilityIdentityGraphV2,
@@ -18,6 +20,15 @@ const fixture = JSON.parse(
   readFileSync(
     new URL(
       '../../fixtures/interpretability/alg-zoo-m16-10.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+);
+const pythiaActivationArtifact = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../../notes/agents/pythia-14m-native-activation.json',
       import.meta.url
     ),
     'utf8'
@@ -105,6 +116,104 @@ async function completeGraph() {
 }
 
 describe('portable V2 interpretability identity graph', () => {
+  it('round-trips the Pythia native-neuron token activation artifact', () => {
+    const sourceComponents = pythiaActivationArtifact.activation.components;
+    const componentsBySourceId = new Map(
+      sourceComponents.map(sourceComponent => [
+        sourceComponent.id,
+        createNativeNeuronComponentV2(
+          sourceComponent.model,
+          sourceComponent.sourceId,
+          {
+            layerIndex: sourceComponent.layerIndex,
+            activationHook: sourceComponent.activationHook,
+            neuronIndex: sourceComponent.neuronIndex,
+          }
+        ),
+      ])
+    );
+    const sourcePositions = pythiaActivationArtifact.activation.positions;
+    const positionsBySourceId = new Map(
+      sourcePositions.map(sourcePosition => {
+        const componentRecord = componentsBySourceId.get(
+          sourcePosition.componentId
+        );
+        return [
+          sourcePosition.id,
+          createTokenActivationPositionV2({
+            componentId: componentRecord.id,
+            tokenPositionIndex: sourcePosition.tokenPositionIndex,
+          }),
+        ];
+      })
+    );
+    const observations = pythiaActivationArtifact.activation.observations.map(
+      sourceObservation => {
+        const position = positionsBySourceId.get(
+          sourceObservation.activationPositionId
+        );
+        return createActivationObservationV2(
+          position.id,
+          sourceObservation.experimentId,
+          {
+            inputSequenceId: sourceObservation.inputSequenceId,
+            runId: sourceObservation.runId,
+            value: sourceObservation.value,
+            numericPrecision: sourceObservation.numericPrecision,
+            tokenId: sourceObservation.tokenId,
+          }
+        );
+      }
+    );
+    const graph = {
+      components: [...componentsBySourceId.values()],
+      activationPositions: [...positionsBySourceId.values()],
+      observations,
+      structuralConnections: [],
+      circuitSnapshots: [],
+    };
+    const validated = validateInterpretabilityIdentityGraphV2(
+      graph,
+      identityGraphSchemaV2
+    );
+    const exported = exportInterpretabilityIdentityGraphV2(
+      graph,
+      identityGraphSchemaV2
+    );
+    const imported = importInterpretabilityIdentityGraphV2(
+      exported.json,
+      identityGraphSchemaV2
+    );
+
+    expect(pythiaActivationArtifact.model.revision).toBe(
+      '94f7c35d5e9f2e9bac8ca839329f505b4d007d5d'
+    );
+    expect(validated.valid).toBe(true);
+    expect(exported.valid).toBe(true);
+    expect(imported.valid).toBe(true);
+    expect(imported.graph.components).toHaveLength(512);
+    expect(imported.graph.activationPositions).toHaveLength(512);
+    expect(imported.graph.observations).toHaveLength(1024);
+    expect(new Set(imported.graph.components.map(entry => entry.id)).size).toBe(
+      512
+    );
+    expect(
+      new Set(imported.graph.activationPositions.map(entry => entry.id)).size
+    ).toBe(512);
+    expect(
+      new Set(imported.graph.observations.map(entry => entry.id)).size
+    ).toBe(1024);
+    expect(
+      imported.graph.observations.every(observation =>
+        imported.graph.activationPositions.some(
+          position => position.id === observation.activationPositionId
+        )
+      )
+    ).toBe(true);
+    expect(imported.graph.observations[0]).toHaveProperty('tokenId');
+    expect(imported.graph).toEqual(validated.graph);
+  });
+
   it('round-trips all 16 AlgZoo components and 160 activation positions and observations', async () => {
     const components = Array.from({ length: 16 }, (_, neuronIndex) =>
       component(neuronIndex)
