@@ -184,7 +184,11 @@ function createActivationPositions(components) {
  * @param {Array<ActivationPosition>} activationPositions Recurrent observation positions.
  * @returns {Array<Record<string, any>>} Input- and run-specific activations.
  */
-function createReplayObservations(replay, components, activationPositions) {
+export function createReplayObservations(
+  replay,
+  components,
+  activationPositions
+) {
   const componentsById = new Map(
     components.map(component => [component.id, component])
   );

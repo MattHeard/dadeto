@@ -14,12 +14,27 @@ function createPinnedModelSchema(z) {
     })
     .strict()
     .optional();
+  const trainingProgress = z
+    .object({
+      metric: z.string().min(1),
+      value: z.number().nonnegative(),
+    })
+    .strict();
+  const checkpoint = z
+    .object({
+      sha256: z.string().regex(SHA256_PATTERN),
+      trainingRunId: z.string().min(1),
+      trainingProgress: trainingProgress.optional(),
+    })
+    .strict()
+    .optional();
   const pinnedModel = z
     .object({
       modelId: z.string().min(1),
       repository: z.string().url(),
       revision: commitRevision,
       architecture: z.string().min(1),
+      checkpoint,
       tokenizer,
     })
     .strict();
@@ -813,11 +828,19 @@ function membersMatchSnapshotModel(components, connections, snapshot) {
  * @returns {string} Canonical model identity.
  */
 function pinnedModelIdentity(model) {
+  const trainingRunIdentity = model.checkpoint?.trainingRunId
+    ? ['training-run', model.checkpoint.trainingRunId]
+    : [];
+  const checkpointIdentity = model.checkpoint?.sha256
+    ? ['checkpoint-sha256', model.checkpoint.sha256]
+    : [];
   return JSON.stringify([
     model.modelId,
     model.repository,
     model.revision,
     model.architecture,
+    ...trainingRunIdentity,
+    ...checkpointIdentity,
     model.tokenizer?.repository,
     model.tokenizer?.revision,
   ]);
@@ -839,10 +862,17 @@ function canonicalIdentityId(category, identity) {
  * @returns {{id: string, coordinateId: string}} Canonical component identities.
  */
 function recurrentNeuronComponentIdentities(component) {
+  const trainingRunIdentity = component.model.checkpoint?.trainingRunId
+    ? ['training-run', component.model.checkpoint.trainingRunId]
+    : [];
+  const checkpointIdentity = component.model.checkpoint?.sha256
+    ? ['checkpoint-sha256', component.model.checkpoint.sha256]
+    : [];
   const coordinateIdentity = [
     component.model.modelId,
     component.model.repository,
     component.model.architecture,
+    ...trainingRunIdentity,
     component.sourceId,
     component.layerIndex,
     component.activationHook,
@@ -853,6 +883,8 @@ function recurrentNeuronComponentIdentities(component) {
       component.model.modelId,
       component.model.repository,
       component.model.revision,
+      ...trainingRunIdentity,
+      ...checkpointIdentity,
       component.model.architecture,
       component.sourceId,
       component.layerIndex,
@@ -872,11 +904,18 @@ function recurrentNeuronComponentIdentities(component) {
  * @returns {{id: string, coordinateId: string}} Canonical component identities.
  */
 function nativeNeuronComponentIdentities(component) {
+  const trainingRunIdentity = component.model.checkpoint?.trainingRunId
+    ? ['training-run', component.model.checkpoint.trainingRunId]
+    : [];
+  const checkpointIdentity = component.model.checkpoint?.sha256
+    ? ['checkpoint-sha256', component.model.checkpoint.sha256]
+    : [];
   const coordinateIdentity = [
     'native-neuron',
     component.model.modelId,
     component.model.repository,
     component.model.architecture,
+    ...trainingRunIdentity,
     component.sourceId,
     component.layerIndex,
     component.activationHook,
@@ -888,6 +927,8 @@ function nativeNeuronComponentIdentities(component) {
       component.model.modelId,
       component.model.repository,
       component.model.revision,
+      ...trainingRunIdentity,
+      ...checkpointIdentity,
       component.model.architecture,
       component.sourceId,
       component.layerIndex,

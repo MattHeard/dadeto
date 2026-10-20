@@ -592,6 +592,98 @@ describe('portable research bundle V3 lineage', () => {
     ).toBe(true);
   });
 
+  it('round-trips checkpoint hashes and training progress across twelve snapshots', () => {
+    const trainingSequences = [
+      0,
+      ...Array.from({ length: 11 }, (_, index) => 2 ** (index + 20)),
+    ];
+    const checkpointModels = trainingSequences.map((value, index) => ({
+      ...model,
+      checkpoint: {
+        sha256: (index + 1).toString(16).padStart(64, '0'),
+        trainingRunId: 'm16-10-training-run-a',
+        trainingProgress: { metric: 'training-sequences', value },
+      },
+    }));
+    const independentModel = {
+      ...model,
+      checkpoint: {
+        sha256: 'f'.repeat(64),
+        trainingRunId: 'm16-10-training-run-b',
+        trainingProgress: {
+          metric: 'training-sequences',
+          value: trainingSequences.at(-1),
+        },
+      },
+    };
+    const components = [...checkpointModels, independentModel].map(
+      checkpointModel =>
+        createRecurrentNeuronComponentV2(
+          checkpointModel,
+          'm16-10-second-argmax',
+          {
+            layerIndex: 0,
+            activationHook: 'rnn.hidden_state',
+            neuronIndex: 2,
+          }
+        )
+    );
+    const exported = exportInterpretabilityResearchBundleV3(
+      {
+        evidenceGraph: {
+          mechanisms: [],
+          hypotheses: [],
+          experiments: [],
+          estimates: [],
+          evidence: [],
+          edges: [],
+        },
+        identityGraph: {
+          components,
+          activationPositions: [],
+          observations: [],
+          structuralConnections: [],
+          circuitSnapshots: [],
+        },
+      },
+      schemas
+    );
+
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const imported = importInterpretabilityResearchBundleV2(
+      exported.json,
+      schemas
+    );
+    expect(imported.valid).toBe(true);
+    if (!imported.valid) return;
+
+    const roundTripped = imported.bundle.identityGraph.components;
+    const sameTrainingRun = roundTripped.slice(0, trainingSequences.length);
+    const independent = roundTripped.at(-1);
+    expect(sameTrainingRun).toHaveLength(12);
+    expect(new Set(sameTrainingRun.map(component => component.id)).size).toBe(
+      12
+    );
+    expect(
+      new Set(sameTrainingRun.map(component => component.coordinateId)).size
+    ).toBe(1);
+    expect(
+      sameTrainingRun.map(component => component.model.checkpoint)
+    ).toEqual(
+      trainingSequences.map((value, index) => ({
+        sha256: (index + 1).toString(16).padStart(64, '0'),
+        trainingRunId: 'm16-10-training-run-a',
+        trainingProgress: { metric: 'training-sequences', value },
+      }))
+    );
+    expect(independent.model.checkpoint.trainingRunId).toBe(
+      'm16-10-training-run-b'
+    );
+    expect(independent.coordinateId).not.toBe(sameTrainingRun[0].coordinateId);
+    expect(independent.id).not.toBe(sameTrainingRun.at(-1).id);
+  });
+
   it('rejects native lineage links whose canonical component is missing or altered', () => {
     const { bundle, mechanism, component } =
       createPythiaNativeMechanismBundle();

@@ -207,10 +207,18 @@ describe('version 2 recurrent identities', () => {
   });
 
   it('canonicalizes circuit snapshots and hashes their checkpoint-scoped topology', async () => {
-    const firstComponent = component(2);
-    const secondComponent = component(3);
+    const snapshotModel = {
+      ...model,
+      checkpoint: {
+        sha256: 'c'.repeat(64),
+        trainingRunId: 'm16-10-training-run-a',
+        trainingProgress: { metric: 'training-sequences', value: 0 },
+      },
+    };
+    const firstComponent = componentAtCheckpoint(snapshotModel, 2);
+    const secondComponent = componentAtCheckpoint(snapshotModel, 3);
     const connection = createStructuralConnectionV2(
-      model,
+      snapshotModel,
       firstComponent,
       secondComponent,
       {
@@ -220,7 +228,17 @@ describe('version 2 recurrent identities', () => {
         recurrentLag: 1,
       }
     );
-    const nextCheckpoint = { ...model, revision: 'b'.repeat(40) };
+    const nextCheckpoint = {
+      ...snapshotModel,
+      checkpoint: {
+        sha256: 'd'.repeat(64),
+        trainingRunId: 'm16-10-training-run-a',
+        trainingProgress: {
+          metric: 'training-sequences',
+          value: 2 ** 20,
+        },
+      },
+    };
     const nextCheckpointSource = componentAtCheckpoint(nextCheckpoint, 2);
     const nextCheckpointTarget = componentAtCheckpoint(nextCheckpoint, 3);
     const nextCheckpointConnection = createStructuralConnectionV2(
@@ -244,13 +262,13 @@ describe('version 2 recurrent identities', () => {
       createHash('sha256').update(identity, 'utf8').digest('hex');
     const snapshot = await createCircuitStructuralSnapshotV2(
       'atlas:circuit:alg-zoo-example',
-      model,
+      snapshotModel,
       structure,
       digest
     );
     const reorderedSnapshot = await createCircuitStructuralSnapshotV2(
       'atlas:circuit:alg-zoo-example',
-      model,
+      snapshotModel,
       {
         ...structure,
         componentIds: [...structure.componentIds].reverse(),
@@ -261,7 +279,7 @@ describe('version 2 recurrent identities', () => {
     );
     const changedTopology = await createCircuitStructuralSnapshotV2(
       'atlas:circuit:alg-zoo-example',
-      model,
+      snapshotModel,
       { ...structure, connectionIds: [] },
       digest
     );
@@ -278,7 +296,7 @@ describe('version 2 recurrent identities', () => {
     );
     const completeSnapshot = await createCircuitStructuralSnapshotV2(
       'atlas:circuit:alg-zoo-example',
-      model,
+      snapshotModel,
       { ...structure, completeness: 'complete' },
       digest
     );
@@ -413,6 +431,83 @@ describe('version 2 recurrent identities', () => {
   });
 });
 
+describe('version 2 checkpoint lineage', () => {
+  it('binds checkpoint hashes and training runs to recurrent lineage', () => {
+    const firstCheckpoint = componentAtCheckpoint(
+      {
+        ...model,
+        checkpoint: {
+          sha256: 'c'.repeat(64),
+          trainingRunId: 'm16-10-training-run-a',
+          trainingProgress: { metric: 'training-sequences', value: 0 },
+        },
+      },
+      2
+    );
+    const nextCheckpoint = componentAtCheckpoint(
+      {
+        ...model,
+        checkpoint: {
+          sha256: 'd'.repeat(64),
+          trainingRunId: 'm16-10-training-run-a',
+          trainingProgress: {
+            metric: 'training-sequences',
+            value: 2 ** 20,
+          },
+        },
+      },
+      2
+    );
+    const independentTrainingRun = componentAtCheckpoint(
+      {
+        ...model,
+        checkpoint: {
+          sha256: 'e'.repeat(64),
+          trainingRunId: 'm16-10-training-run-b',
+          trainingProgress: {
+            metric: 'training-sequences',
+            value: 2 ** 20,
+          },
+        },
+      },
+      2
+    );
+
+    expect(
+      schemasV2.recurrentNeuronComponentSchemaV2.parse(firstCheckpoint)
+    ).toEqual(firstCheckpoint);
+    expect(firstCheckpoint.model.revision).toBe(model.revision);
+    expect(nextCheckpoint.model.revision).toBe(model.revision);
+    expect(firstCheckpoint.id).not.toBe(nextCheckpoint.id);
+    expect(firstCheckpoint.coordinateId).toBe(nextCheckpoint.coordinateId);
+    expect(independentTrainingRun.id).not.toBe(firstCheckpoint.id);
+    expect(independentTrainingRun.coordinateId).not.toBe(
+      firstCheckpoint.coordinateId
+    );
+    expect(
+      schemasV2.recurrentNeuronComponentSchemaV2.safeParse({
+        ...firstCheckpoint,
+        model: {
+          ...firstCheckpoint.model,
+          checkpoint: { ...firstCheckpoint.model.checkpoint, sha256: 'bad' },
+        },
+      }).success
+    ).toBe(false);
+    expect(
+      schemasV2.recurrentNeuronComponentSchemaV2.safeParse({
+        ...firstCheckpoint,
+        model: {
+          ...firstCheckpoint.model,
+          checkpoint: {
+            sha256: firstCheckpoint.model.checkpoint.sha256,
+            trainingProgress: firstCheckpoint.model.checkpoint.trainingProgress,
+          },
+        },
+      }).success
+    ).toBe(false);
+  });
+});
+
 describe('version 2 native-neuron and token identities', () => {
   const nativeModel = {
     modelId: 'EleutherAI/pythia-14m',
@@ -443,6 +538,39 @@ describe('version 2 native-neuron and token identities', () => {
       'EleutherAI/pythia-14m',
       coordinates
     );
+    const nativeCheckpointA = createNativeNeuronComponentV2(
+      {
+        ...nativeModel,
+        checkpoint: {
+          sha256: 'a'.repeat(64),
+          trainingRunId: 'pythia-training-run-a',
+        },
+      },
+      'EleutherAI/pythia-14m',
+      coordinates
+    );
+    const nativeCheckpointB = createNativeNeuronComponentV2(
+      {
+        ...nativeModel,
+        checkpoint: {
+          sha256: 'b'.repeat(64),
+          trainingRunId: 'pythia-training-run-a',
+        },
+      },
+      'EleutherAI/pythia-14m',
+      coordinates
+    );
+    const independentlyTrainedNeuron = createNativeNeuronComponentV2(
+      {
+        ...nativeModel,
+        checkpoint: {
+          sha256: 'a'.repeat(64),
+          trainingRunId: 'pythia-training-run-b',
+        },
+      },
+      'EleutherAI/pythia-14m',
+      coordinates
+    );
     const tokenSix = createTokenActivationPositionV2({
       componentId: neuron.id,
       tokenPositionIndex: 6,
@@ -469,6 +597,11 @@ describe('version 2 native-neuron and token identities', () => {
     expect(sameNeuron.id).toBe(neuron.id);
     expect(otherCheckpoint.id).not.toBe(neuron.id);
     expect(otherCheckpoint.coordinateId).toBe(neuron.coordinateId);
+    expect(nativeCheckpointA.id).not.toBe(nativeCheckpointB.id);
+    expect(nativeCheckpointA.coordinateId).toBe(nativeCheckpointB.coordinateId);
+    expect(independentlyTrainedNeuron.coordinateId).not.toBe(
+      nativeCheckpointA.coordinateId
+    );
     expect(schemasV2.tokenActivationPositionSchemaV2.parse(tokenSix)).toEqual(
       tokenSix
     );

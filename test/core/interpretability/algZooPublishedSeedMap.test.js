@@ -4,6 +4,10 @@ import {
   createInterpretabilitySchemasV2,
   importInterpretabilityResearchBundleV2,
 } from '../../../src/core/interpretability/interpretability.js';
+import {
+  createAlgZooPublishedSeedMapCore,
+  createReplayObservations,
+} from '../../../src/core/local/algZooPublishedSeedMapCore.js';
 import { createAlgZooPublishedSeedMapV3 } from '../../../src/local/algZooPublishedSeedMap.js';
 import { createTestZod } from './testZod.js';
 
@@ -16,6 +20,15 @@ const fixtureJson = readFileSync(
     import.meta.url
   ),
   'utf8'
+);
+const sourceFixture = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../fixtures/interpretability/alg-zoo-m16-10.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
 );
 const z = createTestZod();
 const schemas = {
@@ -99,5 +112,35 @@ describe('portable ARC-published AlgZoo seed map', () => {
         10
       );
     }
+  });
+
+  it('rejects a replay position whose component is absent', () => {
+    expect(() =>
+      createReplayObservations(
+        { fixture: {}, input: [], inputSequenceId: 'sha256:test' },
+        [],
+        [
+          {
+            id: 'position-1',
+            componentId: 'missing-component',
+            timeStepIndex: 0,
+          },
+        ]
+      )
+    ).toThrow('Unknown AlgZoo component: missing-component');
+  });
+
+  it('throws when a generated seed map fails its portable schemas', () => {
+    const createInvalidSeedMap = createAlgZooPublishedSeedMapCore({
+      readFixture: () => ({
+        ...sourceFixture,
+        source: { ...sourceFixture.source, repository: 'invalid-repository' },
+      }),
+      hashSha256: () => 'a'.repeat(64),
+    });
+
+    expect(() => createInvalidSeedMap({ z })).toThrow(
+      'Could not export AlgZoo seed map:'
+    );
   });
 });
