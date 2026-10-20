@@ -103,6 +103,53 @@ function createMixedGrowthState() {
   return state;
 }
 
+/**
+ * Create a synthetic district scene where +3 to +4 growth reaches two structures and one resident.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
+ */
+function createLargeScaleDistrictGrowthState() {
+  const scene = createBrokenGateScene();
+  const currentHalfWidth = (scene.baseBodyWidthMeters * 3 ** 3) / 2;
+  const districtStructures = [
+    {
+      id: 'outer-housing-district',
+      bounds: {
+        min: { x: currentHalfWidth + 4, y: -1, z: 0 },
+        max: { x: currentHalfWidth + 5, y: 1, z: 30 },
+      },
+    },
+    {
+      id: 'harbor-warehouse-district',
+      bounds: {
+        min: { x: currentHalfWidth + 1, y: -1, z: 0 },
+        max: { x: currentHalfWidth + 2, y: 1, z: 30 },
+      },
+    },
+  ];
+  const watchkeeper = scene.interactables.find(
+    ({ id }) => id === THREEFOLD_LATCHFOLK_INTERACTABLE_ID
+  );
+  if (!watchkeeper) throw new Error('The authored watchkeeper is missing.');
+  watchkeeper.position = { x: currentHalfWidth + 7, y: 0 };
+  watchkeeper.bounds = {
+    min: { x: currentHalfWidth + 6.8, y: -0.2, z: 0 },
+    max: { x: currentHalfWidth + 7.2, y: 0.2, z: 1.7 },
+  };
+  scene.interactables = [watchkeeper];
+  scene.geometry = districtStructures;
+  scene.creatures = [];
+  scene.spawn = createScaleState(
+    { x: 0, y: 0 },
+    {
+      scale: 3,
+      anchor: 1,
+      minimumUnlockedScale: -4,
+      maximumUnlockedScale: 4,
+    }
+  );
+  return createThreefoldSimulation(THRESHOLDS, scene);
+}
+
 describe('THREEFOLD growth impact on the known watchkeeper', () => {
   test('keeps the geometry-only preview aligned with the combined growth effects', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
@@ -302,5 +349,33 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
         ...createGrowthStructures(),
       ]).geometry.map(({ id }) => id)
     ).not.toEqual(expect.arrayContaining(preview.geometryIds));
+  });
+
+  test('previews and persists +3 to +4 growth across two districts and one resident', () => {
+    const state = createLargeScaleDistrictGrowthState();
+    const districtIds = ['harbor-warehouse-district', 'outer-housing-district'];
+    const before = JSON.parse(JSON.stringify(state));
+
+    expect(previewThreefoldGrowthEffects(state)).toEqual({
+      geometryIds: districtIds,
+      occupantIds: [THREEFOLD_LATCHFOLK_INTERACTABLE_ID],
+      creatureIds: [],
+    });
+    expect(state).toEqual(before);
+
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+
+    expect(grown.player.scale).toBe(4);
+    expect(grown.player.destroyedGeometryIds).toEqual(districtIds);
+    expect(grown.episode.latchfolk).toBe('lost');
+    expect(restored?.player.scale).toBe(4);
+    expect(restored?.player.destroyedGeometryIds).toEqual(districtIds);
+    expect(restored?.episode.latchfolk).toBe('lost');
+    expect(
+      projectGeometryForScale(restored.player, state.scene.geometry).geometry
+    ).toEqual([]);
   });
 });
