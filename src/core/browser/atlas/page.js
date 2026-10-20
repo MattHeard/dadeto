@@ -12,15 +12,16 @@ const COLLECTIONS = ['hypotheses', 'evidence', 'experiments', 'relationships'];
 
 /**
  * Bind the read-only Atlas viewer to a page using injected DOM and schemas.
- * @param {{documentObj: Document, resolveSchemas: (json: string) => Promise<AtlasResearchSchemas>, pageSize?: number, maxDepth?: number}} options Browser dependencies and context bounds.
+ * @param {{documentObj: Document, resolveSchemas: (json: string) => Promise<AtlasResearchSchemas>, pagination?: {pageSize?: number, maxDepth?: number}, createViewer?: typeof createAtlasBundleViewer}} options Browser dependencies and context bounds.
  * @returns {{start: () => void, loadJson: (json: string) => Promise<AtlasImportResult|null>}} Page controller.
  */
 export function createAtlasPageController({
   documentObj,
   resolveSchemas,
-  pageSize = 20,
-  maxDepth = 3,
+  pagination = {},
+  createViewer = createAtlasBundleViewer,
 }) {
+  const { pageSize = 20, maxDepth = 3 } = pagination;
   /** @type {AtlasPageElements} */
   const elements = {
     file: /** @type {HTMLInputElement} */ (
@@ -180,7 +181,7 @@ export function createAtlasPageController({
     try {
       const schemas = await resolveSchemas(json);
       if (requestId !== requestSequence) return null;
-      viewer = createAtlasBundleViewer({ schemas, pageSize, maxDepth });
+      viewer = createViewer({ schemas, pageSize, maxDepth });
       const imported = viewer.importBundle(json);
       if (!imported.valid) {
         resetView();
