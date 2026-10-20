@@ -140,6 +140,16 @@ function waterSurfaceElevation(chamber) {
 }
 
 /**
+ * Return a chamber's physical water-surface elevation.
+ * @param {{id: string, floorElevationMeters: number, areaSquareMeters: number, volumeCubicMeters: number}} chamber Chamber with physical dimensions and water volume.
+ * @returns {number} Surface elevation in metres.
+ */
+export function getWaterSurfaceElevationMeters(chamber) {
+  assertChamber(chamber);
+  return waterSurfaceElevation(chamber);
+}
+
+/**
  * Return an unchanged, explicit no-flow result.
  * @param {{id: string, floorElevationMeters: number, areaSquareMeters: number, volumeCubicMeters: number}} chamberA First unchanged chamber.
  * @param {{id: string, floorElevationMeters: number, areaSquareMeters: number, volumeCubicMeters: number}} chamberB Second unchanged chamber.

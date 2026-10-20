@@ -11,6 +11,10 @@
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-water.test.js` to exercise the current pure water-transfer primitive. An open port moves water down the physical surface-height gradient, conserves cubic-metre volume, and stops at the port sill or hydrostatic equalization. Closed ports, equal surfaces, zero-duration steps, and dry sources leave both chambers unchanged. This solver is not wired into a playable region yet.
 
+## Small-World Sluice Puzzle Model
+
+Run `npm run test:impact -- --files test/core/browser/game/threefold-water-puzzle.test.js test/core/browser/game/threefold-water.test.js` to exercise the pure sluice state model and shared hydraulic solver. The valve toggles only at scale −2; explicit time steps move conserved water into the lower basin, and a crossing at scale −1 or larger requires the physical surface to reach 0.3 metres. This model is not yet wired into browser input, rendering, or save persistence. Do not change the Broken Gate's visual-only flood behavior while integrating the separate small-world puzzle.
+
 ## Expected Observable Outputs
 
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.

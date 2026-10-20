@@ -1,4 +1,7 @@
-import { flowWaterThroughPort } from '../../../../src/core/browser/game/threefold/water.js';
+import {
+  flowWaterThroughPort,
+  getWaterSurfaceElevationMeters,
+} from '../../../../src/core/browser/game/threefold/water.js';
 import { heightAtScale } from '../../../../src/core/browser/game/threefold/spatial.js';
 
 const OPEN_PORT = {
@@ -8,6 +11,13 @@ const OPEN_PORT = {
 };
 
 describe('THREEFOLD physical water transfer', () => {
+  test('reports a validated chamber water-surface elevation', () => {
+    const chamber = createChamber('basin', 1, 2, 1);
+
+    expect(getWaterSurfaceElevationMeters(chamber)).toBe(1.5);
+    expect(() => getWaterSurfaceElevationMeters(null)).toThrow(TypeError);
+  });
+
   test('moves water down a head gradient and conserves volume', () => {
     const chamberA = createChamber('upper', 1, 1, 1);
     const chamberB = createChamber('lower', 0, 2, 0.1);

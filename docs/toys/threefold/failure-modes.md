@@ -14,6 +14,7 @@
 - Late-repair regression: the locking pawl repairs an intact gate, accepts a pre-surge/out-of-range/wrong-scale action, leaves repaired gate geometry as rubble, restores ferry or resident losses, or fails to drain lower water by aftermath.
 - Closure regression: the destroyed signal station still files a report, the intact station cannot close by report after aftermath, or destroying the station also blocks departure through the upland road; closure method or station rubble is lost after save/import.
 - Hydraulic conservation regression: an open port transfers water uphill, creates or loses volume, drains below its sill, or produces different physical flow because only the rendered scale changed.
+- Sluice-puzzle regression: the valve toggles away from scale −2, water changes without explicit elapsed game time, the lower crossing opens below its physical surface threshold, water levels vary with rendered scale, or the first puzzle changes the Broken Gate's visual-only flood behavior.
 
 ## Detection Signals
 
@@ -27,6 +28,7 @@
 - Gate repair is recorded without a lost ferry and forced-open gate, or any ferry/passenger/Latchfolk loss changes after repair.
 - Signal-station rubble, report availability, or the post-storm closure route disagrees with the saved geometry and episode closure branch.
 - Water transfer does not conserve the total chamber volume, or the same SI-unit state yields a different result across rendered scales.
+- The sluice puzzle cannot be operated at scale −2, advances while closed, opens its crossing before the lower basin reaches 0.3 metres, or changes the Broken Gate flood outcome.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook
