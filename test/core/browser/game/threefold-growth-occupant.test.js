@@ -378,4 +378,41 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
       projectGeometryForScale(restored.player, state.scene.geometry).geometry
     ).toEqual([]);
   });
+
+  test('shows the high-scale district and resident risk while keeping growth available', () => {
+    const state = createLargeScaleDistrictGrowthState();
+    const before = JSON.parse(JSON.stringify(state));
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.quickAction).toBe('grow');
+    expect(frame.threefold).toMatchObject({
+      scale: 3,
+      growthPreviewIds: ['harbor-warehouse-district', 'outer-housing-district'],
+      growthPreviewOccupantIds: [THREEFOLD_LATCHFOLK_INTERACTABLE_ID],
+    });
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A BREAKS HARBOR WAREHOUSE DISTRICT +1',
+        fill: '#e16b5a',
+      })
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A KILLS LATCHFOLK',
+        fill: '#e16b5a',
+      })
+    );
+    [
+      'harbor-warehouse-district',
+      'outer-housing-district',
+      THREEFOLD_LATCHFOLK_INTERACTABLE_ID,
+    ].forEach(geometryId =>
+      expect(frame.shapes).toContainEqual(
+        expect.objectContaining({ geometryId, growthPreview: true })
+      )
+    );
+    expect(state).toEqual(before);
+  });
 });
