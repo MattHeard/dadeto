@@ -7,11 +7,34 @@
 - Dependency/service unavailable: localStorage is denied or quota-limited.
 - Non-deterministic timing or ordering: wall-clock callbacks accidentally advance crisis time, or simultaneous controls apply in different orders.
 - Environment-specific behavior: pointer capture, gamepad polling, canvas support, or browser storage differs on mobile.
+- Growth-preview drift: the highlighted geometry, living occupants, or creature differs from committed outcomes, previewing mutates simulation state, or the warning prevents a deliberate growth action.
+- Occupant-preview drift: the Latchfolk is highlighted without a matching saved loss, growth from inside their bounds at scale −2 kills them without a preview, or safe/lost/closed/locked-growth states keep showing a lethal warning. Do not apply geometry's newly-intersected rule to living occupants: the proposed grown body can overlap an occupant already entered at a smaller scale.
+- Interaction regression: a ferry rescue or Latchfolk warning is accepted out of range, after surge, or is lost after save/import; one ferry interaction rescues both passenger groups, partial rescue is misreported at surge, or withdrawal succeeds from outside the road's interaction range.
+- Withdrawal regression: the storm clock does not settle to aftermath, prior rescues/warnings are erased, or new world actions remain available after departure.
+- Late-repair regression: the locking pawl repairs an intact gate, accepts a pre-surge/out-of-range/wrong-scale action, leaves repaired gate geometry as rubble, restores ferry or resident losses, or fails to drain lower water by aftermath.
+- Closure regression: the destroyed signal station still files a report, the intact station cannot close by report after aftermath, or destroying the station also blocks departure through the upland road; closure method or station rubble is lost after save/import.
+- Hydraulic conservation regression: an open port transfers water uphill, creates or loses volume, drains below its sill, or produces different physical flow because only the rendered scale changed.
+- Sluice-puzzle regression: the valve toggles away from scale −2, water changes without explicit elapsed game time, the lower crossing opens below its physical surface threshold, water levels vary with rendered scale, or the first puzzle changes the Broken Gate's visual-only flood behavior.
+- Sluice integration regression: `/threefold/?scene=sluice` opens the Broken Gate or shares its save key; an out-of-range valve interaction opens the port; pause or browser wall time advances the chambers; the barrier can be crossed below 0.3 metres or while Mara is smaller than scale −1; save migration loses water or accepts non-conserved/invalid chamber data.
+- Grid presentation regression: any rendered THREEFOLD canvas shape has a non-eight-pixel origin or size, CSS control placement drifts from the eight-pixel page grid, scale changes disappear after display quantization, or rendering changes physical simulation state.
+- Witness-ledger regression: the recorded pre-action preview differs from the visible frame, an event claims an unselected operation or unsupported motive, observation or repair loses its breach link, legacy saves fail to default to an empty ledger, or accessible output scores a choice.
+- Testimony-model limitation: conflicting accounts or unresolved responsibilities must not be flattened into one observation or adjudicated by the renderer. Keep those requirements open until authored evidence supports each speaker and relationship.
 
 ## Detection Signals
 
 - Error signatures/log lines: browser module import errors, an invalid-save message, or a failed storage operation.
-- Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; rat prompt appearing outside reach or failing to appear at scale −2/−1; rat fate returning to present after reload; run returning to the opening state after reload.
+- Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; run returning to the opening state after reload.
+- Observable symptoms: fight/bypass prompt appears outside the rat's range or at an unsupported scale; A grows instead of fighting or X waits instead of bypassing while the rat is in reach; growth inside the rat fails to highlight it or persists the wrong cause; a resolved rat reappears after reload.
+- Passenger/ferry state disagrees with the in-range rescue action or deterministic surge transition.
+- Partial passenger state is rejected by save import, overwritten at surge, or rendered without distinguishing the rescued group from the group still aboard or lost.
+- Latchfolk are safe without a pre-surge warning, or a warning changes ferry/passenger outcomes.
+- Mara is marked withdrawn before reaching the upland road, or can still change the world after withdrawal.
+- Gate repair is recorded without a lost ferry and forced-open gate, or any ferry/passenger/Latchfolk loss changes after repair.
+- Signal-station rubble, report availability, or the post-storm closure route disagrees with the saved geometry and episode closure branch.
+- Water transfer does not conserve the total chamber volume, or the same SI-unit state yields a different result across rendered scales.
+- The sluice puzzle cannot be operated at scale −2, advances while closed, opens its crossing before the lower basin reaches 0.3 metres, or changes the Broken Gate flood outcome.
+- The small-world route shows the Broken Gate copy, water changes without explicit game actions, the crossing barrier remains after both height and scale requirements are met, or its save overwrites the Broken Gate record.
+- The canvas has fractional/off-grid shape coordinates, the touch buttons are tilted, or resizing changes stored positions or hydraulic values.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook
@@ -20,13 +43,15 @@
 2. Check generated route files before investigating the renderer.
 3. Verify simulation reducers without the page, then check input adaptation and storage injection separately.
 4. Keep crisis progression on explicit game commands; pause, menu, and accessibility operations must remain inert.
-5. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
+5. For sluice issues, check route selection and its save namespace, then test valve reach, explicit elapsed seconds, conserved SI-unit volumes, and the crossing's water/scale conditions independently.
+6. Add a regression test and update this playbook after a failure recurs or reveals a new boundary.
+7. For interaction failures, verify target identity, range and eligibility independently from input mapping and save normalization; then check that episode outcomes resolve independently at surge, late repair, withdrawal, or post-storm closure.
 
 ## Rat encounter checks
 
-- Confirm Mara is at scale −2 or −1 and physically within reach of the authored rat before expecting A/Fight or X/Bypass prompts.
-- If A grows while the player expects a fight, or X waits while the player expects to pass the rat, check the canonical position, scale, and encounter fate supplied to the frame.
-- If a rat fate changes after reload, test both schema-v1 migration and schema-v2 roundtrip in `threefold-save.test.js` before investigating the browser storage adapter.
+- Confirm the rat fate is `present`, Mara is at scale −2 or −1, and her canonical position is inside the authored interaction radius before expecting fight/bypass controls. When her full body fits inside the rat bounds at −2, expect the growth preview and `A GROW · X BYPASS` instead.
+- A should grow through and kill the rat when Mara fits inside it; otherwise A should repel the rat at −2 and kill it at −1. X should bypass it in all in-reach cases. Each outcome advances the game clock; fighting suppresses Anchor recovery for that action.
+- Verify complete-run schema-v1 migration defaults the rat to `present` with no action cause, schema-v2 migration infers the old fight/bypass cause, and schema-v3 rejects missing or inconsistent fate/action pairs.
 
 ## Promoted from Real Failures
 

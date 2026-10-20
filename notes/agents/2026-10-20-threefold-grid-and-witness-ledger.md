@@ -1,0 +1,7 @@
+# THREEFOLD grid and witness-ledger loop
+
+- Unexpected hurdle: changing the canvas lattice from four to eight logical pixels made one narrow gate footprint round to the same width at adjacent scales. The first exact-head Full Check then reported ten uncovered branch arms despite all 49 test shards passing.
+- Diagnosis: inspect the actual rendered wall bounds at each scale and compare total footprint area. For coverage, follow the exact branches from the uploaded full-check report; the issue was missing empty/default page cases and ledger presentations, plus a wait fallback unreachable after action validation.
+- Fix: use one eight-pixel display lattice with upward size quantization while retaining continuous simulation and water values. Add tests for page renderer fallback, empty/missing ledger DOM, observation and repair labels, legacy unlinked repair, and directionless moves; remove the unreachable wait-duration fallback. An instrumented run across all 18 THREEFOLD suites verifies 100% coverage for the changed page, simulation, and witness-ledger modules.
+- Next time: inspect representative rendered shapes at the coarsest grid; after full coverage reports exact uncovered arms, reproduce them with focused instrumented Jest before rerunning the global gate. Documentation changes currently trigger the all-unit fallback; GitHub Full Check remains the full coverage authority.
+- Remaining question: the broader THREEFOLD spec still needs authored contested testimony and unresolved-responsibility handling without inferred motives or moral scoring.

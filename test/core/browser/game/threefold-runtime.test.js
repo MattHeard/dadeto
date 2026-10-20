@@ -1,13 +1,22 @@
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
+import {
+  createThreefoldSimulation,
+  stepThreefoldSimulation,
+} from '../../../../src/core/browser/game/threefold/simulation.js';
+import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
+import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 
 describe('THREEFOLD handheld runtime', () => {
-  test('maps A to fight and X to bypass when the small rat is in reach', () => {
+  test('maps A to fight and X to bypass when the rat is in reach', () => {
     const runtime = createThreefoldRuntime(new Map());
     runtime.start();
     runtime.dispatch('shrink');
     runtime.dispatch('shrink');
     for (let step = 0; step < 7; step += 1) runtime.dispatch('right');
-    expect(runtime.frame().toast).toBe('RAT IN REACH · A FIGHT · X BYPASS');
+    expect(runtime.frame().toast).toContain(
+      'RAT IN REACH · A FIGHT · X BYPASS'
+    );
+    expect(runtime.frame().quickAction).toBe('fight');
 
     runtime.step(125, ['a']);
     expect(runtime.getState().encounter.ratFate).toBe('repelled');
@@ -20,7 +29,53 @@ describe('THREEFOLD handheld runtime', () => {
     expect(runtime.getState().encounter.ratFate).toBe('bypassed');
   });
 
-  test('accepts fight and bypass as bounded named commands', () => {
+  test('maps A to lethal growth when Mara fits inside the rat', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 3.28, y: 4 },
+      {
+        scale: -2,
+        anchor: 8,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const initial = createThreefoldSimulation(
+      {
+        urgentAtMinutes: 4,
+        surgeAtMinutes: 9,
+        aftermathAtMinutes: 15,
+      },
+      scene
+    );
+    const state = stepThreefoldSimulation(initial, {
+      type: 'wait',
+      elapsedGameMinutes: 0.25,
+    });
+    let didSave = false;
+    const save = {
+      load: () => state,
+      save: () => {
+        didSave = true;
+      },
+    };
+    const runtime = createThreefoldRuntime({ save });
+    runtime.start();
+
+    expect(runtime.frame().toast).toContain('RAT INSIDE · A GROW · X BYPASS');
+    expect(runtime.frame().quickAction).toBe('grow');
+    runtime.step(125, ['a']);
+
+    expect(runtime.getState().player.scale).toBe(-1);
+    expect(runtime.getState().encounter).toEqual({
+      ratFate: 'killed',
+      ratAction: 'growth',
+      growthDeaths: [{ creatureId: 'gatehouse-rat', cause: 'growth' }],
+    });
+    expect(didSave).toBe(true);
+  });
+
+  test('accepts fight and bypass as named simulation commands', () => {
     const fought = createThreefoldRuntime(new Map());
     fought.dispatch('shrink');
     fought.dispatch('shrink');
@@ -85,11 +140,44 @@ describe('THREEFOLD handheld runtime', () => {
     runtime.dispatch({ type: 'wait', elapsedGameMinutes: 2 });
     expect(runtime.getState().crisis.elapsedMinutes).toBe(2.25);
     runtime.dispatch('grow');
+    runtime.dispatch('interact');
     runtime.dispatch('unsupported');
     expect(runtime.getState().player.scale).toBe(1);
+    expect(runtime.getState().episode.passengers).toBe('aboard');
     runtime.resume();
     runtime.step(-50, ['left']);
-    expect(runtime.getState().crisis.elapsedMinutes).toBe(2.5);
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(2.75);
+  });
+
+  test('applies handheld interaction once per press instead of repeating while held', () => {
+    const opening = createThreefoldSimulation({
+      urgentAtMinutes: 4,
+      surgeAtMinutes: 9,
+      aftermathAtMinutes: 15,
+    });
+    const atMooring = {
+      ...opening,
+      player: createScaleState(opening.scene.interactables[0].position),
+    };
+    const runtime = createThreefoldRuntime({ save: { load: () => atMooring } });
+    runtime.start();
+
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('partial');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
+
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('partial');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
+
+    runtime.step(125, []);
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.5);
+
+    runtime.step(125, ['interact']);
+    expect(runtime.getState().episode.passengers).toBe('evacuated');
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0.5);
   });
 
   test('supports default lifecycle arguments and normalizes named tool commands', () => {

@@ -21,9 +21,9 @@
         <div class="title-lockup">
           <p>A SCALE-SHIFTING HANDHELD RPG</p>
           <h1>THREEFOLD</h1>
-          <span>The Weight of Water</span>
+          <span id="chapter-subtitle">The Weight of Water</span>
         </div>
-        <p class="chapter-tag">HARROWFEN <i>✦</i> THE BROKEN GATE</p>
+        <p class="chapter-tag" id="chapter-tag">HARROWFEN <i>✦</i> THE BROKEN GATE</p>
       </header>
       <section class="play-layout" aria-label="THREEFOLD game">
         <div class="screen-frame">
@@ -42,19 +42,22 @@
         </div>
         <aside class="side-panel">
           <div class="chapter-copy">
-            <p class="eyebrow">THE GATE IS FAILING</p>
-            <h2>One place. Four scales. Every action leaves a trace.</h2>
-            <p>
+            <p class="eyebrow" id="chapter-eyebrow">THE GATE IS FAILING</p>
+            <h2 id="chapter-heading">One place. Four scales. Every action leaves a trace.</h2>
+            <p id="chapter-description">
               Walk the gatehouse, change size, and study the tide. Grow through
-              the west wall to leave a lasting breach. This first playable
-              slice focuses on movement, scale, and deterministic time.
+              the west wall to leave a lasting breach, warn the Latchfolk in the
+              lower settlement, reach the ferry mooring, or withdraw up the
+              road before the surge.
             </p>
             <p><a href="/manuals/threefold.md">Field guide</a></p>
+            <p><a id="scene-link" href="/threefold/?scene=sluice">Explore the small-world sluice</a></p>
           </div>
           <div class="control-card">
             <div><span class="keycap">↑ ↓ ← →</span><b>MOVE</b></div>
             <div><span class="keycap">A</span><b>GROW · BREAK THROUGH</b></div>
             <div><span class="keycap">B</span><b>SHRINK</b></div>
+            <div><span class="keycap">E</span><b>INTERACT</b></div>
             <div><span class="keycap">X</span><b>WAIT 15 GAME MINUTES</b></div>
             <div><span class="keycap">Y</span><b>SAVE</b></div>
           </div>
@@ -74,8 +77,17 @@
                 <button data-action="x" aria-label="X button: wait 15 game minutes">X</button>
                 <button data-action="y" aria-label="Y button: save">Y</button>
               </div>
+              <div class="extra-buttons">
+              <button id="interact-control" data-action="interact" aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"><span id="interact-label">E · INTERACT</span></button>
+              </div>
             </div>
           </div>
+          <details id="witness-ledger" class="witness-ledger">
+            <summary>Witness ledger</summary>
+            <ol id="witness-ledger-entries" aria-live="polite">
+              <li>No gate events recorded yet.</li>
+            </ol>
+          </details>
           <nav class="utility-actions" aria-label="Save controls">
             <label class="slot-picker" hidden
               >SAVE SLOT
@@ -97,7 +109,7 @@
         </aside>
       </section>
       <footer>
-        <span>In-game time advances from deliberate actions, never the browser clock.</span>
+        <span id="game-footer">Rescue passengers at the mooring before surge. In-game time advances from deliberate actions, never the browser clock.</span>
         <span>DETERMINISTIC CONSEQUENCES <i>✦</i></span>
       </footer>
     </main>

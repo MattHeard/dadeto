@@ -13,6 +13,11 @@ const THRESHOLDS = {
   surgeAtMinutes: 0.5,
   aftermathAtMinutes: 0.75,
 };
+const RESCUE_THRESHOLDS = {
+  urgentAtMinutes: 4,
+  surgeAtMinutes: 9,
+  aftermathAtMinutes: 15,
+};
 
 describe('THREEFOLD gatehouse simulation', () => {
   test('moves in canonical space and a blocked step still advances the crisis', () => {
@@ -149,6 +154,291 @@ describe('THREEFOLD gatehouse simulation', () => {
     });
   });
 
+  test('rescues passengers at the reachable mooring before surge and persists the tradeoff', () => {
+    let state = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const route = [
+      { type: 'grow' },
+      { type: 'shrink' },
+      ...Array.from({ length: 7 }, () => ({
+        type: 'move',
+        direction: 'right',
+      })),
+      { type: 'grow' },
+      ...Array.from({ length: 3 }, () => ({
+        type: 'move',
+        direction: 'right',
+      })),
+      { type: 'interact' },
+      { type: 'interact' },
+    ];
+    route.forEach(action => {
+      state = stepThreefoldSimulation(state, action);
+    });
+
+    expect(state.crisis.elapsedMinutes).toBe(3.75);
+    expect(state.episode).toMatchObject({
+      passengers: 'evacuated',
+      ferry: 'afloat',
+      latchfolk: 'unwarned',
+    });
+
+    const surge = stepThreefoldSimulation(state, {
+      type: 'wait',
+      elapsedGameMinutes: 5.5,
+    });
+    expect(surge.crisis.stage).toBe('surge');
+    expect(surge.episode).toMatchObject({
+      passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+  });
+
+  test('warns reachable Latchfolk and preserves their partial rescue at surge', () => {
+    let state = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const route = [
+      { type: 'grow' },
+      { type: 'shrink' },
+      ...Array.from({ length: 7 }, () => ({
+        type: 'move',
+        direction: 'right',
+      })),
+      { type: 'grow' },
+      ...Array.from({ length: 4 }, () => ({
+        type: 'move',
+        direction: 'right',
+      })),
+      ...Array.from({ length: 5 }, () => ({
+        type: 'move',
+        direction: 'down',
+      })),
+      { type: 'interact' },
+    ];
+    route.forEach(action => {
+      state = stepThreefoldSimulation(state, action);
+    });
+
+    expect(state.crisis.elapsedMinutes).toBe(5);
+    expect(state.episode).toMatchObject({
+      passengers: 'aboard',
+      ferry: 'afloat',
+      latchfolk: 'warned',
+    });
+
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.episode.latchfolk).toBe('warned');
+    expect(state.crisis.elapsedMinutes).toBe(5.25);
+
+    const surge = stepThreefoldSimulation(state, {
+      type: 'wait',
+      elapsedGameMinutes: 3.75,
+    });
+    expect(surge.episode).toMatchObject({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'safe',
+    });
+  });
+
+  test('withdraws through the reachable upland road and settles the storm', () => {
+    let state = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const route = [
+      ...Array.from({ length: 12 }, () => ({
+        type: 'move',
+        direction: 'left',
+      })),
+      ...Array.from({ length: 10 }, () => ({
+        type: 'move',
+        direction: 'up',
+      })),
+    ];
+    route.forEach(action => {
+      state = stepThreefoldSimulation(state, action);
+    });
+
+    const road = state.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    expect(
+      Math.hypot(
+        state.player.position.x - road.position.x,
+        state.player.position.y - road.position.y
+      )
+    ).toBeLessThanOrEqual(heightAtScale(state.player.scale) * 0.55);
+
+    const withdrawn = stepThreefoldSimulation(state, { type: 'interact' });
+
+    expect(withdrawn.crisis).toMatchObject({
+      elapsedMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes,
+      stage: 'aftermath',
+    });
+    expect(withdrawn.episode).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+      withdrawn: true,
+      closedBy: 'departed',
+    });
+    expect(
+      stepThreefoldSimulation(withdrawn, {
+        type: 'move',
+        direction: 'right',
+      })
+    ).toBe(withdrawn);
+    expect(
+      stepThreefoldSimulation(withdrawn, {
+        type: 'wait',
+        elapsedGameMinutes: 1,
+      })
+    ).toBe(withdrawn);
+  });
+
+  test('cannot withdraw from outside the upland road range', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+
+    const attempted = stepThreefoldSimulation(initial, { type: 'interact' });
+
+    expect(attempted.episode).toEqual(initial.episode);
+    expect(attempted.crisis.elapsedMinutes).toBe(0.25);
+  });
+
+  test('withdrawal preserves earlier passenger and Latchfolk outcomes', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const road = initial.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const atRoad = {
+      ...initial,
+      player: createScaleState(road.position),
+      episode: {
+        ...initial.episode,
+        passengers: 'evacuated',
+        latchfolk: 'warned',
+      },
+    };
+
+    const withdrawn = stepThreefoldSimulation(atRoad, { type: 'interact' });
+
+    expect(withdrawn.episode).toEqual({
+      passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'safe',
+      withdrawn: true,
+      closedBy: 'departed',
+    });
+  });
+
+  test('can withdraw after surge when already at the upland road', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const road = initial.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const aftermath = stepThreefoldSimulation(
+      {
+        ...initial,
+        player: createScaleState(road.position),
+      },
+      { type: 'wait', elapsedGameMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes }
+    );
+
+    const withdrawn = stepThreefoldSimulation(aftermath, {
+      type: 'interact',
+    });
+
+    expect(withdrawn.crisis).toBe(aftermath.crisis);
+    expect(withdrawn.episode.withdrawn).toBe(true);
+    expect(withdrawn.episode.passengers).toBe('lost');
+    expect(withdrawn.episode.latchfolk).toBe('lost');
+  });
+
+  test('out-of-range and post-surge interactions cannot evacuate passengers', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const outOfRange = stepThreefoldSimulation(initial, { type: 'interact' });
+    expect(outOfRange.episode).toEqual({
+      passengers: 'aboard',
+      ferry: 'afloat',
+      latchfolk: 'unwarned',
+    });
+    expect(outOfRange.crisis.elapsedMinutes).toBe(0.25);
+
+    const surge = stepThreefoldSimulation(initial, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const watchkeeper = surge.scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    const atWatchkeeper = {
+      ...surge,
+      player: {
+        ...surge.player,
+        position: { ...watchkeeper.position },
+      },
+    };
+    const late = stepThreefoldSimulation(atWatchkeeper, {
+      type: 'interact',
+    });
+
+    expect(late.episode).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+    expect(late.crisis.stage).toBe('surge');
+  });
+
+  test('rejects a warning after surge even before outcomes are reduced', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const watchkeeper = initial.scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    const atSurge = {
+      ...initial,
+      player: {
+        ...initial.player,
+        position: { ...watchkeeper.position },
+      },
+      crisis: {
+        ...initial.crisis,
+        elapsedMinutes: RESCUE_THRESHOLDS.surgeAtMinutes,
+        stage: 'surge',
+      },
+    };
+
+    const late = stepThreefoldSimulation(atSurge, { type: 'interact' });
+
+    expect(late.episode.latchfolk).toBe('lost');
+    expect(late.crisis.stage).toBe('surge');
+  });
+
+  test('cannot interact with an unauthored warning target', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const withoutTargets = {
+      ...initial,
+      scene: { ...initial.scene, interactables: [] },
+    };
+
+    const attempted = stepThreefoldSimulation(withoutTargets, {
+      type: 'interact',
+    });
+
+    expect(attempted.episode.latchfolk).toBe('unwarned');
+    expect(attempted.crisis.elapsedMinutes).toBe(0.25);
+  });
+
+  test('passengers still aboard are lost with the ferry at surge', () => {
+    const state = stepThreefoldSimulation(
+      createThreefoldSimulation(RESCUE_THRESHOLDS),
+      { type: 'wait', elapsedGameMinutes: 9 }
+    );
+
+    expect(state.episode).toEqual({
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+  });
+
   test('world actions accumulate partial Anchor recovery progress', () => {
     const scene = createBrokenGateScene();
     scene.spawn = createScaleState(scene.spawn.position, {
@@ -211,4 +501,58 @@ describe('THREEFOLD gatehouse simulation', () => {
       expect(stepThreefoldSimulation(state, action)).toBe(state);
     }
   );
+});
+
+describe('THREEFOLD staged passenger rescue', () => {
+  test('rescues one group per interaction and preserves partial rescue at surge', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const mooring = initial.scene.interactables.find(
+      item => item.id === 'ferry-mooring-line'
+    );
+    const atMooring = {
+      ...initial,
+      player: createScaleState(mooring.position),
+    };
+
+    const outOfRange = stepThreefoldSimulation(initial, { type: 'interact' });
+    expect(outOfRange.episode.passengers).toBe('aboard');
+
+    const partial = stepThreefoldSimulation(atMooring, { type: 'interact' });
+    expect(partial.episode).toEqual({
+      passengers: 'partial',
+      ferry: 'afloat',
+      latchfolk: 'unwarned',
+    });
+
+    const complete = stepThreefoldSimulation(partial, { type: 'interact' });
+    expect(complete.episode.passengers).toBe('evacuated');
+    const alreadyComplete = stepThreefoldSimulation(complete, {
+      type: 'interact',
+    });
+    expect(alreadyComplete.episode.passengers).toBe('evacuated');
+
+    const completeSurge = stepThreefoldSimulation(complete, {
+      type: 'wait',
+      elapsedGameMinutes: 8.5,
+    });
+    expect(completeSurge.episode).toEqual({
+      passengers: 'evacuated',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+
+    const partialSurge = stepThreefoldSimulation(partial, {
+      type: 'wait',
+      elapsedGameMinutes: 8.75,
+    });
+    expect(partialSurge.episode).toEqual({
+      passengers: 'partial',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+    const afterSurgeInteraction = stepThreefoldSimulation(partialSurge, {
+      type: 'interact',
+    });
+    expect(afterSurgeInteraction.episode.passengers).toBe('partial');
+  });
 });

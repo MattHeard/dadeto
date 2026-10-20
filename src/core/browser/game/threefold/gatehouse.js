@@ -1,4 +1,7 @@
-import { createScaleState } from './spatial.js';
+import {
+  copyThreefoldGeometry,
+  createThreefoldPlayerSpawn,
+} from './scene-utils.js';
 
 const GATEHOUSE_AREAS = [
   {
@@ -55,6 +58,13 @@ const GATEHOUSE_GEOMETRY = [
       max: { x: 9.5, y: 5.9, z: 1.5 },
     },
   },
+  {
+    id: 'signal-station',
+    bounds: {
+      min: { x: 8.7, y: 2.8, z: 0 },
+      max: { x: 9.1, y: 3.2, z: 6 },
+    },
+  },
 ];
 
 const GATEHOUSE_RAT = {
@@ -67,51 +77,76 @@ const GATEHOUSE_RAT = {
   interactionRadiusMeters: 0.12,
 };
 
+const GATEHOUSE_INTERACTABLES = [
+  {
+    id: 'ferry-mooring-line',
+    position: { x: 6.75, y: 3.5 },
+    bounds: {
+      min: { x: 6.62, y: 3.42, z: 0 },
+      max: { x: 6.88, y: 3.58, z: 0.4 },
+    },
+  },
+  {
+    id: 'latchfolk-watchkeeper',
+    position: { x: 7.25, y: 7.25 },
+    bounds: {
+      min: { x: 7.08, y: 7.02, z: 0 },
+      max: { x: 7.42, y: 7.48, z: 0.55 },
+    },
+  },
+  {
+    id: 'upland-road-exit',
+    position: { x: 0.5, y: 2 },
+    bounds: {
+      min: { x: 0.25, y: 1.75, z: 0 },
+      max: { x: 0.75, y: 2.25, z: 0.2 },
+    },
+  },
+  {
+    id: 'relief-gate-locking-pawl',
+    position: { x: 4.6, y: 3 },
+    bounds: {
+      min: { x: 4.55, y: 2.95, z: 0 },
+      max: { x: 4.65, y: 3.05, z: 0.15 },
+    },
+  },
+  {
+    id: 'signal-station-console',
+    position: { x: 8.35, y: 3 },
+    bounds: {
+      min: { x: 8.25, y: 2.9, z: 0 },
+      max: { x: 8.45, y: 3.1, z: 0.6 },
+    },
+  },
+];
+
 /**
  * Create the contiguous canonical scene for THREEFOLD's first gatehouse.
  * Coordinates and geometry bounds use physical metres at every scale.
- * @returns {{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
+ * @returns {{id: 'broken-gate', bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
  */
 export function createBrokenGateScene() {
   return {
     id: 'broken-gate',
     bounds: { min: { x: 0, y: 0 }, max: { x: 12, y: 9 } },
-    spawn: createScaleState(
-      { x: 3, y: 4 },
-      {
-        scale: 0,
-        anchor: 8,
-        maximumAnchor: 8,
-        minimumUnlockedScale: -2,
-        maximumUnlockedScale: 1,
-      }
-    ),
+    spawn: createThreefoldPlayerSpawn({ x: 3, y: 4 }, 0),
     baseBodyWidthMeters: 0.4,
     areas: GATEHOUSE_AREAS.map(copyArea),
-    geometry: GATEHOUSE_GEOMETRY.map(copyGeometry),
+    geometry: GATEHOUSE_GEOMETRY.map(copyThreefoldGeometry),
+    interactables: GATEHOUSE_INTERACTABLES.map(copyInteractable),
     creatures: [copyCreature(GATEHOUSE_RAT)],
   };
 }
 
 /**
- * @param {typeof GATEHOUSE_AREAS[number]} area Authored scene area.
- * @returns {typeof GATEHOUSE_AREAS[number]} Independent area value.
+ * @param {typeof GATEHOUSE_INTERACTABLES[number]} item Authored interaction point.
+ * @returns {typeof GATEHOUSE_INTERACTABLES[number]} Independent interaction point.
  */
-function copyArea(area) {
+function copyInteractable(item) {
   return {
-    id: area.id,
-    bounds: { min: { ...area.bounds.min }, max: { ...area.bounds.max } },
-  };
-}
-
-/**
- * @param {typeof GATEHOUSE_GEOMETRY[number]} object Authored geometry object.
- * @returns {typeof GATEHOUSE_GEOMETRY[number]} Independent geometry value.
- */
-function copyGeometry(object) {
-  return {
-    id: object.id,
-    bounds: { min: { ...object.bounds.min }, max: { ...object.bounds.max } },
+    id: item.id,
+    position: { ...item.position },
+    bounds: { min: { ...item.bounds.min }, max: { ...item.bounds.max } },
   };
 }
 
@@ -127,5 +162,16 @@ function copyCreature(creature) {
       min: { ...creature.bounds.min },
       max: { ...creature.bounds.max },
     },
+  };
+}
+
+/**
+ * @param {typeof GATEHOUSE_AREAS[number]} area Authored scene area.
+ * @returns {typeof GATEHOUSE_AREAS[number]} Independent area value.
+ */
+function copyArea(area) {
+  return {
+    id: area.id,
+    bounds: { min: { ...area.bounds.min }, max: { ...area.bounds.max } },
   };
 }

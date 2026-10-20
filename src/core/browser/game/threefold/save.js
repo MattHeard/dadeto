@@ -1,19 +1,39 @@
 import { parseJsonOrNull } from '../../validation.js';
 import { advanceCrisisClock, createCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
-import { createThreefoldSimulation } from './simulation.js';
+import {
+  createThreefoldSluiceScene,
+  THREEFOLD_SLUICE_SCENE_ID,
+} from './sluice-scene.js';
+import {
+  createThreefoldSimulation,
+  isSluiceSimulationState,
+} from './simulation.js';
+import { createScaleState } from './spatial.js';
 import {
   createThreefoldEncounter,
+  migrateLegacyThreefoldEncounter,
   normalizeThreefoldEncounter,
 } from './encounter.js';
-import { createScaleState } from './spatial.js';
+import {
+  advanceThreefoldEpisode,
+  createThreefoldEpisodeState,
+  normalizeThreefoldEpisodeState,
+  THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
+  THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
+} from './episode.js';
+import { normalizeThreefoldSluicePuzzle } from './water-puzzle.js';
 
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
 const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
-const PREVIOUS_SIMULATION_SCHEMA_VERSION = 1;
-const SIMULATION_SCHEMA_VERSION = 2;
+const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
+const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
+const SIMULATION_SCHEMA_VERSION = 5;
+const SLUICE_SIMULATION_SCHEMA_VERSION = 4;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
+const SLUICE_SIMULATION_SAVE_KEY =
+  'dadeto.threefold.simulation-save.v1.small-world-sluice';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -58,15 +78,27 @@ export function createThreefoldScaleSaveStore(storage) {
  * @returns {string} Versioned complete-run save envelope.
  */
 export function serializeThreefoldSimulation(simulation) {
+  const state = /** @type {Record<string, any>} */ ({
+    player: normalizeScaleState(simulation.player),
+    crisis: normalizeCrisisClock(simulation.crisis),
+    episode: normalizeThreefoldEpisodeState(simulation.episode),
+    encounter: normalizeThreefoldEncounter(simulation.encounter),
+  });
+  if (isSluiceSimulationState(simulation)) {
+    state.sluicePuzzle = normalizeThreefoldSluicePuzzle(
+      simulation.sluicePuzzle
+    );
+    state.elapsedGameSeconds = normalizeElapsedGameSeconds(
+      simulation.elapsedGameSeconds
+    );
+  }
   return JSON.stringify({
     game: GAME_ID,
-    schemaVersion: SIMULATION_SCHEMA_VERSION,
+    schemaVersion: isSluiceSimulationState(simulation)
+      ? SLUICE_SIMULATION_SCHEMA_VERSION
+      : SIMULATION_SCHEMA_VERSION,
     sceneId: simulation.scene.id,
-    state: {
-      player: normalizeScaleState(simulation.player),
-      crisis: normalizeCrisisClock(simulation.crisis),
-      encounter: normalizeThreefoldEncounter(simulation.encounter),
-    },
+    state,
   });
 }
 
@@ -79,20 +111,69 @@ export function restoreThreefoldSimulation(serialized) {
   const envelope = readSimulationEnvelope(serialized);
   if (!envelope) return null;
   try {
-    if (envelope.sceneId !== 'broken-gate')
+    const isSluiceScene = envelope.sceneId === THREEFOLD_SLUICE_SCENE_ID;
+    if (!isSluiceScene && envelope.sceneId !== 'broken-gate')
       throw new RangeError('Unknown scene.');
-    const legacy =
+    if (
+      isSluiceScene &&
+      envelope.schemaVersion !== SLUICE_SIMULATION_SCHEMA_VERSION
+    )
+      throw new RangeError('Sluice save version is unsupported.');
+    const legacyV1 =
+      envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
+    const legacyV2 =
       envelope.schemaVersion === PREVIOUS_SIMULATION_SCHEMA_VERSION;
     const state = envelope.state ?? envelope;
-    if (!legacy && !Object.hasOwn(state, 'encounter'))
+    if (!legacyV1 && !Object.hasOwn(state, 'encounter'))
       throw new RangeError('THREEFOLD encounter state is missing.');
-    return {
-      scene: createBrokenGateScene(),
-      player: normalizeScaleState(state.player),
-      crisis: normalizeCrisisClock(state.crisis),
-      encounter: legacy
+    const crisis = normalizeCrisisClock(state.crisis);
+    const episode = normalizeThreefoldEpisodeState(
+      state.episode ?? createThreefoldEpisodeState()
+    );
+    const player = normalizeScaleState(state.player);
+    if (episode.withdrawn === true && crisis.stage !== 'aftermath')
+      throw new RangeError('A withdrawn episode must be settled.');
+    if (episode.closedBy !== undefined && crisis.stage !== 'aftermath')
+      throw new RangeError('A closed episode must follow the aftermath.');
+    if (
+      episode.closedBy === 'reported' &&
+      player.destroyedGeometryIds.includes(THREEFOLD_SIGNAL_STATION_GEOMETRY_ID)
+    )
+      throw new RangeError('A destroyed signal station cannot file a report.');
+    if (episode.gateRepaired === true) {
+      if (
+        episode.gateRepairedBeforeSurge !== true &&
+        crisis.stage !== 'surge' &&
+        crisis.stage !== 'aftermath'
+      )
+        throw new RangeError('A repaired gate must follow the surge.');
+      if (
+        THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
+          player.destroyedGeometryIds.includes(id)
+        )
+      )
+        throw new RangeError('A repaired gate cannot remain damaged.');
+    }
+    const restoredState = {
+      player,
+      crisis,
+      episode: advanceThreefoldEpisode(episode, crisis),
+      encounter: legacyV1
         ? createThreefoldEncounter()
-        : normalizeThreefoldEncounter(state.encounter),
+        : legacyV2
+          ? migrateLegacyThreefoldEncounter(state.encounter)
+          : normalizeThreefoldEncounter(state.encounter),
+    };
+    if (!isSluiceScene)
+      return {
+        ...restoredState,
+        scene: createBrokenGateScene(),
+      };
+    return {
+      ...restoredState,
+      scene: createThreefoldSluiceScene(),
+      sluicePuzzle: normalizeThreefoldSluicePuzzle(state.sluicePuzzle),
+      elapsedGameSeconds: normalizeElapsedGameSeconds(state.elapsedGameSeconds),
     };
   } catch {
     return null;
@@ -102,12 +183,18 @@ export function restoreThreefoldSimulation(serialized) {
 /**
  * Bind the complete-run codec to an injected storage implementation.
  * @param {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem?: (key: string) => void}|null|undefined} storage Storage boundary supplied by the caller.
+ * @param {string} [sceneId] Authored scene whose save key is isolated.
  * @returns {{load: () => ReturnType<typeof createThreefoldSimulation>|null, save: (state: ReturnType<typeof createThreefoldSimulation>) => boolean, clear: () => boolean}} Complete-run save operations.
  */
-export function createThreefoldSimulationSaveStore(storage) {
+export function createThreefoldSimulationSaveStore(
+  storage,
+  sceneId = 'broken-gate'
+) {
   return createSaveStore(
     storage,
-    SIMULATION_SAVE_KEY,
+    sceneId === THREEFOLD_SLUICE_SCENE_ID
+      ? SLUICE_SIMULATION_SAVE_KEY
+      : SIMULATION_SAVE_KEY,
     serializeThreefoldSimulation,
     restoreThreefoldSimulation
   );
@@ -169,8 +256,10 @@ function createSaveStore(storage, key, serialize, restore) {
  * @returns {T|null} Normalized payload, or null when invalid.
  */
 function restoreSave(serialized, schemaVersion, normalize) {
-  const envelope = readSaveEnvelope(serialized);
-  if (!envelope) return null;
+  if (typeof serialized !== 'string') return null;
+  const parsed = parseJsonOrNull(serialized);
+  if (!parsed || typeof parsed !== 'object') return null;
+  const envelope = /** @type {Record<string, any>} */ (parsed);
   if (envelope.game !== GAME_ID || envelope.schemaVersion !== schemaVersion)
     return null;
   try {
@@ -189,15 +278,13 @@ function readSimulationEnvelope(serialized) {
   const envelope = readSaveEnvelope(serialized);
   return envelope &&
     envelope.game === GAME_ID &&
-    [PREVIOUS_SIMULATION_SCHEMA_VERSION, SIMULATION_SCHEMA_VERSION].includes(
-      envelope.schemaVersion
-    )
+    [1, 2, 3, 4, SIMULATION_SCHEMA_VERSION].includes(envelope.schemaVersion)
     ? envelope
     : null;
 }
 
 /**
- * Parse an object envelope shared by both THREEFOLD save codecs.
+ * Parse an envelope shared by both THREEFOLD save codecs.
  * @param {unknown} serialized Candidate serialized save.
  * @returns {Record<string, any>|null} Parsed object envelope.
  */
@@ -245,4 +332,19 @@ function normalizeCrisisClock(state) {
   )
     throw new RangeError('Crisis clock state is inconsistent.');
   return restored;
+}
+
+/**
+ * Validate the explicit simulation time stored by the sluice scene.
+ * @param {unknown} candidate Candidate elapsed time in seconds.
+ * @returns {number} Non-negative finite in-game duration.
+ */
+function normalizeElapsedGameSeconds(candidate) {
+  if (
+    typeof candidate !== 'number' ||
+    !Number.isFinite(candidate) ||
+    candidate < 0
+  )
+    throw new RangeError('Sluice elapsed game time is invalid.');
+  return candidate;
 }

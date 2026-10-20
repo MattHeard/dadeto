@@ -1,7 +1,11 @@
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
+import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
-import { createThreefoldSimulation } from '../../../../src/core/browser/game/threefold/simulation.js';
+import {
+  createThreefoldSimulation,
+  stepThreefoldSimulation,
+} from '../../../../src/core/browser/game/threefold/simulation.js';
 
 const THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -9,7 +13,53 @@ const THRESHOLDS = {
   aftermathAtMinutes: 15,
 };
 
-describe('THREEFOLD Mosslight handheld frame', () => {
+/**
+ *
+ * @param episode
+ */
+/**
+ * Create a settled withdrawal with optional prior episode outcomes.
+ * @param {{passengers?: 'aboard'|'partial'|'evacuated'|'lost', ferry?: 'afloat'|'lost', latchfolk?: 'unwarned'|'warned'|'safe'|'lost'}} [episode] Prior outcomes to preserve.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Withdrawn simulation.
+ */
+function createWithdrawnSimulation(episode = {}) {
+  const scene = createBrokenGateScene();
+  const road = scene.interactables.find(item => item.id === 'upland-road-exit');
+  scene.spawn = createScaleState(road.position);
+  const initial = createThreefoldSimulation(THRESHOLDS, scene);
+  return stepThreefoldSimulation(
+    { ...initial, episode: { ...initial.episode, ...episode } },
+    { type: 'interact' }
+  );
+}
+
+describe('THREEFOLD canvas grid', () => {
+  test('snaps both scenes to an eight-pixel logical grid without changing fluid state', () => {
+    const brokenGate = createThreefoldSimulation(THRESHOLDS);
+    const sluice = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+    const fluidBeforeRender = JSON.parse(JSON.stringify(sluice.sluicePuzzle));
+
+    for (const state of [brokenGate, sluice]) {
+      const frame = renderThreefoldFrame(state);
+      expect(frame).toMatchObject({ width: 160, height: 144, pixelated: true });
+      for (const shape of frame.shapes) {
+        expect(shape.x % 8).toBe(0);
+        expect(shape.y % 8).toBe(0);
+        if (shape.type === 'rect') {
+          expect(shape.width % 8).toBe(0);
+          expect(shape.height % 8).toBe(0);
+        }
+      }
+    }
+
+    expect(sluice.sluicePuzzle).toEqual(fluidBeforeRender);
+  });
+});
+
+describe('THREEFOLD status display', () => {
   test('uses the shared pixelated 160x144 frame and exposes current status', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
     const frame = renderThreefoldFrame(state);
@@ -43,22 +93,85 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         type: 'rect',
-        x: 126,
+        x: 128,
         y: 8,
-        width: 26,
-        height: 4,
+        width: 32,
+        height: 8,
         fill: '#315744',
       })
     );
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         type: 'rect',
-        x: 126,
+        x: 128,
         y: 8,
         width: 0,
-        height: 4,
+        height: 8,
         fill: '#bfd77c',
       })
+    );
+  });
+});
+
+describe('THREEFOLD Mosslight handheld frame', () => {
+  test('renders the authored rat and names fight/bypass when it is in reach', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState({ x: 3.15, y: 4 }, { scale: -1 });
+    const state = stepThreefoldSimulation(
+      createThreefoldSimulation(THRESHOLDS, scene),
+      { type: 'shrink' }
+    );
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'gatehouse-rat'
+    );
+    expect(
+      frame.shapes.filter(shape => shape.geometryId === 'gatehouse-rat')
+    ).toHaveLength(4);
+    expect(frame.threefold.ratFate).toBe('present');
+    expect(frame.quickAction).toBe('fight');
+    expect(frame.toast).toContain('RAT IN REACH · A FIGHT · X BYPASS');
+  });
+
+  test('previews the geometry destroyed by growth without changing the simulation', () => {
+    const state = createThreefoldSimulation(THRESHOLDS);
+    const originalState = JSON.parse(JSON.stringify(state));
+    const frame = renderThreefoldFrame(state);
+    const westWall = frame.shapes.find(
+      shape => shape.geometryId === 'gatehouse-west-wall'
+    );
+
+    expect(frame.threefold.growthPreviewIds).toEqual(['gatehouse-west-wall']);
+    expect(westWall).toMatchObject({ fill: '#e16b5a', growthPreview: true });
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A BREAKS WEST WALL',
+        fill: '#e16b5a',
+      })
+    );
+    expect(state).toEqual(originalState);
+    expect(
+      stepThreefoldSimulation(state, { type: 'grow' }).player
+        .destroyedGeometryIds
+    ).toEqual(frame.threefold.growthPreviewIds);
+  });
+
+  test('keeps the regular status when the next growth step hits no geometry', () => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const state = {
+      ...initial,
+      player: { ...initial.player, position: { x: 0, y: 0 } },
+    };
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.threefold.growthPreviewIds).toEqual([]);
+    expect(frame.toast).toBe(
+      'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
+    );
+    expect(frame.shapes.some(shape => shape.growthPreview === true)).toBe(
+      false
     );
   });
 
@@ -77,7 +190,8 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     state.crisis.elapsedMinutes = 0.25;
 
     const nearby = renderThreefoldFrame(state);
-    expect(nearby.toast).toBe('RAT IN REACH · A FIGHT · X BYPASS');
+    expect(nearby.toast).toContain('RAT IN REACH · A FIGHT · X BYPASS');
+    expect(nearby.toast).toContain('E WARN/RESCUE');
     expect(nearby.threefold.ratFate).toBe('present');
     expect(nearby.world.map.objects.map(({ id }) => id)).toContain(
       'gatehouse-rat'
@@ -144,8 +258,12 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
 
     expect(smallerAvatarBounds).toEqual(avatarBounds);
-    expect((smallerWall?.width ?? 0) / (wall?.width ?? 0)).toBeCloseTo(3);
-    expect((smallerWall?.height ?? 0) / (wall?.height ?? 0)).toBeCloseTo(3);
+    expect(smallerWall.width * smallerWall.height).toBeGreaterThan(
+      wall.width * wall.height
+    );
+    expect(
+      humanScale.threefold.heightMeters / smallerScale.threefold.heightMeters
+    ).toBeCloseTo(3);
   });
 
   test('omits geometry already destroyed by growth and shows the updated tide stage', () => {
@@ -176,10 +294,10 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         type: 'rect',
-        x: 126,
+        x: 128,
         y: 8,
         width: 16,
-        height: 4,
+        height: 8,
         fill: '#e16b5a',
       })
     );
@@ -229,9 +347,248 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
   });
 
+  test('shows the repaired gate and receding lower water after ferry loss', () => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const repaired = {
+      ...initial,
+      player: {
+        ...initial.player,
+        scale: -2,
+        destroyedGeometryIds: ['gatehouse-west-wall'],
+      },
+      crisis: { ...initial.crisis, elapsedMinutes: 9, stage: 'surge' },
+      episode: {
+        ...initial.episode,
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        gateRepaired: true,
+      },
+    };
+    const flooded = renderThreefoldFrame(repaired);
+
+    expect(flooded.threefold).toMatchObject({
+      gateState: 'repaired',
+      drainageState: 'flooded',
+      gateRepaired: true,
+    });
+    expect(flooded.toast).toContain('LOWER CHANNEL STILL FLOODED');
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'relief-gate'
+    );
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'relief-gate-locking-pawl'
+    );
+    expect(flooded.world.map.objects.map(object => object.id)).toContain(
+      'drainage-floodwater'
+    );
+
+    const aftermath = renderThreefoldFrame({
+      ...repaired,
+      crisis: { ...repaired.crisis, elapsedMinutes: 15, stage: 'aftermath' },
+    });
+    expect(aftermath.threefold.drainageState).toBe('receded');
+    expect(aftermath.toast).toContain('LOWER WATER RECEDED');
+    expect(aftermath.world.map.objects.map(object => object.id)).not.toContain(
+      'drainage-floodwater'
+    );
+  });
+});
+
+describe('THREEFOLD Mosslight episode outcomes', () => {
+  test('renders the ferry mooring and branch-specific rescue outcomes', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(scene.interactables[0].position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const partial = stepThreefoldSimulation(initial, { type: 'interact' });
+    const partialFrame = renderThreefoldFrame(partial);
+
+    expect(partialFrame.world.map.objects.map(object => object.id)).toContain(
+      'ferry-mooring-line'
+    );
+    expect(partialFrame.shapes).toContainEqual(
+      expect.objectContaining({ geometryId: 'ferry-mooring-line' })
+    );
+    expect(partialFrame.threefold).toMatchObject({
+      passengers: 'partial',
+      ferry: 'afloat',
+    });
+    expect(partialFrame.toast).toContain(
+      'PASSENGERS 1/2 SAFE · 1/2 STILL ABOARD'
+    );
+
+    const rescued = stepThreefoldSimulation(partial, { type: 'interact' });
+    expect(renderThreefoldFrame(rescued).toast).toContain(
+      'PASSENGERS EVACUATED'
+    );
+
+    const surge = stepThreefoldSimulation(rescued, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    expect(renderThreefoldFrame(surge).toast).toContain(
+      'PASSENGERS SAFE · FERRY LOST'
+    );
+
+    const partialSurge = stepThreefoldSimulation(partial, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    expect(renderThreefoldFrame(partialSurge).toast).toContain(
+      'PASSENGERS 1/2 SAFE · 1/2 LOST'
+    );
+  });
+
+  test('renders the Latchfolk warning target and branch outcome', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    scene.spawn = createScaleState(watchkeeper.position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const warned = stepThreefoldSimulation(initial, { type: 'interact' });
+    const frame = renderThreefoldFrame(warned);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'latchfolk-watchkeeper'
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'latchfolk-watchkeeper',
+        fill: '#e16b5a',
+        growthPreview: true,
+      })
+    );
+    expect(frame.threefold.latchfolk).toBe('warned');
+    expect(frame.toast).toContain('LATCHFOLK WARNED');
+
+    const surge = stepThreefoldSimulation(warned, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    const outcome = renderThreefoldFrame(surge);
+    expect(outcome.threefold.latchfolk).toBe('safe');
+    expect(outcome.toast).toContain('LATCHFOLK SAFE');
+  });
+
+  test('renders the upland road and persistent withdrawal outcome', () => {
+    const withdrawn = createWithdrawnSimulation();
+    const frame = renderThreefoldFrame(withdrawn);
+
+    expect(frame.world.map.objects.map(object => object.id)).toContain(
+      'upland-road-exit'
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'upland-road-exit',
+        fill: '#f1ead0',
+      })
+    );
+    expect(frame.threefold).toMatchObject({
+      withdrawn: true,
+      crisisStage: 'aftermath',
+      passengers: 'lost',
+      ferry: 'lost',
+      latchfolk: 'lost',
+    });
+    expect(frame.toast).toContain('EPISODE CLOSED BY DEPARTURE');
+    expect(frame.toast).toContain('PASSENGERS LOST');
+    expect(frame.toast).toContain('LATCHFOLK LOST');
+  });
+
+  test('renders rescued passengers and warned Latchfolk as safe after withdrawal', () => {
+    const withdrawn = createWithdrawnSimulation({
+      passengers: 'evacuated',
+      latchfolk: 'warned',
+    });
+    const frame = renderThreefoldFrame(withdrawn);
+
+    expect(frame.toast).toBe(
+      'EPISODE CLOSED BY DEPARTURE · MARA LEFT THE GATEHOUSE · PASSENGERS SAFE · LATCHFOLK SAFE'
+    );
+  });
+
+  test('renders destroyed signal station and the surviving closure route', () => {
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    scene.spawn = createScaleState(console.position);
+    let state = createThreefoldSimulation(THRESHOLDS, scene);
+    state = stepThreefoldSimulation(state, { type: 'grow' });
+    state = stepThreefoldSimulation(state, {
+      type: 'wait',
+      elapsedGameMinutes: THRESHOLDS.aftermathAtMinutes,
+    });
+
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.threefold).toMatchObject({
+      signalStationDestroyed: true,
+      closedBy: null,
+      crisisStage: 'aftermath',
+    });
+    expect(frame.world.map.objects.map(object => object.id)).not.toContain(
+      'signal-station-console'
+    );
+    expect(frame.toast).toContain('SIGNAL STATION LOST');
+    expect(frame.toast).toContain('DEPART UPLAND TO CLOSE');
+  });
+
+  test('renders a filed report as the episode closure outcome', () => {
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const atConsole = {
+      ...initial,
+      player: createScaleState(console.position),
+    };
+    const aftermath = stepThreefoldSimulation(atConsole, {
+      type: 'wait',
+      elapsedGameMinutes: THRESHOLDS.aftermathAtMinutes,
+    });
+    const reported = stepThreefoldSimulation(aftermath, {
+      type: 'interact',
+    });
+
+    const frame = renderThreefoldFrame(reported);
+
+    expect(frame.threefold.closedBy).toBe('reported');
+    expect(frame.toast).toBe(
+      'EPISODE CLOSED · REPORT SENT THROUGH THE SIGNAL STATION'
+    );
+  });
+
+  test('renders departure closure without a report after station destruction', () => {
+    const scene = createBrokenGateScene();
+    const road = scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const atRoad = {
+      ...initial,
+      player: createScaleState(road.position, {
+        destroyedGeometryIds: ['signal-station'],
+      }),
+    };
+    const aftermath = stepThreefoldSimulation(atRoad, {
+      type: 'wait',
+      elapsedGameMinutes: THRESHOLDS.aftermathAtMinutes,
+    });
+    const departed = stepThreefoldSimulation(aftermath, { type: 'interact' });
+
+    const frame = renderThreefoldFrame(departed);
+
+    expect(frame.threefold.closedBy).toBe('departed');
+    expect(frame.toast).toContain('SIGNAL STATION LOST');
+    expect(frame.toast).toContain('NO REPORT SENT');
+  });
+
   test.each([
-    [4, 'urgent', 7, '#e9d88d'],
-    [15, 'aftermath', 26, '#e16b5a'],
+    [4, 'urgent', 8, '#e9d88d'],
+    [15, 'aftermath', 32, '#e16b5a'],
   ])(
     'shows %s crisis progress in the tide meter',
     (minutes, stage, width, fill) => {
@@ -245,15 +602,66 @@ describe('THREEFOLD Mosslight handheld frame', () => {
       expect(frame.shapes).toContainEqual(
         expect.objectContaining({
           type: 'rect',
-          x: 126,
+          x: 128,
           y: 8,
           width,
-          height: 4,
+          height: 8,
           fill,
         })
       );
     }
   );
+});
+
+describe('THREEFOLD growth preview summary', () => {
+  test('previews lethal growth when Mara fits inside the authored rat', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState({ x: 3.28, y: 4 }, { scale: -2 });
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const state = stepThreefoldSimulation(initial, {
+      type: 'wait',
+      elapsedGameMinutes: 0.25,
+    });
+    const frame = renderThreefoldFrame(state);
+    const ratShapes = frame.shapes.filter(
+      shape => shape.geometryId === 'gatehouse-rat'
+    );
+
+    expect(frame.threefold.growthPreviewCreatureIds).toEqual(['gatehouse-rat']);
+    expect(frame.quickAction).toBe('grow');
+    expect(frame.toast).toContain('RAT INSIDE · A GROW · X BYPASS');
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({ type: 'text', text: 'A KILLS RAT' })
+    );
+    expect(ratShapes.every(shape => shape.growthPreview)).toBe(true);
+    expect(ratShapes.filter(shape => shape.fill === '#e16b5a')).toHaveLength(3);
+  });
+
+  test('summarizes multiple structures in the growth preview', () => {
+    const scene = createBrokenGateScene();
+    scene.geometry.push({
+      id: 'gatehouse-west-support',
+      bounds: {
+        min: { x: 3.55, y: 3.4, z: 0 },
+        max: { x: 3.85, y: 4.6, z: 3 },
+      },
+    });
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+
+    expect(frame.threefold.growthPreviewIds).toEqual([
+      'gatehouse-west-support',
+      'gatehouse-west-wall',
+    ]);
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        type: 'text',
+        text: 'A BREAKS WEST SUPPORT +1',
+        fill: '#e16b5a',
+      })
+    );
+  });
 });
 
 /**
@@ -272,3 +680,44 @@ function frameBounds(shapes, property, id) {
   const maxY = Math.max(...owned.map(shape => shape.y + shape.height));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
+
+describe('THREEFOLD legacy withdrawal rendering', () => {
+  test.each([
+    [
+      { passengers: 'evacuated', ferry: 'lost', latchfolk: 'safe' },
+      'MARA WITHDREW · PASSENGERS SAFE · LATCHFOLK SAFE',
+    ],
+    [
+      { passengers: 'lost', ferry: 'lost', latchfolk: 'lost' },
+      'MARA WITHDREW · PASSENGERS LOST · LATCHFOLK LOST',
+    ],
+    [
+      { passengers: 'aboard', ferry: 'afloat', latchfolk: 'lost' },
+      'MARA WITHDREW · PASSENGERS STILL ABOARD · LATCHFOLK LOST',
+    ],
+    [
+      { passengers: 'partial', ferry: 'lost', latchfolk: 'lost' },
+      'MARA WITHDREW · PASSENGERS 1/2 SAFE · 1/2 LOST · LATCHFOLK LOST',
+    ],
+  ])('renders a legacy withdrawal state %p', (outcomes, expectedToast) => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const legacyWithdrawal = {
+      ...initial,
+      crisis: {
+        ...initial.crisis,
+        elapsedMinutes: THRESHOLDS.aftermathAtMinutes,
+        stage: 'aftermath',
+      },
+      episode: {
+        ...initial.episode,
+        ...outcomes,
+        withdrawn: true,
+      },
+    };
+
+    const frame = renderThreefoldFrame(legacyWithdrawal);
+
+    expect(frame.threefold.closedBy).toBeNull();
+    expect(frame.toast).toBe(expectedToast);
+  });
+});

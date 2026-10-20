@@ -2,12 +2,16 @@ import { createBrokenGateScene } from '../../../../src/core/browser/game/threefo
 import {
   createThreefoldEncounter,
   isGatehouseRatInReach,
+  isInsideGatehouseRat,
+  migrateLegacyThreefoldEncounter,
   normalizeThreefoldEncounter,
+  recordThreefoldGrowthDeaths,
   resolveGatehouseRat,
 } from '../../../../src/core/browser/game/threefold/encounter.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 import {
   createThreefoldSimulation,
+  previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/simulation.js';
 
@@ -41,6 +45,7 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
 
     expect(close.player.scale).toBe(-2);
     expect(isGatehouseRatInReach(close)).toBe(true);
+    expect(previewThreefoldGrowthEffects(close).creatureIds).toEqual([]);
 
     const fought = stepThreefoldSimulation(close, { type: 'fight' });
     expect(fought.encounter.ratFate).toBe('repelled');
@@ -51,6 +56,34 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     expect(passed.encounter.ratFate).toBe('bypassed');
     expect(passed.player.position).toEqual(close.player.position);
     expect(passed.crisis.elapsedMinutes).toBeCloseTo(2.5);
+  });
+
+  test('growth from inside the rat kills it and records the cause', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 3.28, y: 4 },
+      {
+        scale: -2,
+        anchor: 8,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const state = createThreefoldSimulation(THRESHOLDS, scene);
+
+    expect(isInsideGatehouseRat(state)).toBe(true);
+    expect(previewThreefoldGrowthEffects(state).creatureIds).toEqual([
+      'gatehouse-rat',
+    ]);
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+
+    expect(grown.player.scale).toBe(-1);
+    expect(grown.encounter).toEqual({
+      ratFate: 'killed',
+      ratAction: 'growth',
+      growthDeaths: [{ creatureId: 'gatehouse-rat', cause: 'growth' }],
+    });
+    expect(grown.crisis.elapsedMinutes).toBeCloseTo(0.25);
   });
 
   test('a one-rung size advantage changes the fight into a lethal outcome', () => {
@@ -104,22 +137,135 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     ).toBe(false);
   });
 
+  test('only treats a living authored rat as an inside growth target', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 3.28, y: 4 },
+      {
+        scale: -2,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const state = createThreefoldSimulation(THRESHOLDS, scene);
+
+    expect(isInsideGatehouseRat(null)).toBe(false);
+    expect(
+      isInsideGatehouseRat({
+        ...state,
+        scene: { ...state.scene, creatures: [] },
+      })
+    ).toBe(false);
+    expect(
+      isInsideGatehouseRat({
+        ...state,
+        encounter: { ratFate: 'bypassed', ratAction: 'bypass' },
+      })
+    ).toBe(false);
+  });
+
   test('validates and preserves terminal fates', () => {
     const initial = createThreefoldEncounter();
     expect(normalizeThreefoldEncounter(undefined)).toEqual(initial);
-    expect(normalizeThreefoldEncounter({ ratFate: 'killed' })).toEqual({
+    expect(
+      normalizeThreefoldEncounter({ ratFate: 'killed', ratAction: 'fight' })
+    ).toEqual({
       ratFate: 'killed',
+      ratAction: 'fight',
     });
-    expect(resolveGatehouseRat({ ratFate: 'killed' }, 'fight', -1)).toEqual({
-      ratFate: 'killed',
-    });
+    expect(
+      resolveGatehouseRat(
+        { ratFate: 'killed', ratAction: 'fight' },
+        'fight',
+        -1
+      )
+    ).toEqual({ ratFate: 'killed', ratAction: 'fight' });
     expect(resolveGatehouseRat(initial, 'unknown', -2)).toBe(initial);
+    expect(migrateLegacyThreefoldEncounter({ ratFate: 'killed' })).toEqual({
+      ratFate: 'killed',
+      ratAction: 'fight',
+    });
+    expect(() =>
+      normalizeThreefoldEncounter({ ratFate: 'present', ratAction: 'fight' })
+    ).toThrow('THREEFOLD encounter state is inconsistent.');
     expect(() => normalizeThreefoldEncounter(null)).toThrow(
       'THREEFOLD encounter state is inconsistent.'
     );
     expect(() => normalizeThreefoldEncounter({ ratFate: 'unknown' })).toThrow(
       'THREEFOLD encounter state is inconsistent.'
     );
+  });
+
+  test('normalizes stable growth-death identities and keeps them through rat actions', () => {
+    const growthDeaths = [
+      { creatureId: 'creature-b', cause: 'growth' },
+      { creatureId: 'creature-a', cause: 'growth' },
+    ];
+    const normalized = normalizeThreefoldEncounter({
+      ratFate: 'present',
+      ratAction: null,
+      growthDeaths,
+    });
+    const expectedDeaths = [
+      { creatureId: 'creature-a', cause: 'growth' },
+      { creatureId: 'creature-b', cause: 'growth' },
+    ];
+
+    expect(normalized.growthDeaths).toEqual(expectedDeaths);
+    expect(
+      recordThreefoldGrowthDeaths(normalized, ['creature-a', 'creature-c'])
+        .growthDeaths
+    ).toEqual([
+      ...expectedDeaths,
+      { creatureId: 'creature-c', cause: 'growth' },
+    ]);
+    expect(resolveGatehouseRat(normalized, 'bypass', -1).growthDeaths).toEqual(
+      expectedDeaths
+    );
+    expect(
+      normalizeThreefoldEncounter({
+        ratFate: 'present',
+        ratAction: null,
+        growthDeaths: [],
+      })
+    ).toEqual({ ratFate: 'present', ratAction: null });
+  });
+
+  test.each([
+    ['a non-array value', 'invalid'],
+    ['a non-object entry', [null]],
+    ['a non-string identity', [{ creatureId: 3, cause: 'growth' }]],
+    ['an empty identity', [{ creatureId: ' ', cause: 'growth' }]],
+    ['an unsupported cause', [{ creatureId: 'rat', cause: 'fight' }]],
+  ])('rejects growth deaths with %s', (_description, growthDeaths) => {
+    expect(() =>
+      normalizeThreefoldEncounter({
+        ratFate: 'present',
+        ratAction: null,
+        growthDeaths,
+      })
+    ).toThrow('THREEFOLD creature outcome state is inconsistent.');
+  });
+
+  test('rejects a killed rat paired with a nonlethal action', () => {
+    expect(() =>
+      normalizeThreefoldEncounter({ ratFate: 'killed', ratAction: 'bypass' })
+    ).toThrow('THREEFOLD encounter state is inconsistent.');
+  });
+
+  test('migrates and rejects schema-v2 encounter boundaries', () => {
+    const initial = createThreefoldEncounter();
+
+    expect(migrateLegacyThreefoldEncounter(undefined)).toEqual(initial);
+    expect(() => migrateLegacyThreefoldEncounter(null)).toThrow(
+      'THREEFOLD encounter state is inconsistent.'
+    );
+    expect(() => migrateLegacyThreefoldEncounter('invalid')).toThrow(
+      'THREEFOLD encounter state is inconsistent.'
+    );
+    expect(() =>
+      migrateLegacyThreefoldEncounter({ ratFate: 'unknown' })
+    ).toThrow('THREEFOLD encounter state is inconsistent.');
   });
 });
 

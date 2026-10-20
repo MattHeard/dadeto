@@ -3,12 +3,15 @@ import {
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
 } from './save.js';
+import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
 import {
   createThreefoldSimulation,
+  previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from './simulation.js';
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
+import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 
 const CRISIS_THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -27,10 +30,22 @@ const DIRECTIONS = ['up', 'down', 'left', 'right'];
 export function createThreefoldRuntime(options = {}) {
   const opts = options instanceof Map ? { env: options } : options;
   const env = opts.env || new Map();
+  const scene = opts.scene;
+  const createInitialState = () =>
+    createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
   const save =
     opts.save ||
-    createThreefoldSimulationSaveStore(opts.storage || createMapStorage(env));
-  let state = save.load?.() || createThreefoldSimulation(CRISIS_THRESHOLDS);
+    createThreefoldSimulationSaveStore(
+      opts.storage || createMapStorage(env),
+      scene?.id
+    );
+  const loadInitialState = () => {
+    const restored = save.load?.();
+    return restored?.scene.id === (scene?.id || 'broken-gate')
+      ? restored
+      : createInitialState();
+  };
+  let state = loadInitialState();
   let running = false;
   let accumulator = 0;
   let tick = 0;
@@ -41,9 +56,17 @@ export function createThreefoldRuntime(options = {}) {
     ...state,
     tick,
     world: {
-      map: { name: 'THE BROKEN GATE' },
+      map: {
+        name:
+          state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+            ? 'THE TIDAL ARCHIVE'
+            : 'THE BROKEN GATE',
+      },
       day: 1,
-      time: state.crisis.elapsedMinutes / 60,
+      time:
+        state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+          ? state.elapsedGameSeconds / 3600
+          : state.crisis.elapsedMinutes / 60,
     },
   });
 
@@ -53,18 +76,33 @@ export function createThreefoldRuntime(options = {}) {
    */
   function applyInput(actions) {
     const pressed = new Set(actions);
+    /**
+     * Apply one action using the current visible frame as pre-action knowledge.
+     * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Chosen normalized command.
+     * @returns {ReturnType<typeof stepThreefoldSimulation>} Updated simulation state.
+     */
+    const dispatchAction = action =>
+      stepThreefoldSimulation(state, { ...action, preActionFrame: frame() });
     const direction = DIRECTIONS.find(action => pressed.has(action));
-    if (direction)
-      state = stepThreefoldSimulation(state, { type: 'move', direction });
-    else if (pressed.has('a') && !previousActions.has('a'))
-      state = stepThreefoldSimulation(state, {
-        type: isGatehouseRatInReach(state) ? 'fight' : 'grow',
+    if (direction) state = dispatchAction({ type: 'move', direction });
+    else if (pressed.has('a') && !previousActions.has('a')) {
+      const growsThroughRat =
+        previewThreefoldGrowthEffects(state).creatureIds.includes(
+          'gatehouse-rat'
+        );
+      state = dispatchAction({
+        type: growsThroughRat
+          ? 'grow'
+          : isGatehouseRatInReach(state)
+            ? 'fight'
+            : 'grow',
       });
-    else if (pressed.has('b') && !previousActions.has('b'))
-      state = stepThreefoldSimulation(state, { type: 'shrink' });
+    } else if (pressed.has('b') && !previousActions.has('b'))
+      state = dispatchAction({ type: 'shrink' });
+    else if (pressed.has('interact') && !previousActions.has('interact'))
+      state = dispatchAction({ type: 'interact' });
     else if (pressed.has('x') && !previousActions.has('x'))
-      state = stepThreefoldSimulation(
-        state,
+      state = dispatchAction(
         isGatehouseRatInReach(state)
           ? { type: 'bypass' }
           : { type: 'wait', elapsedGameMinutes: WAIT_MINUTES }
@@ -106,25 +144,29 @@ export function createThreefoldRuntime(options = {}) {
       const action = typeof command === 'string' ? command : command?.type;
       const normalized = normalizeCommand(action, command);
       if (normalized) {
-        state = stepThreefoldSimulation(state, normalized);
+        state = stepThreefoldSimulation(state, {
+          ...normalized,
+          preActionFrame: frame(),
+        });
         save.save?.(state);
       }
       return frame();
     },
     getSnapshot: snapshot,
     getState: () => state,
-    getJournal: () => [],
+    getJournal: () =>
+      (state.episode.witnessLedger || []).map(presentThreefoldWitnessEntry),
     save() {
       save.save?.(state);
       return state;
     },
     listSaves: () => [],
     loadSlot() {
-      state = save.load?.() || createThreefoldSimulation(CRISIS_THRESHOLDS);
+      state = loadInitialState();
       return frame();
     },
     resetSave() {
-      state = createThreefoldSimulation(CRISIS_THRESHOLDS);
+      state = createInitialState();
       accumulator = 0;
       previousActions.clear();
       save.clear?.();
@@ -134,7 +176,8 @@ export function createThreefoldRuntime(options = {}) {
     exportSave: () => serializeThreefoldSimulation(state),
     importSave(/** @type {unknown} */ serialized) {
       const restored = restoreThreefoldSimulation(serialized);
-      if (!restored) throw new Error('Invalid THREEFOLD save data.');
+      if (!restored || restored.scene.id !== (scene?.id || 'broken-gate'))
+        throw new Error('Invalid THREEFOLD save data.');
       state = restored;
       save.save?.(state);
       return frame();
@@ -167,7 +210,11 @@ function createMapStorage(env) {
 function normalizeCommand(action, command) {
   if (typeof action !== 'string') return null;
   if (DIRECTIONS.includes(action)) return { type: 'move', direction: action };
-  if (['move', 'grow', 'shrink', 'wait', 'fight', 'bypass'].includes(action))
+  if (
+    ['move', 'grow', 'shrink', 'wait', 'interact', 'fight', 'bypass'].includes(
+      action
+    )
+  )
     return action === 'move'
       ? { type: 'move', direction: command.direction }
       : action === 'wait'

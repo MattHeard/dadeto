@@ -15,7 +15,6 @@ describe('THREEFOLD Broken Gate scene', () => {
     expect(scene).toEqual(repeated);
     expect(scene).not.toBe(repeated);
     expect(scene.geometry).not.toBe(repeated.geometry);
-    expect(scene.creatures).not.toBe(repeated.creatures);
     expect(scene.id).toBe('broken-gate');
     expect(scene.bounds).toEqual({
       min: { x: 0, y: 0 },
@@ -40,14 +39,34 @@ describe('THREEFOLD Broken Gate scene', () => {
       'gate-counterweight',
       'landing-piling',
       'drainage-weir',
+      'signal-station',
+    ]);
+    expect(scene.interactables.map(({ id }) => id)).toEqual([
+      'ferry-mooring-line',
+      'latchfolk-watchkeeper',
+      'upland-road-exit',
+      'relief-gate-locking-pawl',
+      'signal-station-console',
+    ]);
+    expect(scene.interactables[1].position).toEqual({ x: 7.25, y: 7.25 });
+    expect(scene.interactables[2].position).toEqual({ x: 0.5, y: 2 });
+    expect(scene.creatures).toMatchObject([
+      {
+        id: 'gatehouse-rat',
+        position: { x: 3.28, y: 4 },
+        bounds: {
+          min: { x: 3.18, y: 3.9, z: 0 },
+          max: { x: 3.38, y: 4.1, z: 0.2032 },
+        },
+      },
     ]);
 
     scene.geometry[0].bounds.min.x = -100;
     scene.areas[0].bounds.min.x = -100;
-    scene.creatures[0].position.x = -100;
+    scene.creatures[0].bounds.min.x = -100;
     expect(createBrokenGateScene().geometry[0].bounds.min.x).toBe(3.45);
     expect(createBrokenGateScene().areas[0].bounds.min.x).toBe(2);
-    expect(createBrokenGateScene().creatures[0].position.x).toBe(3.28);
+    expect(createBrokenGateScene().creatures[0].bounds.min.x).toBe(3.18);
   });
 
   test('grows through the authored wall and preserves its rubble in saves and views', () => {
@@ -69,6 +88,7 @@ describe('THREEFOLD Broken Gate scene', () => {
       'gate-counterweight',
       'landing-piling',
       'relief-gate',
+      'signal-station',
     ]);
 
     const finer = changeScale(grown, -1);

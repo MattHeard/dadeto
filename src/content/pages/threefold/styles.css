@@ -35,3 +35,383 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* Keep the standalone page on an 8px layout grid around the 4px canvas grid. */
+:root {
+  --threefold-layout-grid: 8px;
+}
+
+.game-shell {
+  padding: 24px 32px;
+}
+
+.masthead {
+  padding-bottom: 24px;
+}
+
+.play-layout {
+  gap: 32px;
+  padding: 32px 0;
+}
+
+.screen-frame {
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.screen-glow {
+  padding: 8px;
+}
+
+.screen-caption {
+  gap: 16px;
+  margin: 16px 0 0;
+}
+
+.side-panel {
+  gap: calc(var(--threefold-layout-grid) * 2);
+}
+
+.chapter-copy {
+  padding: 0 0 8px;
+}
+
+.chapter-copy h2 {
+  margin: 16px 0;
+}
+
+.control-card {
+  gap: 16px;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.control-card > div {
+  gap: 8px;
+}
+
+.keycap {
+  min-width: 48px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
+.touch-pad {
+  gap: calc(var(--threefold-layout-grid) * 2);
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.dpad {
+  grid-template-columns: repeat(3, 40px);
+  grid-template-rows: repeat(2, 40px);
+  gap: var(--threefold-layout-grid);
+}
+
+.dpad button,
+.dpad button:nth-child(2),
+.dpad button:nth-child(3),
+.dpad button:nth-child(4) {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+.touch-actions {
+  gap: var(--threefold-layout-grid);
+  justify-items: center;
+}
+
+.face-buttons {
+  gap: var(--threefold-layout-grid);
+  transform: none;
+}
+
+.face-buttons button {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.system-buttons {
+  gap: var(--threefold-layout-grid);
+}
+
+.system-buttons button {
+  width: 40px;
+  min-width: 40px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  transform: none;
+}
+
+.extra-buttons {
+  gap: 8px;
+}
+
+.extra-buttons button {
+  min-height: 32px;
+  padding: 8px;
+}
+
+.utility-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--threefold-layout-grid);
+}
+
+.utility-actions button {
+  min-height: 48px;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.witness-ledger {
+  padding: 8px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.witness-ledger summary {
+  color: var(--moss);
+  cursor: pointer;
+}
+
+.witness-ledger ol {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding-left: 24px;
+}
+
+.witness-ledger li {
+  padding: 8px;
+  border-left: 4px solid var(--moss);
+  background: #102823;
+}
+
+.witness-event {
+  display: grid;
+  gap: 8px;
+}
+
+.witness-event p {
+  margin: 0;
+}
+
+.witness-event strong {
+  color: var(--ink);
+}
+
+.slot-picker {
+  gap: 8px;
+}
+
+.slot-picker select {
+  min-height: 40px;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+footer {
+  gap: calc(var(--threefold-layout-grid) * 2);
+  padding-top: 16px;
+}
+
+@media (max-width: 850px) {
+  .game-shell {
+    padding: 24px;
+  }
+
+  .play-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px 0;
+  }
+}
+
+@media (max-width: 650px) {
+  .game-shell {
+    padding: max(16px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom))
+      max(16px, env(safe-area-inset-left));
+  }
+
+  .masthead {
+    padding-bottom: 8px;
+  }
+
+  .play-layout {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .screen-frame {
+    max-width: min(
+      100%,
+      max(
+        160px,
+        calc(
+          (100svh - 336px - env(safe-area-inset-top) -
+                env(safe-area-inset-bottom)) * 160 / 144
+        )
+      )
+    );
+    padding: 8px;
+  }
+
+  .screen-glow {
+    padding: 8px;
+  }
+
+  .side-panel {
+    gap: 16px;
+  }
+
+  .touch-pad {
+    display: grid;
+    grid-template-columns: minmax(136px, 1fr) 128px;
+    gap: 16px;
+    min-height: 144px;
+    padding: 16px;
+  }
+
+  .touch-pad button {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 8px;
+  }
+
+  .dpad button,
+  .dpad button:nth-child(2),
+  .dpad button:nth-child(3),
+  .dpad button:nth-child(4) {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .face-buttons button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .extra-buttons button {
+    width: 128px;
+    min-height: 32px;
+    padding: 8px;
+  }
+
+  .utility-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 350px) {
+  .utility-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .touch-pad {
+    grid-template-columns: 120px 112px;
+    gap: 8px;
+    min-height: 128px;
+    padding: 8px;
+  }
+
+  .dpad {
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(2, 40px);
+    gap: 0;
+  }
+
+  .dpad button,
+  .dpad button:nth-child(2),
+  .dpad button:nth-child(3),
+  .dpad button:nth-child(4) {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .touch-pad button {
+    min-height: 40px;
+    padding: 8px;
+  }
+
+  .face-buttons button {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .system-buttons button {
+    width: 40px;
+    min-width: 40px;
+    min-height: 32px;
+    padding: 0 8px;
+  }
+
+  .extra-buttons {
+    gap: 8px;
+  }
+
+  .extra-buttons button {
+    width: 112px;
+    min-width: 112px;
+    min-height: 32px;
+    padding: 0 8px;
+  }
+}
+
+@media (max-height: 700px) and (orientation: landscape) {
+  .game-shell {
+    padding: 16px max(16px, env(safe-area-inset-left));
+  }
+
+  .masthead {
+    padding-bottom: 8px;
+  }
+
+  .play-layout {
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .screen-frame {
+    max-height: calc(100dvh - 80px);
+    max-width: calc((100dvh - 144px) * 160 / 144);
+    padding: 8px;
+  }
+
+  .screen-glow {
+    padding: 8px;
+  }
+
+  .side-panel {
+    gap: 8px;
+  }
+
+  .touch-pad {
+    display: grid;
+    min-height: 128px;
+    padding: 8px;
+  }
+
+  .utility-actions button {
+    min-height: 40px;
+  }
+}

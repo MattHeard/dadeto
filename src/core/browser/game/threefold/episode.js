@@ -1,0 +1,218 @@
+import { heightAtScale } from './spatial.js';
+import {
+  EPISODE_CLOSURES,
+  FERRY_OUTCOMES,
+  LATCHFOLK_OUTCOMES,
+  PASSENGER_OUTCOMES,
+} from './episode-values.js';
+import { normalizeThreefoldWitnessLedger } from './witness-ledger.js';
+export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
+/** Stable identifier for the authored Latchfolk watchkeeper interactable. */
+export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
+export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
+  'gate-counterweight',
+  'relief-gate',
+];
+const MOORING_ID = 'ferry-mooring-line';
+const UPLAND_ROAD_ID = 'upland-road-exit';
+const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
+
+/** @typedef {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, gateRepairedBeforeSurge?: true, closedBy?: 'reported'|'departed', witnessLedger?: Array<Record<string, any>>}} ThreefoldEpisodeState */
+
+/**
+ * Create the opening passenger and ferry state for the Broken Gate episode.
+ * @returns {ThreefoldEpisodeState} Initial episode state.
+ */
+export function createThreefoldEpisodeState() {
+  return {
+    passengers: 'aboard',
+    ferry: 'afloat',
+    latchfolk: 'unwarned',
+  };
+}
+
+/**
+ * Rescue one passenger group from the ferry at its mooring before surge.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when rescue is unavailable.
+ */
+export function attemptThreefoldPassengerRescue(state) {
+  const { episode, crisis } = state;
+  if (
+    (episode.passengers !== 'aboard' && episode.passengers !== 'partial') ||
+    crisis.elapsedMinutes >= crisis.thresholds.surgeAtMinutes ||
+    !isWithinInteractionRange(state, MOORING_ID)
+  )
+    return episode;
+  return {
+    ...episode,
+    passengers: episode.passengers === 'aboard' ? 'partial' : 'evacuated',
+  };
+}
+
+/**
+ * Warn the Latchfolk watchkeeper before the lower settlement is hit by the surge.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when warning is unavailable.
+ */
+export function attemptThreefoldLatchfolkWarning(state) {
+  const { episode, crisis } = state;
+  if (
+    episode.latchfolk !== 'unwarned' ||
+    crisis.elapsedMinutes >= crisis.thresholds.surgeAtMinutes ||
+    !isWithinInteractionRange(state, THREEFOLD_LATCHFOLK_INTERACTABLE_ID)
+  )
+    return episode;
+  return { ...episode, latchfolk: 'warned' };
+}
+
+/**
+ * Withdraw from the gatehouse when Mara reaches the upland road.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when withdrawal is unavailable.
+ */
+export function attemptThreefoldWithdrawal(state) {
+  const { episode } = state;
+  if (!isWithinInteractionRange(state, UPLAND_ROAD_ID)) return episode;
+  return { ...episode, withdrawn: true, closedBy: 'departed' };
+}
+
+/**
+ * File the episode report after the storm while the signal station still stands.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Reported episode state or the original when reporting is unavailable.
+ */
+export function attemptThreefoldReport(state) {
+  const { episode, crisis, player } = state;
+  if (
+    crisis.stage !== 'aftermath' ||
+    player.destroyedGeometryIds.includes(
+      THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+    ) ||
+    !isWithinInteractionRange(state, 'signal-station-console')
+  )
+    return episode;
+  return { ...episode, closedBy: 'reported' };
+}
+
+/**
+ * Repair the forced-open relief gate by freeing its locking pawl.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Repaired episode state or the original value when repair is unavailable.
+ */
+export function attemptThreefoldGateRepair(state) {
+  const { episode, crisis } = state;
+  if (episode.gateRepaired === true) return episode;
+  const beforeSurge = crisis.stage === 'rising' || crisis.stage === 'urgent';
+  const afterSurge = crisis.stage === 'surge' || crisis.stage === 'aftermath';
+  if (!beforeSurge && !afterSurge) return episode;
+  if (beforeSurge ? episode.ferry === 'lost' : episode.ferry !== 'lost')
+    return episode;
+  if (state.player.scale !== -2) return episode;
+  const gateWasForcedOpen = THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
+    state.player.destroyedGeometryIds.includes(id)
+  );
+  if (!gateWasForcedOpen) return episode;
+  if (!isWithinInteractionRange(state, GATE_REPAIR_ID)) return episode;
+  return {
+    ...episode,
+    gateRepaired: true,
+    ...(beforeSurge ? { gateRepairedBeforeSurge: true } : {}),
+  };
+}
+
+/**
+ * Resolve ferry and settlement outcomes while retaining successful warnings.
+ * @param {ReturnType<typeof createThreefoldEpisodeState>} episode Current episode outcomes.
+ * @param {ReturnType<import('./crisis.js').createCrisisClock>} crisis Current deterministic crisis clock.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated or unchanged episode state.
+ */
+export function advanceThreefoldEpisode(episode, crisis) {
+  if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath') return episode;
+  const passengers =
+    episode.passengers === 'aboard' ? 'lost' : episode.passengers;
+  const latchfolk =
+    episode.latchfolk === 'warned'
+      ? 'safe'
+      : episode.latchfolk === 'unwarned'
+        ? 'lost'
+        : episode.latchfolk;
+  if (
+    episode.ferry === 'lost' &&
+    episode.passengers === passengers &&
+    episode.latchfolk === latchfolk
+  )
+    return episode;
+  return { ...episode, passengers, ferry: 'lost', latchfolk };
+}
+
+/**
+ * Rebuild and validate saved passenger, ferry, and withdrawal outcomes.
+ * @param {unknown} candidate Saved episode state.
+ * @returns {ReturnType<typeof createThreefoldEpisodeState>} Canonical episode state.
+ */
+export function normalizeThreefoldEpisodeState(candidate) {
+  if (!candidate || typeof candidate !== 'object')
+    throw new TypeError('Episode outcome state is required.');
+  const state = /** @type {Record<string, unknown>} */ (candidate);
+  const latchfolk =
+    state.latchfolk === undefined ? 'unwarned' : state.latchfolk;
+  const withdrawn = state.withdrawn === undefined ? false : state.withdrawn;
+  const gateRepaired =
+    state.gateRepaired === undefined ? false : state.gateRepaired;
+  const gateRepairedBeforeSurge =
+    state.gateRepairedBeforeSurge === undefined
+      ? false
+      : state.gateRepairedBeforeSurge;
+  const closedBy =
+    state.closedBy === undefined && withdrawn === true
+      ? 'departed'
+      : state.closedBy;
+  const witnessLedger = normalizeThreefoldWitnessLedger(state.witnessLedger);
+  if (
+    typeof state.passengers !== 'string' ||
+    !PASSENGER_OUTCOMES.has(state.passengers) ||
+    typeof state.ferry !== 'string' ||
+    !FERRY_OUTCOMES.has(state.ferry) ||
+    typeof latchfolk !== 'string' ||
+    !LATCHFOLK_OUTCOMES.has(latchfolk) ||
+    typeof withdrawn !== 'boolean' ||
+    typeof gateRepaired !== 'boolean' ||
+    typeof gateRepairedBeforeSurge !== 'boolean' ||
+    (gateRepairedBeforeSurge && !gateRepaired) ||
+    (closedBy !== undefined &&
+      (typeof closedBy !== 'string' ||
+        !EPISODE_CLOSURES.has(closedBy) ||
+        (closedBy === 'departed' && withdrawn !== true) ||
+        (closedBy === 'reported' && withdrawn === true)))
+  )
+    throw new RangeError('Episode outcome state is invalid.');
+  return /** @type {ReturnType<typeof createThreefoldEpisodeState>} */ ({
+    passengers: state.passengers,
+    ferry: state.ferry,
+    latchfolk,
+    ...(withdrawn ? { withdrawn: true } : {}),
+    ...(gateRepaired ? { gateRepaired: true } : {}),
+    ...(gateRepairedBeforeSurge ? { gateRepairedBeforeSurge: true } : {}),
+    ...(closedBy ? { closedBy } : {}),
+    ...(witnessLedger.length > 0 ? { witnessLedger } : {}),
+  });
+}
+
+/**
+ * Check whether Mara can reach one authored interaction target at her current scale.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @param {string} id Authored interaction target identifier.
+ * @returns {boolean} Whether the target exists and is within reach.
+ */
+function isWithinInteractionRange(state, id) {
+  const target = state.scene.interactables.find(item => item.id === id);
+  if (!target) return false;
+  const reachMeters = heightAtScale(state.player.scale) * 0.55;
+  return (
+    Math.hypot(
+      state.player.position.x - target.position.x,
+      state.player.position.y - target.position.y
+    ) <= reachMeters
+  );
+}

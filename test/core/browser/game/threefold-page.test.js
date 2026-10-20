@@ -1,6 +1,23 @@
 import { jest } from '@jest/globals';
+import { readFileSync } from 'node:fs';
+
+const THREEFOLD_HTML = readFileSync(
+  new URL(
+    '../../../../src/content/pages/threefold/index.html',
+    import.meta.url
+  ),
+  'utf8'
+);
+const THREEFOLD_CSS = readFileSync(
+  new URL(
+    '../../../../src/content/pages/threefold/styles.css',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 const mockStartMosslightPage = jest.fn(() => () => {});
+const mockDrawGameFrame = jest.fn();
 
 jest.unstable_mockModule(
   '../../../../src/core/browser/game/mosslight-valley/pagePresenter.js',
@@ -19,13 +36,116 @@ jest.unstable_mockModule(
     startMosslightPage: mockStartMosslightPage,
   })
 );
+jest.unstable_mockModule(
+  '../../../../src/core/browser/game/mosslight-valley/renderer.js',
+  () => ({
+    drawGameFrame: mockDrawGameFrame,
+    toFramePayload: jest.fn(() => ({})),
+  })
+);
 
 const { startThreefoldPage } = await import(
   '../../../../src/core/browser/game/threefold/page.js'
 );
 
 describe('THREEFOLD page adapter', () => {
-  beforeEach(() => mockStartMosslightPage.mockClear());
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('exposes an accessible touch interaction for each episode choice', () => {
+    expect(THREEFOLD_HTML).toContain('data-action="interact"');
+    expect(THREEFOLD_HTML).toContain(
+      'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
+    );
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
+  });
+
+  test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
+    expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
+    expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
+    expect(THREEFOLD_CSS).toContain(
+      'grid-template-columns: repeat(4, minmax(0, 1fr))'
+    );
+    expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
+    expect(THREEFOLD_CSS).toContain('transform: none');
+    expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
+    expect(THREEFOLD_HTML).toContain('aria-live="polite"');
+  });
+
+  test('updates the accessible witness ledger beside the shared screen', () => {
+    const { documentObj, list } = createLedgerDocument();
+    const drawFrame = jest.fn();
+    startThreefoldPage({
+      documentObj,
+      windowObj: { localStorage: {} },
+      navigatorObj: {},
+      drawFrame,
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          witnessLedger: [
+            {
+              title: 'LATER REPAIR · 9.75 GAME MINUTES',
+              intention: 'Repair the relief gate.',
+              knowledge: 'Known then: channel flooded.',
+              consequence: 'Observed: passengers lost; gate repaired.',
+              relation: 'Linked to witness-1.',
+            },
+            {
+              title: 'OBSERVATION · 9 GAME MINUTES',
+              intention: 'Wait 5 in-game minutes.',
+              knowledge: 'Known then: gate open.',
+              consequence: 'Observed: channel flooded.',
+              relation: null,
+            },
+          ],
+        },
+      }
+    );
+
+    expect(drawFrame).toHaveBeenCalledTimes(1);
+    expect(list.children).toHaveLength(2);
+    expect(collectText(list.children)).toContain(
+      'Known then: channel flooded.'
+    );
+    expect(collectText(list.children)).toContain('Linked to witness-1.');
+  });
+
+  test('uses the shared Mosslight renderer and shows the empty ledger state', () => {
+    const { documentObj, list } = createLedgerDocument();
+    startThreefoldPage({
+      documentObj,
+      windowObj: {},
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const context = {};
+    page.drawFrame(context, {});
+
+    expect(mockDrawGameFrame).toHaveBeenCalledWith(context, {});
+    expect(collectText(list.children)).toContain(
+      'No gate events recorded yet.'
+    );
+  });
+
+  test('tolerates a document without the witness ledger list', () => {
+    const drawFrame = jest.fn();
+    startThreefoldPage({
+      documentObj: { querySelector: () => null },
+      windowObj: {},
+      navigatorObj: {},
+      drawFrame,
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    expect(() => page.drawFrame({}, {})).not.toThrow();
+    expect(drawFrame).toHaveBeenCalled();
+  });
 
   test('uses the supplied storage and shared Mosslight page presenter', () => {
     const storage = {
@@ -78,4 +198,124 @@ describe('THREEFOLD page adapter', () => {
       'broken-gate'
     );
   });
+
+  test('selects the standalone sluice route and updates its Mosslight page copy', () => {
+    const elements = new Map(
+      [
+        '#chapter-subtitle',
+        '#chapter-tag',
+        '#chapter-eyebrow',
+        '#chapter-heading',
+        '#chapter-description',
+        '#interact-label',
+        '#scene-link',
+        '#game-footer',
+        '#interact-control',
+        '#witness-ledger',
+      ].map(selector => [selector, { setAttribute: jest.fn() }])
+    );
+    const documentObj = {
+      querySelector: selector => elements.get(selector),
+    };
+    const windowObj = {
+      location: { search: '?scene=sluice' },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    };
+    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const state = page.createRuntime({ env: new Map() }).getState();
+
+    expect(state.scene.id).toBe('small-world-sluice');
+    expect(elements.get('#chapter-subtitle').textContent).toBe(
+      'The Tidal Archive'
+    );
+    expect(elements.get('#scene-link').href).toBe('/threefold/');
+    expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+      'aria-label',
+      'Operate the sluice service valve'
+    );
+    expect(elements.get('#witness-ledger').hidden).toBe(true);
+  });
+
+  test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
+    startThreefoldPage({
+      documentObj: { querySelector: () => null },
+      windowObj: { location: { search: '?scene=broken-gate' } },
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    expect(page.createRuntime({ env: new Map() }).getState().scene.id).toBe(
+      'broken-gate'
+    );
+
+    mockStartMosslightPage.mockClear();
+    startThreefoldPage({
+      documentObj: { querySelector: () => null },
+      windowObj: { location: { search: '?scene=sluice' } },
+      navigatorObj: {},
+    });
+    const sluicePage = mockStartMosslightPage.mock.calls[0][0];
+    expect(
+      sluicePage.createRuntime({ env: new Map() }).getState().scene.id
+    ).toBe('small-world-sluice');
+  });
 });
+
+/**
+ * Create the minimum DOM surface used by the text-only ledger renderer.
+ * @returns {{documentObj: any, list: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}}} Fake document and event list.
+ */
+function createLedgerDocument() {
+  const list = {
+    children: [],
+    replaceChildren() {
+      this.children = [];
+    },
+    appendChild(node) {
+      this.children.push(node);
+    },
+  };
+  return {
+    list,
+    documentObj: {
+      querySelector: selector =>
+        selector === '#witness-ledger-entries' ? list : null,
+      createElement: tag => createFakeNode(tag),
+      createTextNode: textContent => ({ textContent }),
+    },
+  };
+}
+
+/**
+ * Build a text-only node for the page-presenter regression.
+ * @param {string} tag HTML element name.
+ * @returns {any} Minimal node adapter.
+ */
+function createFakeNode(tag) {
+  return {
+    tag,
+    children: [],
+    appendChild(node) {
+      this.children.push(node);
+    },
+    append(...nodes) {
+      this.children.push(...nodes);
+    },
+  };
+}
+
+/**
+ * Gather accessible text from the fake ledger tree.
+ * @param {any[]} nodes Tree nodes.
+ * @returns {string} Joined text content.
+ */
+function collectText(nodes) {
+  return nodes
+    .map(node => `${node.textContent || ''}${collectText(node.children || [])}`)
+    .join(' ');
+}

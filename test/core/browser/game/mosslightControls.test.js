@@ -164,7 +164,6 @@ test('keyboard and gamepad expose only eight controller buttons', () => {
     'q',
     'c',
     'v',
-    'e',
     'm',
   ])
     expect(
