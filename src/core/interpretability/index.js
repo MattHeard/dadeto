@@ -231,9 +231,10 @@ export function createInterpretabilitySchemasV1(z) {
 /**
  * Construct strict schemas for stable recurrent neuron and activation identities.
  * @param {any} z Injected Zod namespace.
+ * @param {(canonicalIdentity: string) => string} [hashCanonicalIdentity] Synchronous digest adapter for circuit snapshot validation.
  * @returns {Record<string, any>} V2 runtime schemas and JSON Schema forms.
  */
-export function createInterpretabilitySchemasV2(z) {
+export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
   const schemaVersion = z.literal(2);
   const { pinnedModel } = createPinnedModelSchema(z);
   const recurrentNeuronComponentSchemaV2 = z
@@ -347,12 +348,25 @@ export function createInterpretabilitySchemasV2(z) {
       snapshot => snapshot.id === circuitSnapshotId(snapshot.contentHash)
     );
 
+  const identityGraphSchemaV2 = createIdentityGraphSchemaV2(
+    z,
+    {
+      recurrentNeuronComponentSchemaV2,
+      recurrentActivationPositionSchemaV2,
+      activationObservationSchemaV2,
+      structuralConnectionSchemaV2,
+      circuitStructuralSnapshotSchemaV2,
+    },
+    hashCanonicalIdentity
+  );
+
   return Object.freeze({
     recurrentNeuronComponentSchemaV2,
     recurrentActivationPositionSchemaV2,
     activationObservationSchemaV2,
     structuralConnectionSchemaV2,
     circuitStructuralSnapshotSchemaV2,
+    identityGraphSchemaV2,
     interpretabilityJsonSchemasV2: Object.freeze({
       recurrentNeuronComponent: z.toJSONSchema(
         recurrentNeuronComponentSchemaV2
@@ -365,8 +379,311 @@ export function createInterpretabilitySchemasV2(z) {
       circuitStructuralSnapshot: z.toJSONSchema(
         circuitStructuralSnapshotSchemaV2
       ),
+      identityGraph: z.toJSONSchema(identityGraphSchemaV2),
     }),
   });
+}
+
+/**
+ * Build the injected parser for portable V2 identity graph envelopes.
+ * @param {Record<string, any>} z Injected Zod-compatible API.
+ * @param {Record<string, any>} schemas V2 record schemas.
+ * @param {(canonicalIdentity: string) => string} [hashCanonicalIdentity] Synchronous digest adapter.
+ * @returns {any} Strict identity graph schema.
+ */
+function createIdentityGraphSchemaV2(z, schemas, hashCanonicalIdentity) {
+  return z
+    .object({
+      schemaVersion: z.literal(2),
+      components: z.array(schemas.recurrentNeuronComponentSchemaV2),
+      activationPositions: z.array(schemas.recurrentActivationPositionSchemaV2),
+      observations: z.array(schemas.activationObservationSchemaV2),
+      structuralConnections: z.array(schemas.structuralConnectionSchemaV2),
+      circuitSnapshots: z.array(schemas.circuitStructuralSnapshotSchemaV2),
+    })
+    .strict()
+    .refine(
+      /**
+       * @param {Record<string, any>} graph Parsed V2 graph.
+       * @returns {boolean} Whether graph relationships are canonical.
+       */
+      graph => identityGraphIsCanonical(graph, hashCanonicalIdentity)
+    );
+}
+
+/**
+ * Serialize the canonical tuple used to derive a V2 circuit snapshot digest.
+ * @param {Record<string, any>} model Pinned model identity.
+ * @param {Record<string, any>} structure Circuit members and boundaries.
+ * @returns {string} Canonical JSON tuple.
+ */
+function canonicalCircuitSnapshotIdentity(model, structure) {
+  return JSON.stringify([
+    2,
+    model.modelId,
+    model.repository,
+    model.revision,
+    model.architecture,
+    structure.completeness,
+    [...structure.componentIds].sort(),
+    [...structure.connectionIds].sort(),
+    [...structure.boundaryComponentIds].sort(),
+  ]);
+}
+
+/**
+ * Check the relational identity rules used by the injected graph schema.
+ * @param {Record<string, any>} graph Parsed V2 identity graph.
+ * @param {(canonicalIdentity: string) => string} [hashCanonicalIdentity] Synchronous digest adapter.
+ * @returns {boolean} Whether graph identities and links are coherent.
+ */
+function identityGraphIsCanonical(graph, hashCanonicalIdentity) {
+  const components = new Map(
+    graph.components.map(
+      /**
+       * @param {Record<string, any>} component Component record.
+       * @returns {[string, Record<string, any>]} Map entry.
+       */
+      component => [component.id, component]
+    )
+  );
+  const positions = new Map(
+    graph.activationPositions.map(
+      /**
+       * @param {Record<string, any>} position Activation position.
+       * @returns {[string, Record<string, any>]} Map entry.
+       */
+      position => [position.id, position]
+    )
+  );
+  const connections = new Map(
+    graph.structuralConnections.map(
+      /**
+       * @param {Record<string, any>} connection Structural connection.
+       * @returns {[string, Record<string, any>]} Map entry.
+       */
+      connection => [connection.id, connection]
+    )
+  );
+  return (
+    graphHasUniqueRecordIds(graph) &&
+    graphHasCanonicalReferences(graph, components, positions) &&
+    connectionsHaveCanonicalEndpoints(
+      graph.structuralConnections,
+      components
+    ) &&
+    snapshotsHaveCanonicalIdentity(
+      graph.circuitSnapshots,
+      components,
+      connections,
+      hashCanonicalIdentity
+    )
+  );
+}
+
+/**
+ * Check every identity graph collection for duplicate IDs.
+ * @param {Record<string, any>} graph V2 identity graph.
+ * @returns {boolean} Whether all record IDs are unique.
+ */
+function graphHasUniqueRecordIds(graph) {
+  const records = [
+    ...graph.components,
+    ...graph.activationPositions,
+    ...graph.observations,
+    ...graph.structuralConnections,
+    ...graph.circuitSnapshots,
+  ];
+  return (
+    new Set(
+      records.map(
+        /**
+         * @param {Record<string, any>} record Identity record.
+         * @returns {string} Record ID.
+         */
+        record => record.id
+      )
+    ).size === records.length
+  );
+}
+
+/**
+ * Check activation-position and observation references.
+ * @param {Record<string, any>} graph V2 identity graph.
+ * @param {Map<string, Record<string, any>>} components Components by ID.
+ * @param {Map<string, Record<string, any>>} positions Activation positions by ID.
+ * @returns {boolean} Whether every reference resolves.
+ */
+function graphHasCanonicalReferences(graph, components, positions) {
+  return (
+    graph.activationPositions.every(
+      /**
+       * @param {Record<string, any>} position Activation position.
+       * @returns {boolean} Whether its component exists.
+       */
+      position => components.has(position.componentId)
+    ) &&
+    graph.observations.every(
+      /**
+       * @param {Record<string, any>} observation Activation observation.
+       * @returns {boolean} Whether its position exists.
+       */
+      observation => positions.has(observation.activationPositionId)
+    )
+  );
+}
+
+/**
+ * Check connection endpoints against component coordinates and checkpoints.
+ * @param {Array<Record<string, any>>} connections Structural connections.
+ * @param {Map<string, Record<string, any>>} components Components by ID.
+ * @returns {boolean} Whether every endpoint matches its component identity.
+ */
+function connectionsHaveCanonicalEndpoints(connections, components) {
+  return connections.every(connection => {
+    const source = components.get(connection.sourceComponentId);
+    const target = components.get(connection.targetComponentId);
+    if (!source || !target) return false;
+    return (
+      source.coordinateId === connection.sourceCoordinateId &&
+      pinnedModelIdentity(source.model) ===
+        pinnedModelIdentity(connection.model) &&
+      target.coordinateId === connection.targetCoordinateId &&
+      pinnedModelIdentity(target.model) ===
+        pinnedModelIdentity(connection.model)
+    );
+  });
+}
+
+/**
+ * Check circuit membership and snapshot digests with the injected hash adapter.
+ * @param {Array<Record<string, any>>} snapshots Circuit snapshots.
+ * @param {Map<string, Record<string, any>>} components Components by ID.
+ * @param {Map<string, Record<string, any>>} connections Connections by ID.
+ * @param {(canonicalIdentity: string) => string} [hashCanonicalIdentity] Digest adapter.
+ * @returns {boolean} Whether every snapshot matches its listed identities.
+ */
+function snapshotsHaveCanonicalIdentity(
+  snapshots,
+  components,
+  connections,
+  hashCanonicalIdentity
+) {
+  if (snapshots.length === 0) return true;
+  if (typeof hashCanonicalIdentity !== 'function') return false;
+  try {
+    return snapshots.every(
+      /**
+       * @param {Record<string, any>} snapshot Circuit snapshot.
+       * @returns {boolean} Whether the snapshot matches its identities.
+       */
+      snapshot =>
+        snapshotHasCanonicalIdentity(
+          snapshot,
+          components,
+          connections,
+          hashCanonicalIdentity
+        )
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check one snapshot's members, checkpoint identity, and content digest.
+ * @param {Record<string, any>} snapshot Circuit snapshot.
+ * @param {Map<string, Record<string, any>>} components Components by ID.
+ * @param {Map<string, Record<string, any>>} connections Connections by ID.
+ * @param {(canonicalIdentity: string) => string} hashCanonicalIdentity Digest adapter.
+ * @returns {boolean} Whether all members and digest match.
+ */
+function snapshotHasCanonicalIdentity(
+  snapshot,
+  components,
+  connections,
+  hashCanonicalIdentity
+) {
+  const memberComponents = /** @type {Array<Record<string, any>|undefined>} */ (
+    snapshot.componentIds.map(
+      /**
+       * @param {string} id Component identity.
+       * @returns {Record<string, any>|undefined} Referenced component.
+       */
+      id => components.get(id)
+    )
+  );
+  const memberConnections =
+    /** @type {Array<Record<string, any>|undefined>} */ (
+      snapshot.connectionIds.map(
+        /**
+         * @param {string} id Connection identity.
+         * @returns {Record<string, any>|undefined} Referenced connection.
+         */
+        id => connections.get(id)
+      )
+    );
+  const hasMissingMember =
+    memberComponents.some(component => !component) ||
+    memberConnections.some(connection => !connection);
+  const hasInvalidBoundary = snapshot.boundaryComponentIds.some(
+    /**
+     * @param {string} id Boundary component identity.
+     * @returns {boolean} Whether the boundary is absent from the circuit.
+     */
+    id => !snapshot.componentIds.includes(id)
+  );
+  if (
+    hasMissingMember ||
+    hasInvalidBoundary ||
+    !membersMatchSnapshotModel(memberComponents, memberConnections, snapshot)
+  )
+    return false;
+  return (
+    hashCanonicalIdentity(
+      canonicalCircuitSnapshotIdentity(snapshot.model, snapshot)
+    ) === snapshot.contentHash
+  );
+}
+
+/**
+ * Check that every component and connection uses the snapshot checkpoint.
+ * @param {Array<Record<string, any>|undefined>} components Snapshot components.
+ * @param {Array<Record<string, any>|undefined>} connections Snapshot connections.
+ * @param {Record<string, any>} snapshot Circuit snapshot.
+ * @returns {boolean} Whether the model identities agree.
+ */
+function membersMatchSnapshotModel(components, connections, snapshot) {
+  return (
+    components.every(
+      component =>
+        component &&
+        pinnedModelIdentity(component.model) ===
+          pinnedModelIdentity(snapshot.model)
+    ) &&
+    connections.every(
+      connection =>
+        connection &&
+        pinnedModelIdentity(connection.model) ===
+          pinnedModelIdentity(snapshot.model)
+    )
+  );
+}
+
+/**
+ * Encode the checkpoint fields that define model identity.
+ * @param {Record<string, any>} model Pinned model.
+ * @returns {string} Canonical model identity.
+ */
+function pinnedModelIdentity(model) {
+  return JSON.stringify([
+    model.modelId,
+    model.repository,
+    model.revision,
+    model.architecture,
+    model.tokenizer?.repository,
+    model.tokenizer?.revision,
+  ]);
 }
 
 /**
@@ -603,17 +920,12 @@ export async function createCircuitStructuralSnapshotV2(
   const componentIds = [...structure.componentIds].sort();
   const connectionIds = [...structure.connectionIds].sort();
   const boundaryComponentIds = [...structure.boundaryComponentIds].sort();
-  const canonicalIdentity = JSON.stringify([
-    2,
-    model.modelId,
-    model.repository,
-    model.revision,
-    model.architecture,
-    structure.completeness,
+  const canonicalIdentity = canonicalCircuitSnapshotIdentity(model, {
+    ...structure,
     componentIds,
     connectionIds,
     boundaryComponentIds,
-  ]);
+  });
   const contentHash = await hashCanonicalIdentity(canonicalIdentity);
   return {
     schemaVersion: 2,
@@ -832,6 +1144,103 @@ export function validateEvidenceGraphV1(graph) {
  */
 function sortGraphRecords(records) {
   return [...records].sort((left, right) => left.id.localeCompare(right.id));
+}
+
+const IDENTITY_GRAPH_COLLECTIONS_V2 = [
+  'components',
+  'activationPositions',
+  'observations',
+  'structuralConnections',
+  'circuitSnapshots',
+];
+
+/**
+ * Validate V2 identity graph data with its injected Zod-compatible schema.
+ * @param {Record<string, any>} graph Identity collections without envelope version.
+ * @param {any} identityGraphSchemaV2 Injected graph schema.
+ * @returns {{valid: true, graph: Record<string, any>}|{valid: false, errors: Array<{code: string}>}} Validation result.
+ */
+export function validateInterpretabilityIdentityGraphV2(
+  graph,
+  identityGraphSchemaV2
+) {
+  if (typeof identityGraphSchemaV2?.safeParse !== 'function') {
+    return { valid: false, errors: [{ code: 'missing-schema-validator' }] };
+  }
+  const parsed = identityGraphSchemaV2.safeParse({
+    schemaVersion: 2,
+    ...graph,
+  });
+  if (!parsed.success) {
+    return { valid: false, errors: [{ code: 'invalid-identity-graph' }] };
+  }
+  return { valid: true, graph: sortIdentityCollectionsV2(parsed.data) };
+}
+
+/**
+ * Export a canonical, validated V2 identity graph envelope.
+ * @param {Record<string, any>} graph Identity collections.
+ * @param {any} identityGraphSchemaV2 Injected graph schema.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<{code: string}>}} Export result.
+ */
+export function exportInterpretabilityIdentityGraphV2(
+  graph,
+  identityGraphSchemaV2
+) {
+  const result = validateInterpretabilityIdentityGraphV2(
+    graph,
+    identityGraphSchemaV2
+  );
+  if (!result.valid) return result;
+  return {
+    valid: true,
+    json: JSON.stringify({ schemaVersion: 2, ...result.graph }),
+  };
+}
+
+/**
+ * Import a portable V2 identity graph envelope.
+ * @param {string} json Portable graph JSON document.
+ * @param {any} identityGraphSchemaV2 Injected graph schema.
+ * @returns {{valid: true, graph: Record<string, any>}|{valid: false, errors: Array<Record<string, string|number>>}} Import result.
+ */
+export function importInterpretabilityIdentityGraphV2(
+  json,
+  identityGraphSchemaV2
+) {
+  if (typeof json !== 'string') {
+    return { valid: false, errors: [{ code: 'invalid-json' }] };
+  }
+  let envelope;
+  try {
+    envelope = JSON.parse(json);
+  } catch {
+    return { valid: false, errors: [{ code: 'invalid-json' }] };
+  }
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
+    return { valid: false, errors: [{ code: 'invalid-document' }] };
+  }
+  if (envelope.schemaVersion !== 2) {
+    return { valid: false, errors: [{ code: 'unsupported-version' }] };
+  }
+  return validateInterpretabilityIdentityGraphV2(
+    envelope,
+    identityGraphSchemaV2
+  );
+}
+
+/**
+ * Sort all validated V2 graph collections without changing their records.
+ * @param {Record<string, any>} graph Parsed graph envelope.
+ * @returns {Record<string, Array<Record<string, any>>>} Canonical collections.
+ */
+function sortIdentityCollectionsV2(graph) {
+  return Object.fromEntries(
+    IDENTITY_GRAPH_COLLECTIONS_V2.map(collection => [
+      collection,
+      sortGraphRecords(graph[collection]),
+    ])
+  );
 }
 
 /**
