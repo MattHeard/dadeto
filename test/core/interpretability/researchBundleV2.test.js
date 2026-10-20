@@ -776,7 +776,7 @@ describe('portable research bundle validation', () => {
       errors: [{ code: 'invalid-document' }],
     });
     expect(
-      importInterpretabilityResearchBundleV2('{"schemaVersion":4}', schemas)
+      importInterpretabilityResearchBundleV2('{"schemaVersion":5}', schemas)
     ).toEqual({
       valid: false,
       errors: [{ code: 'unsupported-version' }],

@@ -46,6 +46,22 @@ describe('optional Zod test double contract', () => {
         type: ['string', 'number', 'boolean'],
       },
     });
+    expect(fallbackSchemas.accuracyEvaluation).toMatchObject({
+      type: 'object',
+      properties: {
+        schemaVersion: { const: 1, type: 'number' },
+        id: { type: 'string', minLength: 1 },
+        estimateLinks: { type: 'array', minItems: 32 },
+        report: {
+          type: 'object',
+          properties: {
+            sampleCountPerVariant: { const: 100000, type: 'number' },
+            variantCount: { const: 32, type: 'number' },
+          },
+        },
+      },
+      additionalProperties: false,
+    });
   });
 
   it('matches installed Zod v4 JSON Schema when the optional package is available', () => {

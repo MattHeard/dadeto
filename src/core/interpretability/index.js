@@ -1,3 +1,5 @@
+const SHA256_PATTERN = /^[a-f0-9]{64}$/i;
+
 /**
  * Construct the shared pinned model schema with a caller-provided Zod API.
  * @param {any} z Injected Zod namespace.
@@ -210,6 +212,80 @@ export function createInterpretabilitySchemasV1(z) {
     ...authoredArtifact,
   });
 
+  const accuracyValue = z.number().min(0).max(1);
+  const meanSquaredError = z.number().min(0);
+  const noiseScale = z.union([
+    z.literal(0.01),
+    z.literal(0.05),
+    z.literal(0.1),
+    z.literal(0.2),
+  ]);
+  const accuracyVariantReportSchemaV1 = z.strictObject({
+    variantId: z.string().min(1),
+    heldOutSplitId: z.string().min(1),
+    noiseScale,
+    referenceAccuracy: accuracyValue,
+    mechanisticEstimate: accuracyValue,
+    samplingEstimate: accuracyValue,
+    mechanisticCompute: z.number().positive(),
+    samplingCompute: z.number().positive(),
+  });
+  const accuracyEvaluationReportSchemaV1 = z.strictObject({
+    schemaVersion,
+    protocolVersion: z.literal('1.0.0'),
+    heldOutSplitId: z.string().min(1),
+    sampleCountPerVariant: z.literal(100000),
+    variantCount: z.literal(32),
+    samplingBaseline: z
+      .object({
+        method: procedureReference,
+        seedCommitment: z.string().regex(SHA256_PATTERN),
+      })
+      .strict(),
+    variants: z.array(accuracyVariantReportSchemaV1).min(32),
+    overall: z
+      .object({
+        mechanisticMse: meanSquaredError,
+        samplingMse: meanSquaredError,
+      })
+      .strict(),
+    byNoiseScale: z
+      .array(
+        z
+          .object({
+            noiseScale,
+            variantCount: z.literal(8),
+            mechanisticMse: meanSquaredError,
+            samplingMse: meanSquaredError,
+          })
+          .strict()
+      )
+      .min(4),
+    referenceAccuracyRange: z
+      .object({
+        minimum: accuracyValue,
+        maximum: accuracyValue,
+        spread: accuracyValue,
+      })
+      .strict(),
+    materialVariationMet: z.boolean(),
+  });
+  const accuracyEvaluationSchemaV1 = authoredRecord({
+    schemaVersion,
+    id: z.string().min(1),
+    estimateLinks: z
+      .array(
+        z
+          .object({
+            variantId: z.string().min(1),
+            estimateId: z.string().min(1),
+          })
+          .strict()
+      )
+      .min(32),
+    report: accuracyEvaluationReportSchemaV1,
+  });
+
   return Object.freeze({
     mechanismSchemaV1,
     hypothesisSchemaV1,
@@ -217,6 +293,7 @@ export function createInterpretabilitySchemasV1(z) {
     evidenceSchemaV1,
     evidenceEdgeSchemaV1,
     mechanisticEstimateSchemaV1,
+    accuracyEvaluationSchemaV1,
     interpretabilityJsonSchemasV1: Object.freeze({
       mechanism: z.toJSONSchema(mechanismSchemaV1),
       hypothesis: z.toJSONSchema(hypothesisSchemaV1),
@@ -224,6 +301,7 @@ export function createInterpretabilitySchemasV1(z) {
       evidence: z.toJSONSchema(evidenceSchemaV1),
       evidenceEdge: z.toJSONSchema(evidenceEdgeSchemaV1),
       mechanisticEstimate: z.toJSONSchema(mechanisticEstimateSchemaV1),
+      accuracyEvaluation: z.toJSONSchema(accuracyEvaluationSchemaV1),
     }),
   });
 }
@@ -1177,8 +1255,9 @@ export function migrateNativeNeuronMechanismV1ToV2(record, schemas) {
 }
 
 /** @typedef {Record<string, any>} InterpretabilityRecord */
+/** @typedef {Record<string, any>} AccuracyEvaluationRecordV1 */
 /** @typedef {{mechanisms?: Array<InterpretabilityRecord>, hypotheses?: Array<InterpretabilityRecord>, experiments?: Array<InterpretabilityRecord>, evidence?: Array<InterpretabilityRecord>, estimates?: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} InterpretabilityGraphV1 */
-/** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any}} InterpretabilitySchemasV1 */
+/** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any, accuracyEvaluationSchemaV1: any}} InterpretabilitySchemasV1 */
 
 /** @type {Record<string, Array<string>>} */
 const referenceFieldsByType = {
@@ -1244,6 +1323,9 @@ function mechanismIdentityKey(record) {
  * @returns {{valid: boolean, errors: Array<Record<string, string>>}} Deterministic validation result.
  */
 export function validateEvidenceGraphV1(graph) {
+  if (!graph || typeof graph !== 'object' || Array.isArray(graph)) {
+    return { valid: false, errors: [{ code: 'invalid-graph' }] };
+  }
   /** @type {Array<[string, Array<InterpretabilityRecord>, boolean]>} */
   const collections = [
     ['mechanisms', graph.mechanisms ?? [], true],
@@ -1454,10 +1536,20 @@ export function exportInterpretabilityResearchBundleV3(bundle, schemas) {
 }
 
 /**
+ * Export a portable V4 bundle with linked held-out accuracy evaluations.
+ * @param {{evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, accuracyEvaluations: Array<AccuracyEvaluationRecordV1>}} bundle Portable research subgraphs and evaluations.
+ * @param {Record<string, any>} schemas Injected subgraph and report schemas.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
+ */
+export function exportInterpretabilityResearchBundleV4(bundle, schemas) {
+  return exportInterpretabilityResearchBundle(bundle, schemas, 4);
+}
+
+/**
  * Validate portable subgraphs and serialize the selected outer envelope version.
  * @param {Record<string, any>} bundle Portable research subgraphs.
  * @param {Record<string, any>} schemas Injected subgraph schemas.
- * @param {2|3} version Outer bundle version.
+ * @param {2|3|4} version Outer bundle version.
  * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
  */
 function exportInterpretabilityResearchBundle(bundle, schemas, version) {
@@ -1498,6 +1590,13 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
       identityResult.errors
     );
   }
+  if (
+    version < 4 &&
+    Array.isArray(bundle.accuracyEvaluations) &&
+    bundle.accuracyEvaluations.length > 0
+  ) {
+    return researchBundleFailure('unsupported-accuracy-evaluations');
+  }
   if (version === 2) {
     return {
       valid: true,
@@ -1519,13 +1618,29 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
       lineageResult.errors
     );
   }
+  /** @type {ReturnType<typeof validateAccuracyEvaluationCollection>} */
+  const accuracyResult =
+    version === 4
+      ? validateAccuracyEvaluationCollection(
+          evidenceResult.graph,
+          bundle.accuracyEvaluations,
+          schemas
+        )
+      : { valid: true, records: [] };
+  if (!accuracyResult.valid) {
+    return researchBundleFailure(
+      'invalid-accuracy-evaluations',
+      accuracyResult.errors
+    );
+  }
   return {
     valid: true,
     json: JSON.stringify({
-      schemaVersion: 3,
+      schemaVersion: version,
       evidenceGraph: { schemaVersion: 1, ...evidenceResult.graph },
       identityGraph: { schemaVersion: 2, ...identityResult.graph },
       mechanismIdentityLinks: lineageResult.links,
+      ...(version === 4 ? { accuracyEvaluations: accuracyResult.records } : {}),
     }),
   };
 }
@@ -1534,7 +1649,7 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
  * Import and validate both subgraphs in a portable research bundle.
  * @param {string} json Portable research bundle JSON.
  * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, nativeNeuronComponentSchemaV2?: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
- * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, string>>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
+ * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, string>>, accuracyEvaluations: Array<AccuracyEvaluationRecordV1>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
  */
 export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (typeof json !== 'string') return researchBundleFailure('invalid-json');
@@ -1547,18 +1662,26 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
     return researchBundleFailure('invalid-document');
   }
-  if (![2, 3].includes(envelope.schemaVersion)) {
+  if (![2, 3, 4].includes(envelope.schemaVersion)) {
     return researchBundleFailure('unsupported-version');
   }
   const allowedKeys =
     envelope.schemaVersion === 2
       ? ['schemaVersion', 'evidenceGraph', 'identityGraph']
-      : [
-          'schemaVersion',
-          'evidenceGraph',
-          'identityGraph',
-          'mechanismIdentityLinks',
-        ];
+      : envelope.schemaVersion === 3
+        ? [
+            'schemaVersion',
+            'evidenceGraph',
+            'identityGraph',
+            'mechanismIdentityLinks',
+          ]
+        : [
+            'schemaVersion',
+            'evidenceGraph',
+            'identityGraph',
+            'mechanismIdentityLinks',
+            'accuracyEvaluations',
+          ];
   if (Object.keys(envelope).some(key => !allowedKeys.includes(key))) {
     return researchBundleFailure('invalid-research-bundle');
   }
@@ -1588,7 +1711,7 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   }
   /** @type {Array<Record<string, string>>} */
   let mechanismIdentityLinks = [];
-  if (envelope.schemaVersion === 3) {
+  if (envelope.schemaVersion >= 3) {
     const lineageResult = deriveMechanismIdentityLinksV3(
       evidenceResult.graph,
       identityResult.graph,
@@ -1610,12 +1733,28 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
     }
     mechanismIdentityLinks = lineageResult.links;
   }
+  /** @type {ReturnType<typeof validateAccuracyEvaluationCollection>} */
+  const accuracyResult =
+    envelope.schemaVersion === 4
+      ? validateAccuracyEvaluationCollection(
+          evidenceResult.graph,
+          envelope.accuracyEvaluations,
+          schemas
+        )
+      : { valid: true, records: [] };
+  if (!accuracyResult.valid) {
+    return researchBundleFailure(
+      'invalid-accuracy-evaluations',
+      accuracyResult.errors
+    );
+  }
   return {
     valid: true,
     bundle: {
       evidenceGraph: evidenceResult.graph,
       identityGraph: identityResult.graph,
       mechanismIdentityLinks,
+      accuracyEvaluations: accuracyResult.records,
     },
   };
 }
@@ -1859,6 +1998,187 @@ function mechanismIdentityLinksMatchV3(actual, expected) {
   });
 }
 
+const ACCURACY_REPORT_NOISE_SCALES_V1 = Object.freeze([0.01, 0.05, 0.1, 0.2]);
+
+/**
+ * Validate canonical report records and their links to submitted estimates.
+ * @param {InterpretabilityGraphV1} evidenceGraph Validated evidence graph.
+ * @param {Array<AccuracyEvaluationRecordV1>} evaluations Persisted reports.
+ * @param {Record<string, any>} schemas Injected report schemas.
+ * @returns {{valid: true, records: Array<AccuracyEvaluationRecordV1>}|{valid: false, errors: Array<Record<string, any>>}} Validation result.
+ */
+function validateAccuracyEvaluationCollection(
+  evidenceGraph,
+  evaluations,
+  schemas
+) {
+  if (!Array.isArray(evaluations)) {
+    return { valid: false, errors: [{ code: 'invalid-accuracy-evaluations' }] };
+  }
+  if (evaluations.length === 0) return { valid: true, records: [] };
+
+  const schemaErrors = validateSubmissionRecords(
+    'accuracyEvaluations',
+    evaluations,
+    schemas?.evidenceGraphSchemasV1?.accuracyEvaluationSchemaV1
+  );
+  if (schemaErrors.length > 0) return { valid: false, errors: schemaErrors };
+
+  /** @type {Array<keyof InterpretabilityGraphV1>} */
+  const graphCollections = [
+    'mechanisms',
+    'hypotheses',
+    'experiments',
+    'estimates',
+    'evidence',
+    'edges',
+  ];
+  const graphRecords = graphCollections.flatMap(
+    collection => evidenceGraph[collection] ?? []
+  );
+  const graphIds = new Set(graphRecords.map(record => record.id));
+  const estimatesById = new Map(
+    (evidenceGraph.estimates ?? []).map(estimate => [estimate.id, estimate])
+  );
+  const evaluationIds = new Set();
+  const errors = [];
+
+  for (const evaluation of evaluations) {
+    if (graphIds.has(evaluation.id) || evaluationIds.has(evaluation.id)) {
+      errors.push({ code: 'duplicate-id', id: evaluation.id });
+      continue;
+    }
+    evaluationIds.add(evaluation.id);
+    validateAccuracyEvaluationLinks(evaluation, estimatesById, errors);
+  }
+  errors.sort((left, right) =>
+    JSON.stringify(left).localeCompare(JSON.stringify(right))
+  );
+  return errors.length > 0
+    ? { valid: false, errors }
+    : { valid: true, records: sortGraphRecords(evaluations) };
+}
+
+/**
+ * Check that report coverage and variant estimate links are complete and consistent.
+ * @param {AccuracyEvaluationRecordV1} evaluation Persisted report.
+ * @param {Map<string, InterpretabilityRecord>} estimates Existing estimate records.
+ * @param {Array<Record<string, any>>} errors Mutable validation errors.
+ */
+function validateAccuracyEvaluationLinks(evaluation, estimates, errors) {
+  const { report, estimateLinks } = evaluation;
+  /** @type {Array<{variantId: string, noiseScale: number, referenceAccuracy: number}>} */
+  const variants = report.variants;
+  if (
+    variants.length !== 32 ||
+    report.byNoiseScale.length !== ACCURACY_REPORT_NOISE_SCALES_V1.length ||
+    estimateLinks.length !== variants.length
+  ) {
+    errors.push({
+      code: 'invalid-accuracy-evaluation-links',
+      id: evaluation.id,
+    });
+    return;
+  }
+
+  const variantsById = new Map();
+  const scaleCounts = new Map(
+    ACCURACY_REPORT_NOISE_SCALES_V1.map(noiseScale => [noiseScale, 0])
+  );
+  for (const variant of variants) {
+    if (variantsById.has(variant.variantId)) {
+      errors.push({
+        code: 'duplicate-accuracy-variant-id',
+        id: evaluation.id,
+        variantId: variant.variantId,
+      });
+    }
+    variantsById.set(variant.variantId, variant);
+    scaleCounts.set(
+      variant.noiseScale,
+      /** @type {number} */ (scaleCounts.get(variant.noiseScale)) + 1
+    );
+  }
+  if (
+    ACCURACY_REPORT_NOISE_SCALES_V1.some(
+      noiseScale => scaleCounts.get(noiseScale) !== 8
+    )
+  ) {
+    errors.push({ code: 'invalid-accuracy-scale-coverage', id: evaluation.id });
+  }
+
+  const linkedVariants = new Set();
+  const linkedEstimates = new Set();
+  for (const link of estimateLinks) {
+    const variant = variantsById.get(link.variantId);
+    const estimate = estimates.get(link.estimateId);
+    if (
+      !variant ||
+      linkedVariants.has(link.variantId) ||
+      linkedEstimates.has(link.estimateId)
+    ) {
+      errors.push({
+        code: 'invalid-accuracy-evaluation-links',
+        id: evaluation.id,
+        variantId: link.variantId,
+      });
+      continue;
+    }
+    linkedVariants.add(link.variantId);
+    linkedEstimates.add(link.estimateId);
+    if (!estimate) {
+      errors.push({
+        code: 'unresolved-estimate-reference',
+        id: evaluation.id,
+        estimateId: link.estimateId,
+      });
+      continue;
+    }
+    if (
+      estimate.metric?.name !== 'accuracy' ||
+      estimate.metric.value !== variant.mechanisticEstimate ||
+      estimate.heldOutSplitId !== report.heldOutSplitId
+    ) {
+      errors.push({
+        code: 'mismatched-estimate-reference',
+        id: evaluation.id,
+        estimateId: link.estimateId,
+      });
+    }
+  }
+  if (linkedVariants.size !== variantsById.size) {
+    errors.push({
+      code: 'invalid-accuracy-evaluation-links',
+      id: evaluation.id,
+    });
+  }
+
+  const scaleSummaries = new Map(
+    /** @type {Array<{noiseScale: number}>} */ (report.byNoiseScale).map(
+      summary => [summary.noiseScale, summary]
+    )
+  );
+  if (
+    scaleSummaries.size !== ACCURACY_REPORT_NOISE_SCALES_V1.length ||
+    ACCURACY_REPORT_NOISE_SCALES_V1.some(
+      noiseScale => !scaleSummaries.has(noiseScale)
+    )
+  ) {
+    errors.push({ code: 'invalid-accuracy-scale-summary', id: evaluation.id });
+  }
+  const accuracyValues = /** @type {Array<{referenceAccuracy: number}>} */ (
+    variants
+  ).map(variant => variant.referenceAccuracy);
+  const referenceSpread =
+    Math.max(...accuracyValues) - Math.min(...accuracyValues);
+  if (report.materialVariationMet !== referenceSpread >= 0.05) {
+    errors.push({
+      code: 'invalid-material-variation-result',
+      id: evaluation.id,
+    });
+  }
+}
+
 /**
  * Wrap a nested graph failure in its stable research-bundle category.
  * @param {string} code Bundle error category.
@@ -2036,6 +2356,44 @@ export function appendMechanisticEstimateV1(graph, estimate, schemas) {
   const candidateValidation = validateEvidenceGraphV1(candidate);
   return candidateValidation.valid
     ? { valid: true, graph: candidate }
+    : { valid: false, errors: candidateValidation.errors };
+}
+
+/**
+ * Append one linked accuracy evaluation without changing its source bundle.
+ * @param {Record<string, any>} bundle Portable V4 research bundle.
+ * @param {AccuracyEvaluationRecordV1} evaluation Submitted report and estimate links.
+ * @param {Record<string, any>} schemas Injected report and subgraph schemas.
+ * @returns {{valid: true, bundle: Record<string, any>}|{valid: false, errors: Array<Record<string, any>>}} Appended bundle or validation errors.
+ */
+export function appendAccuracyEvaluationV1(bundle, evaluation, schemas) {
+  if (!bundle || typeof bundle !== 'object' || Array.isArray(bundle)) {
+    return { valid: false, errors: [{ code: 'invalid-research-bundle' }] };
+  }
+  const graphFailure = validateGraphInput(bundle.evidenceGraph);
+  if (graphFailure) return graphFailure;
+  const existing = bundle.accuracyEvaluations ?? [];
+  const currentValidation = validateAccuracyEvaluationCollection(
+    bundle.evidenceGraph,
+    existing,
+    schemas
+  );
+  if (!currentValidation.valid) return currentValidation;
+
+  const candidateEvaluations = [...currentValidation.records, evaluation];
+  const candidateValidation = validateAccuracyEvaluationCollection(
+    bundle.evidenceGraph,
+    candidateEvaluations,
+    schemas
+  );
+  return candidateValidation.valid
+    ? {
+        valid: true,
+        bundle: {
+          ...bundle,
+          accuracyEvaluations: candidateValidation.records,
+        },
+      }
     : { valid: false, errors: candidateValidation.errors };
 }
 

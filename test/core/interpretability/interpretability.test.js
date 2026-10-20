@@ -290,6 +290,7 @@ describe('versioned interpretability schemas', () => {
 
   it('exports machine-readable schemas for all artifact types', () => {
     expect(Object.keys(interpretabilityJsonSchemasV1).sort()).toEqual([
+      'accuracyEvaluation',
       'evidence',
       'evidenceEdge',
       'experiment',
