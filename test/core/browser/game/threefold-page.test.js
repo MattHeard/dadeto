@@ -131,6 +131,39 @@ describe('THREEFOLD page adapter', () => {
     );
   });
 
+  test('renders attributed accounts when the responsibility node is absent', () => {
+    const { documentObj, testimonyList } = createLedgerDocument();
+    const querySelector = documentObj.querySelector;
+    documentObj.querySelector = selector =>
+      selector === '#testimony-responsibility' ? null : querySelector(selector);
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    expect(() =>
+      page.drawFrame(
+        {},
+        {
+          threefold: {
+            testimony: {
+              accounts: [
+                {
+                  speaker: 'Dock worker',
+                  statement: 'I shouted toward the lower path.',
+                  evidence: [],
+                },
+              ],
+              responsibility: {
+                question: 'Who relayed the warning?',
+                status: 'unresolved',
+              },
+            },
+          },
+        }
+      )
+    ).not.toThrow();
+    expect(collectText(testimonyList.children)).toContain('Dock worker');
+  });
+
   test('updates the accessible witness ledger beside the shared screen', () => {
     const { documentObj, list } = createLedgerDocument();
     const drawFrame = jest.fn();

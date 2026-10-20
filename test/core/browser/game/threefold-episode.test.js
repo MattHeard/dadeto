@@ -1,6 +1,26 @@
-import { normalizeThreefoldEpisodeState } from '../../../../src/core/browser/game/threefold/episode.js';
+import {
+  createThreefoldEpisodeState,
+  normalizeThreefoldEpisodeState,
+} from '../../../../src/core/browser/game/threefold/episode.js';
 
 describe('THREEFOLD episode save state', () => {
+  test('creates default Broken Gate testimony when options are omitted', () => {
+    const episode = createThreefoldEpisodeState();
+
+    expect(episode.testimony.accounts).toHaveLength(2);
+    expect(episode.testimony.responsibility.status).toBe('unresolved');
+  });
+
+  test('defaults null testimony normalization options to the authored accounts', () => {
+    const episode = normalizeThreefoldEpisodeState(
+      { passengers: 'aboard', ferry: 'afloat' },
+      { includeTestimony: null }
+    );
+
+    expect(episode.testimony.accounts).toHaveLength(2);
+    expect(episode.testimony.responsibility.status).toBe('unresolved');
+  });
+
   test.each([null, undefined, 'state'])(
     'rejects missing or primitive state %p',
     candidate => {
