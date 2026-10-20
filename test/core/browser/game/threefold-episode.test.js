@@ -111,6 +111,34 @@ describe('THREEFOLD episode save state', () => {
     });
   });
 
+  test('retains a gate repair completed before the surge', () => {
+    expect(
+      normalizeThreefoldEpisodeState({
+        passengers: 'aboard',
+        ferry: 'afloat',
+        latchfolk: 'unwarned',
+        gateRepaired: true,
+        gateRepairedBeforeSurge: true,
+      })
+    ).toEqual({
+      passengers: 'aboard',
+      ferry: 'afloat',
+      latchfolk: 'unwarned',
+      gateRepaired: true,
+      gateRepairedBeforeSurge: true,
+    });
+  });
+
+  test('rejects a pre-surge marker without a repaired gate', () => {
+    expect(() =>
+      normalizeThreefoldEpisodeState({
+        passengers: 'aboard',
+        ferry: 'afloat',
+        gateRepairedBeforeSurge: true,
+      })
+    ).toThrow('Episode outcome state is invalid.');
+  });
+
   test.each([null, 'unknown'])(
     'rejects invalid Latchfolk outcome %p',
     latchfolk => {

@@ -114,7 +114,11 @@ export function restoreThreefoldSimulation(serialized) {
     )
       throw new RangeError('A destroyed signal station cannot file a report.');
     if (episode.gateRepaired === true) {
-      if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath')
+      if (
+        episode.gateRepairedBeforeSurge !== true &&
+        crisis.stage !== 'surge' &&
+        crisis.stage !== 'aftermath'
+      )
         throw new RangeError('A repaired gate must follow the surge.');
       if (
         THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>

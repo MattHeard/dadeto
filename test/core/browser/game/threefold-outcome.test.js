@@ -140,14 +140,51 @@ describe('THREEFOLD gate outcome', () => {
     expect(repeatedAttempt.episode).toBe(aftermath.episode);
   });
 
-  test('does not repair before surge, out of range, or when the gate is intact', () => {
+  test('repairs before surge and holds the lower channel through water rise', () => {
+    let state = moveToLockingPawl(forceReliefGateOpen());
+    expect(state.crisis.stage).toBe('urgent');
+    const repaired = stepThreefoldSimulation(state, { type: 'interact' });
+
+    expect(repaired.episode).toMatchObject({
+      ferry: 'afloat',
+      gateRepaired: true,
+      gateRepairedBeforeSurge: true,
+    });
+    expect(repaired.player.destroyedGeometryIds).toEqual([
+      'gatehouse-west-wall',
+    ]);
+    expect(getThreefoldGateOutcome(repaired)).toEqual({
+      gateState: 'repaired',
+      drainageState: 'dry',
+    });
+    expect(
+      restoreThreefoldSimulation(serializeThreefoldSimulation(repaired))
+    ).toEqual(repaired);
+
+    state = stepThreefoldSimulation(repaired, {
+      type: 'wait',
+      elapsedGameMinutes:
+        THRESHOLDS.surgeAtMinutes - repaired.crisis.elapsedMinutes,
+    });
+    expect(state.episode).toMatchObject({
+      ferry: 'lost',
+      passengers: 'lost',
+      latchfolk: 'lost',
+      gateRepaired: true,
+      gateRepairedBeforeSurge: true,
+    });
+    expect(getThreefoldGateOutcome(state)).toEqual({
+      gateState: 'repaired',
+      drainageState: 'dry',
+    });
+    expect(
+      restoreThreefoldSimulation(serializeThreefoldSimulation(state))
+    ).toEqual(state);
+  });
+
+  test('does not repair with inconsistent ferry state, wrong scale, or out of range', () => {
     const forcedOpen = forceReliefGateOpen();
     const atPawlBeforeSurge = moveToLockingPawl(forcedOpen);
-    const earlyAttempt = stepThreefoldSimulation(atPawlBeforeSurge, {
-      type: 'interact',
-    });
-    expect(earlyAttempt.episode.gateRepaired).toBeUndefined();
-
     const inconsistentPreSurgeLoss = {
       ...atPawlBeforeSurge,
       episode: { ...atPawlBeforeSurge.episode, ferry: 'lost' },
@@ -178,6 +215,15 @@ describe('THREEFOLD gate outcome', () => {
     };
     expect(
       stepThreefoldSimulation(outOfRange, { type: 'interact' }).episode
+        .gateRepaired
+    ).toBeUndefined();
+
+    const wrongScale = {
+      ...atPawlBeforeSurge,
+      player: { ...atPawlBeforeSurge.player, scale: -1 },
+    };
+    expect(
+      stepThreefoldSimulation(wrongScale, { type: 'interact' }).episode
         .gateRepaired
     ).toBeUndefined();
 
@@ -237,6 +283,15 @@ describe('THREEFOLD gate outcome', () => {
       gateState: 'repaired',
       drainageState: 'receded',
     });
+  });
+
+  test('rejects a save that marks an unrepaired gate as repaired before surge', () => {
+    const valid = JSON.parse(
+      serializeThreefoldSimulation(createThreefoldSimulation(THRESHOLDS))
+    );
+    valid.state.episode.gateRepairedBeforeSurge = true;
+
+    expect(restoreThreefoldSimulation(JSON.stringify(valid))).toBeNull();
   });
 });
 

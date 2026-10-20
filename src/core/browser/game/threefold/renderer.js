@@ -136,6 +136,7 @@ export function renderThreefoldFrame(state) {
     latchfolk: state.episode.latchfolk,
     withdrawn: state.episode.withdrawn === true,
     gateRepaired: state.episode.gateRepaired === true,
+    gateRepairedBeforeSurge: state.episode.gateRepairedBeforeSurge === true,
     signalStationDestroyed: state.player.destroyedGeometryIds.includes(
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
@@ -198,6 +199,16 @@ function getThreefoldToast(state, drainageState) {
     return `MARA WITHDREW · ${passengers} · LATCHFOLK ${latchfolk}`;
   }
   if (state.episode.gateRepaired) {
+    if (state.episode.gateRepairedBeforeSurge === true) {
+      const crisisOutcomes =
+        state.crisis.stage === 'surge' || state.crisis.stage === 'aftermath'
+          ? ` · ${getPassengerOutcomeLabel(state.episode)} · LATCHFOLK ${state.episode.latchfolk.toUpperCase()}`
+          : '';
+      const message = `GATE REPAIRED BEFORE SURGE · LOWER CHANNEL HELD${crisisOutcomes}`;
+      return state.crisis.stage === 'aftermath'
+        ? addClosurePrompt(state, message, signalStationDestroyed)
+        : message;
+    }
     const message =
       drainageState === 'receded'
         ? 'GATE REPAIRED AFTER FERRY LOSS · LOWER WATER RECEDED'

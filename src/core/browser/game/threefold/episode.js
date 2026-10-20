@@ -17,7 +17,7 @@ const GATE_REPAIR_ID = 'relief-gate-locking-pawl';
 
 /**
  * Create the opening passenger and ferry state for the Broken Gate episode.
- * @returns {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, closedBy?: 'reported'|'departed'}} Initial episode state.
+ * @returns {{passengers: 'aboard'|'partial'|'evacuated'|'lost', ferry: 'afloat'|'lost', latchfolk: 'unwarned'|'warned'|'safe'|'lost', withdrawn?: true, gateRepaired?: true, gateRepairedBeforeSurge?: true, closedBy?: 'reported'|'departed'}} Initial episode state.
  */
 export function createThreefoldEpisodeState() {
   return { passengers: 'aboard', ferry: 'afloat', latchfolk: 'unwarned' };
@@ -88,22 +88,29 @@ export function attemptThreefoldReport(state) {
 }
 
 /**
- * Repair the forced-open relief gate after the ferry is lost by freeing its locking pawl.
+ * Repair the forced-open relief gate by freeing its locking pawl.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @returns {ReturnType<typeof createThreefoldEpisodeState>} Repaired episode state or the original value when repair is unavailable.
  */
 export function attemptThreefoldGateRepair(state) {
   const { episode, crisis } = state;
   if (episode.gateRepaired === true) return episode;
-  if (crisis.stage !== 'surge' && crisis.stage !== 'aftermath') return episode;
-  if (episode.ferry !== 'lost') return episode;
+  const beforeSurge = crisis.stage === 'rising' || crisis.stage === 'urgent';
+  const afterSurge = crisis.stage === 'surge' || crisis.stage === 'aftermath';
+  if (!beforeSurge && !afterSurge) return episode;
+  if (beforeSurge ? episode.ferry === 'lost' : episode.ferry !== 'lost')
+    return episode;
   if (state.player.scale !== -2) return episode;
   const gateWasForcedOpen = THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
     state.player.destroyedGeometryIds.includes(id)
   );
   if (!gateWasForcedOpen) return episode;
   if (!isWithinInteractionRange(state, GATE_REPAIR_ID)) return episode;
-  return { ...episode, gateRepaired: true };
+  return {
+    ...episode,
+    gateRepaired: true,
+    ...(beforeSurge ? { gateRepairedBeforeSurge: true } : {}),
+  };
 }
 
 /**
@@ -145,6 +152,10 @@ export function normalizeThreefoldEpisodeState(candidate) {
   const withdrawn = state.withdrawn === undefined ? false : state.withdrawn;
   const gateRepaired =
     state.gateRepaired === undefined ? false : state.gateRepaired;
+  const gateRepairedBeforeSurge =
+    state.gateRepairedBeforeSurge === undefined
+      ? false
+      : state.gateRepairedBeforeSurge;
   const closedBy =
     state.closedBy === undefined && withdrawn === true
       ? 'departed'
@@ -158,6 +169,8 @@ export function normalizeThreefoldEpisodeState(candidate) {
     !LATCHFOLK_OUTCOMES.has(latchfolk) ||
     typeof withdrawn !== 'boolean' ||
     typeof gateRepaired !== 'boolean' ||
+    typeof gateRepairedBeforeSurge !== 'boolean' ||
+    (gateRepairedBeforeSurge && !gateRepaired) ||
     (closedBy !== undefined &&
       (typeof closedBy !== 'string' ||
         !EPISODE_CLOSURES.has(closedBy) ||
@@ -171,6 +184,7 @@ export function normalizeThreefoldEpisodeState(candidate) {
     latchfolk,
     ...(withdrawn ? { withdrawn: true } : {}),
     ...(gateRepaired ? { gateRepaired: true } : {}),
+    ...(gateRepairedBeforeSurge ? { gateRepairedBeforeSurge: true } : {}),
     ...(closedBy ? { closedBy } : {}),
   });
 }

@@ -9,7 +9,12 @@ export function getThreefoldGateOutcome(state) {
   if (state.episode.gateRepaired === true) {
     return {
       gateState: 'repaired',
-      drainageState: state.crisis.stage === 'aftermath' ? 'receded' : 'flooded',
+      drainageState:
+        state.episode.gateRepairedBeforeSurge === true
+          ? 'dry'
+          : state.crisis.stage === 'aftermath'
+            ? 'receded'
+            : 'flooded',
     };
   }
   const gateForcedOpen = THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
