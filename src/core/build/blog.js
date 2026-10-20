@@ -19,6 +19,11 @@ export const sharedDirectoryPairs = [
     publicRelativePath: 'core/browser',
   },
   {
+    key: 'CoreInterpretability',
+    relativePath: 'core/interpretability',
+    publicRelativePath: 'core/interpretability',
+  },
+  {
     key: 'CoreCapabilities',
     relativePath: 'core/capabilities',
     publicRelativePath: 'core/capabilities',
@@ -60,6 +65,13 @@ const DIRECTORY_TREE_DEFINITIONS = {
       missing: 'core/browser directory not found',
     },
     {
+      sourceKey: 'srcCoreInterpretabilityDir',
+      destinationKey: 'publicCoreInterpretabilityDir',
+      suffix: '',
+      success: 'Core interpretability files copied successfully!',
+      missing: 'core/interpretability directory not found',
+    },
+    {
       sourceKey: 'srcCoreCapabilitiesDir',
       destinationKey: 'publicCoreCapabilitiesDir',
       suffix: '',
@@ -72,6 +84,13 @@ const DIRECTORY_TREE_DEFINITIONS = {
       suffix: '',
       success: 'Core object-minute rental search files copied successfully!',
       missing: 'core/object-minute-rental-search directory not found',
+    },
+    {
+      sourceKey: 'srcNodeModulesZodV4Dir',
+      destinationKey: 'publicVendorZodV4Dir',
+      suffix: '',
+      success: 'Pinned Zod v4 runtime copied successfully!',
+      missing: 'node_modules/zod/v4 directory not found',
     },
   ],
   constants: [
@@ -176,6 +195,18 @@ export function createStaticSiteCopyDirectories(options) {
       'blog-media'
     ),
     srcContentPagesDir: options.path.join(options.srcDir, 'content', 'pages'),
+    srcNodeModulesZodV4Dir: options.path.join(
+      options.projectRoot,
+      'node_modules',
+      'zod',
+      'v4'
+    ),
+    publicVendorZodV4Dir: options.path.join(
+      options.publicDir,
+      'vendor',
+      'zod',
+      'v4'
+    ),
   };
 }
 
