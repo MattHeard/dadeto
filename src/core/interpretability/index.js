@@ -240,6 +240,7 @@ export function createInterpretabilitySchemasV2(z) {
     .object({
       schemaVersion,
       id: z.string().regex(/^atlas:v2:component:/),
+      coordinateId: z.string().regex(/^atlas:v2:component-coordinate:/),
       kind: z.literal('recurrent-neuron'),
       model: pinnedModel,
       sourceId: z.string().min(1),
@@ -268,11 +269,43 @@ export function createInterpretabilitySchemasV2(z) {
       numericPrecision: z.enum(['float16', 'bfloat16', 'float32', 'float64']),
     })
     .strict();
+  const structuralConnectionSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:connection:/),
+      coordinateId: z.string().regex(/^atlas:v2:connection-coordinate:/),
+      model: pinnedModel,
+      sourceComponentId: z.string().regex(/^atlas:v2:component:/),
+      sourceCoordinateId: z.string().regex(/^atlas:v2:component-coordinate:/),
+      sourcePort: z.string().min(1),
+      targetComponentId: z.string().regex(/^atlas:v2:component:/),
+      targetCoordinateId: z.string().regex(/^atlas:v2:component-coordinate:/),
+      targetPort: z.string().min(1),
+      kind: z.enum(['dense', 'recurrent', 'attention', 'convolution', 'other']),
+      recurrentLag: z.number().int().nonnegative().optional(),
+      tensorCoordinate: z.array(z.number().int().nonnegative()).optional(),
+    })
+    .strict();
+  const circuitStructuralSnapshotSchemaV2 = z
+    .object({
+      schemaVersion,
+      id: z.string().regex(/^atlas:v2:circuit-snapshot:[a-f0-9]{64}$/),
+      contentHash: z.string().regex(/^[a-f0-9]{64}$/),
+      circuitId: z.string().regex(/^atlas:circuit:/),
+      model: pinnedModel,
+      completeness: z.enum(['complete', 'unknown']),
+      componentIds: z.array(z.string().regex(/^atlas:v2:component:/)).min(1),
+      connectionIds: z.array(z.string().regex(/^atlas:v2:connection:/)),
+      boundaryComponentIds: z.array(z.string().regex(/^atlas:v2:component:/)),
+    })
+    .strict();
 
   return Object.freeze({
     recurrentNeuronComponentSchemaV2,
     recurrentActivationPositionSchemaV2,
     activationObservationSchemaV2,
+    structuralConnectionSchemaV2,
+    circuitStructuralSnapshotSchemaV2,
     interpretabilityJsonSchemasV2: Object.freeze({
       recurrentNeuronComponent: z.toJSONSchema(
         recurrentNeuronComponentSchemaV2
@@ -281,6 +314,10 @@ export function createInterpretabilitySchemasV2(z) {
         recurrentActivationPositionSchemaV2
       ),
       activationObservation: z.toJSONSchema(activationObservationSchemaV2),
+      structuralConnection: z.toJSONSchema(structuralConnectionSchemaV2),
+      circuitStructuralSnapshot: z.toJSONSchema(
+        circuitStructuralSnapshotSchemaV2
+      ),
     }),
   });
 }
@@ -303,6 +340,15 @@ function canonicalIdentityId(category, identity) {
  * @returns {Record<string, any>} Versioned recurrent component record.
  */
 export function createRecurrentNeuronComponentV2(model, sourceId, coordinates) {
+  const coordinateIdentity = [
+    model.modelId,
+    model.repository,
+    model.architecture,
+    sourceId,
+    coordinates.layerIndex,
+    coordinates.activationHook,
+    coordinates.neuronIndex,
+  ];
   return {
     schemaVersion: 2,
     id: canonicalIdentityId('component', [
@@ -310,11 +356,12 @@ export function createRecurrentNeuronComponentV2(model, sourceId, coordinates) {
       model.repository,
       model.revision,
       model.architecture,
-      sourceId,
-      coordinates.layerIndex,
-      coordinates.activationHook,
-      coordinates.neuronIndex,
+      ...coordinateIdentity.slice(3),
     ]),
+    coordinateId: canonicalIdentityId(
+      'component-coordinate',
+      coordinateIdentity
+    ),
     kind: 'recurrent-neuron',
     model,
     sourceId,
@@ -367,6 +414,102 @@ export function createActivationObservationV2(
     runId: measurement.runId,
     value: measurement.value,
     numericPrecision: measurement.numericPrecision,
+  };
+}
+
+/**
+ * Derive checkpoint-specific and longitudinal structural connection IDs.
+ * @param {Record<string, any>} model Pinned model and checkpoint identity.
+ * @param {Record<string, any>} sourceComponent Directed source component.
+ * @param {Record<string, any>} targetComponent Directed target component.
+ * @param {Record<string, any>} connection Directed endpoint and operation coordinates.
+ * @returns {Record<string, any>} Versioned structural connection record.
+ */
+export function createStructuralConnectionV2(
+  model,
+  sourceComponent,
+  targetComponent,
+  connection
+) {
+  return {
+    schemaVersion: 2,
+    id: canonicalIdentityId('connection', [
+      model.modelId,
+      model.repository,
+      model.revision,
+      model.architecture,
+      sourceComponent.id,
+      connection.sourcePort,
+      targetComponent.id,
+      connection.targetPort,
+      connection.kind,
+      connection.recurrentLag ?? null,
+      connection.tensorCoordinate ?? null,
+    ]),
+    coordinateId: canonicalIdentityId('connection-coordinate', [
+      model.modelId,
+      model.repository,
+      model.architecture,
+      sourceComponent.coordinateId,
+      connection.sourcePort,
+      targetComponent.coordinateId,
+      connection.targetPort,
+      connection.kind,
+      connection.recurrentLag ?? null,
+      connection.tensorCoordinate ?? null,
+    ]),
+    model,
+    sourceComponentId: sourceComponent.id,
+    sourceCoordinateId: sourceComponent.coordinateId,
+    sourcePort: connection.sourcePort,
+    targetComponentId: targetComponent.id,
+    targetCoordinateId: targetComponent.coordinateId,
+    targetPort: connection.targetPort,
+    kind: connection.kind,
+    recurrentLag: connection.recurrentLag,
+    tensorCoordinate: connection.tensorCoordinate,
+  };
+}
+
+/**
+ * Build a canonical circuit snapshot and hash it using an injected SHA-256 adapter.
+ * @param {string} circuitId Persistent Atlas circuit identity.
+ * @param {Record<string, any>} model Pinned model and checkpoint identity.
+ * @param {Record<string, any>} structure Circuit members, boundaries, and completeness.
+ * @param {(canonicalIdentity: string) => string|Promise<string>} hashCanonicalIdentity Injected SHA-256 hex digest function.
+ * @returns {Promise<Record<string, any>>} Versioned structural snapshot record.
+ */
+export async function createCircuitStructuralSnapshotV2(
+  circuitId,
+  model,
+  structure,
+  hashCanonicalIdentity
+) {
+  const componentIds = [...structure.componentIds].sort();
+  const connectionIds = [...structure.connectionIds].sort();
+  const boundaryComponentIds = [...structure.boundaryComponentIds].sort();
+  const canonicalIdentity = JSON.stringify([
+    2,
+    model.modelId,
+    model.repository,
+    model.revision,
+    model.architecture,
+    structure.completeness,
+    componentIds,
+    connectionIds,
+    boundaryComponentIds,
+  ]);
+  const contentHash = await hashCanonicalIdentity(canonicalIdentity);
+  return {
+    schemaVersion: 2,
+    id: `atlas:v2:circuit-snapshot:${contentHash}`,
+    contentHash,
+    circuitId,
+    model,
+    completeness: structure.completeness,
+    componentIds,
+    connectionIds,
+    boundaryComponentIds,
   };
 }
 

@@ -1,9 +1,12 @@
+import { createHash } from 'node:crypto';
 import {
   createActivationObservationV2,
+  createCircuitStructuralSnapshotV2,
   createInterpretabilitySchemasV1,
   createInterpretabilitySchemasV2,
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
+  createStructuralConnectionV2,
   migrateRecurrentStateMechanismV1ToV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
@@ -96,6 +99,160 @@ describe('version 2 recurrent identities', () => {
     expect(repeated.id).toBe(first.id);
     expect(otherInput.id).not.toBe(first.id);
     expect(otherRun.id).not.toBe(first.id);
+  });
+
+  it('separates checkpoint connection IDs from stable connection coordinates', () => {
+    const source = component(2);
+    const target = component(3);
+    const coordinates = {
+      sourcePort: 'hidden-state',
+      targetPort: 'hidden-state',
+      kind: 'recurrent',
+      recurrentLag: 1,
+      tensorCoordinate: [0, 2],
+    };
+    const connection = createStructuralConnectionV2(
+      model,
+      source,
+      target,
+      coordinates
+    );
+    const repeat = createStructuralConnectionV2(model, source, target, {
+      ...coordinates,
+    });
+    const reversed = createStructuralConnectionV2(
+      model,
+      target,
+      source,
+      coordinates
+    );
+    const otherCoordinate = createStructuralConnectionV2(
+      model,
+      source,
+      target,
+      { ...coordinates, tensorCoordinate: [0, 3] }
+    );
+    const nextCheckpoint = { ...model, revision: 'b'.repeat(40) };
+    const nextCheckpointSource = componentAtCheckpoint(nextCheckpoint, 2);
+    const nextCheckpointTarget = componentAtCheckpoint(nextCheckpoint, 3);
+    const nextCheckpointConnection = createStructuralConnectionV2(
+      nextCheckpoint,
+      nextCheckpointSource,
+      nextCheckpointTarget,
+      coordinates
+    );
+    const simpleConnection = createStructuralConnectionV2(
+      model,
+      source,
+      target,
+      { sourcePort: 'output', targetPort: 'input', kind: 'dense' }
+    );
+
+    expect(schemasV2.structuralConnectionSchemaV2.parse(connection)).toEqual(
+      connection
+    );
+    expect(repeat.id).toBe(connection.id);
+    expect(reversed.id).not.toBe(connection.id);
+    expect(otherCoordinate.id).not.toBe(connection.id);
+    expect(nextCheckpointConnection.id).not.toBe(connection.id);
+    expect(nextCheckpointConnection.coordinateId).toBe(connection.coordinateId);
+    expect(
+      schemasV2.structuralConnectionSchemaV2.safeParse(simpleConnection).success
+    ).toBe(true);
+    expect(
+      schemasV2.structuralConnectionSchemaV2.safeParse({
+        ...connection,
+        evidenceRelation: 'supports',
+      }).success
+    ).toBe(false);
+  });
+
+  it('canonicalizes circuit snapshots and hashes their checkpoint-scoped topology', async () => {
+    const firstComponent = component(2);
+    const secondComponent = component(3);
+    const connection = createStructuralConnectionV2(
+      model,
+      firstComponent,
+      secondComponent,
+      {
+        sourcePort: 'hidden-state',
+        targetPort: 'hidden-state',
+        kind: 'recurrent',
+        recurrentLag: 1,
+      }
+    );
+    const nextCheckpoint = { ...model, revision: 'b'.repeat(40) };
+    const nextCheckpointSource = componentAtCheckpoint(nextCheckpoint, 2);
+    const nextCheckpointTarget = componentAtCheckpoint(nextCheckpoint, 3);
+    const nextCheckpointConnection = createStructuralConnectionV2(
+      nextCheckpoint,
+      nextCheckpointSource,
+      nextCheckpointTarget,
+      {
+        sourcePort: 'hidden-state',
+        targetPort: 'hidden-state',
+        kind: 'recurrent',
+        recurrentLag: 1,
+      }
+    );
+    const structure = {
+      completeness: 'unknown',
+      componentIds: [firstComponent.id, secondComponent.id],
+      connectionIds: [connection.id],
+      boundaryComponentIds: [firstComponent.id],
+    };
+    const digest = identity =>
+      createHash('sha256').update(identity, 'utf8').digest('hex');
+    const snapshot = await createCircuitStructuralSnapshotV2(
+      'atlas:circuit:alg-zoo-example',
+      model,
+      structure,
+      digest
+    );
+    const reorderedSnapshot = await createCircuitStructuralSnapshotV2(
+      'atlas:circuit:alg-zoo-example',
+      model,
+      {
+        ...structure,
+        componentIds: [...structure.componentIds].reverse(),
+        connectionIds: [...structure.connectionIds].reverse(),
+        boundaryComponentIds: [...structure.boundaryComponentIds].reverse(),
+      },
+      digest
+    );
+    const changedTopology = await createCircuitStructuralSnapshotV2(
+      'atlas:circuit:alg-zoo-example',
+      model,
+      { ...structure, connectionIds: [] },
+      digest
+    );
+    const changedCheckpoint = await createCircuitStructuralSnapshotV2(
+      'atlas:circuit:alg-zoo-example',
+      nextCheckpoint,
+      {
+        ...structure,
+        componentIds: [nextCheckpointSource.id, nextCheckpointTarget.id],
+        connectionIds: [nextCheckpointConnection.id],
+        boundaryComponentIds: [nextCheckpointSource.id],
+      },
+      digest
+    );
+    const completeSnapshot = await createCircuitStructuralSnapshotV2(
+      'atlas:circuit:alg-zoo-example',
+      model,
+      { ...structure, completeness: 'complete' },
+      digest
+    );
+
+    expect(schemasV2.circuitStructuralSnapshotSchemaV2.parse(snapshot)).toEqual(
+      snapshot
+    );
+    expect(reorderedSnapshot.id).toBe(snapshot.id);
+    expect(changedTopology.id).not.toBe(snapshot.id);
+    expect(changedCheckpoint.id).not.toBe(snapshot.id);
+    expect(completeSnapshot.id).not.toBe(snapshot.id);
+    expect(snapshot.completeness).toBe('unknown');
+    expect(snapshot.componentIds).toEqual([...structure.componentIds].sort());
   });
 
   it('migrates one V1 recurrent state without inventing an observation', () => {
@@ -210,3 +367,16 @@ describe('version 2 recurrent identities', () => {
     });
   });
 });
+
+/**
+ * @param {Record<string, any>} checkpoint Pinned model checkpoint.
+ * @param {number} neuronIndex Recurrent neuron index.
+ * @returns {Record<string, any>} Recurrent component for that checkpoint.
+ */
+function componentAtCheckpoint(checkpoint, neuronIndex) {
+  return createRecurrentNeuronComponentV2(checkpoint, 'm16-10-second-argmax', {
+    layerIndex: 0,
+    activationHook: 'rnn.hidden_state',
+    neuronIndex,
+  });
+}
