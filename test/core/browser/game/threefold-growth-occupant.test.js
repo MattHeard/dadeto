@@ -45,6 +45,28 @@ function createWatchkeeperGrowthState(
     : { ...state, episode: { ...state.episode, latchfolk } };
 }
 
+/**
+ * Create a growth state whose expansion intersects two adjacent living beings.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
+ */
+function createAdjacentLivingGrowthState() {
+  const state = createWatchkeeperGrowthState(
+    { x: 3.226, y: 4 },
+    'unwarned',
+    -2
+  );
+  const watchkeeper = state.scene.interactables.find(
+    ({ id }) => id === THREEFOLD_LATCHFOLK_INTERACTABLE_ID
+  );
+  if (!watchkeeper) throw new Error('The authored watchkeeper is missing.');
+  watchkeeper.position = { x: 3.01, y: 4 };
+  watchkeeper.bounds = {
+    min: { x: 2.84, y: 3.77, z: 0 },
+    max: { x: 3.18, y: 4.23, z: 0.55 },
+  };
+  return state;
+}
+
 describe('THREEFOLD growth impact on the known watchkeeper', () => {
   test('keeps the geometry-only preview aligned with the combined growth effects', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
@@ -162,5 +184,41 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
 
     expect(restored.episode.latchfolk).toBe('lost');
     expect(previewThreefoldGrowthEffects(restored).occupantIds).toEqual([]);
+  });
+
+  test('previews the rat and adjacent watchkeeper in the same growth footprint', () => {
+    const state = createAdjacentLivingGrowthState();
+    const before = JSON.parse(JSON.stringify(state));
+
+    expect(previewThreefoldGrowthEffects(state)).toEqual({
+      geometryIds: [],
+      occupantIds: [THREEFOLD_LATCHFOLK_INTERACTABLE_ID],
+      creatureIds: ['gatehouse-rat'],
+    });
+    expect(state).toEqual(before);
+    expect(renderThreefoldFrame(state).shapes).toContainEqual(
+      expect.objectContaining({ type: 'text', text: 'A KILLS LATCHFOLK' })
+    );
+    expect(renderThreefoldFrame(state).shapes).toContainEqual(
+      expect.objectContaining({ type: 'text', text: 'A KILLS RAT' })
+    );
+  });
+
+  test('commits and restores both fates from one growth action', () => {
+    const grown = stepThreefoldSimulation(createAdjacentLivingGrowthState(), {
+      type: 'grow',
+    });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+
+    expect(grown.player.scale).toBe(-1);
+    expect(grown.episode.latchfolk).toBe('lost');
+    expect(grown.encounter).toEqual({
+      ratFate: 'killed',
+      ratAction: 'growth',
+    });
+    expect(restored?.episode.latchfolk).toBe('lost');
+    expect(restored?.encounter).toEqual(grown.encounter);
   });
 });
