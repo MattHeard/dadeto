@@ -3,6 +3,7 @@ import {
   serializeThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/save.js';
 import { getThreefoldGateOutcome } from '../../../../src/core/browser/game/threefold/outcome.js';
+import { attemptThreefoldGateRepair } from '../../../../src/core/browser/game/threefold/episode.js';
 import {
   createThreefoldSimulation,
   stepThreefoldSimulation,
@@ -17,6 +18,16 @@ const THRESHOLDS = {
 };
 
 describe('THREEFOLD gate outcome', () => {
+  test('does not repair during a crisis stage outside the tide window', () => {
+    const initial = createThreefoldSimulation(THRESHOLDS);
+    const unsupportedStage = {
+      ...initial,
+      crisis: { ...initial.crisis, stage: 'stabilizing' },
+    };
+
+    expect(attemptThreefoldGateRepair(unsupportedStage)).toBe(initial.episode);
+  });
+
   test('keeps the lower channel dry when the gate holds through the surge', () => {
     const initial = createThreefoldSimulation(THRESHOLDS);
     const atSurge = stepThreefoldSimulation(initial, {
