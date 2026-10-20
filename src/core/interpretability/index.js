@@ -2596,6 +2596,33 @@ export function getEvidenceGraphContextV1(graph, query) {
 }
 
 /**
+ * Present one bounded context page as separate hypothesis, evidence, experiment,
+ * and relationship collections while retaining its raw items and pagination.
+ * @param {ReturnType<typeof getEvidenceGraphContextV1>} context Context page or failure.
+ * @returns {PresentedEvidenceGraphContextResultV1} Typed presentation or unchanged failure.
+ */
+export function presentEvidenceGraphContextV1(context) {
+  if (!context.valid) return context;
+
+  const records = context.items.filter(item => item.itemType === 'record');
+  return {
+    ...context,
+    hypotheses: records
+      .filter(item => item.collection === 'hypotheses')
+      .map(item => item.record),
+    evidence: records
+      .filter(item => item.collection === 'evidence')
+      .map(item => item.record),
+    experiments: records
+      .filter(item => item.collection === 'experiments')
+      .map(item => item.record),
+    relationships: context.items
+      .filter(item => item.itemType === 'edge')
+      .map(item => item.record),
+  };
+}
+
+/**
  * Validate graph invariants and return the shared failure result when invalid.
  * @param {InterpretabilityGraphV1} graph Candidate graph.
  * @returns {{valid: false, errors: Array<Record<string, string>>}|null} Validation error or null.
@@ -2826,3 +2853,6 @@ function addStatusWarning(warnings, record, warningCode) {
 /** @typedef {{id: string, collection: string, record: InterpretabilityRecord}} GraphRecordEntryV1 */
 /** @typedef {({itemType: 'record', id: string, depth: number}&GraphRecordEntryV1)|{itemType: 'edge', id: string, record: InterpretabilityRecord}} ContextItemV1 */
 /** @typedef {{code: string, mechanismId?: string, id?: string, status?: string, validationState?: string}} ContextWarningV1 */
+/** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: true}>} EvidenceGraphContextPageV1 */
+/** @typedef {EvidenceGraphContextPageV1 & {hypotheses: Array<InterpretabilityRecord>, evidence: Array<InterpretabilityRecord>, experiments: Array<InterpretabilityRecord>, relationships: Array<InterpretabilityRecord>}} PresentedEvidenceGraphContextPageV1 */
+/** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: false}>|PresentedEvidenceGraphContextPageV1} PresentedEvidenceGraphContextResultV1 */

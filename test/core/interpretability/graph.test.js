@@ -6,6 +6,7 @@ import {
   exportEvidenceGraphV1,
   getEvidenceGraphContextV1,
   importEvidenceGraphV1,
+  presentEvidenceGraphContextV1,
   validateEvidenceGraphV1,
 } from '../../../src/core/interpretability/interpretability.js';
 import { loadOptionalTestZod } from './testZod.js';
@@ -854,7 +855,113 @@ describe('validateEvidenceGraphV1', () => {
       getEvidenceGraphContextV1(graph, { mechanismId: 'mechanism-a' }).items
     ).toEqual([...firstPage.items, ...secondPage.items]);
   });
+});
 
+describe('presentEvidenceGraphContextV1', () => {
+  it('presents competing hypotheses apart from their supporting and contradicting evidence', () => {
+    const graph = connectedContextGraph();
+    graph.hypotheses.push({
+      id: 'hypothesis-b',
+      status: 'proposed',
+      mechanismIds: [],
+      evidenceIds: ['evidence-b'],
+      authorId: 'researcher-b',
+    });
+    graph.evidence.push({
+      id: 'evidence-b',
+      kind: 'observed',
+      validationState: 'unreviewed',
+    });
+    graph.edges.push(
+      {
+        id: 'edge-d',
+        fromId: 'mechanism-a',
+        toId: 'hypothesis-b',
+        relation: 'connected-to',
+      },
+      {
+        id: 'edge-e',
+        fromId: 'hypothesis-b',
+        toId: 'evidence-b',
+        relation: 'supports',
+      }
+    );
+    const context = getEvidenceGraphContextV1(graph, {
+      mechanismId: 'mechanism-a',
+      maxDepth: 2,
+      pageSize: 100,
+    });
+
+    const presented = presentEvidenceGraphContextV1(context);
+
+    expect(presented.valid).toBe(true);
+    if (!presented.valid) return;
+    expect(presented.hypotheses.map(record => record.id)).toEqual([
+      'hypothesis-a',
+      'hypothesis-b',
+    ]);
+    expect(presented.evidence.map(record => record.id)).toEqual([
+      'evidence-a',
+      'evidence-b',
+    ]);
+    expect(presented.evidence[0].kind).toBe('negative');
+    expect(presented.hypotheses.map(record => record.id)).not.toContain(
+      'evidence-a'
+    );
+    expect(presented.relationships).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          fromId: 'hypothesis-a',
+          toId: 'evidence-a',
+          relation: 'contradicts',
+        }),
+        expect.objectContaining({
+          fromId: 'hypothesis-b',
+          toId: 'evidence-b',
+          relation: 'supports',
+        }),
+      ])
+    );
+    expect(presented.items).toEqual(context.items);
+    expect(presented.nextCursor).toBeNull();
+  });
+
+  it('keeps relationship endpoint IDs when records are outside the current page', () => {
+    const graph = connectedContextGraph();
+    const context = getEvidenceGraphContextV1(graph, {
+      mechanismId: 'mechanism-a',
+      maxDepth: 2,
+      pageSize: 1,
+    });
+    expect(context.valid).toBe(true);
+    if (!context.valid) return;
+
+    const presented = presentEvidenceGraphContextV1(context);
+
+    expect(presented.valid).toBe(true);
+    if (!presented.valid) return;
+    expect(presented.relationships).toEqual([
+      expect.objectContaining({
+        id: 'edge-a',
+        fromId: 'mechanism-a',
+        toId: 'hypothesis-a',
+      }),
+    ]);
+    expect(presented.hypotheses).toEqual([]);
+    expect(presented.evidence).toEqual([]);
+    expect(presented.nextCursor).toEqual({ type: 'edge', id: 'edge-a' });
+  });
+
+  it('passes invalid context responses through unchanged', () => {
+    const invalid = getEvidenceGraphContextV1(connectedContextGraph(), {
+      mechanismId: 'missing-mechanism',
+    });
+
+    expect(presentEvidenceGraphContextV1(invalid)).toEqual(invalid);
+  });
+});
+
+describe('getEvidenceGraphContextV1', () => {
   it('surfaces missing context and completed confidence metadata', () => {
     const empty = getEvidenceGraphContextV1(
       { mechanisms: [mechanismRecord('mechanism-a')] },
