@@ -38,7 +38,7 @@ const bundleSchemas = {
   identityGraphSchemasV2: identitySchemas,
 };
 const FIRST_INPUT_SEED = 17;
-const SECOND_INPUT_SEED = 18;
+const SECOND_INPUT_SEED = 2;
 const firstInput = createAlgZooNormalSequence(FIRST_INPUT_SEED);
 const secondInput = createAlgZooNormalSequence(SECOND_INPUT_SEED);
 const firstInputSequenceId = createInputSequenceId(firstInput);
@@ -254,8 +254,8 @@ function createFollowUpRecords(priorHypothesis) {
     ],
     observations: [
       {
-        kind: 'observed',
-        summary: `Follow-up replay activation was ${secondActivation}.`,
+        kind: 'negative',
+        summary: `Follow-up replay activation ${secondActivation} did not support the retrieved threshold claim.`,
       },
     ],
     authorId: 'investigator-b',
@@ -264,8 +264,8 @@ function createFollowUpRecords(priorHypothesis) {
   const secondEvidence = {
     schemaVersion: 1,
     id: 'evidence-investigator-b',
-    kind: 'observation',
-    summary: `Independent follow-up measured activation ${secondActivation} on a distinct input.`,
+    kind: 'negative',
+    summary: `Independent follow-up measured activation ${secondActivation}, below the retrieved claim's threshold.`,
     mechanismIds: ['legacy-algzoo-neuron-0-step-9'],
     hypothesisIds: [priorHypothesis.id],
     experimentIds: [secondExperiment.id],
@@ -281,6 +281,91 @@ function createFollowUpRecords(priorHypothesis) {
   };
 }
 
+/**
+ * Assert that both investigators' records survive the portable round trip.
+ * @param {Record<string, any>} args Imported graph, source records, and replay values.
+ * @returns {void} No value.
+ */
+function expectInvestigatorRoundTrip({
+  firstGraph,
+  secondBundle,
+  firstGraphSnapshot,
+  identityLink,
+  priorEvidence,
+  secondEvidence,
+  firstActivation,
+  secondActivation,
+  firstInputSequenceId,
+  secondInputSequenceId,
+}) {
+  const graph = secondBundle.evidenceGraph;
+  expect(firstActivation).toBe(7.94233512878418);
+  expect(firstActivation).toBeGreaterThan(2);
+  expect(secondActivation).toBe(0);
+  expect(secondActivation).toBeLessThan(2);
+  expect(JSON.stringify(firstGraph)).toBe(firstGraphSnapshot);
+  expect(graph.evidence.find(record => record.id === priorEvidence.id)).toEqual(
+    priorEvidence
+  );
+  expect(graph.experiments.map(record => record.id)).toEqual([
+    'experiment-investigator-a',
+    'experiment-investigator-b',
+  ]);
+  expect(graph.evidence.map(record => record.id)).toEqual([
+    'evidence-investigator-a',
+    'evidence-investigator-b',
+  ]);
+  expect(graph.edges).toContainEqual(
+    expect.objectContaining({
+      id: 'edge-investigator-b-depends-on-a',
+      fromId: 'experiment-investigator-b',
+      toId: priorEvidence.id,
+      relation: 'depends-on',
+    })
+  );
+  expect(graph.edges).toContainEqual(
+    expect.objectContaining({
+      id: 'edge-investigator-b-contradicts-a',
+      fromId: 'evidence-investigator-b',
+      toId: 'hypothesis-investigator-a',
+      relation: 'contradicts',
+      authorId: 'investigator-b',
+    })
+  );
+  expect(
+    graph.experiments.find(record => record.id === 'experiment-investigator-b')
+      ?.observations
+  ).toContainEqual(
+    expect.objectContaining({
+      kind: 'negative',
+      summary:
+        'Follow-up replay activation 0 did not support the retrieved threshold claim.',
+    })
+  );
+  expect(
+    graph.evidence.find(record => record.id === 'evidence-investigator-b')
+  ).toEqual(secondEvidence);
+  expect(secondBundle.identityGraph.observations).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        experimentId: 'experiment-investigator-a',
+        inputSequenceId: firstInputSequenceId,
+        value: firstActivation,
+      }),
+      expect.objectContaining({
+        experimentId: 'experiment-investigator-b',
+        activationPositionId: identityLink.activationPositionId,
+        inputSequenceId: secondInputSequenceId,
+        value: secondActivation,
+      }),
+    ])
+  );
+  expect(secondBundle.mechanismIdentityLinks).toContainEqual(identityLink);
+  expect(graph.hypotheses[0].mechanismIds).toEqual([
+    'legacy-algzoo-neuron-0-step-9',
+  ]);
+}
+
 describe('offline AlgZoo evidence-reuse software fixture', () => {
   it('lets a second investigator retrieve, extend, and round-trip a replay record', () => {
     const firstActivation = calculateAlgZooM16x10Activation(
@@ -292,8 +377,6 @@ describe('offline AlgZoo evidence-reuse software fixture', () => {
     expect(
       calculateAlgZooM16x10Activation([...firstInput], fixture, 0, 9)
     ).toBe(firstActivation);
-    expect(firstActivation).toBe(7.94233512878418);
-
     const firstBundle = {
       evidenceGraph: createFirstInvestigation(
         firstActivation,
@@ -389,6 +472,15 @@ describe('offline AlgZoo evidence-reuse software fixture', () => {
             authorId: 'investigator-b',
             createdAt: '2026-10-20T14:05:00Z',
           },
+          {
+            schemaVersion: 1,
+            id: 'edge-investigator-b-contradicts-a',
+            fromId: secondEvidence.id,
+            toId: priorHypothesis.id,
+            relation: 'contradicts',
+            authorId: 'investigator-b',
+            createdAt: '2026-10-20T14:05:00Z',
+          },
         ],
       },
       evidenceSchemas
@@ -430,43 +522,17 @@ describe('offline AlgZoo evidence-reuse software fixture', () => {
     expect(secondImport.valid).toBe(true);
     if (!secondImport.valid) return;
 
-    expect(JSON.stringify(firstImport.bundle.evidenceGraph)).toBe(
-      firstGraphSnapshot
-    );
-    expect(
-      secondImport.bundle.evidenceGraph.experiments.map(record => record.id)
-    ).toEqual(['experiment-investigator-a', 'experiment-investigator-b']);
-    expect(
-      secondImport.bundle.evidenceGraph.evidence.map(record => record.id)
-    ).toEqual(['evidence-investigator-a', 'evidence-investigator-b']);
-    expect(secondImport.bundle.evidenceGraph.edges).toContainEqual(
-      expect.objectContaining({
-        id: 'edge-investigator-b-depends-on-a',
-        fromId: 'experiment-investigator-b',
-        toId: priorEvidence.id,
-        relation: 'depends-on',
-      })
-    );
-    expect(secondImport.bundle.identityGraph.observations).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          experimentId: 'experiment-investigator-a',
-          inputSequenceId: firstInputSequenceId,
-          value: firstActivation,
-        }),
-        expect.objectContaining({
-          experimentId: 'experiment-investigator-b',
-          activationPositionId: identityLink.activationPositionId,
-          inputSequenceId: secondInputSequenceId,
-          value: secondActivation,
-        }),
-      ])
-    );
-    expect(secondImport.bundle.mechanismIdentityLinks).toContainEqual(
-      identityLink
-    );
-    expect(
-      secondImport.bundle.evidenceGraph.hypotheses[0].mechanismIds
-    ).toEqual(['legacy-algzoo-neuron-0-step-9']);
+    expectInvestigatorRoundTrip({
+      firstGraph: firstImport.bundle.evidenceGraph,
+      secondBundle: secondImport.bundle,
+      firstGraphSnapshot,
+      identityLink,
+      priorEvidence: priorEvidence.record,
+      secondEvidence,
+      firstActivation,
+      secondActivation,
+      firstInputSequenceId,
+      secondInputSequenceId,
+    });
   });
 });
