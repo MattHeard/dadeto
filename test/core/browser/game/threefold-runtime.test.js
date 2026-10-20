@@ -1,5 +1,9 @@
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
-import { createThreefoldSimulation } from '../../../../src/core/browser/game/threefold/simulation.js';
+import {
+  createThreefoldSimulation,
+  stepThreefoldSimulation,
+} from '../../../../src/core/browser/game/threefold/simulation.js';
+import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 
 describe('THREEFOLD handheld runtime', () => {
@@ -23,6 +27,51 @@ describe('THREEFOLD handheld runtime', () => {
     for (let step = 0; step < 7; step += 1) runtime.dispatch('right');
     runtime.step(125, ['x']);
     expect(runtime.getState().encounter.ratFate).toBe('bypassed');
+  });
+
+  test('maps A to lethal growth when Mara fits inside the rat', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 3.28, y: 4 },
+      {
+        scale: -2,
+        anchor: 8,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const initial = createThreefoldSimulation(
+      {
+        urgentAtMinutes: 4,
+        surgeAtMinutes: 9,
+        aftermathAtMinutes: 15,
+      },
+      scene
+    );
+    const state = stepThreefoldSimulation(initial, {
+      type: 'wait',
+      elapsedGameMinutes: 0.25,
+    });
+    let didSave = false;
+    const save = {
+      load: () => state,
+      save: () => {
+        didSave = true;
+      },
+    };
+    const runtime = createThreefoldRuntime({ save });
+    runtime.start();
+
+    expect(runtime.frame().toast).toContain('RAT INSIDE · A GROW · X BYPASS');
+    expect(runtime.frame().quickAction).toBe('grow');
+    runtime.step(125, ['a']);
+
+    expect(runtime.getState().player.scale).toBe(-1);
+    expect(runtime.getState().encounter).toEqual({
+      ratFate: 'killed',
+      ratAction: 'growth',
+    });
+    expect(didSave).toBe(true);
   });
 
   test('accepts fight and bypass as named simulation commands', () => {

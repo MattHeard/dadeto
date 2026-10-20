@@ -171,41 +171,19 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(restored.crisis.elapsedMinutes).toBe(9.25);
   });
 
-  test.each(['present', 'repelled', 'bypassed', 'killed'])(
-    'roundtrips rat fate %s',
-    ratFate => {
-      const simulation = createThreefoldSimulation(CRISIS_THRESHOLDS);
-      simulation.encounter = { ratFate };
-
-      expect(
-        restoreThreefoldSimulation(serializeThreefoldSimulation(simulation))
-      ).toEqual(simulation);
-    }
-  );
-
-  test('migrates a schema-v1 run with the rat present and rejects malformed v2 state', () => {
-    const legacy = JSON.parse(
-      serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))
-    );
-    legacy.schemaVersion = 1;
-    delete legacy.state.encounter;
+  test.each([
+    ['present', null],
+    ['repelled', 'fight'],
+    ['bypassed', 'bypass'],
+    ['killed', 'fight'],
+    ['killed', 'growth'],
+  ])('roundtrips rat fate %s from %s', (ratFate, ratAction) => {
+    const simulation = createThreefoldSimulation(CRISIS_THRESHOLDS);
+    simulation.encounter = { ratFate, ratAction };
 
     expect(
-      restoreThreefoldSimulation(JSON.stringify(legacy)).encounter
-    ).toEqual({ ratFate: 'present' });
-
-    const missingEncounter = { ...legacy, schemaVersion: 2 };
-    expect(
-      restoreThreefoldSimulation(JSON.stringify(missingEncounter))
-    ).toBeNull();
-
-    const invalidEncounter = {
-      ...missingEncounter,
-      state: { ...missingEncounter.state, encounter: { ratFate: 'unknown' } },
-    };
-    expect(
-      restoreThreefoldSimulation(JSON.stringify(invalidEncounter))
-    ).toBeNull();
+      restoreThreefoldSimulation(serializeThreefoldSimulation(simulation))
+    ).toEqual(simulation);
   });
 
   test('canonicalizes unordered destroyed geometry IDs on restore', () => {
@@ -614,4 +592,78 @@ describe('THREEFOLD complete-run save codec', () => {
     );
     expect(throwing.clear()).toBe(false);
   });
+});
+
+describe('THREEFOLD save migration', () => {
+  test('migrates schema-v1 rat state and rejects malformed schema-v3 state', () => {
+    const legacy = JSON.parse(
+      serializeThreefoldSimulation(createThreefoldSimulation(CRISIS_THRESHOLDS))
+    );
+    legacy.schemaVersion = 1;
+    delete legacy.state.encounter;
+
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacy)).encounter
+    ).toEqual({ ratFate: 'present', ratAction: null });
+
+    const missingEncounter = { ...legacy, schemaVersion: 3 };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(missingEncounter))
+    ).toBeNull();
+
+    const invalidEncounter = {
+      ...missingEncounter,
+      state: {
+        ...missingEncounter.state,
+        encounter: { ratFate: 'unknown', ratAction: null },
+      },
+    };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(invalidEncounter))
+    ).toBeNull();
+
+    const missingAction = {
+      ...missingEncounter,
+      state: {
+        ...missingEncounter.state,
+        encounter: { ratFate: 'present' },
+      },
+    };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(missingAction))
+    ).toBeNull();
+
+    const inconsistentAction = {
+      ...missingEncounter,
+      state: {
+        ...missingEncounter.state,
+        encounter: { ratFate: 'bypassed', ratAction: 'fight' },
+      },
+    };
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(inconsistentAction))
+    ).toBeNull();
+  });
+
+  test.each([
+    ['present', null],
+    ['repelled', 'fight'],
+    ['bypassed', 'bypass'],
+    ['killed', 'fight'],
+  ])(
+    'migrates schema-v2 rat fate %s with its original cause',
+    (ratFate, ratAction) => {
+      const legacy = JSON.parse(
+        serializeThreefoldSimulation(
+          createThreefoldSimulation(CRISIS_THRESHOLDS)
+        )
+      );
+      legacy.schemaVersion = 2;
+      legacy.state.encounter = { ratFate };
+
+      expect(
+        restoreThreefoldSimulation(JSON.stringify(legacy)).encounter
+      ).toEqual({ ratFate, ratAction });
+    }
+  );
 });

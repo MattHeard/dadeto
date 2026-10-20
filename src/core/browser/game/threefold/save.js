@@ -5,6 +5,7 @@ import { createThreefoldSimulation } from './simulation.js';
 import { createScaleState } from './spatial.js';
 import {
   createThreefoldEncounter,
+  migrateLegacyThreefoldEncounter,
   normalizeThreefoldEncounter,
 } from './encounter.js';
 import {
@@ -18,8 +19,9 @@ import {
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
 const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
-const PREVIOUS_SIMULATION_SCHEMA_VERSION = 1;
-const SIMULATION_SCHEMA_VERSION = 2;
+const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
+const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
+const SIMULATION_SCHEMA_VERSION = 3;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 
 /**
@@ -89,10 +91,12 @@ export function restoreThreefoldSimulation(serialized) {
   try {
     if (envelope.sceneId !== 'broken-gate')
       throw new RangeError('Unknown scene.');
-    const legacy =
+    const legacyV1 =
+      envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
+    const legacyV2 =
       envelope.schemaVersion === PREVIOUS_SIMULATION_SCHEMA_VERSION;
     const state = envelope.state ?? envelope;
-    if (!legacy && !Object.hasOwn(state, 'encounter'))
+    if (!legacyV1 && !Object.hasOwn(state, 'encounter'))
       throw new RangeError('THREEFOLD encounter state is missing.');
     const scene = createBrokenGateScene();
     const crisis = normalizeCrisisClock(state.crisis);
@@ -124,9 +128,11 @@ export function restoreThreefoldSimulation(serialized) {
       player,
       crisis,
       episode: advanceThreefoldEpisode(episode, crisis),
-      encounter: legacy
+      encounter: legacyV1
         ? createThreefoldEncounter()
-        : normalizeThreefoldEncounter(state.encounter),
+        : legacyV2
+          ? migrateLegacyThreefoldEncounter(state.encounter)
+          : normalizeThreefoldEncounter(state.encounter),
     };
   } catch {
     return null;
@@ -225,9 +231,11 @@ function readSimulationEnvelope(serialized) {
   const envelope = readSaveEnvelope(serialized);
   return envelope &&
     envelope.game === GAME_ID &&
-    [PREVIOUS_SIMULATION_SCHEMA_VERSION, SIMULATION_SCHEMA_VERSION].includes(
-      envelope.schemaVersion
-    )
+    [
+      LEGACY_SIMULATION_SCHEMA_VERSION,
+      PREVIOUS_SIMULATION_SCHEMA_VERSION,
+      SIMULATION_SCHEMA_VERSION,
+    ].includes(envelope.schemaVersion)
     ? envelope
     : null;
 }

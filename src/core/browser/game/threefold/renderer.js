@@ -28,8 +28,12 @@ export function renderThreefoldFrame(state) {
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = getThreefoldGateOutcome(state);
   const growthPreview = previewThreefoldGrowthEffects(state);
-  const { geometryIds, occupantIds } = growthPreview;
-  const growthPreviewSet = new Set([...geometryIds, ...occupantIds]);
+  const { geometryIds, occupantIds, creatureIds } = growthPreview;
+  const growthPreviewSet = new Set([
+    ...geometryIds,
+    ...occupantIds,
+    ...creatureIds,
+  ]);
   const world = createRenderWorld(state, heightMeters, growthPreviewSet);
   const frame = toFramePayload(
     {
@@ -50,7 +54,11 @@ export function renderThreefoldFrame(state) {
       journal: [],
       inventory: {},
       menu: null,
-      quickAction: isGatehouseRatInReach(state) ? 'fight' : 'grow',
+      quickAction: creatureIds.includes('gatehouse-rat')
+        ? 'grow'
+        : isGatehouseRatInReach(state)
+          ? 'fight'
+          : 'grow',
       ending: null,
       tick: 0,
       toast: getThreefoldToast(state, gateOutcome.drainageState),
@@ -97,6 +105,7 @@ export function renderThreefoldFrame(state) {
   const growthLabels = [
     geometryIds.length > 0 ? getGrowthPreviewLabel(geometryIds) : null,
     occupantIds.length > 0 ? 'A KILLS LATCHFOLK' : null,
+    creatureIds.includes('gatehouse-rat') ? 'A KILLS RAT' : null,
   ].filter(label => label !== null);
   growthLabels.forEach((text, index) => {
     const y = 17 + index * 12;
@@ -133,7 +142,9 @@ export function renderThreefoldFrame(state) {
     closedBy: state.episode.closedBy ?? null,
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
+    growthPreviewCreatureIds: creatureIds,
     ratFate: state.encounter.ratFate,
+    ratAction: state.encounter.ratAction,
   };
   return frame;
 }
@@ -222,9 +233,13 @@ function getThreefoldToast(state, drainageState) {
           ? 'LATCHFOLK LOST'
           : '';
   const status = latchfolkStatus ? `${message} · ${latchfolkStatus}` : message;
-  const encounterStatus = isGatehouseRatInReach(state)
-    ? `${status} · RAT IN REACH · A FIGHT · X BYPASS`
-    : status;
+  const growthKillsRat =
+    previewThreefoldGrowthEffects(state).creatureIds.includes('gatehouse-rat');
+  const encounterStatus = growthKillsRat
+    ? `${status} · RAT INSIDE · A GROW · X BYPASS`
+    : isGatehouseRatInReach(state)
+      ? `${status} · RAT IN REACH · A FIGHT · X BYPASS`
+      : status;
   return addClosurePrompt(state, encounterStatus, signalStationDestroyed);
 }
 
@@ -263,7 +278,7 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
  * Convert canonical scene coordinates to the tile world used by Mosslight's camera.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @param {number} heightMeters Mara's current physical height.
- * @param {Set<string>} growthPreviewIds Geometry or occupants affected by the next growth step.
+ * @param {Set<string>} growthPreviewIds Geometry, occupants, or creatures affected by the next growth step.
  * @returns {Record<string, any>} Mosslight-compatible world snapshot.
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
@@ -272,7 +287,12 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { geometry } = projectGeometryForScale(player, scene.geometry);
   const ratObjects =
     state.encounter.ratFate === 'present'
-      ? scene.creatures.filter(creature => creature.id === 'gatehouse-rat')
+      ? scene.creatures
+          .filter(creature => creature.id === 'gatehouse-rat')
+          .map(creature => ({
+            ...creature,
+            growthPreview: growthPreviewIds.has(creature.id),
+          }))
       : [];
   const mapWidth = Math.max(
     14,
@@ -382,7 +402,7 @@ function geometrySprite(actor, camera, heightMeters) {
 
 /**
  * Paint the authored rat as a tiny pixel silhouette inside its physical bounds.
- * @param {{bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, id: string}} actor Rat footprint.
+ * @param {{bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, id: string, growthPreview?: boolean}} actor Rat footprint.
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} heightMeters Mara's current physical height.
  * @returns {Array<ThreefoldSpriteShape>} Pixel shapes tagged with the rat identity.
@@ -390,14 +410,15 @@ function geometrySprite(actor, camera, heightMeters) {
 function ratSprite(actor, camera, heightMeters) {
   const footprint = screenFootprint(actor, camera, heightMeters);
   if (!footprint) return [];
-  return RAT_SILHOUETTE.map(([left, top, width, height, fill]) => ({
+  return RAT_SILHOUETTE.map(([left, top, width, height, fill], index) => ({
     type: 'rect',
     geometryId: actor.id,
     x: footprint.x + footprint.width * left,
     y: footprint.y + footprint.height * top,
     width: Math.max(1, footprint.width * width),
     height: Math.max(1, footprint.height * height),
-    fill,
+    fill: actor.growthPreview === true && index < 3 ? '#e16b5a' : fill,
+    growthPreview: actor.growthPreview === true,
   }));
 }
 

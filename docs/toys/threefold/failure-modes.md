@@ -7,7 +7,7 @@
 - Dependency/service unavailable: localStorage is denied or quota-limited.
 - Non-deterministic timing or ordering: wall-clock callbacks accidentally advance crisis time, or simultaneous controls apply in different orders.
 - Environment-specific behavior: pointer capture, gamepad polling, canvas support, or browser storage differs on mobile.
-- Growth-preview drift: the highlighted geometry differs from committed rubble, previewing mutates simulation state, or the warning prevents a deliberate growth action.
+- Growth-preview drift: the highlighted geometry, living occupants, or creature differs from committed outcomes, previewing mutates simulation state, or the warning prevents a deliberate growth action.
 - Occupant-preview drift: the Latchfolk is highlighted without a matching saved loss, growth from inside their bounds at scale −2 kills them without a preview, or safe/lost/closed/locked-growth states keep showing a lethal warning. Do not apply geometry's newly-intersected rule to living occupants: the proposed grown body can overlap an occupant already entered at a smaller scale.
 - Interaction regression: a ferry rescue or Latchfolk warning is accepted out of range, after surge, or is lost after save/import; one ferry interaction rescues both passenger groups, partial rescue is misreported at surge, or withdrawal succeeds from outside the road's interaction range.
 - Withdrawal regression: the storm clock does not settle to aftermath, prior rescues/warnings are erased, or new world actions remain available after departure.
@@ -18,7 +18,7 @@
 
 - Error signatures/log lines: browser module import errors, an invalid-save message, or a failed storage operation.
 - Observable symptoms: blank frame; actions ignored; tide meter disagrees with crisis progress/stage; crisis stage changing while paused; run returning to the opening state after reload.
-- Observable symptoms: fight/bypass prompt appears outside the rat's range or at an unsupported scale; A grows instead of fighting or X waits instead of bypassing while the rat is in reach; a resolved rat reappears after reload.
+- Observable symptoms: fight/bypass prompt appears outside the rat's range or at an unsupported scale; A grows instead of fighting or X waits instead of bypassing while the rat is in reach; growth inside the rat fails to highlight it or persists the wrong cause; a resolved rat reappears after reload.
 - Passenger/ferry state disagrees with the in-range rescue action or deterministic surge transition.
 - Partial passenger state is rejected by save import, overwritten at surge, or rendered without distinguishing the rescued group from the group still aboard or lost.
 - Latchfolk are safe without a pre-surge warning, or a warning changes ferry/passenger outcomes.
@@ -38,9 +38,9 @@
 
 ## Rat encounter checks
 
-- Confirm the rat fate is `present`, Mara is at scale −2 or −1, and her canonical position is inside the authored interaction radius before expecting fight/bypass controls.
-- A should repel the rat at −2 and kill it at −1; X should bypass it at either scale. Both outcomes advance the game clock, while only fighting suppresses Anchor recovery for that action.
-- Verify complete-run schema-v1 migration defaults the rat to `present`, while schema-v2 rejects missing or unknown rat fates.
+- Confirm the rat fate is `present`, Mara is at scale −2 or −1, and her canonical position is inside the authored interaction radius before expecting fight/bypass controls. When her full body fits inside the rat bounds at −2, expect the growth preview and `A GROW · X BYPASS` instead.
+- A should grow through and kill the rat when Mara fits inside it; otherwise A should repel the rat at −2 and kill it at −1. X should bypass it in all in-reach cases. Each outcome advances the game clock; fighting suppresses Anchor recovery for that action.
+- Verify complete-run schema-v1 migration defaults the rat to `present` with no action cause, schema-v2 migration infers the old fight/bypass cause, and schema-v3 rejects missing or inconsistent fate/action pairs.
 
 ## Promoted from Real Failures
 

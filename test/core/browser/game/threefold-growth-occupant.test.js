@@ -61,6 +61,7 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     expect(previewThreefoldGrowthEffects(state)).toEqual({
       geometryIds: [],
       occupantIds: [THREEFOLD_LATCHFOLK_INTERACTABLE_ID],
+      creatureIds: [],
     });
     expect(state).toEqual(before);
 

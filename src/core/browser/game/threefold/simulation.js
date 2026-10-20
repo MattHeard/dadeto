@@ -14,6 +14,7 @@ import { createBrokenGateScene } from './gatehouse.js';
 import {
   createThreefoldEncounter,
   isGatehouseRatInReach,
+  isInsideGatehouseRat,
   resolveGatehouseRat,
 } from './encounter.js';
 import {
@@ -59,10 +60,11 @@ export function previewThreefoldGrowthDamageIds(state) {
 /**
  * Return the known geometry and living occupant affected by the next growth step.
  * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
- * @returns {{geometryIds: string[], occupantIds: string[]}} Sorted impacted identifiers.
+ * @returns {{geometryIds: string[], occupantIds: string[], creatureIds: string[]}} Sorted impacted identifiers.
  */
 export function previewThreefoldGrowthEffects(state) {
-  if (isEpisodeClosed(state)) return { geometryIds: [], occupantIds: [] };
+  if (isEpisodeClosed(state))
+    return { geometryIds: [], occupantIds: [], creatureIds: [] };
   const { player, scene } = state;
   const geometryIds = previewGrowthDamageIds(
     player,
@@ -82,7 +84,12 @@ export function previewThreefoldGrowthEffects(state) {
           scene.baseBodyWidthMeters
         )
       : [];
-  return { geometryIds, occupantIds };
+  const rat = scene.creatures.find(creature => creature.id === 'gatehouse-rat');
+  const creatureIds =
+    rat && state.encounter.ratFate === 'present' && isInsideGatehouseRat(state)
+      ? previewGrowthOverlapIds(player, [rat], scene.baseBodyWidthMeters)
+      : [];
+  return { geometryIds, occupantIds, creatureIds };
 }
 
 /**
@@ -112,23 +119,30 @@ export function stepThreefoldSimulation(state, action) {
   }
 
   if (action.type === 'grow') {
-    const { occupantIds } = previewThreefoldGrowthEffects(state);
+    const { occupantIds, creatureIds } = previewThreefoldGrowthEffects(state);
     const player = growThroughGeometry(
       state.player,
       state.scene.geometry,
       state.scene.baseBodyWidthMeters
     );
-    const actionState = occupantIds.includes(
-      THREEFOLD_LATCHFOLK_INTERACTABLE_ID
-    )
-      ? {
-          ...state,
-          episode: {
-            ...state.episode,
-            latchfolk: /** @type {'lost'} */ ('lost'),
-          },
-        }
-      : state;
+    let actionState = state;
+    if (occupantIds.includes(THREEFOLD_LATCHFOLK_INTERACTABLE_ID))
+      actionState = {
+        ...actionState,
+        episode: {
+          ...actionState.episode,
+          latchfolk: /** @type {'lost'} */ ('lost'),
+        },
+      };
+    if (creatureIds.includes('gatehouse-rat'))
+      actionState = {
+        ...actionState,
+        encounter: resolveGatehouseRat(
+          actionState.encounter,
+          'growth',
+          state.player.scale
+        ),
+      };
     return applyPlayerAction(actionState, player, 'interaction');
   }
 

@@ -525,6 +525,29 @@ describe('THREEFOLD Mosslight handheld frame', () => {
 });
 
 describe('THREEFOLD growth preview summary', () => {
+  test('previews lethal growth when Mara fits inside the authored rat', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState({ x: 3.28, y: 4 }, { scale: -2 });
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const state = stepThreefoldSimulation(initial, {
+      type: 'wait',
+      elapsedGameMinutes: 0.25,
+    });
+    const frame = renderThreefoldFrame(state);
+    const ratShapes = frame.shapes.filter(
+      shape => shape.geometryId === 'gatehouse-rat'
+    );
+
+    expect(frame.threefold.growthPreviewCreatureIds).toEqual(['gatehouse-rat']);
+    expect(frame.quickAction).toBe('grow');
+    expect(frame.toast).toContain('RAT INSIDE · A GROW · X BYPASS');
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({ type: 'text', text: 'A KILLS RAT' })
+    );
+    expect(ratShapes.every(shape => shape.growthPreview)).toBe(true);
+    expect(ratShapes.filter(shape => shape.fill === '#e16b5a')).toHaveLength(3);
+  });
+
   test('summarizes multiple structures in the growth preview', () => {
     const scene = createBrokenGateScene();
     scene.geometry.push({

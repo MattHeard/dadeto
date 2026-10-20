@@ -5,6 +5,7 @@ import {
 } from './save.js';
 import {
   createThreefoldSimulation,
+  previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from './simulation.js';
 import { renderThreefoldFrame } from './renderer.js';
@@ -56,11 +57,19 @@ export function createThreefoldRuntime(options = {}) {
     const direction = DIRECTIONS.find(action => pressed.has(action));
     if (direction)
       state = stepThreefoldSimulation(state, { type: 'move', direction });
-    else if (pressed.has('a') && !previousActions.has('a'))
+    else if (pressed.has('a') && !previousActions.has('a')) {
+      const growsThroughRat =
+        previewThreefoldGrowthEffects(state).creatureIds.includes(
+          'gatehouse-rat'
+        );
       state = stepThreefoldSimulation(state, {
-        type: isGatehouseRatInReach(state) ? 'fight' : 'grow',
+        type: growsThroughRat
+          ? 'grow'
+          : isGatehouseRatInReach(state)
+            ? 'fight'
+            : 'grow',
       });
-    else if (pressed.has('b') && !previousActions.has('b'))
+    } else if (pressed.has('b') && !previousActions.has('b'))
       state = stepThreefoldSimulation(state, { type: 'shrink' });
     else if (pressed.has('interact') && !previousActions.has('interact'))
       state = stepThreefoldSimulation(state, { type: 'interact' });
