@@ -1,14 +1,27 @@
+import { readFileSync } from 'node:fs';
 import {
   createActivationObservationV2,
   createInterpretabilitySchemasV1,
   createInterpretabilitySchemasV2,
+  createNativeNeuronComponentV2,
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
+  createTokenActivationPositionV2,
   exportInterpretabilityResearchBundleV2,
   exportInterpretabilityResearchBundleV3,
   importInterpretabilityResearchBundleV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
+
+const pythiaActivationArtifact = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../../notes/agents/pythia-14m-native-activation.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+);
 
 const model = {
   modelId: 'arc/alg-zoo-m16-10',
@@ -150,6 +163,47 @@ function createIdentityGraph() {
     structuralConnections: [],
     circuitSnapshots: [],
   };
+}
+
+/**
+ * Add one Pythia native mechanism and its V2 component/position to a bundle.
+ * @returns {{bundle: Record<string, any>, mechanism: Record<string, any>, component: Record<string, any>}} Pythia bundle records.
+ */
+function createPythiaNativeMechanismBundle() {
+  const sourceComponent = pythiaActivationArtifact.activation.components[3];
+  const sourcePosition = pythiaActivationArtifact.activation.positions.find(
+    position => position.componentId === sourceComponent.id
+  );
+  const mechanism = {
+    schemaVersion: 1,
+    id: sourceComponent.id,
+    model: sourceComponent.model,
+    layerIndex: sourceComponent.layerIndex,
+    activationHook: sourceComponent.activationHook,
+    kind: 'native-neuron',
+    sourceId: sourceComponent.sourceId,
+    neuronIndex: sourceComponent.neuronIndex,
+  };
+  const component = createNativeNeuronComponentV2(
+    sourceComponent.model,
+    sourceComponent.sourceId,
+    {
+      layerIndex: sourceComponent.layerIndex,
+      activationHook: sourceComponent.activationHook,
+      neuronIndex: sourceComponent.neuronIndex,
+    }
+  );
+  const evidenceGraph = createEvidenceGraph();
+  evidenceGraph.mechanisms.push(mechanism);
+  const identityGraph = createIdentityGraph();
+  identityGraph.components.push(component);
+  identityGraph.activationPositions.push(
+    createTokenActivationPositionV2({
+      componentId: component.id,
+      tokenPositionIndex: sourcePosition.tokenPositionIndex,
+    })
+  );
+  return { bundle: { evidenceGraph, identityGraph }, mechanism, component };
 }
 
 describe('portable research bundle V2', () => {
@@ -394,6 +448,125 @@ describe('portable research bundle V3 lineage', () => {
     });
   });
 
+  it('links a Pythia native mechanism to its V2 component without inventing a position link', () => {
+    const { bundle, mechanism, component } =
+      createPythiaNativeMechanismBundle();
+    const exported = exportInterpretabilityResearchBundleV3(bundle, schemas);
+
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const envelope = JSON.parse(exported.json);
+    const nativeLink = envelope.mechanismIdentityLinks.find(
+      link => link.legacyMechanismId === mechanism.id
+    );
+    expect(nativeLink).toEqual({
+      legacyMechanismId: mechanism.id,
+      componentId: component.id,
+    });
+    expect(
+      envelope.mechanismIdentityLinks.filter(link =>
+        Object.hasOwn(link, 'activationPositionId')
+      )
+    ).toHaveLength(3);
+
+    const imported = importInterpretabilityResearchBundleV2(
+      exported.json,
+      schemas
+    );
+    expect(imported).toMatchObject({ valid: true });
+    if (!imported.valid) return;
+    expect(imported.bundle.mechanismIdentityLinks).toEqual(
+      envelope.mechanismIdentityLinks
+    );
+
+    const reorderedBundle = {
+      evidenceGraph: Object.fromEntries(
+        Object.entries(bundle.evidenceGraph).map(([key, records]) => [
+          key,
+          [...records].reverse(),
+        ])
+      ),
+      identityGraph: Object.fromEntries(
+        Object.entries(bundle.identityGraph).map(([key, records]) => [
+          key,
+          [...records].reverse(),
+        ])
+      ),
+    };
+    expect(
+      exportInterpretabilityResearchBundleV3(reorderedBundle, schemas)
+    ).toEqual(exported);
+  });
+
+  it('rejects native lineage links whose canonical component is missing or altered', () => {
+    const { bundle, mechanism, component } =
+      createPythiaNativeMechanismBundle();
+    const graphWithoutNativeComponent = {
+      ...bundle.identityGraph,
+      components: bundle.identityGraph.components.filter(
+        entry => entry.id !== component.id
+      ),
+      activationPositions: bundle.identityGraph.activationPositions.filter(
+        entry => entry.componentId !== component.id
+      ),
+    };
+    expect(
+      exportInterpretabilityResearchBundleV3(
+        {
+          evidenceGraph: bundle.evidenceGraph,
+          identityGraph: graphWithoutNativeComponent,
+        },
+        schemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [
+            { code: 'missing-lineage-component', mechanismId: mechanism.id },
+          ],
+        },
+      ],
+    });
+
+    const exported = exportInterpretabilityResearchBundleV3(bundle, schemas);
+    expect(exported.valid).toBe(true);
+    if (!exported.valid) return;
+    const links = JSON.parse(exported.json).mechanismIdentityLinks;
+    const nativeLink = links.find(
+      link => link.legacyMechanismId === mechanism.id
+    );
+    const invalidLinks = [
+      links.filter(link => link.legacyMechanismId !== mechanism.id),
+      links.map(link =>
+        link.legacyMechanismId === mechanism.id
+          ? { ...link, activationPositionId: 'atlas:v2:position:invented' }
+          : link
+      ),
+      [...links, nativeLink],
+      links.map(link =>
+        link.legacyMechanismId === mechanism.id
+          ? { ...link, componentId: 'atlas:v2:component:incorrect' }
+          : link
+      ),
+    ];
+    for (const mechanismIdentityLinks of invalidLinks) {
+      expect(
+        importInterpretabilityResearchBundleV2(
+          JSON.stringify({
+            ...JSON.parse(exported.json),
+            mechanismIdentityLinks,
+          }),
+          schemas
+        )
+      ).toMatchObject({
+        valid: false,
+        errors: [{ code: 'invalid-mechanism-identity-links' }],
+      });
+    }
+  });
+
   it('rejects V3 imports when lineage schema adapters are missing', () => {
     const exported = exportInterpretabilityResearchBundleV3(
       {
@@ -449,6 +622,43 @@ describe('portable research bundle V3 lineage', () => {
             {
               code: 'invalid-legacy-recurrent-state',
               details: [{ code: 'invalid-v2-migration' }],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('wraps a native migration failure after evidence graph validation', () => {
+    let nativeMechanismParseCount = 0;
+    const mechanismSchemaV1 = {
+      safeParse: record => {
+        if (record.kind === 'native-neuron') {
+          nativeMechanismParseCount += 1;
+          if (nativeMechanismParseCount === 2) return { success: false };
+        }
+        return evidenceSchemas.mechanismSchemaV1.safeParse(record);
+      },
+    };
+    const { bundle } = createPythiaNativeMechanismBundle();
+
+    expect(
+      exportInterpretabilityResearchBundleV3(bundle, {
+        ...schemas,
+        evidenceGraphSchemasV1: {
+          ...evidenceSchemas,
+          mechanismSchemaV1,
+        },
+      })
+    ).toMatchObject({
+      valid: false,
+      errors: [
+        {
+          code: 'invalid-mechanism-identity-links',
+          details: [
+            {
+              code: 'invalid-legacy-native-neuron',
+              details: [{ code: 'invalid-v1-mechanism' }],
             },
           ],
         },

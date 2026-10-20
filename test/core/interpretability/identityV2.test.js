@@ -9,6 +9,7 @@ import {
   createRecurrentNeuronComponentV2,
   createStructuralConnectionV2,
   createTokenActivationPositionV2,
+  migrateNativeNeuronMechanismV1ToV2,
   migrateRecurrentStateMechanismV1ToV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
@@ -491,6 +492,64 @@ describe('version 2 native-neuron and token identities', () => {
         circuitSnapshots: [],
       }).success
     ).toBe(true);
+  });
+
+  it('migrates a V1 native mechanism to its canonical V2 component', () => {
+    const legacy = {
+      schemaVersion: 1,
+      id: 'pythia-native-neuron-3',
+      model: nativeModel,
+      layerIndex: 0,
+      activationHook:
+        'gpt_neox.layers.0.mlp.dense_h_to_4h.output+configured-gelu',
+      kind: 'native-neuron',
+      sourceId: 'EleutherAI/pythia-14m',
+      neuronIndex: 3,
+    };
+    const migrationSchemas = {
+      mechanismSchemaV1: schemasV1.mechanismSchemaV1,
+      nativeNeuronComponentSchemaV2: schemasV2.nativeNeuronComponentSchemaV2,
+    };
+    const migrated = migrateNativeNeuronMechanismV1ToV2(
+      legacy,
+      migrationSchemas
+    );
+
+    expect(migrated).toMatchObject({ valid: true });
+    if (!migrated.valid) return;
+    expect(migrated.component).toEqual(
+      createNativeNeuronComponentV2(nativeModel, 'EleutherAI/pythia-14m', {
+        layerIndex: legacy.layerIndex,
+        activationHook: legacy.activationHook,
+        neuronIndex: legacy.neuronIndex,
+      })
+    );
+    expect(
+      migrateNativeNeuronMechanismV1ToV2(
+        { ...legacy, kind: 'recurrent-state', timeStep: 3 },
+        migrationSchemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'unsupported-v1-mechanism-kind' }],
+    });
+    expect(
+      migrateNativeNeuronMechanismV1ToV2(legacy, {
+        mechanismSchemaV1: schemasV1.mechanismSchemaV1,
+      })
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-v2-migration' }],
+    });
+    expect(
+      migrateNativeNeuronMechanismV1ToV2(
+        { ...legacy, neuronIndex: -1 },
+        migrationSchemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-v1-mechanism' }],
+    });
   });
 });
 

@@ -1140,6 +1140,42 @@ export function migrateRecurrentStateMechanismV1ToV2(record, schemas) {
   };
 }
 
+/**
+ * Migrate one V1 native-neuron mechanism into its canonical V2 component.
+ * @param {Record<string, any>} record V1 native-neuron mechanism.
+ * @param {{mechanismSchemaV1?: any, nativeNeuronComponentSchemaV2?: any}} [schemas] Injected validators.
+ * @returns {{valid: true, component: Record<string, any>}|{valid: false, errors: Array<{code: string}>}} Migration result.
+ */
+export function migrateNativeNeuronMechanismV1ToV2(record, schemas) {
+  const legacyResult = schemas?.mechanismSchemaV1?.safeParse(record);
+  if (!legacyResult?.success) {
+    return { valid: false, errors: [{ code: 'invalid-v1-mechanism' }] };
+  }
+  if (legacyResult.data.kind !== 'native-neuron') {
+    return {
+      valid: false,
+      errors: [{ code: 'unsupported-v1-mechanism-kind' }],
+    };
+  }
+
+  const legacy = legacyResult.data;
+  const component = createNativeNeuronComponentV2(
+    legacy.model,
+    legacy.sourceId,
+    {
+      layerIndex: legacy.layerIndex,
+      activationHook: legacy.activationHook,
+      neuronIndex: legacy.neuronIndex,
+    }
+  );
+  const componentResult =
+    schemas?.nativeNeuronComponentSchemaV2?.safeParse(component);
+  if (!componentResult?.success) {
+    return { valid: false, errors: [{ code: 'invalid-v2-migration' }] };
+  }
+  return { valid: true, component: componentResult.data };
+}
+
 /** @typedef {Record<string, any>} InterpretabilityRecord */
 /** @typedef {{mechanisms?: Array<InterpretabilityRecord>, hypotheses?: Array<InterpretabilityRecord>, experiments?: Array<InterpretabilityRecord>, evidence?: Array<InterpretabilityRecord>, estimates?: Array<InterpretabilityRecord>, edges?: Array<InterpretabilityRecord>}} InterpretabilityGraphV1 */
 /** @typedef {{mechanismSchemaV1: any, hypothesisSchemaV1: any, experimentSchemaV1: any, evidenceSchemaV1: any, mechanisticEstimateSchemaV1: any, evidenceEdgeSchemaV1: any}} InterpretabilitySchemasV1 */
@@ -1408,9 +1444,9 @@ export function exportInterpretabilityResearchBundleV2(bundle, schemas) {
 }
 
 /**
- * Export V1 evidence and V2 identities with explicit recurrent-mechanism lineage.
+ * Export V1 evidence and V2 identities with explicit mechanism lineage.
  * @param {{evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>}} bundle Portable research subgraphs.
- * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, nativeNeuronComponentSchemaV2?: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
  * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
  */
 export function exportInterpretabilityResearchBundleV3(bundle, schemas) {
@@ -1497,7 +1533,7 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
 /**
  * Import and validate both subgraphs in a portable research bundle.
  * @param {string} json Portable research bundle JSON.
- * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, nativeNeuronComponentSchemaV2?: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
  * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, string>>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
  */
 export function importInterpretabilityResearchBundleV2(json, schemas) {
@@ -1597,7 +1633,8 @@ function researchBundleIdentityGraphSchemaV2(schemas) {
 }
 
 /**
- * Derive and validate links from every V1 recurrent-state ID to its canonical V2 identity.
+ * Derive and validate V3 links from V1 mechanisms to canonical V2 components.
+ * Recurrent-state mechanisms also resolve one explicit activation position.
  * @param {InterpretabilityGraphV1} evidenceGraph Validated V1 graph.
  * @param {Record<string, any>} identityGraph Validated V2 graph.
  * @param {Record<string, any>} schemas Injected migration schemas.
@@ -1607,36 +1644,84 @@ function deriveMechanismIdentityLinksV3(evidenceGraph, identityGraph, schemas) {
   const mechanisms = /** @type {Array<InterpretabilityRecord>} */ (
     evidenceGraph.mechanisms
   );
-  const legacyMechanisms = mechanisms.filter(
+  const recurrentMechanisms = mechanisms.filter(
     mechanism => mechanism.kind === 'recurrent-state'
   );
-  if (legacyMechanisms.length === 0) return { valid: true, links: [] };
+  const nativeMechanisms = mechanisms.filter(
+    mechanism => mechanism.kind === 'native-neuron'
+  );
+  if (recurrentMechanisms.length + nativeMechanisms.length === 0) {
+    return { valid: true, links: [] };
+  }
 
   const evidenceSchemas = schemas?.evidenceGraphSchemasV1;
   const identitySchemas = schemas?.identityGraphSchemasV2;
-  const migrationSchemas = {
-    mechanismSchemaV1: evidenceSchemas?.mechanismSchemaV1,
+  const mechanismSchemaV1 = evidenceSchemas?.mechanismSchemaV1;
+
+  const recurrentMigrationSchemas = {
+    mechanismSchemaV1,
     recurrentNeuronComponentSchemaV2:
       identitySchemas?.recurrentNeuronComponentSchemaV2,
     recurrentActivationPositionSchemaV2:
       identitySchemas?.recurrentActivationPositionSchemaV2,
   };
+  const nativeMigrationSchemas = {
+    mechanismSchemaV1,
+    nativeNeuronComponentSchemaV2:
+      identitySchemas?.nativeNeuronComponentSchemaV2,
+  };
   if (
-    Object.values(migrationSchemas).some(
-      schema => typeof schema?.safeParse !== 'function'
-    )
+    (recurrentMechanisms.length > 0 &&
+      Object.values(recurrentMigrationSchemas).some(
+        schema => typeof schema?.safeParse !== 'function'
+      )) ||
+    (nativeMechanisms.length > 0 &&
+      typeof nativeMigrationSchemas.nativeNeuronComponentSchemaV2?.safeParse !==
+        'function')
   ) {
     return { valid: false, errors: [{ code: 'missing-lineage-schemas' }] };
   }
 
-  const links = [];
+  const recurrentResult = deriveRecurrentMechanismIdentityLinksV3(
+    recurrentMechanisms,
+    identityGraph,
+    recurrentMigrationSchemas
+  );
+  if (!recurrentResult.valid) return recurrentResult;
+  const nativeResult = deriveNativeMechanismIdentityLinksV3(
+    nativeMechanisms,
+    identityGraph,
+    nativeMigrationSchemas
+  );
+  if (!nativeResult.valid) return nativeResult;
+
+  const links = [...recurrentResult.links, ...nativeResult.links];
+  links.sort((left, right) =>
+    left.legacyMechanismId < right.legacyMechanismId ? -1 : 1
+  );
+  return { valid: true, links };
+}
+
+/**
+ * Derive links for V1 recurrent mechanisms, retaining their exact step.
+ * @param {Array<InterpretabilityRecord>} mechanisms V1 recurrent mechanisms.
+ * @param {Record<string, any>} identityGraph Validated V2 graph.
+ * @param {Record<string, any>} migrationSchemas Injected migration schemas.
+ * @returns {{valid: true, links: Array<Record<string, string>>}|{valid: false, errors: Array<Record<string, any>>}} Recurrent links.
+ */
+function deriveRecurrentMechanismIdentityLinksV3(
+  mechanisms,
+  identityGraph,
+  migrationSchemas
+) {
   const components = /** @type {Array<Record<string, any>>} */ (
     identityGraph.components
   );
   const activationPositions = /** @type {Array<Record<string, any>>} */ (
     identityGraph.activationPositions
   );
-  for (const mechanism of legacyMechanisms) {
+  const links = [];
+  for (const mechanism of mechanisms) {
     const migrated = migrateRecurrentStateMechanismV1ToV2(
       mechanism,
       migrationSchemas
@@ -1681,10 +1766,55 @@ function deriveMechanismIdentityLinksV3(evidenceGraph, identityGraph, schemas) {
       activationPositionId: migrated.position.id,
     });
   }
-  // V1 graph validation guarantees that legacy mechanism IDs are unique.
-  links.sort((left, right) =>
-    left.legacyMechanismId < right.legacyMechanismId ? -1 : 1
+  return { valid: true, links };
+}
+
+/**
+ * Derive component-only links for V1 native-neuron mechanisms.
+ * @param {Array<InterpretabilityRecord>} mechanisms V1 native mechanisms.
+ * @param {Record<string, any>} identityGraph Validated V2 graph.
+ * @param {Record<string, any>} migrationSchemas Injected migration schemas.
+ * @returns {{valid: true, links: Array<Record<string, string>>}|{valid: false, errors: Array<Record<string, any>>}} Native links.
+ */
+function deriveNativeMechanismIdentityLinksV3(
+  mechanisms,
+  identityGraph,
+  migrationSchemas
+) {
+  const components = /** @type {Array<Record<string, any>>} */ (
+    identityGraph.components
   );
+  const links = [];
+  for (const mechanism of mechanisms) {
+    const migrated = migrateNativeNeuronMechanismV1ToV2(
+      mechanism,
+      migrationSchemas
+    );
+    if (!migrated.valid) {
+      return {
+        valid: false,
+        errors: [
+          {
+            code: 'invalid-legacy-native-neuron',
+            mechanismId: mechanism.id,
+            details: migrated.errors,
+          },
+        ],
+      };
+    }
+    if (!components.some(component => component.id === migrated.component.id)) {
+      return {
+        valid: false,
+        errors: [
+          { code: 'missing-lineage-component', mechanismId: mechanism.id },
+        ],
+      };
+    }
+    links.push({
+      legacyMechanismId: mechanism.id,
+      componentId: migrated.component.id,
+    });
+  }
   return { valid: true, links };
 }
 
@@ -1700,14 +1830,20 @@ function mechanismIdentityLinksMatchV3(actual, expected) {
   for (const link of actual) {
     if (!link || typeof link !== 'object' || Array.isArray(link)) return false;
     const keys = Object.keys(link).sort();
+    const hasComponentLink =
+      keys.length === 2 &&
+      keys[0] === 'componentId' &&
+      keys[1] === 'legacyMechanismId';
+    const hasPositionLink =
+      keys.length === 3 &&
+      keys[0] === 'activationPositionId' &&
+      keys[1] === 'componentId' &&
+      keys[2] === 'legacyMechanismId';
     if (
-      keys.length !== 3 ||
-      keys[0] !== 'activationPositionId' ||
-      keys[1] !== 'componentId' ||
-      keys[2] !== 'legacyMechanismId' ||
+      (!hasComponentLink && !hasPositionLink) ||
       typeof link.legacyMechanismId !== 'string' ||
       typeof link.componentId !== 'string' ||
-      typeof link.activationPositionId !== 'string' ||
+      (hasPositionLink && typeof link.activationPositionId !== 'string') ||
       byLegacyMechanismId.has(link.legacyMechanismId)
     ) {
       return false;

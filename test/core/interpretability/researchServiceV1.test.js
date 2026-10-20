@@ -3,6 +3,7 @@ import {
   createInterpretabilityResearchServiceV1,
   createInterpretabilitySchemasV1,
   createInterpretabilitySchemasV2,
+  createNativeNeuronComponentV2,
   exportInterpretabilityResearchBundleV2,
   exportInterpretabilityResearchBundleV3,
   importInterpretabilityResearchBundleV2,
@@ -224,11 +225,25 @@ function createPortableBundle(evidenceGraph, versionThree = true) {
   const exporter = versionThree
     ? exportInterpretabilityResearchBundleV3
     : exportInterpretabilityResearchBundleV2;
+  const mechanism = evidenceGraph.mechanisms[0];
   const result = exporter(
     {
       evidenceGraph,
       identityGraph: {
-        components: [],
+        components:
+          versionThree && mechanism.kind === 'native-neuron'
+            ? [
+                createNativeNeuronComponentV2(
+                  mechanism.model,
+                  mechanism.sourceId,
+                  {
+                    layerIndex: mechanism.layerIndex,
+                    activationHook: mechanism.activationHook,
+                    neuronIndex: mechanism.neuronIndex,
+                  }
+                ),
+              ]
+            : [],
         activationPositions: [],
         observations: [],
         structuralConnections: [],
