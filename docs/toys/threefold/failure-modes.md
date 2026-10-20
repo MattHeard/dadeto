@@ -18,7 +18,7 @@
 - Sluice integration regression: `/threefold/?scene=sluice` opens the Broken Gate or shares its save key; an out-of-range valve interaction opens the port; pause or browser wall time advances the chambers; the barrier can be crossed below 0.3 metres or while Mara is smaller than scale −1; save migration loses water or accepts non-conserved/invalid chamber data.
 - Grid presentation regression: any rendered THREEFOLD canvas shape has a non-eight-pixel origin or size, CSS control placement drifts from the eight-pixel page grid, scale changes disappear after display quantization, or rendering changes physical simulation state.
 - Witness-ledger regression: the recorded pre-action preview differs from the visible frame, an event claims an unselected operation or unsupported motive, observation or repair loses its breach link, legacy saves fail to default to an empty ledger, or accessible output scores a choice.
-- Testimony-model limitation: conflicting accounts or unresolved responsibilities must not be flattened into one observation or adjudicated by the renderer. Keep those requirements open until authored evidence supports each speaker and relationship.
+- Testimony regression: the dock worker and watchkeeper accounts lose their speaker/source attribution, conflict is collapsed into a factual event or player intention, imported save text replaces an authored statement, sluice saves acquire Broken Gate testimony, or the unresolved warning-relay responsibility is assigned a verdict without evidence.
 
 ## Detection Signals
 

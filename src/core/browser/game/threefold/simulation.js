@@ -78,7 +78,9 @@ export function createThreefoldSimulation(
     scene,
     player: scene.spawn,
     crisis: createCrisisClock(thresholds),
-    episode: createThreefoldEpisodeState(),
+    episode: createThreefoldEpisodeState({
+      includeTestimony: scene.id !== THREEFOLD_SLUICE_SCENE_ID,
+    }),
     encounter: createThreefoldEncounter(),
   };
   if (scene.id === THREEFOLD_SLUICE_SCENE_ID) {

@@ -197,6 +197,14 @@ body {
   background: #102823;
 }
 
+.witness-ledger > p {
+  margin: 8px 0 0;
+  padding: 8px;
+  border-left: 4px solid #e9d88d;
+  background: #102823;
+  color: var(--ink);
+}
+
 .witness-event {
   display: grid;
   gap: 8px;

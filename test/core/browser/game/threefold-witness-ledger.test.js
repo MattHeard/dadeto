@@ -13,6 +13,7 @@ import {
   normalizeThreefoldWitnessLedger,
   presentThreefoldWitnessEntry,
 } from '../../../../src/core/browser/game/threefold/witness-ledger.js';
+import { presentThreefoldTestimony } from '../../../../src/core/browser/game/threefold/testimony.js';
 
 const THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -54,6 +55,37 @@ describe('THREEFOLD witness ledger', () => {
     expect(runtime.frame().threefold.witnessLedger).toEqual(
       runtime.getJournal()
     );
+    expect(runtime.frame().threefold.testimony.accounts).toHaveLength(2);
+    expect(runtime.frame().threefold.testimony.responsibility.status).toBe(
+      'unresolved'
+    );
+  });
+
+  test('presents conflicting attributed accounts and leaves relay responsibility unresolved', () => {
+    const testimony = presentThreefoldTestimony();
+
+    expect(testimony.accounts).toEqual([
+      expect.objectContaining({
+        speaker: 'Dock worker',
+        statement: 'I shouted that the gate would fail toward the lower path.',
+        evidence: expect.arrayContaining([
+          expect.objectContaining({
+            label: 'Opening callout',
+            text: 'The tide is climbing. That gate will not hold.',
+          }),
+        ]),
+      }),
+      expect.objectContaining({
+        speaker: 'Latchfolk watchkeeper',
+        statement:
+          'No warning that the gate would fail reached my post before the surge.',
+      }),
+    ]);
+    expect(testimony.responsibility).toEqual({
+      question:
+        'Who was responsible for ensuring the gate warning reached the lower settlement?',
+      status: 'unresolved',
+    });
   });
 
   test('records the flood and later repair while keeping ferry losses linked', () => {
@@ -157,25 +189,48 @@ describe('THREEFOLD witness ledger', () => {
     });
   });
 
-  test('persists entries in schema v5 while reading v4 and retaining sluice schema v4', () => {
+  test('persists entries and authored testimony in schema v6 while migrating v5 and retaining sluice schema v4', () => {
     const { state } = forceReliefGateOpen();
     const save = JSON.parse(serializeThreefoldSimulation(state));
-    expect(save.schemaVersion).toBe(5);
+    expect(save.schemaVersion).toBe(6);
     expect(restoreThreefoldSimulation(JSON.stringify(save))).toEqual(state);
+
+    save.schemaVersion = 5;
+    delete save.state.episode.testimony;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(save)).episode.testimony
+    ).toEqual(state.episode.testimony);
 
     save.schemaVersion = 4;
     delete save.state.episode.witnessLedger;
+    delete save.state.episode.testimony;
     expect(
       restoreThreefoldSimulation(JSON.stringify(save)).episode.witnessLedger
     ).toBeUndefined();
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(save)).episode.testimony
+    ).toEqual(state.episode.testimony);
 
     const sluice = createThreefoldSimulation(
       THRESHOLDS,
       createThreefoldSluiceScene()
     );
-    expect(JSON.parse(serializeThreefoldSimulation(sluice)).schemaVersion).toBe(
-      4
-    );
+    const sluiceSave = JSON.parse(serializeThreefoldSimulation(sluice));
+    expect(sluiceSave.schemaVersion).toBe(4);
+    expect(sluiceSave.state.episode.testimony).toBeUndefined();
+  });
+
+  test('does not import altered testimony or accept a responsibility verdict', () => {
+    const { state } = forceReliefGateOpen();
+    const save = JSON.parse(serializeThreefoldSimulation(state));
+    save.state.episode.testimony.accounts[0].statement =
+      'The watchkeeper was to blame.';
+    save.state.episode.testimony.responsibility.status = 'resolved';
+    save.state.episode.testimony.responsibility.conclusion = 'watchkeeper';
+
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(save)).episode.testimony
+    ).toEqual(state.episode.testimony);
   });
 
   test('rejects invalid event order and unresolved repair references', () => {

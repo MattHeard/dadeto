@@ -5,6 +5,7 @@ import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
+import { presentThreefoldTestimony } from './testimony.js';
 import {
   isSluiceSimulationState,
   previewThreefoldGrowthEffects,
@@ -52,7 +53,11 @@ export function renderThreefoldFrame(state) {
       state.crisis.elapsedMinutes === 0
         ? {
             actorId: 'dock-worker',
-            lines: [{ text: 'The tide is climbing. That gate will not hold.' }],
+            lines: [
+              {
+                text: 'The tide is climbing. That gate will not hold. I shouted that the gate would fail toward the lower path.',
+              },
+            ],
             index: 0,
             choices: [],
           }
@@ -145,6 +150,7 @@ export function renderThreefoldFrame(state) {
     witnessLedger: (state.episode.witnessLedger || []).map(
       presentThreefoldWitnessEntry
     ),
+    testimony: presentThreefoldTestimony(),
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
     growthPreviewCreatureIds: creatureIds,

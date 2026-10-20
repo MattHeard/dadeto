@@ -171,7 +171,7 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(restored.crisis.elapsedMinutes).toBe(9.25);
     expect(
       JSON.parse(serializeThreefoldSimulation(simulation)).schemaVersion
-    ).toBe(5);
+    ).toBe(6);
   });
 
   test('migrates a schema-v1 run with an intact rat and rejects incomplete v2', () => {
@@ -241,13 +241,13 @@ describe('THREEFOLD complete-run save codec', () => {
 
     expect(restoredRescue).toEqual(rescued);
     expect(restoredPartial.episode.passengers).toBe('partial');
-    expect(restoredRescue.episode).toEqual({
+    expect(restoredRescue.episode).toMatchObject({
       passengers: 'evacuated',
       ferry: 'afloat',
       latchfolk: 'unwarned',
     });
     expect(restoredSurge).toEqual(surge);
-    expect(restoredSurge.episode).toEqual({
+    expect(restoredSurge.episode).toMatchObject({
       passengers: 'evacuated',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -273,7 +273,7 @@ describe('THREEFOLD complete-run save codec', () => {
     );
 
     expect(restoredPartial.episode.passengers).toBe('partial');
-    expect(restoredSurge.episode).toEqual({
+    expect(restoredSurge.episode).toMatchObject({
       passengers: 'partial',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -306,7 +306,7 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(restoredWarning).toEqual(warned);
     expect(restoredWarning.episode.latchfolk).toBe('warned');
     expect(restoredSurge).toEqual(surge);
-    expect(restoredSurge.episode).toEqual({
+    expect(restoredSurge.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'safe',
@@ -419,7 +419,7 @@ describe('THREEFOLD complete-run save codec', () => {
     delete lateSave.state.episode;
     expect(
       restoreThreefoldSimulation(JSON.stringify(lateSave)).episode
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',
@@ -448,7 +448,7 @@ describe('THREEFOLD complete-run save codec', () => {
     };
     expect(
       restoreThreefoldSimulation(JSON.stringify(latePriorEpisodeSave)).episode
-    ).toEqual({
+    ).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',

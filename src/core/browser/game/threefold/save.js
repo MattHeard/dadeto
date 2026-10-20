@@ -29,7 +29,7 @@ const SAVE_SCHEMA_VERSION = 1;
 const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
 const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
 const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
-const SIMULATION_SCHEMA_VERSION = 5;
+const SIMULATION_SCHEMA_VERSION = 6;
 const SLUICE_SIMULATION_SCHEMA_VERSION = 4;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
@@ -81,7 +81,9 @@ export function serializeThreefoldSimulation(simulation) {
   const state = /** @type {Record<string, any>} */ ({
     player: normalizeScaleState(simulation.player),
     crisis: normalizeCrisisClock(simulation.crisis),
-    episode: normalizeThreefoldEpisodeState(simulation.episode),
+    episode: normalizeThreefoldEpisodeState(simulation.episode, {
+      includeTestimony: !isSluiceSimulationState(simulation),
+    }),
     encounter: normalizeThreefoldEncounter(simulation.encounter),
   });
   if (isSluiceSimulationState(simulation)) {
@@ -128,7 +130,9 @@ export function restoreThreefoldSimulation(serialized) {
       throw new RangeError('THREEFOLD encounter state is missing.');
     const crisis = normalizeCrisisClock(state.crisis);
     const episode = normalizeThreefoldEpisodeState(
-      state.episode ?? createThreefoldEpisodeState()
+      state.episode ??
+        createThreefoldEpisodeState({ includeTestimony: !isSluiceScene }),
+      { includeTestimony: !isSluiceScene }
     );
     const player = normalizeScaleState(state.player);
     if (episode.withdrawn === true && crisis.stage !== 'aftermath')
@@ -278,7 +282,7 @@ function readSimulationEnvelope(serialized) {
   const envelope = readSaveEnvelope(serialized);
   return envelope &&
     envelope.game === GAME_ID &&
-    [1, 2, 3, 4, SIMULATION_SCHEMA_VERSION].includes(envelope.schemaVersion)
+    [1, 2, 3, 4, 5, SIMULATION_SCHEMA_VERSION].includes(envelope.schemaVersion)
     ? envelope
     : null;
 }

@@ -81,7 +81,11 @@ describe('THREEFOLD status display', () => {
     });
     expect(frame.dialogue).toMatchObject({
       actorId: 'dock-worker',
-      lines: [{ text: 'The tide is climbing. That gate will not hold.' }],
+      lines: [
+        {
+          text: 'The tide is climbing. That gate will not hold. I shouted that the gate would fail toward the lower path.',
+        },
+      ],
       index: 0,
     });
     expect(frame.toast).toBe(

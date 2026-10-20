@@ -45,7 +45,7 @@ describe('THREEFOLD post-storm closure simulation', () => {
       type: 'interact',
     });
 
-    expect(reported.episode).toEqual({
+    expect(reported.episode).toMatchObject({
       passengers: 'lost',
       ferry: 'lost',
       latchfolk: 'lost',

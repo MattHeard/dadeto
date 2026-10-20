@@ -6,6 +6,8 @@ import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
+const renderedTestimonyByList = new WeakMap();
+
 /**
  * Start the standalone THREEFOLD handheld page.
  * @param {Record<string, any>} options Injected browser and animation APIs.
@@ -36,6 +38,10 @@ export function startThreefoldPage(options) {
       renderThreefoldWitnessLedger(
         options.documentObj,
         frame.threefold?.witnessLedger || []
+      );
+      renderThreefoldTestimony(
+        options.documentObj,
+        frame.threefold?.testimony || null
       );
     },
     saveFilename: 'threefold-save.json',
@@ -92,6 +98,42 @@ function configureSluicePage(documentObj) {
   );
   const witnessLedger = documentObj?.querySelector?.('#witness-ledger');
   if (witnessLedger) witnessLedger.hidden = true;
+  const testimony = documentObj?.querySelector?.('#testimony');
+  if (testimony) testimony.hidden = true;
+}
+
+/**
+ * Render attributed accounts and their statements separately from the event
+ * ledger and its player-intention records.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {{accounts: Array<{speaker: string, statement: string, evidence: Array<{label: string, text: string}>}>, responsibility: {question: string, status: string}}|null} testimony Authored Broken Gate accounts.
+ * @returns {void}
+ */
+function renderThreefoldTestimony(documentObj, testimony) {
+  const list = documentObj?.querySelector?.('#testimony-accounts');
+  if (!list) return;
+  const signature = JSON.stringify(testimony);
+  if (renderedTestimonyByList.get(list) === signature) return;
+  renderedTestimonyByList.set(list, signature);
+  list.replaceChildren();
+  if (!testimony) return;
+  testimony.accounts.forEach(account => {
+    const item = documentObj.createElement('li');
+    const article = documentObj.createElement('div');
+    article.className = 'witness-event';
+    const title = documentObj.createElement('strong');
+    title.textContent = account.speaker;
+    article.appendChild(title);
+    appendWitnessField(documentObj, article, 'Account', account.statement);
+    account.evidence.forEach(evidence =>
+      appendWitnessField(documentObj, article, evidence.label, evidence.text)
+    );
+    item.appendChild(article);
+    list.appendChild(item);
+  });
+  const responsibility = documentObj.querySelector('#testimony-responsibility');
+  if (responsibility)
+    responsibility.textContent = `${testimony.responsibility.question} Status: ${testimony.responsibility.status}.`;
 }
 
 /**
