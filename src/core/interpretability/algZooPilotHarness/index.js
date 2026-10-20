@@ -1,3 +1,8 @@
+export {
+  evaluateAlgZooRestrictedRule,
+  scoreAlgZooBlindedSubmissions,
+} from '../algZooPredictionScorer/index.js';
+
 const TARGET_COUNT = 16;
 const HELD_OUT_SEQUENCE_COUNT = 1024;
 const SEQUENCE_LENGTH = 10;
@@ -70,7 +75,7 @@ export function createAlgZooPilotSchedule(seed) {
       },
     };
   });
-  return { valid: true, protocolVersion: '1.0.1', targetOrder, pairs };
+  return { valid: true, protocolVersion: '1.0.2', targetOrder, pairs };
 }
 
 /**

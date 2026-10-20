@@ -101,7 +101,7 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(first.pairs.every(pair => pair.sessionOrder.length === 2)).toBe(
       true
     );
-    expect(first.protocolVersion).toBe('1.0.1');
+    expect(first.protocolVersion).toBe('1.0.2');
     expect(() => createAlgZooPilotSchedule(-1)).toThrow(RangeError);
   });
 
@@ -131,7 +131,7 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(first.valid).toBe(true);
     expect(first.json).toBe(second.json);
     expect(first.manifest.status).toBe('prelaunch-not-launched');
-    expect(first.manifest.protocolVersion).toBe('1.0.1');
+    expect(first.manifest.protocolVersion).toBe('1.0.2');
     expect(first.manifest.launchReady).toBe(true);
     expect(first.schedule.pairs).toHaveLength(16);
     expect(first.schedule.pairs[0].sessions.control.budget).toEqual({
