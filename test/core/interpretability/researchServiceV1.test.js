@@ -1,14 +1,27 @@
+import { readFileSync } from 'node:fs';
 import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 import {
   createInterpretabilityResearchServiceV1,
   createInterpretabilitySchemasV1,
   createInterpretabilitySchemasV2,
   createNativeNeuronComponentV2,
+  createRecurrentActivationPositionV2,
+  createRecurrentNeuronComponentV2,
   exportInterpretabilityResearchBundleV2,
   exportInterpretabilityResearchBundleV3,
   importInterpretabilityResearchBundleV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
+
+const pythiaActivationArtifact = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../../notes/agents/pythia-14m-native-activation.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+);
 
 const model = {
   modelId: 'test-model',
@@ -226,25 +239,42 @@ function createPortableBundle(evidenceGraph, versionThree = true) {
     ? exportInterpretabilityResearchBundleV3
     : exportInterpretabilityResearchBundleV2;
   const mechanism = evidenceGraph.mechanisms[0];
+  /** @type {Record<string, any>|null} */
+  let component = null;
+  if (versionThree && mechanism.kind === 'native-neuron') {
+    component = createNativeNeuronComponentV2(
+      mechanism.model,
+      mechanism.sourceId,
+      {
+        layerIndex: mechanism.layerIndex,
+        activationHook: mechanism.activationHook,
+        neuronIndex: mechanism.neuronIndex,
+      }
+    );
+  } else if (versionThree && mechanism.kind === 'recurrent-state') {
+    component = createRecurrentNeuronComponentV2(
+      mechanism.model,
+      mechanism.sourceId,
+      {
+        layerIndex: mechanism.layerIndex,
+        activationHook: mechanism.activationHook,
+        neuronIndex: mechanism.neuronIndex,
+      }
+    );
+  }
+  const activationPosition =
+    mechanism.kind === 'recurrent-state' && component
+      ? createRecurrentActivationPositionV2({
+          componentId: component.id,
+          timeStepIndex: mechanism.timeStep,
+        })
+      : null;
   const result = exporter(
     {
       evidenceGraph,
       identityGraph: {
-        components:
-          versionThree && mechanism.kind === 'native-neuron'
-            ? [
-                createNativeNeuronComponentV2(
-                  mechanism.model,
-                  mechanism.sourceId,
-                  {
-                    layerIndex: mechanism.layerIndex,
-                    activationHook: mechanism.activationHook,
-                    neuronIndex: mechanism.neuronIndex,
-                  }
-                ),
-              ]
-            : [],
-        activationPositions: [],
+        components: component ? [component] : [],
+        activationPositions: activationPosition ? [activationPosition] : [],
         observations: [],
         structuralConnections: [],
         circuitSnapshots: [],
@@ -256,7 +286,118 @@ function createPortableBundle(evidenceGraph, versionThree = true) {
   return result.json;
 }
 
+/**
+ * Build a V3 bundle from one pinned Pythia native-neuron artifact record.
+ * @returns {{json: string, mechanism: Record<string, any>, component: Record<string, any>}} Portable V3 bundle and source identities.
+ */
+function createPythiaNativePortableBundle() {
+  const source = pythiaActivationArtifact.activation.components[3];
+  const mechanism = {
+    schemaVersion: 1,
+    id: 'pythia-native-mechanism-3',
+    model: source.model,
+    layerIndex: source.layerIndex,
+    activationHook: source.activationHook,
+    kind: 'native-neuron',
+    sourceId: source.sourceId,
+    neuronIndex: source.neuronIndex,
+  };
+  const component = createNativeNeuronComponentV2(
+    source.model,
+    source.sourceId,
+    {
+      layerIndex: source.layerIndex,
+      activationHook: source.activationHook,
+      neuronIndex: source.neuronIndex,
+    }
+  );
+  const evidenceGraph = {
+    ...createEvidenceGraph(),
+    mechanisms: [mechanism],
+    hypotheses: [],
+    experiments: [],
+    estimates: [],
+    evidence: [],
+    edges: [],
+  };
+  const exported = exportInterpretabilityResearchBundleV3(
+    {
+      evidenceGraph,
+      identityGraph: {
+        components: [component],
+        activationPositions: [],
+        observations: [],
+        structuralConnections: [],
+        circuitSnapshots: [],
+      },
+    },
+    schemas
+  );
+  if (!exported.valid) throw new Error('Pythia context fixture is invalid.');
+  return { json: exported.json, mechanism, component };
+}
+
 describe('permission-aware interpretability research service V1', () => {
+  it('returns a Pythia native context linked to its canonical V2 component', async () => {
+    const allowEffects = createAllowEffects();
+    const { json, mechanism, component } = createPythiaNativePortableBundle();
+    const memory = createMemoryAdapter(json);
+    const context = await memory.service.readContext(allowEffects, {
+      mechanismId: mechanism.id,
+    });
+
+    expect(context).toMatchObject({
+      valid: true,
+      mechanism: { id: mechanism.id },
+      mechanismIdentityLink: {
+        legacyMechanismId: mechanism.id,
+        componentId: component.id,
+      },
+    });
+    if (!context.valid) return;
+    expect(context.mechanismIdentityLink).not.toHaveProperty(
+      'activationPositionId'
+    );
+  });
+
+  it('returns recurrent lineage and a null link for V2 context reads', async () => {
+    const allowEffects = createAllowEffects();
+    const recurrentMemory = createMemoryAdapter(
+      createPortableBundle(createEvidenceGraph('recurrent-state'))
+    );
+    const recurrentContext = await recurrentMemory.service.readContext(
+      allowEffects,
+      { mechanismId: 'mechanism-a' }
+    );
+
+    expect(recurrentContext).toMatchObject({ valid: true });
+    if (!recurrentContext.valid) return;
+    expect(recurrentContext.mechanismIdentityLink).toEqual({
+      legacyMechanismId: 'mechanism-a',
+      componentId: expect.any(String),
+      activationPositionId: expect.any(String),
+    });
+
+    const legacyMemory = createMemoryAdapter(
+      createPortableBundle(createEvidenceGraph(), false)
+    );
+    const legacyContext = await legacyMemory.service.readContext(allowEffects, {
+      mechanismId: 'mechanism-a',
+    });
+    expect(legacyContext).toMatchObject({
+      valid: true,
+      mechanismIdentityLink: null,
+    });
+    const unknownContext = await legacyMemory.service.readContext(
+      allowEffects,
+      { mechanismId: 'unknown-mechanism' }
+    );
+    expect(unknownContext).toEqual({
+      valid: false,
+      errors: [{ code: 'unknown-mechanism', mechanismId: 'unknown-mechanism' }],
+    });
+  });
+
   it('reads bounded context and persists validated follow-on submissions', async () => {
     const allowEffects = createAllowEffects();
     const memory = createMemoryAdapter(

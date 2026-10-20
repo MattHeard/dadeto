@@ -8,18 +8,20 @@ import {
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {Parameters<typeof importInterpretabilityResearchBundleV2>[1]} ResearchSchemas */
 /** @typedef {Parameters<typeof getEvidenceGraphContextV1>[1]} EvidenceContextQuery */
+/** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: true}> & {mechanismIdentityLink: Record<string, string>|null}} ResearchContextPage */
+/** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: false}>} ResearchContextFailure */
 /** @typedef {Parameters<typeof appendExperimentSubmissionV1>[1]} ExperimentSubmission */
 /** @typedef {ReturnType<typeof importInterpretabilityResearchBundleV2>} BundleImportResult */
 /** @typedef {Extract<BundleImportResult, {valid: true}>['bundle']} ResearchBundle */
 /** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>} BundleOperationResult */
 /** @typedef {BundleImportResult|BundleOperationResult} ResearchServiceResult */
-/** @typedef {(bundle: ResearchBundle) => Promise<BundleOperationResult>|BundleOperationResult} BundleOperation */
+/** @typedef {Extract<BundleImportResult, {valid: false}>|ResearchContextFailure|ResearchContextPage} ResearchContextServiceResult */
 /** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission}} ExperimentWrite */
 
 /**
  * Create the pure Atlas read/submission service over injected bundle storage.
  * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas}} options Storage capabilities and caller-provided schema adapters.
- * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>}} Permission-aware service methods.
+ * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>}} Permission-aware service methods.
  */
 export function createInterpretabilityResearchServiceV1({
   loadBundle,
@@ -28,8 +30,9 @@ export function createInterpretabilityResearchServiceV1({
 }) {
   /**
    * @param {AllowEffects} allowEffects Permission token forwarded to storage.
-   * @param {BundleOperation} operation Work to run against a validated bundle.
-   * @returns {Promise<ResearchServiceResult>} Operation result or import failure.
+   * @template T
+   * @param {(bundle: ResearchBundle) => Promise<T>|T} operation Work to run against a validated bundle.
+   * @returns {Promise<Extract<BundleImportResult, {valid: false}>|T>} Operation result or import failure.
    */
   const withBundle = (allowEffects, operation) =>
     withImportedBundle(allowEffects, loadBundle, schemas, operation);
@@ -37,9 +40,15 @@ export function createInterpretabilityResearchServiceV1({
 
   return Object.freeze({
     readContext: (allowEffects, query) =>
-      withBundle(allowEffects, bundle =>
-        getEvidenceGraphContextV1(bundle.evidenceGraph, query)
-      ),
+      withBundle(allowEffects, bundle => {
+        const context = getEvidenceGraphContextV1(bundle.evidenceGraph, query);
+        if (!context.valid) return context;
+        const mechanismIdentityLink =
+          bundle.mechanismIdentityLinks.find(
+            link => link.legacyMechanismId === context.mechanism.id
+          ) ?? null;
+        return { ...context, mechanismIdentityLink };
+      }),
     submitExperiment: (allowEffects, submission) =>
       withBundle(allowEffects, bundle =>
         saveExperiment({
@@ -68,8 +77,9 @@ async function loadImportedBundle(allowEffects, loadBundle, schemas) {
  * @param {AllowEffects} allowEffects Permission token forwarded to storage.
  * @param {(allowEffects: AllowEffects) => Promise<string>} loadBundle Storage adapter.
  * @param {ResearchSchemas} schemas Injected schema adapters.
- * @param {BundleOperation} operation Work to run against a validated bundle.
- * @returns {Promise<ResearchServiceResult>} Operation result or import failure.
+ * @template T
+ * @param {(bundle: ResearchBundle) => Promise<T>|T} operation Work to run against a validated bundle.
+ * @returns {Promise<Extract<BundleImportResult, {valid: false}>|T>} Operation result or import failure.
  */
 async function withImportedBundle(
   allowEffects,

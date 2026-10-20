@@ -18,7 +18,7 @@ The first test command was blocked by sandbox `EPERM` while spawning Node and Gi
 
 - `npm run check:impact:run -- --files src/core/interpretability/index.js test/core/interpretability/identityV2.test.js test/core/interpretability/researchBundleV2.test.js test/core/interpretability/researchServiceV1.test.js` — passed; 8 suites / 66 tests, changed-core lines and branches fully covered, ESLint/core-parse/duplication passed, 0 clones.
 - `npm run check` — passed all 10 gates; five impact shards passed 976 suites / 6,818 tests with 0 failures; duplication reported 0 clones. The local runner selected its conservative all-unit fallback.
-- Exact-head Full Check and Terraform Validate — recorded after the change is pushed.
+- Exact-head Full Check [39458283378](https://github.com/MattHeard/dadeto/actions/runs/39458283378) and Terraform Validate [39458283813](https://github.com/MattHeard/dadeto/actions/runs/39458283813) — both passed for commit `4cdc870a47a670ddc1958dc452974161417f2043`.
 
 ## Next-time guidance
 
