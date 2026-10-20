@@ -485,6 +485,75 @@ describe('permission-aware interpretability research service V1', () => {
     expect(memory.savePermissions).toHaveLength(1);
   });
 
+  it('exposes competing hypotheses and typed evidence to API callers', async () => {
+    const allowEffects = createAllowEffects();
+    const graph = createEvidenceGraph();
+    graph.hypotheses.push({
+      ...graph.hypotheses[0],
+      id: 'hypothesis-b',
+      claim: 'The selected unit has a negative response.',
+      evidenceIds: ['evidence-b'],
+      authorId: 'investigator-b',
+    });
+    graph.evidence.push({
+      ...graph.evidence[0],
+      id: 'evidence-b',
+      kind: 'negative',
+      summary: 'Investigator B recorded a negative replay measurement.',
+      hypothesisIds: ['hypothesis-b'],
+      authorId: 'investigator-b',
+    });
+    graph.edges.push(
+      {
+        ...graph.edges[0],
+        id: 'edge-mechanism-hypothesis-b',
+        toId: 'hypothesis-b',
+        authorId: 'investigator-b',
+      },
+      {
+        ...graph.edges[1],
+        id: 'edge-hypothesis-b-evidence-b',
+        fromId: 'hypothesis-b',
+        toId: 'evidence-b',
+        authorId: 'investigator-b',
+      },
+      {
+        ...graph.edges[1],
+        id: 'edge-hypothesis-a-contradicts-evidence-b',
+        toId: 'evidence-b',
+        relation: 'contradicts',
+        authorId: 'investigator-b',
+      }
+    );
+    const memory = createMemoryAdapter(createPortableBundle(graph));
+    const context = await memory.service.readContext(allowEffects, {
+      mechanismId: 'mechanism-a',
+      maxDepth: 2,
+      pageSize: 20,
+    });
+
+    expect(context.valid).toBe(true);
+    if (!context.valid) return;
+    const records = context.items
+      .filter(item => item.itemType === 'record')
+      .map(item => ({ collection: item.collection, record: item.record }));
+    expect(
+      records
+        .filter(item => item.collection === 'hypotheses')
+        .map(item => item.record.id)
+    ).toEqual(['hypothesis-a', 'hypothesis-b']);
+    expect(
+      records
+        .filter(item => item.collection === 'evidence')
+        .map(item => item.record.kind)
+    ).toEqual(['observation', 'negative']);
+    expect(
+      context.items
+        .filter(item => item.itemType === 'edge')
+        .map(item => item.record.relation)
+    ).toEqual(expect.arrayContaining(['supports', 'contradicts']));
+  });
+
   it('lets a fresh investigator session reuse persisted evidence through the service', async () => {
     const sourceGraph = createEvidenceGraph();
     const initialGraph = {
