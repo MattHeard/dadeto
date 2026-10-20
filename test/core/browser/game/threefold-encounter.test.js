@@ -2,6 +2,7 @@ import { createBrokenGateScene } from '../../../../src/core/browser/game/threefo
 import {
   createThreefoldEncounter,
   isGatehouseRatInReach,
+  isInsideGatehouseRat,
   migrateLegacyThreefoldEncounter,
   normalizeThreefoldEncounter,
   resolveGatehouseRat,
@@ -69,6 +70,7 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     );
     const state = createThreefoldSimulation(THRESHOLDS, scene);
 
+    expect(isInsideGatehouseRat(state)).toBe(true);
     expect(previewThreefoldGrowthEffects(state).creatureIds).toEqual([
       'gatehouse-rat',
     ]);
@@ -133,6 +135,33 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     ).toBe(false);
   });
 
+  test('only treats a living authored rat as an inside growth target', () => {
+    const scene = createBrokenGateScene();
+    scene.spawn = createScaleState(
+      { x: 3.28, y: 4 },
+      {
+        scale: -2,
+        minimumUnlockedScale: -2,
+        maximumUnlockedScale: 1,
+      }
+    );
+    const state = createThreefoldSimulation(THRESHOLDS, scene);
+
+    expect(isInsideGatehouseRat(null)).toBe(false);
+    expect(
+      isInsideGatehouseRat({
+        ...state,
+        scene: { ...state.scene, creatures: [] },
+      })
+    ).toBe(false);
+    expect(
+      isInsideGatehouseRat({
+        ...state,
+        encounter: { ratFate: 'bypassed', ratAction: 'bypass' },
+      })
+    ).toBe(false);
+  });
+
   test('validates and preserves terminal fates', () => {
     const initial = createThreefoldEncounter();
     expect(normalizeThreefoldEncounter(undefined)).toEqual(initial);
@@ -163,6 +192,27 @@ describe('THREEFOLD Broken Gate rat encounter', () => {
     expect(() => normalizeThreefoldEncounter({ ratFate: 'unknown' })).toThrow(
       'THREEFOLD encounter state is inconsistent.'
     );
+  });
+
+  test('rejects a killed rat paired with a nonlethal action', () => {
+    expect(() =>
+      normalizeThreefoldEncounter({ ratFate: 'killed', ratAction: 'bypass' })
+    ).toThrow('THREEFOLD encounter state is inconsistent.');
+  });
+
+  test('migrates and rejects schema-v2 encounter boundaries', () => {
+    const initial = createThreefoldEncounter();
+
+    expect(migrateLegacyThreefoldEncounter(undefined)).toEqual(initial);
+    expect(() => migrateLegacyThreefoldEncounter(null)).toThrow(
+      'THREEFOLD encounter state is inconsistent.'
+    );
+    expect(() => migrateLegacyThreefoldEncounter('invalid')).toThrow(
+      'THREEFOLD encounter state is inconsistent.'
+    );
+    expect(() =>
+      migrateLegacyThreefoldEncounter({ ratFate: 'unknown' })
+    ).toThrow('THREEFOLD encounter state is inconsistent.');
   });
 });
 
