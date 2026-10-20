@@ -432,6 +432,69 @@ describe('version 2 recurrent identities', () => {
 });
 
 describe('version 2 checkpoint lineage', () => {
+  it('accepts identity graphs with and without checkpoint metadata', async () => {
+    const digest = identity =>
+      createHash('sha256').update(identity, 'utf8').digest('hex');
+    const createGraph = async (graphModel, circuitId) => {
+      const source = componentAtCheckpoint(graphModel, 2);
+      const target = componentAtCheckpoint(graphModel, 3);
+      const connection = createStructuralConnectionV2(
+        graphModel,
+        source,
+        target,
+        {
+          sourcePort: 'hidden-state',
+          targetPort: 'hidden-state',
+          kind: 'recurrent',
+          recurrentLag: 1,
+        }
+      );
+      const snapshot = await createCircuitStructuralSnapshotV2(
+        circuitId,
+        graphModel,
+        {
+          completeness: 'unknown',
+          componentIds: [source.id, target.id],
+          connectionIds: [connection.id],
+          boundaryComponentIds: [source.id],
+        },
+        digest
+      );
+      return {
+        schemaVersion: 2,
+        components: [source, target],
+        activationPositions: [],
+        observations: [],
+        structuralConnections: [connection],
+        circuitSnapshots: [snapshot],
+      };
+    };
+    const checkpointLessGraph = await createGraph(
+      model,
+      'atlas:circuit:checkpoint-less-example'
+    );
+    const checkpointedGraph = await createGraph(
+      {
+        ...model,
+        checkpoint: {
+          sha256: 'f'.repeat(64),
+          trainingRunId: 'm16-10-training-run-a',
+        },
+      },
+      'atlas:circuit:checkpointed-example'
+    );
+    const schemasWithHash = createInterpretabilitySchemasV2(zod, digest);
+
+    expect(model.checkpoint).toBeUndefined();
+    expect(
+      schemasWithHash.identityGraphSchemaV2.safeParse(checkpointLessGraph)
+        .success
+    ).toBe(true);
+    expect(
+      schemasWithHash.identityGraphSchemaV2.safeParse(checkpointedGraph).success
+    ).toBe(true);
+  });
+
   it('binds checkpoint hashes and training runs to recurrent lineage', () => {
     const firstCheckpoint = componentAtCheckpoint(
       {
