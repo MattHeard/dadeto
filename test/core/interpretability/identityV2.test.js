@@ -55,6 +55,18 @@ describe('version 2 recurrent identities', () => {
       }).success
     ).toBe(false);
     expect(
+      schemasV2.recurrentNeuronComponentSchemaV2.safeParse({
+        ...neuron,
+        id: `${neuron.id}:caller-selected`,
+      }).success
+    ).toBe(false);
+    expect(
+      schemasV2.recurrentNeuronComponentSchemaV2.safeParse({
+        ...neuron,
+        coordinateId: `${neuron.coordinateId}:caller-selected`,
+      }).success
+    ).toBe(false);
+    expect(
       schemasV2.recurrentActivationPositionSchemaV2.parse(stepZero)
     ).toEqual(stepZero);
     expect(
@@ -62,6 +74,12 @@ describe('version 2 recurrent identities', () => {
     ).toEqual(stepNine);
     expect(stepZero.componentId).toBe(stepNine.componentId);
     expect(stepZero.id).not.toBe(stepNine.id);
+    expect(
+      schemasV2.recurrentActivationPositionSchemaV2.safeParse({
+        ...stepNine,
+        id: `${stepNine.id}:caller-selected`,
+      }).success
+    ).toBe(false);
   });
 
   it('derives observation IDs from position, experiment, input, and run identity', () => {
@@ -96,6 +114,12 @@ describe('version 2 recurrent identities', () => {
     });
 
     expect(schemasV2.activationObservationSchemaV2.parse(first)).toEqual(first);
+    expect(
+      schemasV2.activationObservationSchemaV2.safeParse({
+        ...first,
+        id: `${first.id}:caller-selected`,
+      }).success
+    ).toBe(false);
     expect(repeated.id).toBe(first.id);
     expect(otherInput.id).not.toBe(first.id);
     expect(otherRun.id).not.toBe(first.id);
@@ -151,6 +175,18 @@ describe('version 2 recurrent identities', () => {
     expect(schemasV2.structuralConnectionSchemaV2.parse(connection)).toEqual(
       connection
     );
+    expect(
+      schemasV2.structuralConnectionSchemaV2.safeParse({
+        ...connection,
+        id: `${connection.id}:caller-selected`,
+      }).success
+    ).toBe(false);
+    expect(
+      schemasV2.structuralConnectionSchemaV2.safeParse({
+        ...connection,
+        coordinateId: `${connection.coordinateId}:caller-selected`,
+      }).success
+    ).toBe(false);
     expect(repeat.id).toBe(connection.id);
     expect(reversed.id).not.toBe(connection.id);
     expect(otherCoordinate.id).not.toBe(connection.id);
@@ -247,6 +283,12 @@ describe('version 2 recurrent identities', () => {
     expect(schemasV2.circuitStructuralSnapshotSchemaV2.parse(snapshot)).toEqual(
       snapshot
     );
+    expect(
+      schemasV2.circuitStructuralSnapshotSchemaV2.safeParse({
+        ...snapshot,
+        id: `atlas:v2:circuit-snapshot:${'0'.repeat(64)}`,
+      }).success
+    ).toBe(false);
     expect(reorderedSnapshot.id).toBe(snapshot.id);
     expect(changedTopology.id).not.toBe(snapshot.id);
     expect(changedCheckpoint.id).not.toBe(snapshot.id);
