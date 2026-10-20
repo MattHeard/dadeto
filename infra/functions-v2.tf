@@ -86,7 +86,11 @@ resource "google_cloudfunctions2_function" "get_author_uuid_v2" {
     timeout_seconds       = 15
     max_instance_count    = 20
     service_account_email = local.cloud_function_runtime_service_account_email
-    environment_variables = local.cloud_function_environment
+    environment_variables = merge(local.cloud_function_environment, {
+      BILLING_ENABLED = tostring(
+        var.billing_enabled || var.get_author_uuid_v2_billing_enabled
+      )
+    })
   }
 
   depends_on = [

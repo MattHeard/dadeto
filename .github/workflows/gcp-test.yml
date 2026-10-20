@@ -99,6 +99,7 @@ jobs:
           echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_get_author_uuid_v2_billing_enabled=true" >> "$GITHUB_ENV"
           echo "TF_VAR_create_default_firestore_database=false" >> "$GITHUB_ENV"
           echo "TF_VAR_github_run_id=$GITHUB_RUN_ID" >> "$GITHUB_ENV"
           echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
@@ -311,6 +312,7 @@ jobs:
             PROJECT_ID="$GOOGLE_PROJECT" \
             DATABASE_ID="$TF_VAR_database_id" \
             ENVIRONMENT="$ENVIRONMENT" \
+            GET_AUTHOR_UUID_V2_BILLING_ENABLED="$TF_VAR_get_author_uuid_v2_billing_enabled" \
             TEST_STATIC_BUCKET="$TEST_STATIC_BUCKET" \
             STATIC_OBJECT_PREFIX="${ENVIRONMENT}/" \
             FIREBASE_WEB_APP_CONFIG_JSON="$WEB_APP_CONFIG_JSON" \
@@ -616,6 +618,7 @@ jobs:
           echo "ENVIRONMENT=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_environment=$ENVIRONMENT" >> "$GITHUB_ENV"
           echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"
+          echo "TF_VAR_get_author_uuid_v2_billing_enabled=true" >> "$GITHUB_ENV"
           echo "TF_VAR_create_default_firestore_database=false" >> "$GITHUB_ENV"
           echo "TF_VAR_github_run_id=$GITHUB_RUN_ID" >> "$GITHUB_ENV"
 
