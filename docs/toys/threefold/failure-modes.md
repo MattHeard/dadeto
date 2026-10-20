@@ -13,6 +13,7 @@
 - Withdrawal regression: the storm clock does not settle to aftermath, prior rescues/warnings are erased, or new world actions remain available after departure.
 - Late-repair regression: the locking pawl repairs an intact gate, accepts a pre-surge/out-of-range/wrong-scale action, leaves repaired gate geometry as rubble, restores ferry or resident losses, or fails to drain lower water by aftermath.
 - Closure regression: the destroyed signal station still files a report, the intact station cannot close by report after aftermath, or destroying the station also blocks departure through the upland road; closure method or station rubble is lost after save/import.
+- Hydraulic conservation regression: an open port transfers water uphill, creates or loses volume, drains below its sill, or produces different physical flow because only the rendered scale changed.
 
 ## Detection Signals
 
@@ -25,6 +26,7 @@
 - Mara is marked withdrawn before reaching the upland road, or can still change the world after withdrawal.
 - Gate repair is recorded without a lost ferry and forced-open gate, or any ferry/passenger/Latchfolk loss changes after repair.
 - Signal-station rubble, report availability, or the post-storm closure route disagrees with the saved geometry and episode closure branch.
+- Water transfer does not conserve the total chamber volume, or the same SI-unit state yields a different result across rendered scales.
 - Failing commands: focused Jest path in `harness.md`, `npm run build`, or `npm run check`.
 
 ## First-Response Playbook

@@ -39,3 +39,9 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 
 - Internal dependencies: THREEFOLD simulation, crisis clock, scene, renderer and save codec; Mosslight page presenter, pixel renderer and input adapters.
 - External dependencies: browser canvas, localStorage when available, and the existing Dadeto build pipeline.
+
+## Broader Small-World Milestone
+
+The first Broken Gate release keeps floodwater as a deterministic visual consequence and does not run a fluid simulation. The broader small-world milestone begins with a pure hydraulic model: two rectangular chambers joined by one openable port. Chambers use floor elevation in metres, cross-sectional area in square metres, and water volume in cubic metres. An open port transfers water down the surface-height gradient using the Torricelli discharge relation, capped by the source water above the port sill and the volume required for hydrostatic equalization. The solver has no camera-scale input, so physical volume and flow are independent of the rendered view.
+
+This bounded model is a foundation for the authored cross-scale water puzzle, not a playable region yet. It assumes constant chamber cross-sections and a well-mixed water surface; it does not model waves, viscosity, turbulence, or arbitrary free-surface geometry.

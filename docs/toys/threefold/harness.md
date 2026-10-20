@@ -7,6 +7,10 @@
 3. Serve the generated static site with `npm run start`, then open `/threefold/`.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
+## Small-World Hydraulic Model
+
+Run `npm run test:impact -- --files test/core/browser/game/threefold-water.test.js` to exercise the current pure water-transfer primitive. An open port moves water down the physical surface-height gradient, conserves cubic-metre volume, and stops at the port sill or hydrostatic equalization. Closed ports, equal surfaces, zero-duration steps, and dry sources leave both chambers unchanged. This solver is not wired into a playable region yet.
+
 ## Expected Observable Outputs
 
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
