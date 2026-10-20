@@ -1,4 +1,5 @@
 import {
+  appendMechanisticEstimateV1,
   appendExperimentSubmissionV1,
   exportInterpretabilityResearchBundleV3,
   getEvidenceGraphContextV1,
@@ -11,17 +12,18 @@ import {
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: true}> & {mechanismIdentityLink: Record<string, string>|null}} ResearchContextPage */
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: false}>} ResearchContextFailure */
 /** @typedef {Parameters<typeof appendExperimentSubmissionV1>[1]} ExperimentSubmission */
+/** @typedef {Parameters<typeof appendMechanisticEstimateV1>[1]} MechanisticEstimate */
 /** @typedef {ReturnType<typeof importInterpretabilityResearchBundleV2>} BundleImportResult */
 /** @typedef {Extract<BundleImportResult, {valid: true}>['bundle']} ResearchBundle */
-/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>} BundleOperationResult */
+/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>} BundleOperationResult */
 /** @typedef {BundleImportResult|BundleOperationResult} ResearchServiceResult */
 /** @typedef {Extract<BundleImportResult, {valid: false}>|ResearchContextFailure|ResearchContextPage} ResearchContextServiceResult */
-/** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission}} ExperimentWrite */
+/** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate, append: Function}} ResearchWrite */
 
 /**
  * Create the pure Atlas read/submission service over injected bundle storage.
  * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas}} options Storage capabilities and caller-provided schema adapters.
- * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>}} Permission-aware service methods.
+ * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>}} Permission-aware service methods.
  */
 export function createInterpretabilityResearchServiceV1({
   loadBundle,
@@ -36,7 +38,17 @@ export function createInterpretabilityResearchServiceV1({
    */
   const withBundle = (allowEffects, operation) =>
     withImportedBundle(allowEffects, loadBundle, schemas, operation);
-  const saveExperiment = createExperimentWriter(schemas, saveBundle);
+  const saveResearchRecord = createResearchWriter(schemas, saveBundle);
+  /**
+   * @param {AllowEffects} allowEffects Permission token forwarded to storage.
+   * @param {Function} append Graph append operation.
+   * @param {ExperimentSubmission|MechanisticEstimate} submission Submitted record.
+   * @returns {Promise<ResearchServiceResult>} Export result or validation failure.
+   */
+  const submit = (allowEffects, append, submission) =>
+    withBundle(allowEffects, bundle =>
+      saveResearchRecord({ allowEffects, bundle, append, submission })
+    );
 
   return Object.freeze({
     readContext: (allowEffects, query) =>
@@ -50,13 +62,9 @@ export function createInterpretabilityResearchServiceV1({
         return { ...context, mechanismIdentityLink };
       }),
     submitExperiment: (allowEffects, submission) =>
-      withBundle(allowEffects, bundle =>
-        saveExperiment({
-          allowEffects,
-          bundle,
-          submission,
-        })
-      ),
+      submit(allowEffects, appendExperimentSubmissionV1, submission),
+    submitEstimate: (allowEffects, estimate) =>
+      submit(allowEffects, appendMechanisticEstimateV1, estimate),
   });
 }
 
@@ -93,19 +101,19 @@ async function withImportedBundle(
 }
 
 /**
- * Bind schema and storage adapters to the experiment persistence operation.
+ * Bind schema and storage adapters to validated research-record persistence.
  * @param {ResearchSchemas} schemas Injected schema adapters.
  * @param {(allowEffects: AllowEffects, json: string) => Promise<void>} saveBundle Storage adapter.
- * @returns {(options: ExperimentWrite) => Promise<ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>>} Bound writer.
+ * @returns {(options: ResearchWrite) => Promise<ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>>} Bound writer.
  */
-function createExperimentWriter(schemas, saveBundle) {
+function createResearchWriter(schemas, saveBundle) {
   /**
-   * @param {ExperimentWrite} options Validated bundle and submitted data.
-   * @returns {Promise<ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>>} Export result or validation failure.
+   * @param {ResearchWrite} options Validated bundle and submitted data.
+   * @returns {Promise<ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof exportInterpretabilityResearchBundleV3>>} Export result or validation failure.
    */
   return async options => {
-    const { allowEffects, bundle, submission } = options;
-    const appended = appendExperimentSubmissionV1(
+    const { allowEffects, bundle, submission, append } = options;
+    const appended = append(
       bundle.evidenceGraph,
       submission,
       schemas?.evidenceGraphSchemasV1

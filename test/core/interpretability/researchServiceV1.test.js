@@ -201,11 +201,38 @@ function createSubmission(activation) {
 }
 
 /**
+ * Create one versioned whole-model estimate linked to the fixture evidence.
+ * @returns {Record<string, any>} Complete mechanistic estimate.
+ */
+function createEstimate() {
+  return {
+    schemaVersion: 1,
+    id: 'estimate-b',
+    model,
+    metric: { name: 'accuracy', value: 0.72 },
+    uncertainty: { lower: 0.68, upper: 0.76, method: 'bootstrap' },
+    compute: { quantity: 4, unit: 'GPU-hours' },
+    method: {
+      repository: 'https://github.com/example/estimator',
+      revision: 'd'.repeat(40),
+      path: 'estimate.py',
+    },
+    assumptions: ['The held-out perturbations represent target inputs.'],
+    hypothesisIds: ['hypothesis-a'],
+    evidenceIds: ['evidence-a'],
+    heldOutSplitId: 'perturbations-held-out-v1',
+    authorId: 'investigator-b',
+    createdAt: '2026-10-20T16:00:00Z',
+  };
+}
+
+/**
  * Create an in-memory storage adapter that records permission forwarding.
  * @param {string} initialJson Initial portable research bundle.
+ * @param {Record<string, any>} [serviceSchemas] Optional service schema adapters.
  * @returns {Record<string, any>} Service, observed permissions, and stored JSON.
  */
-function createMemoryAdapter(initialJson) {
+function createMemoryAdapter(initialJson, serviceSchemas = schemas) {
   let storedJson = initialJson;
   const loadPermissions = [];
   const savePermissions = [];
@@ -218,7 +245,7 @@ function createMemoryAdapter(initialJson) {
       savePermissions.push(allowEffects);
       storedJson = json;
     },
-    schemas,
+    schemas: serviceSchemas,
   });
   return {
     service,
@@ -454,6 +481,83 @@ describe('permission-aware interpretability research service V1', () => {
     );
     expect(rejected.valid).toBe(false);
     expect(memory.savePermissions).toHaveLength(1);
+  });
+
+  it('persists a validated estimate with V3 identity lineage and the same permission token', async () => {
+    const allowEffects = createAllowEffects();
+    const memory = createMemoryAdapter(
+      createPortableBundle(createEvidenceGraph())
+    );
+
+    const saved = await memory.service.submitEstimate(
+      allowEffects,
+      createEstimate()
+    );
+
+    expect(saved.valid).toBe(true);
+    expect(memory.loadPermissions).toEqual([allowEffects]);
+    expect(memory.savePermissions).toEqual([allowEffects]);
+
+    const imported = importInterpretabilityResearchBundleV2(
+      memory.getStoredJson(),
+      schemas
+    );
+    expect(imported.valid).toBe(true);
+    if (!imported.valid) return;
+    expect(imported.bundle.evidenceGraph.estimates).toEqual([createEstimate()]);
+    expect(imported.bundle.mechanismIdentityLinks).toHaveLength(1);
+  });
+
+  it('does not persist estimates with invalid schemas or unresolved references', async () => {
+    const allowEffects = createAllowEffects();
+    const initialJson = createPortableBundle(createEvidenceGraph());
+    const memory = createMemoryAdapter(initialJson);
+    const invalid = createEstimate();
+    invalid.metric.value = 1.2;
+
+    const rejectedSchema = await memory.service.submitEstimate(
+      allowEffects,
+      invalid
+    );
+    const unresolved = createEstimate();
+    unresolved.id = 'estimate-unresolved';
+    unresolved.hypothesisIds = ['missing-hypothesis'];
+    const rejectedReference = await memory.service.submitEstimate(
+      allowEffects,
+      unresolved
+    );
+    const duplicate = createEstimate();
+    duplicate.id = 'hypothesis-a';
+    const rejectedDuplicate = await memory.service.submitEstimate(
+      allowEffects,
+      duplicate
+    );
+
+    expect(rejectedSchema.valid).toBe(false);
+    expect(rejectedReference.valid).toBe(false);
+    expect(rejectedDuplicate.valid).toBe(false);
+    expect(memory.loadPermissions).toEqual([
+      allowEffects,
+      allowEffects,
+      allowEffects,
+    ]);
+    expect(memory.savePermissions).toEqual([]);
+
+    const missingEstimateSchema = createMemoryAdapter(initialJson, {
+      ...schemas,
+      evidenceGraphSchemasV1: {
+        ...schemas.evidenceGraphSchemasV1,
+        mechanisticEstimateSchemaV1: undefined,
+      },
+    });
+    const rejectedMissingValidator =
+      await missingEstimateSchema.service.submitEstimate(
+        allowEffects,
+        createEstimate()
+      );
+    expect(rejectedMissingValidator.valid).toBe(false);
+    expect(missingEstimateSchema.loadPermissions).toEqual([allowEffects]);
+    expect(missingEstimateSchema.savePermissions).toEqual([]);
   });
 
   it('returns import failures without reading context or writing data', async () => {

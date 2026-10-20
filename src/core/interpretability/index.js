@@ -2008,6 +2008,38 @@ export function appendExperimentSubmissionV1(graph, submission, schemas) {
 }
 
 /**
+ * Validate and append one versioned mechanistic estimate without mutating its source graph.
+ * @param {InterpretabilityGraphV1} graph Existing versioned evidence graph.
+ * @param {InterpretabilityRecord} estimate Submitted whole-model estimate.
+ * @param {{mechanisticEstimateSchemaV1: any}} schemas Caller-provided estimate validator.
+ * @returns {{valid: true, graph: InterpretabilityGraphV1}|{valid: false, errors: Array<Record<string, string|number|undefined>>}} Appended graph or validation errors.
+ */
+export function appendMechanisticEstimateV1(graph, estimate, schemas) {
+  const validationFailure = validateGraphInput(graph);
+  if (validationFailure) return validationFailure;
+
+  if (!estimate || typeof estimate !== 'object' || Array.isArray(estimate)) {
+    return { valid: false, errors: [{ code: 'invalid-submission' }] };
+  }
+
+  const errors = validateSubmissionRecords(
+    'estimates',
+    [estimate],
+    schemas?.mechanisticEstimateSchemaV1
+  );
+  if (errors.length > 0) return { valid: false, errors };
+
+  const candidate = {
+    ...graph,
+    estimates: [...(graph.estimates ?? []), estimate],
+  };
+  const candidateValidation = validateEvidenceGraphV1(candidate);
+  return candidateValidation.valid
+    ? { valid: true, graph: candidate }
+    : { valid: false, errors: candidateValidation.errors };
+}
+
+/**
  * Parse submitted records with an injected schema and report stable failures.
  * @param {string} collection Graph collection name.
  * @param {Array<InterpretabilityRecord>} records Submitted records.

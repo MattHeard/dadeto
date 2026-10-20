@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import {
+  appendMechanisticEstimateV1,
   appendExperimentSubmissionV1,
   createInterpretabilitySchemasV1,
   exportEvidenceGraphV1,
@@ -418,6 +419,127 @@ describe('appendExperimentSubmissionV1', () => {
       expect(result.graph.evidence).toHaveLength(1);
       expect(result.graph.edges).toEqual([]);
     }
+  });
+});
+
+describe('appendMechanisticEstimateV1', () => {
+  it('appends a validated estimate without mutating the source graph', () => {
+    const graph = connectedContextGraph();
+    const originalEstimates = graph.estimates;
+    const estimate = {
+      schemaVersion: 1,
+      id: 'estimate-b',
+      model: mechanismRecord('mechanism-a').model,
+      metric: { name: 'accuracy', value: 0.72 },
+      uncertainty: { lower: 0.68, upper: 0.76, method: 'bootstrap' },
+      compute: { quantity: 4, unit: 'GPU-hours' },
+      method: {
+        repository: 'https://github.com/example/estimator',
+        revision: 'c'.repeat(40),
+        path: 'estimate.py',
+      },
+      assumptions: ['The held-out perturbations represent target inputs.'],
+      hypothesisIds: ['hypothesis-a'],
+      evidenceIds: ['evidence-a'],
+      heldOutSplitId: 'perturbations-held-out-v1',
+      authorId: 'researcher-b',
+      createdAt: '2026-10-20T16:00:00Z',
+    };
+
+    const result = appendMechanisticEstimateV1(
+      graph,
+      estimate,
+      submissionSchemas
+    );
+
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.graph.estimates).toEqual([estimate]);
+    expect(graph.estimates).toBe(originalEstimates);
+    expect(graph.estimates).toBeUndefined();
+  });
+
+  it('rejects schema errors, duplicate IDs, unresolved references, and missing validators', () => {
+    const graph = connectedContextGraph();
+    const invalidEstimate = {
+      schemaVersion: 1,
+      id: 'estimate-invalid',
+      model: mechanismRecord('mechanism-a').model,
+      metric: { name: 'accuracy', value: 1.2 },
+      uncertainty: { lower: 0.8, upper: 0.7, method: 'bootstrap' },
+      compute: { quantity: 4, unit: 'GPU-hours' },
+      method: {
+        repository: 'https://github.com/example/estimator',
+        revision: 'c'.repeat(40),
+        path: 'estimate.py',
+      },
+      assumptions: ['A testable assumption.'],
+      hypothesisIds: ['hypothesis-a'],
+      evidenceIds: ['evidence-a'],
+      heldOutSplitId: 'perturbations-held-out-v1',
+      authorId: 'researcher-b',
+      createdAt: '2026-10-20T16:00:00Z',
+    };
+    expect(
+      appendMechanisticEstimateV1(graph, invalidEstimate, submissionSchemas)
+    ).toMatchObject({ valid: false, errors: [{ code: 'invalid-record' }] });
+
+    const validEstimate = {
+      ...invalidEstimate,
+      metric: { name: 'accuracy', value: 0.5 },
+      uncertainty: { lower: 0.4, upper: 0.6, method: 'bootstrap' },
+    };
+    const duplicate = { ...validEstimate, id: 'hypothesis-a' };
+    const duplicateResult = appendMechanisticEstimateV1(
+      graph,
+      duplicate,
+      submissionSchemas
+    );
+    expect(duplicateResult.valid).toBe(false);
+    if (!duplicateResult.valid) {
+      expect(duplicateResult.errors.map(error => error.code)).toContain(
+        'duplicate-id'
+      );
+    }
+
+    const unresolved = {
+      ...validEstimate,
+      id: 'estimate-unresolved',
+      hypothesisIds: ['missing-hypothesis'],
+    };
+    const unresolvedResult = appendMechanisticEstimateV1(
+      graph,
+      unresolved,
+      submissionSchemas
+    );
+    expect(unresolvedResult.valid).toBe(false);
+    if (!unresolvedResult.valid) {
+      expect(unresolvedResult.errors.map(error => error.code)).toContain(
+        'unresolved-reference'
+      );
+    }
+
+    expect(appendMechanisticEstimateV1(graph, null, submissionSchemas)).toEqual(
+      {
+        valid: false,
+        errors: [{ code: 'invalid-submission' }],
+      }
+    );
+    expect(
+      appendMechanisticEstimateV1(graph, [], submissionSchemas)
+    ).toMatchObject({ valid: false, errors: [{ code: 'invalid-submission' }] });
+    expect(
+      appendMechanisticEstimateV1(
+        { mechanisms: [{ id: 'duplicate' }, { id: 'duplicate' }] },
+        validEstimate,
+        submissionSchemas
+      )
+    ).toMatchObject({ valid: false, errors: [{ code: 'duplicate-id' }] });
+    expect(appendMechanisticEstimateV1(graph, validEstimate, {})).toEqual({
+      valid: false,
+      errors: [{ code: 'missing-schema-validator', collection: 'estimates' }],
+    });
+    expect(graph.estimates).toBeUndefined();
   });
 });
 

@@ -1,0 +1,7 @@
+# Atlas mechanistic estimate submission
+
+- **Unexpected hurdle:** The first focused run found that the graph fixture omits `estimates`, one duplicate-ID case also failed the estimate schema, and two adjacent service wrappers triggered the core duplication gate.
+- **Diagnosis:** The graph append is immutable and validates schema before cross-record identity/reference constraints. The test needed to distinguish source omission from mutation, use a schema-valid duplicate, and exercise invalid-source and missing-validator paths. The service wrappers shared the same load/append/export/save flow.
+- **Chosen fix:** Added `appendMechanisticEstimateV1`, wired `submitEstimate` through a shared research writer, and covered valid V3 persistence, identity-link preservation, token forwarding, schema rejection, duplicate IDs, unresolved references, missing validators, and source immutability. Tests use `createTestZod()` and the existing optional fallback, with no mandatory Zod dependency.
+- **Next-time guidance:** When adding a graph record type, keep schema validation and graph-level identity/reference checks separate in tests. Prefer one service submission path for record-specific appenders so the core duplication gate stays at zero.
+- **Open follow-up:** This slice stores estimates with their held-out split IDs; it does not measure the estimate against held-out perturbations or a random-sampling baseline. That evaluation is the next bounded Rank 4 slice and must remain distinct from the submitted estimate.
