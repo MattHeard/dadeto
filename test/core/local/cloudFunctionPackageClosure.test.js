@@ -18,6 +18,14 @@ afterEach(() => {
 });
 
 describe('Cloud Function package closure', () => {
+  test('uses the default no-op writer when no packages are found', async () => {
+    const root = makeTemporaryDirectory();
+    fs.mkdirSync(path.join(root, 'infra'));
+    const verifier = createCloudFunctionPackageVerifier(parse);
+
+    await expect(verifier.main({ rootDirectory: root })).resolves.toBe(1);
+  });
+
   test('extracts unique archive directories from Terraform configuration', () => {
     expect(
       getCloudFunctionArchiveDirectories([

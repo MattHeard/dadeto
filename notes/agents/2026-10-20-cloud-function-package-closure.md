@@ -32,7 +32,7 @@ The local Terraform wrapper permits formatting only and blocks `terraform init`.
 
 The Full Check report exposed uncovered verifier edge cases that the fast check does not measure. Added tests for missing runtime dependency sections, default command options, null diagnostic specifiers, and invalid parser nodes; removed two defensive branches that cannot occur (`Array.pop()` while the queue is nonempty, and a fallback after splitting any string). The pop result is annotated with the queue invariant for the JSDoc type checker.
 
-Focused tests pass (2 suites / 15 tests), and the final local `npm run check` passes all 10 gates. A fresh matching remote Full Check run is required to confirm 100% branch coverage before closing `dadeto-0tvi`; record that terminal result in the Bead and Rank 2 spec.
+The first follow-up Full Check, 39406010781, cleared branch coverage but failed the function threshold at 99.988%. Its report artifact 12257272582 identified the only uncovered function as the default no-op writer at line 44. Added a regression that calls `main` without a writer against an empty Terraform fixture. The focused suites pass (2 suites / 16 tests), and the latest local `npm run check` passes all 10 gates. A fresh exact-head Full Check must confirm all coverage metrics before closing `dadeto-0tvi`; record its result in the Bead and Rank 2 spec.
 
 ## Hurdle and next-time guidance
 
