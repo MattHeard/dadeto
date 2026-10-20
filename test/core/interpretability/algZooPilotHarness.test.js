@@ -7,6 +7,7 @@ import {
   createAlgZooPilotPlan,
   createAlgZooPilotRunner,
   createAlgZooPilotSchedule,
+  evaluateAlgZooWholeModelAccuracyV1,
   getAlgZooPilotMapContext,
 } from '../../../src/core/interpretability/algZooPilotHarness/index.js';
 
@@ -45,6 +46,44 @@ const configuration = {
     heldOutProbeArtifact: null,
   },
 };
+
+/**
+ * Build deterministic synthetic measurements matching the frozen 32-variant design.
+ * @param {number} [mechanisticEstimateOffset] Offset from reference accuracy.
+ * @returns {Record<string, any>} Complete synthetic accuracy evaluation input.
+ */
+function syntheticWholeModelEvaluation(mechanisticEstimateOffset = -0.01) {
+  const heldOutSplitId = 'algzoo-held-out-synthetic-v1';
+  const variants = [];
+  for (const noiseScale of [0.01, 0.05, 0.1, 0.2]) {
+    for (let replicate = 0; replicate < 8; replicate += 1) {
+      const referenceAccuracy = 0.96 - noiseScale * 0.5 - replicate * 0.001;
+      variants.push({
+        variantId: `noise-${noiseScale}-replicate-${replicate}`,
+        heldOutSplitId,
+        noiseScale,
+        referenceAccuracy,
+        mechanisticEstimate: referenceAccuracy + mechanisticEstimateOffset,
+        samplingEstimate: referenceAccuracy - 0.05,
+        mechanisticCompute: 100000,
+        samplingCompute: 100000,
+      });
+    }
+  }
+  return {
+    heldOutSplitId,
+    sampleCountPerVariant: 100000,
+    samplingBaseline: {
+      method: {
+        repository: 'https://github.com/example/monte-carlo-baseline',
+        revision: 'a'.repeat(40),
+        path: 'baseline/accuracy.js',
+      },
+      seedCommitment: 'b'.repeat(64),
+    },
+    variants,
+  };
+}
 
 describe('AlgZoo shared-map pilot harness', () => {
   it('creates a deterministic census permutation and paired session order', () => {
@@ -412,7 +451,175 @@ describe('AlgZoo shared-map pilot harness', () => {
       ])
     ).toMatchObject({ valid: false });
   });
+});
 
+describe('AlgZoo held-out whole-model accuracy report', () => {
+  it('produces a versioned matched-compute report for every held-out perturbation scale', () => {
+    const evaluation = syntheticWholeModelEvaluation();
+    evaluation.variants.reverse();
+    const report = evaluateAlgZooWholeModelAccuracyV1(evaluation);
+
+    expect(report.valid).toBe(true);
+    if (!report.valid) return;
+    expect(report.report).toMatchObject({
+      schemaVersion: 1,
+      protocolVersion: '1.0.0',
+      heldOutSplitId: evaluation.heldOutSplitId,
+      sampleCountPerVariant: 100000,
+      variantCount: 32,
+      materialVariationMet: true,
+      samplingBaseline: {
+        seedCommitment: 'b'.repeat(64),
+      },
+    });
+    expect(report.report.variants).toHaveLength(32);
+    expect(report.report.byNoiseScale).toEqual(
+      [0.01, 0.05, 0.1, 0.2].map(noiseScale =>
+        expect.objectContaining({ noiseScale, variantCount: 8 })
+      )
+    );
+    expect(report.report.overall.mechanisticMse).toBeCloseTo(0.0001);
+    expect(report.report.overall.samplingMse).toBeCloseTo(0.0025);
+    expect(report.report.variants[0].variantId).toBe('noise-0.01-replicate-0');
+    expect(evaluation.variants[0].variantId).toBe('noise-0.2-replicate-7');
+  });
+
+  it('retains a poor estimate and reports when material accuracy variation is absent', () => {
+    const evaluation = syntheticWholeModelEvaluation(-0.4);
+    evaluation.variants.forEach(variant => {
+      variant.referenceAccuracy = 0.9;
+      variant.mechanisticEstimate = 0.2;
+      variant.samplingEstimate = 0.88;
+    });
+    const report = evaluateAlgZooWholeModelAccuracyV1(evaluation);
+
+    expect(report.valid).toBe(true);
+    if (!report.valid) return;
+    expect(report.report.variants).toHaveLength(32);
+    expect(report.report.overall.mechanisticMse).toBeCloseTo(0.49);
+    expect(report.report.overall.samplingMse).toBeCloseTo(0.0004);
+    expect(report.report.materialVariationMet).toBe(false);
+    expect(report.report.referenceAccuracyRange.spread).toBe(0);
+  });
+
+  it('rejects malformed inputs, sample counts, incomplete variants, and baseline provenance', () => {
+    expect(evaluateAlgZooWholeModelAccuracyV1(null)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-evaluation' }],
+    });
+    expect(evaluateAlgZooWholeModelAccuracyV1('invalid')).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-evaluation' }],
+    });
+    expect(evaluateAlgZooWholeModelAccuracyV1([])).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-evaluation' }],
+    });
+
+    const wrongSampleCount = syntheticWholeModelEvaluation();
+    wrongSampleCount.sampleCountPerVariant = 99999;
+    expect(evaluateAlgZooWholeModelAccuracyV1(wrongSampleCount)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-held-out-sample-count' }],
+    });
+
+    const incomplete = syntheticWholeModelEvaluation();
+    incomplete.variants.pop();
+    expect(evaluateAlgZooWholeModelAccuracyV1(incomplete)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-variant-count' }],
+    });
+
+    const missingBaseline = syntheticWholeModelEvaluation();
+    missingBaseline.samplingBaseline = null;
+    expect(evaluateAlgZooWholeModelAccuracyV1(missingBaseline)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-sampling-baseline' }],
+    });
+
+    const invalidBaselineRevision = syntheticWholeModelEvaluation();
+    invalidBaselineRevision.samplingBaseline.method.revision = 'revision';
+    expect(
+      evaluateAlgZooWholeModelAccuracyV1(invalidBaselineRevision)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-sampling-baseline' }],
+    });
+
+    const missingBaselineRevision = syntheticWholeModelEvaluation();
+    missingBaselineRevision.samplingBaseline.method.revision = undefined;
+    expect(
+      evaluateAlgZooWholeModelAccuracyV1(missingBaselineRevision)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-sampling-baseline' }],
+    });
+
+    const invalidBaselineSeed = syntheticWholeModelEvaluation();
+    invalidBaselineSeed.samplingBaseline.seedCommitment = 'not-a-hash';
+    expect(
+      evaluateAlgZooWholeModelAccuracyV1(invalidBaselineSeed)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-sampling-baseline' }],
+    });
+
+    const missingBaselineSeed = syntheticWholeModelEvaluation();
+    missingBaselineSeed.samplingBaseline.seedCommitment = undefined;
+    expect(
+      evaluateAlgZooWholeModelAccuracyV1(missingBaselineSeed)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-sampling-baseline' }],
+    });
+  });
+
+  it('rejects duplicate identifiers, unbalanced perturbation scales, changed splits, invalid accuracy, and unmatched compute', () => {
+    const duplicateId = syntheticWholeModelEvaluation();
+    duplicateId.variants[1].variantId = duplicateId.variants[0].variantId;
+    expect(evaluateAlgZooWholeModelAccuracyV1(duplicateId)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-variant-ids' }],
+    });
+
+    const emptyVariantId = syntheticWholeModelEvaluation();
+    emptyVariantId.variants[0].variantId = ' ';
+    expect(evaluateAlgZooWholeModelAccuracyV1(emptyVariantId)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-variant-ids' }],
+    });
+
+    const missingScale = syntheticWholeModelEvaluation();
+    missingScale.variants[0].noiseScale = 0.05;
+    expect(evaluateAlgZooWholeModelAccuracyV1(missingScale)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-perturbation-scale-coverage' }],
+    });
+
+    const changedSplit = syntheticWholeModelEvaluation();
+    changedSplit.variants[0].heldOutSplitId = 'different-held-out-split';
+    expect(evaluateAlgZooWholeModelAccuracyV1(changedSplit)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-or-unmatched-accuracy-variant', index: 0 }],
+    });
+
+    const invalidAccuracy = syntheticWholeModelEvaluation();
+    invalidAccuracy.variants[0].referenceAccuracy = 1.1;
+    expect(evaluateAlgZooWholeModelAccuracyV1(invalidAccuracy)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-or-unmatched-accuracy-variant', index: 0 }],
+    });
+
+    const unmatchedCompute = syntheticWholeModelEvaluation();
+    unmatchedCompute.variants[0].samplingCompute -= 1;
+    expect(evaluateAlgZooWholeModelAccuracyV1(unmatchedCompute)).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-or-unmatched-accuracy-variant', index: 0 }],
+    });
+  });
+});
+
+describe('AlgZoo blinded scoring payload', () => {
   it('removes identifying keys from the scorer payload', () => {
     expect(
       createAlgZooBlindedSubmission({
