@@ -12,6 +12,7 @@ import {
 } from './episode.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import * as belltops from './belltops.js';
+import * as crownbackReach from './crownback-reach.js';
 import * as lanternWard from './lantern-ward.js';
 import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
@@ -64,7 +65,8 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /** @typedef {{scene: ReturnType<typeof createThreefoldSiltMarginScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, siltMargin: ReturnType<typeof createThreefoldSiltMarginState>, elapsedGameSeconds: number}} SiltMarginSimulationState */
 /** @typedef {{scene: ReturnType<typeof lanternWard.createThreefoldLanternWardScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} LanternWardSimulationState */
 /** @typedef {{scene: ReturnType<typeof belltops.createThreefoldBelltopsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} BelltopsSimulationState */
-/** @typedef {LanternWardSimulationState|BelltopsSimulationState} HighWorldSimulationState */
+/** @typedef {{scene: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, crownbackReach: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachState>, elapsedGameSeconds: number}} CrownbackReachSimulationState */
+/** @typedef {LanternWardSimulationState|BelltopsSimulationState|CrownbackReachSimulationState} HighWorldSimulationState */
 /** @typedef {BrokenGateSimulationState|SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} ThreefoldSimulationState */
 /** @typedef {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} ThreefoldCrisisThresholds */
 /** @typedef {{type: string, direction?: string, elapsedGameMinutes?: number, preActionFrame?: Record<string, any>}} ThreefoldWorldAction */
@@ -103,12 +105,18 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /**
  * @overload
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>} scene Authored Crownback migration route.
+ * @returns {CrownbackReachSimulationState} Initial Crownback Reach simulation state.
+ */
+/**
+ * @overload
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial state for either authored scene.
  */
 /**
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial player, world, crisis, episode, and encounter state.
  */
 export function createThreefoldSimulation(
@@ -141,11 +149,17 @@ export function createThreefoldSimulation(
       elapsedGameSeconds: 0,
     });
   }
-  if (isThreefoldHighWorldSceneId(scene.id))
+  if (isThreefoldHighWorldSceneId(scene.id)) {
+    const highWorldState = { ...state, elapsedGameSeconds: 0 };
+    if (scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID)
+      return /** @type {CrownbackReachSimulationState} */ ({
+        ...highWorldState,
+        crownbackReach: crownbackReach.createThreefoldCrownbackReachState(),
+      });
     return /** @type {HighWorldSimulationState} */ ({
-      ...state,
-      elapsedGameSeconds: 0,
+      ...highWorldState,
     });
+  }
   return /** @type {BrokenGateSimulationState} */ (state);
 }
 
@@ -563,7 +577,20 @@ function stepSiltMarginScene(state, action) {
  * @returns {HighWorldSimulationState} Updated district state.
  */
 function stepHighWorldScene(state, action) {
-  if (action.type === 'interact') return state;
+  if (action.type === 'interact') {
+    if (
+      state.scene.id !== crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID ||
+      /** @type {CrownbackReachSimulationState} */ (state).crownbackReach
+        ?.tharnMet === true ||
+      !crownbackReach.isThreefoldCrownbackTharnInReach(state)
+    )
+      return state;
+    return /** @type {CrownbackReachSimulationState} */ ({
+      ...state,
+      crownbackReach: { tharnMet: true },
+      elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
+    });
+  }
   return /** @type {HighWorldSimulationState} */ (
     commitSmallWorldSceneAction(state, action, ({ creatureIds }) => ({
       encounter:
@@ -790,7 +817,9 @@ export function isBelltopsSimulationState(state) {
  */
 export function isHighWorldSimulationState(state) {
   return (
-    isLanternWardSimulationState(state) || isBelltopsSimulationState(state)
+    isLanternWardSimulationState(state) ||
+    isBelltopsSimulationState(state) ||
+    state.scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID
   );
 }
 

@@ -4,7 +4,7 @@
 
 1. Install prerequisites: `npm install`.
 2. Build the standalone page and copied game modules: `npm run build`.
-3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, or `/threefold/?scene=belltops` for the +2 harbor district.
+3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, or `/threefold/?scene=crownback-reach` for the +3 Crownback encounter.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
 ## Small-World Hydraulic Model
@@ -24,6 +24,10 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-silt-margin
 Run `npm run test:impact -- --files test/core/browser/game/threefold-lantern-ward.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-runtime.test.js` to verify the +3 district preview, still-available growth, exact building and resident consequences, independent elapsed time, Mosslight grid, and save-key/export isolation. District actions must not advance Broken Gate episode, crisis, testimony, or witness state.
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-lantern-ward.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-runtime.test.js` to verify both authored high-world routes. Lantern Ward starts at +3; Belltops starts at +2. Each previews its own +1 growth footprint, renders named buildings and residents on the eight-pixel Mosslight grid, commits matching deterministic fates, and roundtrips to a separate save key. Neither route advances Broken Gate crisis, testimony, or witness state.
+
+## Crownback Reach Encounter
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/high-world-scenes.js src/core/browser/game/threefold/crownback-reach.js src/core/browser/game/threefold/simulation.js src/core/browser/game/threefold/page.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-crownback-reach.test.js test/core/browser/game/threefold-crownback-page.test.js test/core/browser/game/threefold-page.test.js`. The route starts at +3 (49.38 m), with Tharn at 44 m and the calf at 18 m. A movement action brings Mara into the 20%-of-height conversation radius; E meets Tharn and advances local time once. Out-of-range and repeated E actions are inert. The +4 preview names structures and Crownbacks without mutation; growth commits the same fates. Verify all canvas shapes remain on the eight-pixel Mosslight grid and meeting/fate state roundtrips under the isolated `crownback-reach` save key.
 
 ## Expected Observable Outputs
 

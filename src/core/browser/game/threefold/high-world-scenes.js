@@ -5,10 +5,10 @@ const SCENE_BOUNDS = { min: { x: -24, y: -18 }, max: { x: 24, y: 18 } };
 /** @typedef {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} ThreefoldHighWorldVolumeBounds */
 /** @typedef {{id: string, displayName: string, bounds: ThreefoldHighWorldVolumeBounds}} ThreefoldHighWorldStructure */
 /** @typedef {{id: string, displayName: string, growthRule: 'overlap', position: {x: number, y: number}, bounds: ThreefoldHighWorldVolumeBounds}} ThreefoldHighWorldResident */
-/** @typedef {{id: 'lantern-ward'|'belltops', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: ThreefoldHighWorldStructure[], decorations: [], interactables: [], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldScene */
-/** @typedef {{displayName: string, scale: number, minimumUnlockedScale: number, maximumUnlockedScale: number, geometry: ThreefoldHighWorldStructure[], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldSceneDefinition */
+/** @typedef {{id: 'lantern-ward'|'belltops'|'crownback-reach', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: ThreefoldHighWorldStructure[], decorations: [], interactables: [], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldScene */
+/** @typedef {{displayName: string, scale: number, minimumUnlockedScale: number, maximumUnlockedScale: number, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}, geometry: ThreefoldHighWorldStructure[], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldSceneDefinition */
 
-/** @type {Record<'lantern-ward'|'belltops', ThreefoldHighWorldSceneDefinition>} */
+/** @type {Record<'lantern-ward'|'belltops'|'crownback-reach', ThreefoldHighWorldSceneDefinition>} */
 const SCENE_DEFINITIONS = {
   'lantern-ward': {
     displayName: 'The Lantern Ward',
@@ -95,19 +95,56 @@ const SCENE_DEFINITIONS = {
       ),
     ],
   },
+  'crownback-reach': {
+    displayName: 'Crownback Reach',
+    scale: 3,
+    minimumUnlockedScale: 3,
+    maximumUnlockedScale: 4,
+    bounds: { min: { x: -64, y: -48 }, max: { x: 64, y: 48 } },
+    geometry: [
+      createCrownbackStructure(
+        'crownback-living-root-arch',
+        'ROOT ARCH',
+        createCrownbackVolume({ x: 10, y: 6, z: 0 }, { x: 18, y: 10, z: 52 })
+      ),
+      createCrownbackStructure(
+        'crownback-floodwall',
+        'FLOODWALL',
+        createCrownbackVolume(
+          { x: -18, y: -10, z: 0 },
+          { x: -10, y: -6, z: 48 }
+        )
+      ),
+    ],
+    creatures: [
+      createCrownbackResident(
+        'crownback-elder-tharn',
+        'ELDER THARN',
+        { x: 11, y: 0 },
+        createCrownbackVolume({ x: 9, y: -2, z: 0 }, { x: 13, y: 2, z: 44 })
+      ),
+      createCrownbackResident(
+        'crownback-calf',
+        'CALF',
+        { x: -8, y: 0 },
+        createCrownbackVolume({ x: -10, y: -2, z: 0 }, { x: -6, y: 2, z: 18 })
+      ),
+    ],
+  },
 };
 
 /**
  * Create an isolated high-world city region from its authored scene data.
- * @param {'lantern-ward'|'belltops'} sceneId Authored region identifier.
+ * @param {'lantern-ward'|'belltops'|'crownback-reach'} sceneId Authored region identifier.
  * @returns {ThreefoldHighWorldScene} Fresh city geometry and population state.
  */
 export function createThreefoldHighWorldScene(sceneId) {
   const definition = SCENE_DEFINITIONS[sceneId];
+  const bounds = definition.bounds || SCENE_BOUNDS;
   return {
     id: sceneId,
     displayName: definition.displayName,
-    bounds: copyBounds(SCENE_BOUNDS),
+    bounds: copyBounds(bounds),
     spawn: createScaleState(
       { x: 0, y: 0 },
       {
@@ -119,7 +156,7 @@ export function createThreefoldHighWorldScene(sceneId) {
       }
     ),
     baseBodyWidthMeters: 0.4,
-    areas: [{ id: sceneId, bounds: copyBounds(SCENE_BOUNDS) }],
+    areas: [{ id: sceneId, bounds: copyBounds(bounds) }],
     geometry: definition.geometry.map(copyStructure),
     decorations: [],
     interactables: [],
@@ -130,7 +167,7 @@ export function createThreefoldHighWorldScene(sceneId) {
 /**
  * Check whether a saved scene identifier belongs to an authored high-world region.
  * @param {string} sceneId Candidate scene identifier.
- * @returns {sceneId is 'lantern-ward'|'belltops'} Whether the scene can be reconstructed here.
+ * @returns {sceneId is 'lantern-ward'|'belltops'|'crownback-reach'} Whether the scene can be reconstructed here.
  */
 export function isThreefoldHighWorldSceneId(sceneId) {
   return Object.hasOwn(SCENE_DEFINITIONS, sceneId);
@@ -189,6 +226,39 @@ function createHighWorldStructure(id, displayName, bounds) {
  */
 function createHighWorldResident(id, displayName, position, bounds) {
   return { id, displayName, growthRule: 'overlap', position, bounds };
+}
+
+/**
+ * Create validated Crownback volume bounds without duplicating scene setup.
+ * @param {{x: number, y: number, z: number}} min Lower physical bounds.
+ * @param {{x: number, y: number, z: number}} max Upper physical bounds.
+ * @returns {ThreefoldHighWorldVolumeBounds} Authored volume.
+ */
+function createCrownbackVolume(min, max) {
+  return createVolumeBounds(min, max);
+}
+
+/**
+ * Build one Crownback structure from physical coordinates.
+ * @param {string} id Stable structure identity.
+ * @param {string} displayName Visible map label.
+ * @param {ThreefoldHighWorldVolumeBounds} bounds Authored physical bounds.
+ * @returns {ThreefoldHighWorldStructure} Authored structure.
+ */
+function createCrownbackStructure(id, displayName, bounds) {
+  return createHighWorldStructure(id, displayName, bounds);
+}
+
+/**
+ * Build one Crownback resident from physical coordinates.
+ * @param {string} id Stable resident identity.
+ * @param {string} displayName Visible character label.
+ * @param {{x: number, y: number}} position Position in metres.
+ * @param {ThreefoldHighWorldVolumeBounds} bounds Authored physical bounds.
+ * @returns {ThreefoldHighWorldResident} Authored resident.
+ */
+function createCrownbackResident(id, displayName, position, bounds) {
+  return createHighWorldResident(id, displayName, position, bounds);
 }
 
 /**

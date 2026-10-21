@@ -4,6 +4,10 @@ import { spriteShapes } from '../mosslight-valley/sprites.js';
 import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import {
+  isThreefoldCrownbackTharnInReach,
+  THREEFOLD_CROWNBACK_REACH_SCENE_ID,
+} from './crownback-reach.js';
+import {
   THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
   THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID,
   THREEFOLD_SILT_MARGIN_SIGNAL_ID,
@@ -187,6 +191,10 @@ export function renderThreefoldFrame(state) {
     growthPreviewCreatureIds: creatureIds,
     ratFate: state.encounter.ratFate,
     ratAction: state.encounter.ratAction,
+    crownbackReach:
+      state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID
+        ? /** @type {Record<string, any>} */ (state).crownbackReach
+        : null,
   };
   return alignThreefoldFrame(frame);
 }
@@ -963,6 +971,14 @@ function getHighWorldToast(state) {
   const damagedStructures = state.scene.geometry
     .filter(object => state.player.destroyedGeometryIds.includes(object.id))
     .map(object => /** @type {{displayName?: string}} */ (object).displayName);
+  if (state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID) {
+    const crownbackState = /** @type {Record<string, any>} */ (state)
+      .crownbackReach;
+    if (crownbackState?.tharnMet !== true)
+      return isThreefoldCrownbackTharnInReach(/** @type {any} */ (state))
+        ? 'ELDER THARN IN REACH · E MEET'
+        : 'FIND ELDER THARN · E TO MEET';
+  }
   if (lostResidents.length > 0 || damagedStructures.length > 0)
     return `${region} GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;
   const growth = previewThreefoldGrowthEffects(state);

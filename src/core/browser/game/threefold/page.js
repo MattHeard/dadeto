@@ -6,6 +6,7 @@ import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { createThreefoldSiltMarginScene } from './silt-margin.js';
 import { createThreefoldBelltopsScene } from './belltops.js';
+import { createThreefoldCrownbackReachScene } from './crownback-reach.js';
 import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
@@ -106,6 +107,36 @@ const BELLTOPS_PAGE_COPY = {
   href: '/threefold/?scene=lantern-ward',
   ariaLabel: 'No district interaction is available',
 };
+const CROWNBACK_REACH_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'Crownback Reach'],
+    ['#chapter-tag', 'HIGH WORLD · CROWNBACK REACH'],
+    ['#chapter-eyebrow', 'THE MIGRATION FLOODWALLS'],
+    ['#chapter-heading', 'Meet elder Tharn among the living-root arches.'],
+    [
+      '#chapter-description',
+      'At +3 Mara stands 49.38 metres tall, close to elder Tharn’s 44 metres. ' +
+        'Move within reach and press E to meet him; the calf crosses nearby. ' +
+        'A previews the root arch, floodwall, and Crownbacks at risk if Mara ' +
+        'grows to +4. B steps down to +2.',
+    ],
+    ['#scene-link', 'Return to the Belltops'],
+    [
+      '#game-footer',
+      'The meeting, migration ground, and growth outcomes persist in this route’s save.',
+    ],
+  ]),
+  href: '/threefold/?scene=belltops',
+  ariaLabel: 'Meet elder Tharn when Mara is within reach',
+  hasInteraction: true,
+};
+/** @type {Array<[string, string]>} */
+const HIGH_WORLD_INTERACTION_CONTROL_UPDATES = [
+  ['#interact-label', 'E · MEET THARN · A · GROW · B · SHRINK'],
+  ['#a-control-label', 'GROW'],
+  ['#b-control-label', 'SHRINK'],
+  ['#e-control-label', 'MEET THARN'],
+];
 
 /**
  * Start the standalone THREEFOLD handheld page.
@@ -122,6 +153,8 @@ export function startThreefoldPage(options) {
     configureHighWorldPage(options.documentObj, LANTERN_WARD_PAGE_COPY);
   else if (scene?.id === 'belltops')
     configureHighWorldPage(options.documentObj, BELLTOPS_PAGE_COPY);
+  else if (scene?.id === 'crownback-reach')
+    configureHighWorldPage(options.documentObj, CROWNBACK_REACH_PAGE_COPY);
   let storage = options.storage;
   if (!storage) {
     try {
@@ -156,7 +189,7 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
@@ -167,6 +200,8 @@ function sceneFromLocation(windowObj) {
   if (sceneId === 'lantern-ward')
     return lanternWard.createThreefoldLanternWardScene();
   if (sceneId === 'belltops') return createThreefoldBelltopsScene();
+  if (sceneId === 'crownback-reach')
+    return createThreefoldCrownbackReachScene();
   return undefined;
 }
 
@@ -191,22 +226,27 @@ function configureSiltMarginPage(documentObj) {
 /**
  * Replace default Broken Gate copy and controls for an authored high-world route.
  * @param {any} documentObj Injected browser document.
- * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string}} copy Route-specific copy and next location.
+ * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string, hasInteraction?: boolean}} copy Route-specific copy and next location.
  * @returns {void}
  */
 function configureHighWorldPage(documentObj, copy) {
   configureAlternateScenePage(documentObj, {
     ...copy,
-    updates: [...copy.updates, ...HIGH_WORLD_CONTROL_UPDATES],
+    updates: [
+      ...copy.updates,
+      ...(copy.hasInteraction
+        ? HIGH_WORLD_INTERACTION_CONTROL_UPDATES
+        : HIGH_WORLD_CONTROL_UPDATES),
+    ],
   });
   const interactControl = documentObj?.querySelector?.('#interact-control');
-  if (interactControl) interactControl.hidden = true;
+  if (interactControl) interactControl.hidden = copy.hasInteraction !== true;
 }
 
 /**
  * Apply route-specific copy and hide Broken Gate-only records.
  * @param {any} documentObj Injected browser document.
- * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string}} copy Alternate scene copy and route.
+ * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string, hasInteraction?: boolean}} copy Alternate scene copy and route.
  * @returns {void}
  */
 function configureAlternateScenePage(documentObj, copy) {

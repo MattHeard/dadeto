@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), continue to the Silt Margin, then reach the Lantern Ward.
+Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), continue to the Silt Margin, then reach the Lantern Ward, Belltops, and Crownback Reach.
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -96,3 +96,9 @@ The Lantern Ward export includes the district's destroyed buildings and resident
 Continue from the Lantern Ward to open [/threefold/?scene=belltops](/threefold/?scene=belltops). Mara starts at scale +2, 16.46 m tall, with +3 unlocked. The Mosslight screen previews the watchtower and harbor crane in Mara's next growth footprint, along with Orla and the stormbird. A remains growth and commits the displayed structural damage and resident fates; B steps down to +1. Belltops uses the shared high-world reducer and local game clock without advancing Broken Gate's episode.
 
 Belltops exports preserve its damaged harbor structures and resident fates under a save key separate from Lantern Ward, Silt Margin, Tidal Archive, and Broken Gate.
+
+## Crownback Reach
+
+Continue from Belltops to open [/threefold/?scene=crownback-reach](/threefold/?scene=crownback-reach). Mara starts at +3, 49.38 metres tall. Elder Tharn stands 44 metres high and the calf is 18 metres tall. Move closer to Tharn and press E once to record their meeting; an out-of-reach or repeated interaction has no effect. The touch interaction button uses the same action. A remains growth and previews the living-root arch, floodwall, and Crownbacks in the +4 footprint; B shrinks to +2.
+
+The route uses the shared 160 × 144 Mosslight renderer, high-world reducer, and local game clock. Meeting state, damaged structures, and growth fates persist in the Crownback Reach save, isolated from Belltops and Broken Gate.

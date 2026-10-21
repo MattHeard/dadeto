@@ -3,6 +3,11 @@ import { advanceCrisisClock, createCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
 import { createThreefoldBelltopsScene } from './belltops.js';
+import {
+  createThreefoldCrownbackReachScene,
+  normalizeThreefoldCrownbackReachState,
+  THREEFOLD_CROWNBACK_REACH_SCENE_ID,
+} from './crownback-reach.js';
 import { createThreefoldLanternWardScene } from './lantern-ward.js';
 import {
   createThreefoldSluiceScene,
@@ -111,6 +116,10 @@ export function serializeThreefoldSimulation(simulation) {
   if (isSiltMarginSimulationState(simulation)) {
     state.siltMargin = normalizeThreefoldSiltMarginState(simulation.siltMargin);
   }
+  if (simulation.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID)
+    state.crownbackReach = normalizeThreefoldCrownbackReachState(
+      /** @type {Record<string, any>} */ (simulation).crownbackReach
+    );
   const elapsedGameSeconds = getSimulationElapsedGameSeconds(simulation);
   if (elapsedGameSeconds !== null)
     state.elapsedGameSeconds = normalizeElapsedGameSeconds(elapsedGameSeconds);
@@ -226,14 +235,21 @@ export function restoreThreefoldSimulation(serialized) {
         ...restoredState,
         scene: createBrokenGateScene(),
       };
-    if (isHighWorldScene)
-      return restoreTimedScene(
-        restoredState,
-        state,
+    if (isHighWorldScene) {
+      const highWorldScene =
         envelope.sceneId === 'belltops'
           ? createThreefoldBelltopsScene()
-          : createThreefoldLanternWardScene()
-      );
+          : envelope.sceneId === THREEFOLD_CROWNBACK_REACH_SCENE_ID
+            ? createThreefoldCrownbackReachScene()
+            : createThreefoldLanternWardScene();
+      if (envelope.sceneId === THREEFOLD_CROWNBACK_REACH_SCENE_ID)
+        return restoreTimedScene(restoredState, state, highWorldScene, {
+          crownbackReach: normalizeThreefoldCrownbackReachState(
+            state.crownbackReach
+          ),
+        });
+      return restoreTimedScene(restoredState, state, highWorldScene);
+    }
     if (isSiltMarginScene)
       return restoreTimedScene(
         restoredState,
@@ -256,7 +272,7 @@ export function restoreThreefoldSimulation(serialized) {
  * Rebuild one independently timed scene after validating its saved state.
  * @param {Record<string, any>} restoredState Shared player, episode, and encounter state.
  * @param {Record<string, any>} state Serialized scene state.
- * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>} scene Authored scene reconstruction.
+ * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldCrownbackReachScene>} scene Authored scene reconstruction.
  * @param {Record<string, any>} [sceneState] Validated scene-specific puzzle state.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Complete restored scene.
  */
