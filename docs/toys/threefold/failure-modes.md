@@ -4,6 +4,7 @@
 
 - Weftways regression: the route uses a scale other than −2, omits Pell, the Threadbound, or oversized pack beetles, allows a flow control from out of reach, changes the route choice after it has been committed, or fails to persist the flood footprint, growth rubble, and local clock under its own key. Pell's bypass must protect the deep roots and flood the human low quay; the alternate spill protects the quay and floods the root crossing. Broken Gate episode state must remain untouched and all rendered shapes must stay on the eight-pixel grid.
 - Grainlands regression: the route starts outside scale −3, Iru or the Nursery Clades shelter is missing, the spider's 18 cm physical size is not formidable at 6.77 cm, or growth preview and commit disagree about breaking the Threadbound bridge. E must require reach and bait the spider away without breaking the crossing; A must overpower it and break the bridge. Route time and spider fate must survive schema-v1 export/import in an isolated save, without changing Broken Gate, and every rendered shape must stay on the eight-pixel grid.
+- Threadbound relationship regression: Pell's or Iru's response disagrees with the saved crossing outcome, changes after export/import, or is represented as a moral score. Derive each response from canonical `flowChoice` or spider/bridge state instead of storing a duplicate mutable relationship value.
 - Setup/configuration mismatch: page source exists but the build did not copy the standalone route or core modules.
 - Invalid or missing inputs: unsupported action names or malformed imports reach the simulation boundary.
 - Dependency/service unavailable: localStorage is denied or quota-limited.
@@ -62,6 +63,10 @@
 - Confirm the rat fate is `present`, Mara is at scale −2 or −1, and her canonical position is inside the authored interaction radius before expecting fight/bypass controls. When her full body fits inside the rat bounds at −2, expect the growth preview and `A GROW · X BYPASS` instead.
 - A should grow through and kill the rat when Mara fits inside it; otherwise A should repel the rat at −2 and kill it at −1. X should bypass it in all in-reach cases. Each outcome advances the game clock; fighting suppresses Anchor recovery for that action.
 - Verify complete-run schema-v1 migration defaults the rat to `present` with no action cause, schema-v2 migration infers the old fight/bypass cause, and schema-v3 rejects missing or inconsistent fate/action pairs.
+
+## Threadbound relationship checks
+
+- Pell's response must follow the saved Weftways flow choice, and Iru's response must follow the saved Grainlands spider and bridge state. Re-render after import to catch drift between relationship text and physical outcome.
 
 ## Promoted from Real Failures
 

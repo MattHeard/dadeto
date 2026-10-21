@@ -97,11 +97,15 @@ From the Broken Gate page, open [/threefold/?scene=weftways](/threefold/?scene=w
 
 The route uses the shared 160 × 144 Mosslight renderer and eight-pixel grid. Movement and the flow choice advance 15 seconds of game time; X waits its requested duration, and browser time does not advance the simulation. The choice, flooded feature, scale-caused rubble, and elapsed seconds roundtrip in schema v1 under a key isolated from Broken Gate and the other routes. Weftways actions do not advance Broken Gate's crisis or episode outcomes.
 
+Pell trusts Mara when the root crossing holds; choosing the quay-side spill makes Pell wary after the crossing floods. The response follows the saved choice.
+
 ## Grainlands
 
 From the Weftways page, open [/threefold/?scene=grainlands](/threefold/?scene=grainlands). Mara starts at scale −3 (6.77 cm) near Iru and the Nursery Clades. The 18 cm spider is a substantial predator at this scale. Press E beside Iru to help bait it away and preserve the Threadbound bridge. A grows Mara to −2, overpowers the spider, and breaks that bridge; the growth preview shows both physical consequences first.
 
 The route uses the shared 160 × 144 Mosslight renderer and eight-pixel grid. Its choice, broken crossing, and elapsed game seconds persist in schema v1 under a key isolated from the other routes. Movement, growth, and interaction advance explicit game time; the browser clock does not, and the Grainlands actions do not change Broken Gate outcomes.
+
+Iru welcomes Mara when the spider is baited away and the bridge holds. If growth breaks the bridge, Iru fears Mara. Save and import preserve the response along with the route outcome.
 
 ## Lantern Ward
 

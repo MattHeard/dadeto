@@ -551,9 +551,9 @@ function renderThreefoldWeftwaysFrame(state) {
   );
   const flowMessage =
     flowChoice === 'pell-bypass'
-      ? "Pell's bypass protects roots; quay floods."
+      ? 'Pell trusts Mara; roots hold, quay floods.'
       : flowChoice === 'quay-spill'
-        ? 'Quay homes stay dry; root crossing floods.'
+        ? 'Pell is wary; quay stays dry, root crossing floods.'
         : 'Pell knows a bypass through the deep roots.';
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 2.4) * 144
@@ -659,10 +659,10 @@ function renderThreefoldGrainlandsFrame(state) {
         : '#bfd77c';
   const status =
     spiderFate === 'baited-away'
-      ? 'Iru baits the spider away; the nursery crossing holds.'
+      ? 'Iru welcomes Mara; spider leaves, bridge holds.'
       : spiderFate === 'overpowered'
-        ? 'Mara overpowers the spider; growth breaks the bridge.'
-        : 'Iru distrusts repairs that drown another nest.';
+        ? 'Iru fears Mara; growth breaks nursery bridge.'
+        : 'Iru weighs the spider against the nursery crossing.';
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 0.8) * 144
   );

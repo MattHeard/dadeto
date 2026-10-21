@@ -106,7 +106,7 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(previewThreefoldGrowthEffects(state).creatureIds).not.toContain(
       THREEFOLD_GRAINLANDS_SPIDER_ID
     );
-    expect(frame.toast).toContain('Iru baits the spider away');
+    expect(frame.toast).toBe('Iru welcomes Mara; spider leaves, bridge holds.');
     expect(frame.threefold.spiderFate).toBe('baited-away');
     expect(frame.shapes).not.toContainEqual(
       expect.objectContaining({ x: 64, y: 56 })
@@ -137,7 +137,7 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(state.elapsedGameSeconds).toBe(15);
     expect(state.crisis).toEqual(initial.crisis);
     expect(state.episode).toEqual(initial.episode);
-    expect(frame.toast).toContain('growth breaks the bridge');
+    expect(frame.toast).toBe('Iru fears Mara; growth breaks nursery bridge.');
     expect(frame.threefold).toMatchObject({
       spiderFate: 'overpowered',
       bridgeOutcome: 'broken',
@@ -183,10 +183,18 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
 
     expect(envelope.schemaVersion).toBe(1);
     expect(envelope.sceneId).toBe('grainlands');
-    expect(restoreThreefoldSimulation(serialized)).toEqual(broken);
-    expect(
-      restoreThreefoldSimulation(serializeThreefoldSimulation(baited))
-    ).toEqual(baited);
+    const restoredBroken = restoreThreefoldSimulation(serialized);
+    const restoredBaited = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(baited)
+    );
+    expect(restoredBroken).toEqual(broken);
+    expect(renderThreefoldFrame(restoredBroken).toast).toBe(
+      'Iru fears Mara; growth breaks nursery bridge.'
+    );
+    expect(restoredBaited).toEqual(baited);
+    expect(renderThreefoldFrame(restoredBaited).toast).toBe(
+      'Iru welcomes Mara; spider leaves, bridge holds.'
+    );
 
     const records = new Map();
     const storage = {

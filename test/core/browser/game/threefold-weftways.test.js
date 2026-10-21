@@ -136,7 +136,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       other: THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
       direction: 'left',
       floodedGeometryIds: [THREEFOLD_WEFTWAYS_LOW_QUAY_ID],
-      status: "Pell's bypass protects roots; quay floods.",
+      status: 'Pell trusts Mara; roots hold, quay floods.',
     },
     {
       choice: 'quay-spill',
@@ -144,7 +144,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       other: THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
       direction: 'right',
       floodedGeometryIds: [THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID],
-      status: 'Quay homes stay dry; root crossing floods.',
+      status: 'Pell is wary; quay stays dry, root crossing floods.',
     },
   ])(
     'commits the reachable $choice and preserves its physical outcome',
@@ -200,6 +200,22 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     expect(envelope.schemaVersion).toBe(1);
     expect(envelope.sceneId).toBe('weftways');
     expect(restored).toEqual(state);
+    expect(renderThreefoldFrame(restored).toast).toBe(
+      'Pell trusts Mara; roots hold, quay floods.'
+    );
+    const quaySpill = stepThreefoldSimulation(
+      approachFlowControl(
+        createWeftwaysRun(),
+        THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
+        'right'
+      ),
+      { type: 'interact' }
+    );
+    expect(
+      renderThreefoldFrame(
+        restoreThreefoldSimulation(serializeThreefoldSimulation(quaySpill))
+      ).toast
+    ).toBe('Pell is wary; quay stays dry, root crossing floods.');
     expect(renderThreefoldFrame(restored).threefold.floodedGeometryIds).toEqual(
       [THREEFOLD_WEFTWAYS_LOW_QUAY_ID]
     );
