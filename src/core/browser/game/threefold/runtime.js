@@ -17,6 +17,8 @@ import {
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
+import { THREEFOLD_BELLTOPS_SCENE_ID } from './belltops.js';
+import { getThreefoldHarborMemorial } from './campaign.js';
 
 const CRISIS_THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -36,14 +38,17 @@ export function createThreefoldRuntime(options = {}) {
   const opts = options instanceof Map ? { env: options } : options;
   const env = opts.env || new Map();
   const scene = opts.scene;
+  const storage = opts.storage || createMapStorage(env);
   const createInitialState = () =>
     createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
   const save =
-    opts.save ||
-    createThreefoldSimulationSaveStore(
-      opts.storage || createMapStorage(env),
-      scene?.id
-    );
+    opts.save || createThreefoldSimulationSaveStore(storage, scene?.id);
+  const harborMemorial =
+    scene?.id === THREEFOLD_BELLTOPS_SCENE_ID
+      ? getThreefoldHarborMemorial(
+          createThreefoldSimulationSaveStore(storage).load()
+        )
+      : null;
   const loadInitialState = () => {
     const restored = save.load?.();
     return restored?.scene.id === (scene?.id || 'broken-gate')
@@ -56,7 +61,15 @@ export function createThreefoldRuntime(options = {}) {
   let tick = 0;
   let previousActions = new Set();
 
-  const frame = () => renderThreefoldFrame(state);
+  const frame = () => {
+    const rendered = renderThreefoldFrame(state);
+    return harborMemorial
+      ? {
+          ...rendered,
+          threefold: { ...rendered.threefold, harborMemorial },
+        }
+      : rendered;
+  };
   const snapshot = () => ({
     ...state,
     tick,

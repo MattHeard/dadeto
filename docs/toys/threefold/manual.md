@@ -135,6 +135,8 @@ Continue from the Lantern Ward to open [/threefold/?scene=belltops](/threefold/?
 
 Belltops exports preserve its damaged harbor structures and resident fates under a save key separate from Lantern Ward, Silt Margin, Tidal Archive, and Broken Gate.
 
+If the saved Broken Gate run records the ferry lost, the harbor bell's accessible memorial carries the ferry and passenger-group outcome into Belltops. It does not name passengers, change Orla's route, or merge the region saves.
+
 ## Crownback Reach
 
 Continue from Belltops to open [/threefold/?scene=crownback-reach](/threefold/?scene=crownback-reach). Mara starts at +3, 49.38 metres tall. Elder Tharn stands 44 metres high and the calf is 18 metres tall. Move closer to Tharn and press E once to record their meeting; an out-of-reach or repeated interaction has no effect. The touch interaction button uses the same action. A remains growth and previews the living-root arch, floodwall, and Crownbacks in the +4 footprint; B shrinks to +2.

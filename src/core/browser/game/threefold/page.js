@@ -303,6 +303,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#harbor-memorial',
+        '#harbor-memorial-text',
+        frame.threefold?.harborMemorial || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#iri-witness-lead',
         '#iri-witness-lead-text',
         frame.threefold?.iriWitnessLead || null

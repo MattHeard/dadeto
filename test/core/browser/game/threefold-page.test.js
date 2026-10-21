@@ -684,6 +684,26 @@ describe('THREEFOLD closure epilogue page', () => {
 
     expect(collectText(episodeEpilogueList.children)).toContain(response);
   });
+
+  test('shows a saved ferry memorial in an accessible page record', () => {
+    const { documentObj, harborMemorial, harborMemorialText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Harrowfen ferry memorial',
+      text: 'The Belltops harbor bell marks the ferry lost in the surge.',
+    };
+
+    page.drawFrame({}, { threefold: { harborMemorial: record } });
+
+    expect(harborMemorial.hidden).toBe(false);
+    expect(harborMemorial.summary.textContent).toBe(record.title);
+    expect(harborMemorialText.textContent).toContain('lost in the surge');
+
+    page.drawFrame({}, { threefold: { harborMemorial: null } });
+    expect(harborMemorial.hidden).toBe(true);
+  });
 });
 
 describe('THREEFOLD witness lead page', () => {
@@ -981,6 +1001,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? iriWitnessLead.summary : null,
   };
+  const harborMemorialText = { textContent: '' };
+  const harborMemorial = {
+    hidden: true,
+    summary: { textContent: 'Old ferry memorial' },
+    querySelector: selector =>
+      selector === 'summary' ? harborMemorial.summary : null,
+  };
   const ferryWreckSearchText = { textContent: '' };
   const ferryWreckSearch = {
     hidden: true,
@@ -1032,6 +1059,8 @@ function createLedgerDocument() {
     iriRepairLogText,
     iriWitnessLead,
     iriWitnessLeadText,
+    harborMemorial,
+    harborMemorialText,
     ferryWreckSearch,
     ferryWreckSearchText,
     latchfolkAid,
@@ -1051,6 +1080,8 @@ function createLedgerDocument() {
         if (selector === '#iri-repair-log-text') return iriRepairLogText;
         if (selector === '#iri-witness-lead') return iriWitnessLead;
         if (selector === '#iri-witness-lead-text') return iriWitnessLeadText;
+        if (selector === '#harbor-memorial') return harborMemorial;
+        if (selector === '#harbor-memorial-text') return harborMemorialText;
         if (selector === '#ferry-wreck-search') return ferryWreckSearch;
         if (selector === '#ferry-wreck-search-text')
           return ferryWreckSearchText;

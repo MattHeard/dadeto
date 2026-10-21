@@ -8,8 +8,81 @@ import { createScaleState } from '../../../../src/core/browser/game/threefold/sp
 import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/game/threefold/hearthgaps.js';
 import { createThreefoldWeftwaysScene } from '../../../../src/core/browser/game/threefold/weftways.js';
 import { createThreefoldGrainlandsScene } from '../../../../src/core/browser/game/threefold/grainlands.js';
+import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
+import { createThreefoldSimulationSaveStore } from '../../../../src/core/browser/game/threefold/save.js';
 
 describe('THREEFOLD handheld runtime', () => {
+  test('shows a saved Broken Gate ferry loss in the Belltops harbor', () => {
+    const storage = createStorageAdapter();
+    const brokenGate = createThreefoldSimulation(
+      { urgentAtMinutes: 4, surgeAtMinutes: 9, aftermathAtMinutes: 15 },
+      createBrokenGateScene()
+    );
+    const ferryLost = stepThreefoldSimulation(brokenGate, {
+      type: 'wait',
+      elapsedGameMinutes: 9,
+    });
+    expect(ferryLost.episode).toMatchObject({
+      ferry: 'lost',
+      passengers: 'lost',
+    });
+    createThreefoldSimulationSaveStore(storage).save(ferryLost);
+
+    const harbor = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+
+    expect(harbor.frame().threefold.harborMemorial).toEqual({
+      title: 'Harrowfen ferry memorial',
+      text: 'The Belltops harbor bell marks the Harrowfen ferry, lost in the Broken Gate surge. Both passenger groups were lost with the ferry. No passenger names are listed.',
+    });
+    expect(harbor.getState().episode.ferry).toBe('afloat');
+  });
+
+  test('does not carry an unsaved or surviving ferry into the harbor', () => {
+    const storage = createStorageAdapter();
+    const harborWithoutSource = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+    expect(
+      harborWithoutSource.frame().threefold.harborMemorial
+    ).toBeUndefined();
+
+    createThreefoldSimulationSaveStore(storage).save(
+      createThreefoldSimulation(
+        { urgentAtMinutes: 4, surgeAtMinutes: 9, aftermathAtMinutes: 15 },
+        createBrokenGateScene()
+      )
+    );
+    const harborWithFerryAfloat = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+    expect(
+      harborWithFerryAfloat.frame().threefold.harborMemorial
+    ).toBeUndefined();
+
+    const otherRegion = createThreefoldRuntime({
+      scene: createThreefoldGrainlandsScene(),
+      storage,
+    });
+    expect(otherRegion.frame().threefold.harborMemorial).toBeUndefined();
+  });
+
+  test('does not memorialize an invalid Broken Gate save', () => {
+    const storage = createStorageAdapter();
+    storage.setItem('dadeto.threefold.simulation-save.v1', '{malformed');
+
+    const harbor = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+
+    expect(harbor.frame().threefold.harborMemorial).toBeUndefined();
+  });
+
   test('keeps Hearthgaps snapshot time on its isolated region clock', () => {
     const runtime = createThreefoldRuntime({
       scene: createThreefoldHearthgapsScene(),
@@ -266,3 +339,16 @@ describe('THREEFOLD handheld runtime', () => {
     expect(restored.frame().threefold.crisisStage).toBe('rising');
   });
 });
+
+/**
+ * Adapt a local map to the Web Storage interface used by the save store.
+ * @returns {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem: (key: string) => boolean}} Map-backed Web Storage.
+ */
+function createStorageAdapter() {
+  const values = new Map();
+  return {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key),
+  };
+}
