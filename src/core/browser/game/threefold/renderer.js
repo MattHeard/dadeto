@@ -600,6 +600,7 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordRead,
     relayRecordShared,
     relayRecordConcealed,
+    relayRecordDestroyed,
   } = state.weftways;
   const rootFlooded = floodedGeometryIds.includes(
     weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
@@ -615,11 +616,13 @@ function renderThreefoldWeftwaysFrame(state) {
     ? 'Mara shared the record; responsibility remains unresolved.'
     : relayRecordConcealed
       ? 'Mara keeps Pell’s record private.'
-      : flowChoice === 'pell-bypass'
-        ? 'Pell trusts Mara; roots hold, quay floods.'
-        : flowChoice === 'quay-spill'
-          ? 'Pell is wary; quay stays dry, root crossing floods.'
-          : 'Pell knows a bypass through the deep roots.';
+      : relayRecordDestroyed
+        ? 'Mara destroyed the record; responsibility remains unresolved.'
+        : flowChoice === 'pell-bypass'
+          ? 'Pell trusts Mara; roots hold, quay floods.'
+          : flowChoice === 'quay-spill'
+            ? 'Pell is wary; quay stays dry, root crossing floods.'
+            : 'Pell knows a bypass through the deep roots.';
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 2.4) * 144
   );
@@ -661,6 +664,11 @@ function renderThreefoldWeftwaysFrame(state) {
     createThreefoldRectShape([112, 44, 32, 8], '#d28b69'),
     createThreefoldRectShape([112, 52, 8, 24], '#b46b55'),
     createThreefoldRectShape([128, 52, 8, 24], '#b46b55'),
+    createThreefoldRectShape([8, 72, 24, 8], '#182f36'),
+    createThreefoldRectShape(
+      [16, 64, 8, 8],
+      relayRecordDestroyed ? '#8aa27b' : '#e16b5a'
+    ),
     ...(quayFlooded
       ? [createThreefoldRectShape([104, 68, 40, 8], '#25a9b8')]
       : []),
@@ -679,7 +687,11 @@ function renderThreefoldWeftwaysFrame(state) {
     createThreefoldRectShape([128, 88, 16, 8], '#d28b69'),
     createThreefoldRectShape(
       [40, 64, 8, 8],
-      relayRecordShared ? '#bfd77c' : '#e9d88d'
+      relayRecordDestroyed
+        ? '#526e4b'
+        : relayRecordShared
+          ? '#bfd77c'
+          : '#e9d88d'
     ),
     createThreefoldRectShape(
       [112, 40, 8, 8],
@@ -704,9 +716,11 @@ function renderThreefoldWeftwaysFrame(state) {
           ? 'CARAVAN KNOWS THE RECORD'
           : relayRecordConcealed
             ? 'MARA KEPT THE RECORD PRIVATE'
-            : relayRecordRead
-              ? 'E SHARE AT CAMP · KEEP AT CACHE'
-              : 'REACH PELL · E READ RELAY LOG'
+            : relayRecordDestroyed
+              ? 'LEDGER DESTROYED · FACTS UNRESOLVED'
+              : relayRecordRead
+                ? 'E SHARE · KEEP · DESTROY'
+                : 'REACH PELL · E READ RELAY LOG'
     ),
   ];
   return finishSmallWorldFrame(frame, {
@@ -720,14 +734,25 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordRead,
     relayRecordShared,
     relayRecordConcealed,
-    threadboundRelayRecord: relayRecordRead
+    relayRecordDestroyed,
+    threadboundRelayRecord:
+      relayRecordRead && !relayRecordDestroyed
+        ? {
+            title: 'Threadbound relay ledger',
+            text:
+              'Pell’s caravan ledger shows downstream relay tokens stopped ' +
+              'arriving after an emergency pressure-regulator bypass. It does ' +
+              'not identify who sent the final message, what Iri knew, or who ' +
+              'was responsible.',
+          }
+        : null,
+    threadboundRelayDestruction: relayRecordDestroyed
       ? {
-          title: 'Threadbound relay ledger',
+          title: 'What happened to the Threadbound ledger',
           text:
-            'Pell’s caravan ledger shows downstream relay tokens stopped ' +
-            'arriving after an emergency pressure-regulator bypass. It does ' +
-            'not identify who sent the final message, what Iri knew, or who ' +
-            'was responsible.',
+            'Mara destroyed Pell’s relay ledger at the brazier. The record ' +
+            'can no longer be read. It did not identify the final sender, ' +
+            'establish what Iri knew, or assign responsibility.',
         }
       : null,
     threadboundRelayDisclosure: relayRecordShared

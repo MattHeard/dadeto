@@ -10,6 +10,7 @@ export const THREEFOLD_WEFTWAYS_PELL_ID = 'weftways-pell';
 export const THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID = 'weftways-caravan-circle';
 export const THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID =
   'weftways-private-knot-cache';
+export const THREEFOLD_WEFTWAYS_BRAZIER_ID = 'weftways-ledger-brazier';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 2.4, y: 0.8 } };
 const ROOT_CROSSING_BOUNDS = {
@@ -44,6 +45,14 @@ const THREADBOUND_PRIVATE_CACHE = {
     max: { x: 1.85, y: 0.69, z: 0.12 },
   },
 };
+const THREADBOUND_BRAZIER = {
+  id: THREEFOLD_WEFTWAYS_BRAZIER_ID,
+  position: { x: 0.16, y: 0.4 },
+  bounds: {
+    min: { x: 0.12, y: 0.36, z: 0 },
+    max: { x: 0.2, y: 0.44, z: 0.16 },
+  },
+};
 const PACK_BEETLES = [
   createPackBeetle('weftways-pack-beetle-1', { x: 0.45, y: 0.16 }),
   createPackBeetle('weftways-pack-beetle-2', { x: 1.1, y: 0.16 }),
@@ -71,6 +80,7 @@ export function createThreefoldWeftwaysScene() {
       copyThreadboundInteractable(THREADBOUND_PELL),
       copyThreadboundInteractable(THREADBOUND_CARAVAN_CIRCLE),
       copyThreadboundInteractable(THREADBOUND_PRIVATE_CACHE),
+      copyThreadboundInteractable(THREADBOUND_BRAZIER),
       createFlowControl(THREEFOLD_WEFTWAYS_PELL_BYPASS_ID, 0.2),
       createFlowControl(THREEFOLD_WEFTWAYS_QUAY_SPILL_ID, 2.2),
     ],
@@ -80,7 +90,7 @@ export function createThreefoldWeftwaysScene() {
 
 /**
  * Create the unresolved flow choice for the Threadbound crossing.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean}} Initial route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean, relayRecordDestroyed: boolean}} Initial route state.
  */
 export function createThreefoldWeftwaysState() {
   return {
@@ -89,13 +99,14 @@ export function createThreefoldWeftwaysState() {
     relayRecordRead: false,
     relayRecordShared: false,
     relayRecordConcealed: false,
+    relayRecordDestroyed: false,
   };
 }
 
 /**
  * Rebuild only the flood footprint implied by a saved choice.
  * @param {unknown} candidate Saved flow choice.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean}} Canonical route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean, relayRecordDestroyed: boolean}} Canonical route state.
  */
 export function normalizeThreefoldWeftwaysState(candidate) {
   if (!candidate || typeof candidate !== 'object')
@@ -122,13 +133,26 @@ export function normalizeThreefoldWeftwaysState(candidate) {
       : state.relayRecordConcealed;
   if (typeof relayRecordConcealed !== 'boolean')
     throw new RangeError('Weftways relay privacy state is invalid.');
+  const relayRecordDestroyed =
+    state.relayRecordDestroyed === undefined
+      ? false
+      : state.relayRecordDestroyed;
+  if (typeof relayRecordDestroyed !== 'boolean')
+    throw new RangeError('Weftways relay destruction state is invalid.');
   if (choice === 'undecided' && relayRecordRead)
     throw new RangeError('Weftways relay record requires a flow choice.');
   if (relayRecordShared && !relayRecordRead)
     throw new RangeError('Weftways relay disclosure requires the record.');
   if (relayRecordConcealed && !relayRecordRead)
     throw new RangeError('Weftways privacy choice requires the record.');
-  if (relayRecordShared && relayRecordConcealed)
+  if (relayRecordDestroyed && !relayRecordRead)
+    throw new RangeError('Weftways destruction choice requires the record.');
+  if (
+    Number(relayRecordShared) +
+      Number(relayRecordConcealed) +
+      Number(relayRecordDestroyed) >
+    1
+  )
     throw new RangeError('Weftways relay choices conflict.');
   const floodedGeometryIds =
     choice === 'pell-bypass'
@@ -148,6 +172,7 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     relayRecordRead,
     relayRecordShared,
     relayRecordConcealed,
+    relayRecordDestroyed,
   };
 }
 
@@ -188,8 +213,8 @@ function createPackBeetle(id, position) {
 
 /**
  * Copy one authored Threadbound character or choice target for this scene.
- * @param {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE} interactable Authored route actor or target.
- * @returns {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE} Independently mutable scene object.
+ * @param {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE|typeof THREADBOUND_BRAZIER} interactable Authored route actor or target.
+ * @returns {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE|typeof THREADBOUND_BRAZIER} Independently mutable scene object.
  */
 function copyThreadboundInteractable(interactable) {
   return {

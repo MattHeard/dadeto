@@ -74,7 +74,8 @@ const LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
 const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 2;
 const HEARTHGAPS_SIMULATION_SCHEMA_VERSION = 1;
 const LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION = 1;
-const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 2;
+const PREVIOUS_WEFTWAYS_SIMULATION_SCHEMA_VERSION = 2;
+const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 3;
 const GRAINLANDS_SIMULATION_SCHEMA_VERSION = 1;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
@@ -247,6 +248,7 @@ export function restoreThreefoldSimulation(serialized) {
       sceneKinds.weftways &&
       ![
         LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION,
+        PREVIOUS_WEFTWAYS_SIMULATION_SCHEMA_VERSION,
         WEFTWAYS_SIMULATION_SCHEMA_VERSION,
       ].includes(envelope.schemaVersion)
     )
@@ -365,9 +367,7 @@ export function restoreThreefoldSimulation(serialized) {
         createThreefoldWeftwaysScene(),
         {
           weftways: normalizeThreefoldWeftwaysState(
-            envelope.schemaVersion === LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION
-              ? { ...state.weftways, relayRecordConcealed: false }
-              : state.weftways
+            migrateWeftwaysRelayResponse(state.weftways, envelope.schemaVersion)
           ),
         }
       );
@@ -404,6 +404,24 @@ function normalizeArchiveTraceHeard(heard) {
   if (typeof heard !== 'boolean')
     throw new TypeError('Tidal Archive trace state is invalid.');
   return heard;
+}
+
+/**
+ * Add response fields introduced after the original Weftways route save.
+ * @param {Record<string, any>} state Saved Weftways route state.
+ * @param {number} schemaVersion Version of the saved route.
+ * @returns {Record<string, any>} State with version-specific response defaults.
+ */
+function migrateWeftwaysRelayResponse(state, schemaVersion) {
+  if (schemaVersion === LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION)
+    return {
+      ...state,
+      relayRecordConcealed: false,
+      relayRecordDestroyed: false,
+    };
+  if (schemaVersion === PREVIOUS_WEFTWAYS_SIMULATION_SCHEMA_VERSION)
+    return { ...state, relayRecordDestroyed: false };
+  return state;
 }
 
 /**

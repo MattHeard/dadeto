@@ -161,4 +161,54 @@ describe('THREEFOLD Weftways page record', () => {
     expect(disclosurePanel.hidden).toBe(true);
     expect(concealmentPanel.hidden).toBe(true);
   });
+
+  test('shows destruction accessibly without exposing the readable ledger', () => {
+    const recordPanel = { hidden: false };
+    const summary = { textContent: '' };
+    const text = { textContent: '' };
+    const destructionPanel = {
+      hidden: false,
+      querySelector: selector => (selector === 'summary' ? summary : null),
+    };
+    const elements = new Map([
+      ['#weftways-relay-record', recordPanel],
+      ['#weftways-relay-record-text', { textContent: '' }],
+      ['#weftways-relay-destruction', destructionPanel],
+      ['#weftways-relay-destruction-text', text],
+    ]);
+    const documentObj = {
+      querySelector: selector => elements.get(selector),
+    };
+    const windowObj = {
+      location: { search: '?scene=weftways' },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    };
+    const outcome = {
+      title: 'What happened to the Threadbound ledger',
+      text: 'Mara destroyed the ledger; its claims remain unresolved.',
+    };
+
+    expect(THREEFOLD_HTML).toContain('id="weftways-relay-destruction"');
+    expect(THREEFOLD_HTML).toContain('id="weftways-relay-destruction-text"');
+    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          threadboundRelayRecord: null,
+          threadboundRelayDestruction: outcome,
+        },
+      }
+    );
+
+    expect(recordPanel.hidden).toBe(true);
+    expect(destructionPanel.hidden).toBe(false);
+    expect(summary.textContent).toBe(outcome.title);
+    expect(text.textContent).toBe(outcome.text);
+  });
 });

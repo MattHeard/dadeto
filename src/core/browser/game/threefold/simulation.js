@@ -800,7 +800,7 @@ function stepFlowChoiceScene(state, action, choiceMade, controls) {
 }
 
 /**
- * Resolve the Weftways choice, reveal Pell's record, then allow its disclosure.
+ * Resolve the Weftways choice, reveal Pell's record, and accept one response.
  * @param {WeftwaysSimulationState} state Current caravan crossing.
  * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
  * @returns {WeftwaysSimulationState} Updated crossing or the original for unsupported actions.
@@ -847,6 +847,7 @@ function stepWeftwaysScene(state, action) {
         route.relayRecordRead &&
         !route.relayRecordShared &&
         !route.relayRecordConcealed &&
+        !route.relayRecordDestroyed &&
         isThreefoldInteractableInReach(
           state,
           weftways.THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
@@ -862,6 +863,7 @@ function stepWeftwaysScene(state, action) {
         route.relayRecordRead &&
         !route.relayRecordShared &&
         !route.relayRecordConcealed &&
+        !route.relayRecordDestroyed &&
         isThreefoldInteractableInReach(
           state,
           weftways.THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID
@@ -871,6 +873,22 @@ function stepWeftwaysScene(state, action) {
           weftways: weftways.normalizeThreefoldWeftwaysState({
             ...route,
             relayRecordConcealed: true,
+          }),
+        };
+      if (
+        route.relayRecordRead &&
+        !route.relayRecordShared &&
+        !route.relayRecordConcealed &&
+        !route.relayRecordDestroyed &&
+        isThreefoldInteractableInReach(
+          state,
+          weftways.THREEFOLD_WEFTWAYS_BRAZIER_ID
+        )
+      )
+        return {
+          weftways: weftways.normalizeThreefoldWeftwaysState({
+            ...route,
+            relayRecordDestroyed: true,
           }),
         };
       return {};
