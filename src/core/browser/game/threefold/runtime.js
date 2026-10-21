@@ -1,4 +1,15 @@
 import {
+  advanceThreefoldPressureNetwork,
+  createThreefoldPressureNetwork,
+  describeThreefoldPressureNetwork,
+} from './pressure-network.js';
+import {
+  THREEFOLD_GRAINLANDS_HATCH_ID,
+  THREEFOLD_GRAINLANDS_NURSERY_ID,
+} from './grainlands.js';
+import { isThreefoldInteractableInReach } from './scene-utils.js';
+import {
+  createThreefoldPressureNetworkSaveStore,
   createThreefoldCampaignOutcomesSaveStore,
   createThreefoldCampaignClockSaveStore,
   createThreefoldSimulationSaveStore,
@@ -64,6 +75,7 @@ export function createThreefoldRuntime(options = {}) {
   const save =
     opts.save || createThreefoldSimulationSaveStore(storage, scene?.id);
   const campaignClockSave = createThreefoldCampaignClockSaveStore(storage);
+  const pressureSave = createThreefoldPressureNetworkSaveStore(storage);
   const campaignOutcomesSave =
     createThreefoldCampaignOutcomesSaveStore(storage);
   const brokenGateCampaignState =
@@ -92,6 +104,7 @@ export function createThreefoldRuntime(options = {}) {
     campaignClockSave.load() || createThreefoldCampaignClock();
   let campaignOutcomes =
     campaignOutcomesSave.load() || createThreefoldCampaignOutcomes();
+  let pressureNetwork = pressureSave.load() || createThreefoldPressureNetwork();
   let running = false;
   let accumulator = 0;
   let tick = 0;
@@ -102,14 +115,22 @@ export function createThreefoldRuntime(options = {}) {
       { ...savedCampaignRuns, [state.scene.id]: state },
       state.scene.id
     );
-  const campaignPressure = () =>
-    getThreefoldCampaignPressureState({
+  const campaignPressure = () => {
+    const sites = getThreefoldCampaignPressureState({
       ...savedCampaignRuns,
       [state.scene.id]: state,
     });
+    if (campaignPlaces().some(place => place.id === 'grainlands'))
+      sites.push({
+        id: 'grainlands-shelter',
+        label: describeThreefoldPressureNetwork(pressureNetwork),
+        state: pressureNetwork.nurseryFlooded ? 'flooded' : 'dry',
+      });
+    return sites;
+  };
 
   const frame = () => {
-    const rendered = renderThreefoldFrame(state);
+    const rendered = renderThreefoldFrame(state, pressureNetwork);
     return {
       ...rendered,
       threefold: {
@@ -130,6 +151,10 @@ export function createThreefoldRuntime(options = {}) {
     campaign: {
       places: campaignPlaces(),
       pressure: campaignPressure(),
+      network: {
+        ...pressureNetwork,
+        volumesCubicMeters: [...pressureNetwork.volumesCubicMeters],
+      },
       clock: { ...campaignClock },
       iriFate: campaignOutcomes.iriFate
         ? { ...campaignOutcomes.iriFate }
@@ -266,6 +291,8 @@ export function createThreefoldRuntime(options = {}) {
     ) {
       recordIriFate('dead', 'quay-regulator-growth');
     }
+    if (elapsedGameSeconds !== null)
+      synchronizePressureNetwork(action, elapsedGameSeconds);
     return state;
   }
 
@@ -285,6 +312,83 @@ export function createThreefoldRuntime(options = {}) {
     campaignOutcomes = next;
     return campaignOutcomesSave.save(campaignOutcomes);
   }
+
+  /**
+   * Apply observed route controls to the shared water and retain permanent damage.
+   * @param {{type: string}} action Explicit action, or a zero-duration load marker.
+   * @param {number} durationSeconds Elapsed deterministic game seconds.
+   * @returns {void}
+   */
+  function synchronizePressureNetwork(action, durationSeconds) {
+    const runs =
+      /** @type {Record<string, ReturnType<typeof createThreefoldSimulation>|null>} */ ({
+        ...savedCampaignRuns,
+        [state.scene.id]: state,
+      });
+    const facts = getThreefoldCampaignPressureState(runs);
+    const nursery = runs.grainlands;
+    const nextPressureNetwork = advanceThreefoldPressureNetwork(
+      pressureNetwork,
+      {
+        regulatorFailed: facts.some(
+          site => site.id === 'belltops-quay' && site.state === 'damaged'
+        ),
+        nurseryDamaged:
+          nursery?.player.destroyedGeometryIds.includes(
+            THREEFOLD_GRAINLANDS_NURSERY_ID
+          ) || false,
+        closeHatch:
+          action.type === 'interact' &&
+          isThreefoldInteractableInReach(state, THREEFOLD_GRAINLANDS_HATCH_ID),
+        coordinatedBypass:
+          facts.some(
+            site =>
+              site.id === 'hearthgaps-runoff' && site.state === 'shared-bypass'
+          ) &&
+          facts.some(
+            site => site.id === 'silt-margin-choir' && site.state === 'sent'
+          ),
+      },
+      durationSeconds
+    );
+    if (
+      JSON.stringify(nextPressureNetwork) !== JSON.stringify(pressureNetwork)
+    ) {
+      pressureNetwork = nextPressureNetwork;
+      pressureSave.save(pressureNetwork);
+    }
+    projectPressureDamage();
+  }
+
+  /**
+   * Keep a region reload or reset consistent with permanent campaign structures.
+   * @returns {void}
+   */
+  function projectPressureDamage() {
+    const damage = [
+      {
+        sceneId: 'belltops',
+        id: 'belltops-pressure-regulator',
+        active: pressureNetwork.regulatorFailed,
+      },
+      {
+        sceneId: 'grainlands',
+        id: THREEFOLD_GRAINLANDS_NURSERY_ID,
+        active: pressureNetwork.nurseryDamaged,
+      },
+    ].find(item => item.sceneId === state.scene.id && item.active);
+    if (!damage || state.player.destroyedGeometryIds.includes(damage.id))
+      return;
+    state = {
+      ...state,
+      player: {
+        ...state.player,
+        destroyedGeometryIds: [...state.player.destroyedGeometryIds, damage.id],
+      },
+    };
+  }
+
+  synchronizePressureNetwork({ type: 'load' }, 0);
 
   return {
     start: () => setRunning(true),
@@ -329,10 +433,12 @@ export function createThreefoldRuntime(options = {}) {
     listSaves: () => [],
     loadSlot() {
       state = loadInitialState();
+      synchronizePressureNetwork({ type: 'load' }, 0);
       return frame();
     },
     resetSave() {
       state = createInitialState();
+      synchronizePressureNetwork({ type: 'reset' }, 0);
       accumulator = 0;
       previousActions.clear();
       save.clear?.();
@@ -345,6 +451,7 @@ export function createThreefoldRuntime(options = {}) {
       if (!restored || restored.scene.id !== (scene?.id || 'broken-gate'))
         throw new Error('Invalid THREEFOLD save data.');
       state = restored;
+      synchronizePressureNetwork({ type: 'import' }, 0);
       save.save?.(state);
       return frame();
     },

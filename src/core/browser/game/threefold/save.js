@@ -1,3 +1,7 @@
+import {
+  restoreThreefoldPressureNetwork,
+  serializeThreefoldPressureNetwork,
+} from './pressure-network.js';
 import { parseJsonOrNull } from '../../validation.js';
 import { advanceCrisisClock, createCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
@@ -162,6 +166,20 @@ export function createThreefoldCampaignOutcomesSaveStore(storage) {
     CAMPAIGN_OUTCOMES_SAVE_KEY,
     serializeThreefoldCampaignOutcomes,
     restoreThreefoldCampaignOutcomes
+  );
+}
+
+/**
+ * Bind the shared physical pressure network outside every region save.
+ * @param {Parameters<typeof createThreefoldCampaignClockSaveStore>[0]} storage Injected storage boundary.
+ * @returns {{load: () => import('./pressure-network.js').ThreefoldPressureNetwork|null, save: (state: import('./pressure-network.js').ThreefoldPressureNetwork) => boolean, clear: () => boolean}} Campaign pressure operations.
+ */
+export function createThreefoldPressureNetworkSaveStore(storage) {
+  return createSaveStore(
+    storage,
+    'dadeto.threefold.pressure-network.v1',
+    serializeThreefoldPressureNetwork,
+    restoreThreefoldPressureNetwork
   );
 }
 

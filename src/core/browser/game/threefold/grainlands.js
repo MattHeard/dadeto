@@ -5,6 +5,7 @@ export const THREEFOLD_GRAINLANDS_SPIDER_ID = 'grainlands-spider';
 export const THREEFOLD_GRAINLANDS_BRIDGE_ID = 'grainlands-threadbound-bridge';
 export const THREEFOLD_GRAINLANDS_IRU_ID = 'grainlands-iru';
 export const THREEFOLD_GRAINLANDS_NURSERY_ID = 'grainlands-nursery-clades';
+export const THREEFOLD_GRAINLANDS_HATCH_ID = 'grainlands-shelter-hatch';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 0.8, y: 0.4 } };
 const BRIDGE_BOUNDS = {
@@ -51,7 +52,17 @@ export function createThreefoldGrainlandsScene() {
     areas: [],
     geometry: sceneUtils.copyThreefoldGeometryList(GROWTH_GEOMETRY),
     decorations: [],
-    interactables: [copyIru()],
+    interactables: [
+      copyIru(),
+      {
+        id: THREEFOLD_GRAINLANDS_HATCH_ID,
+        position: { x: 0.55, y: 0.34 },
+        bounds: {
+          min: { x: 0.53, y: 0.32, z: 0 },
+          max: { x: 0.57, y: 0.36, z: 0.03 },
+        },
+      },
+    ],
     creatures: [sceneUtils.copyThreefoldCreature(SPIDER)],
   };
 }

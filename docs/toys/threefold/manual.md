@@ -143,7 +143,7 @@ Orla's accessible harbor response also changes with that saved outcome: she trus
 
 The ferry engineer is part of the first passenger group. If that group reached shore, the accessible harbor record shows the engineer is available to advise Orla's crew; if both groups were lost, no ferry engineer is available in Belltops.
 
-The regulator encounter currently establishes only the reachable trapped state and the growth-caused death. The connected pressure-system choices and rescue machinery are not yet available.
+The regulator encounter establishes the reachable trapped state and the growth-caused death. Its failure now releases the shared nursery water channel described below. Iri’s rescue actions and replacement machinery remain future work.
 
 ## Crownback Reach
 
@@ -156,3 +156,11 @@ The route uses the shared 160 × 144 Mosslight renderer, high-world reducer, and
 Continue from Crownback Reach to open [/threefold/?scene=shoals](/threefold/?scene=shoals). Mara starts at +3, 49.38 metres tall, with +4 unlocked at 148.13 metres. The 132-metre Wakeform contests an outer tide wall. Move within reach and press E to guide it toward the north channel; the Wakeform leaves the shoals and the visible flow changes. A previews the wall and the Wakeform if Mara's +4 body will contain it. Growing through the wall opens the seaward current and can kill the Wakeform when it lies inside the physical growth footprint. B steps down to +2.
 
 The shoals use the shared 160 × 144 Mosslight renderer and local game clock. The guided Wakeform, breached wall, current outcome, and growth fate persist in a save separate from Crownback Reach, Belltops, and Broken Gate.
+
+## The shared nursery water channel
+
+The Quay regulator feeds a small pressure-reduced channel into the Grainlands nursery. Growing into the Quay regulator breaks it and releases that water. It continues moving when Mara takes actions in other regions; pausing or leaving the page alone does not move it.
+
+In Grainlands, approach the small hatch marker above the nursery and press E to close its inlet. Its color changes when sealed. Growing into the nursery breaks the hatch and shelter, so a sealed inlet cannot protect a demolished structure. The shared campaign status reports current water depth; flood damage remains recorded after drainage. Flooded water and broken shelter appear on the same 160 × 144 screen.
+
+Alternatively, establish the shared bypass in Hearthgaps and send the Choir signal from the surviving Silt Margin route. Both actions coordinate the relief outlet. The earlier damage to Brin homes remains; opening this relief does not repair it. A regional reset or regional import cannot undo shared water consequences. Regional exported files contain regional progress; shared pressure, campaign time, and Iri outcomes remain in their separate browser campaign records. Iri's rescue and replacement machinery are not yet available.

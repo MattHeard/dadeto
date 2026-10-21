@@ -1279,10 +1279,10 @@ function assertGrainlandsRoute() {
   expect(elements.get('#scene-link').href).toBe(
     '/threefold/?scene=silt-margin'
   );
-  expect(elements.get('#e-control-label').textContent).toBe('BAIT SPIDER');
+  expect(elements.get('#e-control-label').textContent).toBe('IRU / HATCH');
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
     'aria-label',
-    'Help Iru bait the Grainlands spider away'
+    'Help Iru bait the spider or close the nearby nursery inlet hatch'
   );
   expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
   expect(elements.get('#weftways-entry').hidden).toBe(true);

@@ -1,3 +1,7 @@
+import {
+  createThreefoldPressureNetwork,
+  getThreefoldNurseryWaterDepthMeters,
+} from './pressure-network.js';
 import { createRectShapeFromBounds } from '../../canvasShapes.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
@@ -63,9 +67,13 @@ const RAT_SILHOUETTE = [
  * Adapt the canonical Broken Gate simulation to Mosslight's shared handheld renderer.
  * World geometry scales around Mara while her 12x12 pixel sprite stays fixed.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current gatehouse simulation.
+ * @param {import('./pressure-network.js').ThreefoldPressureNetwork} [pressureNetwork] Shared campaign water.
  * @returns {Record<string, any>} Shared 160x144 Mosslight frame plus THREEFOLD metadata.
  */
-export function renderThreefoldFrame(state) {
+export function renderThreefoldFrame(
+  state,
+  pressureNetwork = createThreefoldPressureNetwork()
+) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
   if (isSiltMarginSimulationState(state))
     return renderThreefoldSiltMarginFrame(state);
@@ -74,7 +82,7 @@ export function renderThreefoldFrame(state) {
   if (isWeftwaysSimulationState(state))
     return renderThreefoldWeftwaysFrame(state);
   if (isThreefoldGrainlandsSimulationState(state))
-    return renderThreefoldGrainlandsFrame(state);
+    return renderThreefoldGrainlandsFrame(state, pressureNetwork);
   const isHighWorld = isHighWorldSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = isHighWorld
@@ -894,9 +902,14 @@ function renderThreefoldWeftwaysFrame(state) {
 /**
  * Render Iru's nursery and the scale-aware spider decision on Mosslight's grid.
  * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'grainlands'}}>} state Current Grainlands simulation.
+ * @param {import('./pressure-network.js').ThreefoldPressureNetwork} pressureNetwork Shared campaign water.
  * @returns {Record<string, any>} Snapped handheld frame and route state.
  */
-function renderThreefoldGrainlandsFrame(state) {
+function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
+  const nurseryDepth = getThreefoldNurseryWaterDepthMeters(pressureNetwork);
+  const waterHeight = snapCanvasCoordinate(
+    Math.min(32, (nurseryDepth / 0.04) * 32)
+  );
   const growth = previewThreefoldGrowthEffects(state);
   const spiderFate = state.grainlands.spiderFate;
   const bridgeOutcome = state.grainlands.bridgeOutcome;
@@ -953,7 +966,25 @@ function renderThreefoldGrainlandsFrame(state) {
     ...(bridgeOutcome === 'broken'
       ? [createThreefoldRectShape([56, 72, 8, 8], '#182f36')]
       : []),
-    ...grainlandsNurseryShapes({ x: 112, y: 52 }),
+    ...(pressureNetwork.nurseryDamaged
+      ? [createThreefoldRectShape([112, 64, 32, 8], '#b46b55')]
+      : grainlandsNurseryShapes({ x: 112, y: 52 })),
+    ...(waterHeight > 0
+      ? [
+          createThreefoldRectShape(
+            [104, 80 - waterHeight, 40, waterHeight],
+            '#1b8a83'
+          ),
+        ]
+      : []),
+    createThreefoldRectShape(
+      [104, 32, 8, 8],
+      pressureNetwork.nurseryDamaged
+        ? '#b46b55'
+        : pressureNetwork.hatchClosed
+          ? '#e9d88d'
+          : '#526e4b'
+    ),
     ...(spiderFate === 'baited-away'
       ? []
       : grainlandsSpiderShapes({ x: 64, y: 56 }, spiderFate === 'overpowered')),
@@ -970,7 +1001,7 @@ function renderThreefoldGrainlandsFrame(state) {
           ? 'SPIDER BEATEN · BRIDGE BROKE'
           : 'IRU · NURSERY · SPIDER'
     ),
-    captionShape({ x: 8, y: 136 }, 'E BAIT · A GROW · B SHRINK'),
+    captionShape({ x: 8, y: 136 }, 'E IRU/HATCH · A GROW'),
   ];
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
@@ -981,6 +1012,10 @@ function renderThreefoldGrainlandsFrame(state) {
     spiderFate,
     bridgeOutcome,
     nurseryId: grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID,
+    nurseryWaterDepthMeters: nurseryDepth,
+    nurseryFlooded: pressureNetwork.nurseryFlooded,
+    shelterHatchClosed:
+      pressureNetwork.hatchClosed && !pressureNetwork.nurseryDamaged,
     growthPreviewGeometryIds: growth.geometryIds,
     growthPreviewCreatureIds: growth.creatureIds,
     witnessLedger: [],

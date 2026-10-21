@@ -4,7 +4,7 @@
 
 1. Install prerequisites: `npm install`.
 2. Build the standalone page and copied game modules: `npm run build`.
-3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, `/threefold/?scene=crownback-reach` for the +3 Crownback encounter, or `/threefold/?scene=shoals` for the offshore +4 intervention.
+3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, `/threefold/?scene=crownback-reach` for the +3 Crownback encounter, `/threefold/?scene=grainlands` for the nursery hatch, or `/threefold/?scene=shoals` for the offshore +4 intervention.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
 ## Saved-region campaign index
@@ -140,3 +140,7 @@ Run `npm run check:impact:run -- --files src/core/browser/game/threefold/weftway
 - Log location: `.tmp/threefold-check.log` for an explicitly logged local run.
 - Cleanup command: remove only the task-specific `.tmp/threefold-*` files after retaining needed evidence.
 - If the canvas is blank, verify that `/threefold/game.js` and `/core/browser/game/threefold/page.js` were copied into `public/`.
+
+## Shared living-regulator water
+
+Run the related THREEFOLD Jest suites with coverage over the changed core files, including `threefold-pressure-network.test.js`. Verify all four regional controls against one injected storage map: destroy the Quay regulator, revisit Grainlands and wait to observe flooding; close the in-reach nursery hatch to stop further inflow; grow into that shelter to break its seal; combine the Hearthgaps shared bypass and surviving Choir signal to open relief. Test either prerequisite alone, conserved water before/after drainage, retained damage after regional reload/reset/import, paused input, physical grid coordinates, and malformed campaign envelopes. Confirm unchanged initial network state does not create a storage key. Use `npm run check` locally and record the separate full Actions outcome. Do not infer Iri rescue or Nursery Clades death from this physical slice.

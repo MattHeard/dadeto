@@ -129,17 +129,17 @@ const GRAINLANDS_PAGE_COPY = {
       '#chapter-description',
       'At 6.77 cm, the spider is a formidable predator. Grow to scale −2 to ' +
         'overpower it and break the Threadbound bridge, or help Iru bait it ' +
-        'away so the Nursery Clades keep their eggs and crossing.',
+        'away so the Nursery Clades keep their eggs and crossing. Approach the hatch above the nursery and press E to close its water inlet before an upstream failure.',
     ],
     ['#scene-link', 'Continue to the Silt Margin'],
     [
       '#game-footer',
-      'The spider, bridge, and route clock persist in this isolated save.',
+      'Regional progress and shared water consequences persist across visits.',
     ],
   ]),
   href: '/threefold/?scene=silt-margin',
-  ariaLabel: 'Help Iru bait the Grainlands spider away',
-  interactionLabel: 'BAIT SPIDER',
+  ariaLabel: 'Help Iru bait the spider or close the nearby nursery inlet hatch',
+  interactionLabel: 'IRU / HATCH',
 };
 /** @type {Array<[string, string]>} */
 const HIGH_WORLD_CONTROL_UPDATES = [

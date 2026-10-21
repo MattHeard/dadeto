@@ -94,3 +94,5 @@
 - Root cause: the default sandbox exposed the checkout read-only while evaluators needed to write reports.
 - Fix implemented: rerun artifact-producing checks with reviewed elevated access.
 - Guardrail added (test/doc/harness): use the full check log and coverage summary as explicit evidence; do not treat EROFS as a code failure.
+
+- Shared-pressure regression: water moves with browser time or frame redraw, volume changes across region visits, one relief prerequisite opens the outlet, a hatch closes out of reach, a broken nursery remains sealed, drainage erases flood damage, or regional reset/import repairs campaign structures. An untouched scene must not gain a default pressure save. Check the shared network before individual route water puzzles; the five-litre feeder is independent of their existing conserved volumes.
