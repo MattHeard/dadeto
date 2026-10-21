@@ -4,9 +4,11 @@ import {
 } from './scene-utils.js';
 
 export const THREEFOLD_SLUICE_SCENE_ID = 'small-world-sluice';
+export const THREEFOLD_TIDAL_ARCHIVE_TRACE_ID = 'sluice-archive-coil-trace';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 6, y: 4.5 } };
 const VALVE_POSITION = { x: 2.6, y: 3.1 };
+const ARCHIVE_TRACE_POSITION = { x: 5.55, y: 2.1 };
 const VESSEL_DECORATIONS = [
   {
     id: 'sluice-upper-vessel',
@@ -63,6 +65,14 @@ export function createThreefoldSluiceScene() {
         bounds: {
           min: { x: 2.48, y: 2.97, z: 0 },
           max: { x: 2.72, y: 3.21, z: 0.25 },
+        },
+      },
+      {
+        id: THREEFOLD_TIDAL_ARCHIVE_TRACE_ID,
+        position: { ...ARCHIVE_TRACE_POSITION },
+        bounds: {
+          min: { x: 5.49, y: 2.04, z: 0 },
+          max: { x: 5.61, y: 2.16, z: 0.12 },
         },
       },
     ],

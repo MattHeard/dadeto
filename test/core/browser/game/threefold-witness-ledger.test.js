@@ -443,7 +443,7 @@ describe('THREEFOLD witness ledger', () => {
     });
   });
 
-  test('persists entries and authored testimony in schema v6 while migrating v5 and retaining sluice schema v4', () => {
+  test('persists entries and authored testimony in schema v6 while migrating v5 and retaining sluice schema v5', () => {
     const { state } = forceReliefGateOpen();
     const save = JSON.parse(serializeThreefoldSimulation(state));
     expect(save.schemaVersion).toBe(6);
@@ -470,7 +470,7 @@ describe('THREEFOLD witness ledger', () => {
       createThreefoldSluiceScene()
     );
     const sluiceSave = JSON.parse(serializeThreefoldSimulation(sluice));
-    expect(sluiceSave.schemaVersion).toBe(4);
+    expect(sluiceSave.schemaVersion).toBe(5);
     expect(sluiceSave.state.episode.testimony).toBeUndefined();
   });
 

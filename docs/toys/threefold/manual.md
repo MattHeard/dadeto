@@ -75,11 +75,13 @@ Both repairs use the locking pawl beside the gate at scale −2. A successful re
 
 ## Tidal Archive
 
-The Tidal Archive is a separate route that uses the shared Mosslight 160 × 144 handheld renderer. Arrows move through the small-world scene; A grows, B shrinks, E operates the nearby service valve, X waits 15 in-game minutes, and Y saves. The valve only turns when Mara is within reach at scale −2. Movement, scale changes, and interactions advance 15 seconds of game time; a wait advances its requested duration. Water does not use the browser clock.
+The Tidal Archive is a separate route that uses the shared Mosslight 160 × 144 handheld renderer. Arrows move through the small-world scene; A grows, B shrinks, E operates the nearby service valve or reads the far-bank coil register, X waits 15 in-game minutes, and Y saves. The valve only turns when Mara is within reach at scale −2. Movement, scale changes, and interactions advance 15 seconds of game time; a wait advances its requested duration. Water does not use the browser clock.
 
 The screen shows an upper reservoir and lower basin in metres. Open the valve and wait while water transfers through the port. Its cubic-metre volume is conserved; the lower crossing remains sealed until its water surface reaches 0.3 metres and Mara is at scale −1 or larger. The Broken Gate keeps its separate visual-only flood consequence.
 
-The Tidal Archive save is isolated from the Broken Gate save. Export/import includes the water volumes and explicit elapsed game seconds in schema v4. The earlier schema-v1 through schema-v3 Broken Gate saves still load through their existing migrations.
+After crossing to the far bank, inspect the coil register to find an optional physical trace: downstream replies stopped after the emergency pressure-regulator bypass. The record does not identify a sender, say what Iri knew, or assign responsibility. Its accessible panel appears only after discovery.
+
+The Tidal Archive save is isolated from the Broken Gate save. Export/import includes the water volumes, the optional trace discovery, and explicit elapsed game seconds in schema v5. Schema-v4 Archive saves load with the trace unheard; the earlier schema-v1 through schema-v3 Broken Gate saves still load through their existing migrations.
 
 ## Silt Margin
 

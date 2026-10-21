@@ -23,7 +23,10 @@ import * as weftways from './weftways.js';
 import * as grainlands from './grainlands.js';
 import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
-import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
+import {
+  THREEFOLD_SLUICE_SCENE_ID,
+  THREEFOLD_TIDAL_ARCHIVE_TRACE_ID,
+} from './sluice-scene.js';
 import {
   createThreefoldSiltMarginScene,
   createThreefoldSiltMarginState,
@@ -68,7 +71,7 @@ const ACTION_GAME_MINUTES = 0.25;
 const ANCHOR_RECOVERY_MINUTES = 15;
 
 /** @typedef {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>}} BrokenGateSimulationState */
-/** @typedef {{scene: ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, sluicePuzzle: ReturnType<typeof createThreefoldSluicePuzzle>, elapsedGameSeconds: number}} SluiceSimulationState */
+/** @typedef {{scene: ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, sluicePuzzle: ReturnType<typeof createThreefoldSluicePuzzle>, archiveTraceHeard: boolean, elapsedGameSeconds: number}} SluiceSimulationState */
 /** @typedef {{scene: ReturnType<typeof createThreefoldSiltMarginScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, siltMargin: ReturnType<typeof createThreefoldSiltMarginState>, elapsedGameSeconds: number}} SiltMarginSimulationState */
 /** @typedef {{scene: ReturnType<typeof hearthgaps.createThreefoldHearthgapsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, hearthgaps: ReturnType<typeof hearthgaps.createThreefoldHearthgapsState>, elapsedGameSeconds: number}} HearthgapsSimulationState */
 /** @typedef {{scene: ReturnType<typeof weftways.createThreefoldWeftwaysScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, weftways: ReturnType<typeof weftways.createThreefoldWeftwaysState>, elapsedGameSeconds: number}} WeftwaysSimulationState */
@@ -171,6 +174,7 @@ export function createThreefoldSimulation(
     return /** @type {SluiceSimulationState} */ ({
       ...state,
       sluicePuzzle: createThreefoldSluicePuzzle(),
+      archiveTraceHeard: false,
       elapsedGameSeconds: 0,
     });
   }
@@ -631,6 +635,10 @@ function describeChosenAction(action) {
 function stepSluiceScene(state, action) {
   return commitSmallWorldSceneAction(state, action, prepared => {
     let sluicePuzzle = state.sluicePuzzle;
+    const crossingAvailable = getThreefoldSluicePuzzleStatus(
+      sluicePuzzle,
+      state.player.scale
+    ).crossingAvailable;
     if (action.type === 'interact' && canReachSluiceValve(state))
       sluicePuzzle = operateThreefoldSluiceValve(
         sluicePuzzle,
@@ -641,6 +649,14 @@ function stepSluiceScene(state, action) {
         sluicePuzzle,
         prepared.durationSeconds
       ),
+      archiveTraceHeard:
+        state.archiveTraceHeard ||
+        (action.type === 'interact' &&
+          crossingAvailable &&
+          isThreefoldInteractableInReach(
+            state,
+            THREEFOLD_TIDAL_ARCHIVE_TRACE_ID
+          )),
     };
   });
 }

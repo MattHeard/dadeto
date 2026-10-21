@@ -26,9 +26,10 @@ const SLUICE_PAGE_COPY = {
       '#chapter-description',
       'At the smallest scale, open the service valve and let the water move. ' +
         'Each action advances the physical simulation; grow to scale −1 to ' +
-        'cross once the basin reaches its marked level.',
+        'cross once the basin reaches its marked level. On the far bank, inspect ' +
+        'the coil register for an optional surviving trace.',
     ],
-    ['#interact-label', 'E · OPERATE THE VALVE'],
+    ['#interact-label', 'E · VALVE · READ THE COIL LOG'],
     ['#scene-link', 'Continue into the Silt Margin'],
     [
       '#game-footer',
@@ -36,7 +37,7 @@ const SLUICE_PAGE_COPY = {
     ],
   ]),
   href: '/threefold/?scene=silt-margin',
-  ariaLabel: 'Operate the sluice service valve',
+  ariaLabel: 'Operate the sluice valve or inspect the far-bank coil register',
 };
 const SILT_MARGIN_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -319,6 +320,12 @@ export function startThreefoldPage(options) {
         '#weftways-relay-disclosure',
         '#weftways-relay-disclosure-text',
         frame.threefold?.threadboundRelayDisclosure || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#tidal-archive-quieting-trace',
+        '#tidal-archive-quieting-trace-text',
+        frame.threefold?.archiveQuietingTrace || null
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,

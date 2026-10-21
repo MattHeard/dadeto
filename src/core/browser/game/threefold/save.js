@@ -68,7 +68,8 @@ const SAVE_KEY = 'dadeto.threefold.scale-save.v1';
 const LEGACY_SIMULATION_SCHEMA_VERSION = 1;
 const PREVIOUS_SIMULATION_SCHEMA_VERSION = 2;
 const SIMULATION_SCHEMA_VERSION = 6;
-const SLUICE_SIMULATION_SCHEMA_VERSION = 4;
+const LEGACY_SLUICE_SIMULATION_SCHEMA_VERSION = 4;
+const SLUICE_SIMULATION_SCHEMA_VERSION = 5;
 const LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
 const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 2;
 const HEARTHGAPS_SIMULATION_SCHEMA_VERSION = 1;
@@ -147,6 +148,9 @@ export function serializeThreefoldSimulation(simulation) {
     state.sluicePuzzle = normalizeThreefoldSluicePuzzle(
       simulation.sluicePuzzle
     );
+    state.archiveTraceHeard = normalizeArchiveTraceHeard(
+      simulation.archiveTraceHeard
+    );
   }
   if (isSiltMarginSimulationState(simulation)) {
     state.siltMargin = normalizeThreefoldSiltMarginState(simulation.siltMargin);
@@ -214,7 +218,10 @@ export function restoreThreefoldSimulation(serialized) {
       throw new RangeError('Unknown scene.');
     if (
       sceneKinds.sluice &&
-      envelope.schemaVersion !== SLUICE_SIMULATION_SCHEMA_VERSION
+      ![
+        LEGACY_SLUICE_SIMULATION_SCHEMA_VERSION,
+        SLUICE_SIMULATION_SCHEMA_VERSION,
+      ].includes(envelope.schemaVersion)
     )
       throw new RangeError('Sluice save version is unsupported.');
     if (
@@ -365,11 +372,28 @@ export function restoreThreefoldSimulation(serialized) {
       restoredState,
       state,
       createThreefoldSluiceScene(),
-      { sluicePuzzle: normalizeThreefoldSluicePuzzle(state.sluicePuzzle) }
+      {
+        sluicePuzzle: normalizeThreefoldSluicePuzzle(state.sluicePuzzle),
+        archiveTraceHeard:
+          envelope.schemaVersion === LEGACY_SLUICE_SIMULATION_SCHEMA_VERSION
+            ? false
+            : normalizeArchiveTraceHeard(state.archiveTraceHeard),
+      }
     );
   } catch {
     return null;
   }
+}
+
+/**
+ * Validate the optional Tidal Archive discovery added in schema v5.
+ * @param {unknown} heard Saved discovery flag.
+ * @returns {boolean} Canonical discovery state.
+ */
+function normalizeArchiveTraceHeard(heard) {
+  if (typeof heard !== 'boolean')
+    throw new TypeError('Tidal Archive trace state is invalid.');
+  return heard;
 }
 
 /**

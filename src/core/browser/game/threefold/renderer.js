@@ -298,6 +298,13 @@ function renderThreefoldSluiceFrame(state) {
     lowerWaterSurfaceElevationMeters: water.lowerWaterSurfaceElevationMeters,
     lowerBasinRaised: water.lowerBasinRaised,
     crossingAvailable: water.crossingAvailable,
+    archiveTraceHeard: state.archiveTraceHeard,
+    archiveQuietingTrace: state.archiveTraceHeard
+      ? {
+          title: 'Tidal Archive coil register',
+          text: 'A waxed maintenance strip records the emergency pressure-regulator bypass. The receiving-coil register shows downstream replies stopping afterward. It names no sender and says nothing about what Iri knew or who was responsible.',
+        }
+      : null,
     witnessLedger: [],
   });
 }
@@ -1035,6 +1042,11 @@ function sluiceShapes(state, water) {
       [149, 54, 3, 43],
       water.crossingAvailable ? waterColor : '#e16b5a'
     ),
+    createThreefoldRectShape(
+      [140, 64, 5, 5],
+      state.archiveTraceHeard ? '#e9d88d' : '#789378'
+    ),
+    captionShape({ x: 132, y: 58 }, 'LOG'),
     createThreefoldRectShape([playerX, playerY, 4, 4], '#e9d88d'),
     captionShape({ x: 69, y: 102 }, water.portOpen ? 'OPEN' : 'VALVE'),
     captionShape(

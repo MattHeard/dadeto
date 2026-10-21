@@ -488,7 +488,7 @@ describe('THREEFOLD page adapter', () => {
     );
     expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
       'aria-label',
-      'Operate the sluice service valve'
+      'Operate the sluice valve or inspect the far-bank coil register'
     );
     expect(elements.get('#witness-ledger').hidden).toBe(true);
     expect(elements.get('#testimony').hidden).toBe(true);
@@ -555,6 +555,26 @@ describe('THREEFOLD Silt Margin evidence page', () => {
 
     page.drawFrame({}, { threefold: { siltMarginQuietingEvidence: null } });
     expect(siltMarginQuietingEvidence.hidden).toBe(true);
+  });
+
+  test('shows the Tidal Archive trace as an accessible disclosure only when found', () => {
+    const { documentObj, tidalArchiveQuietingTrace, tidalArchiveTraceText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Tidal Archive coil register',
+      text: 'Downstream replies stopped after the emergency bypass.',
+    };
+
+    page.drawFrame({}, { threefold: { archiveQuietingTrace: record } });
+
+    expect(tidalArchiveQuietingTrace.hidden).toBe(false);
+    expect(tidalArchiveQuietingTrace.summary.textContent).toBe(record.title);
+    expect(tidalArchiveTraceText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { archiveQuietingTrace: null } });
+    expect(tidalArchiveQuietingTrace.hidden).toBe(true);
   });
 });
 
@@ -960,6 +980,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? siltMarginQuietingEvidence.summary : null,
   };
+  const tidalArchiveTraceText = { textContent: '' };
+  const tidalArchiveQuietingTrace = {
+    hidden: true,
+    summary: { textContent: 'Old Tidal Archive trace' },
+    querySelector: selector =>
+      selector === 'summary' ? tidalArchiveQuietingTrace.summary : null,
+  };
   const episodeEpilogueList = {
     children: [],
     replaceChildren() {
@@ -989,6 +1016,8 @@ function createLedgerDocument() {
     latchfolkAidText,
     siltMarginQuietingEvidence,
     siltMarginEvidenceText,
+    tidalArchiveQuietingTrace,
+    tidalArchiveTraceText,
     episodeEpilogue,
     episodeEpilogueList,
     documentObj: {
@@ -1010,6 +1039,10 @@ function createLedgerDocument() {
           return siltMarginQuietingEvidence;
         if (selector === '#silt-margin-quieting-evidence-text')
           return siltMarginEvidenceText;
+        if (selector === '#tidal-archive-quieting-trace')
+          return tidalArchiveQuietingTrace;
+        if (selector === '#tidal-archive-quieting-trace-text')
+          return tidalArchiveTraceText;
         if (selector === '#episode-epilogue') return episodeEpilogue;
         if (selector === '#episode-epilogue-outcomes')
           return episodeEpilogueList;
