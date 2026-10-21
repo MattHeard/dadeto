@@ -1,7 +1,5 @@
-import {
-  createMosslightPageEnvironment,
-  startMosslightPage,
-} from '../mosslight-valley/pagePresenter.js';
+import { describeKnownThreefoldIriFate } from './iri-arrival-content.js';
+import * as mosslightPresenter from '../mosslight-valley/pagePresenter.js';
 import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { createThreefoldSiltMarginScene } from './silt-margin.js';
@@ -274,9 +272,9 @@ export function startThreefoldPage(options) {
       storage = undefined;
     }
   }
-  return startMosslightPage({
+  return mosslightPresenter.startMosslightPage({
     ...options,
-    ...createMosslightPageEnvironment(options),
+    ...mosslightPresenter.createMosslightPageEnvironment(options),
     createRuntime: (/** @type {Record<string, any>} */ runtimeOptions) =>
       createThreefoldRuntime({ ...runtimeOptions, storage, scene }),
     drawFrame: (
@@ -676,18 +674,7 @@ function renderThreefoldCampaignPlaces(documentObj, frame) {
   if (pressureText.textContent !== pressureContent)
     pressureText.textContent = pressureContent;
   if (iriFate !== null) {
-    const descriptions = {
-      trapped: 'Iri is trapped maintaining the pressure regulator.',
-      rescued: 'Mara rescued Iri from the pressure regulator.',
-      escaped: 'Iri escaped before Mara reached the pressure regulator.',
-      dead:
-        iriFate.milestoneId === 'quay-regulator-growth'
-          ? 'Iri died when Mara grew into the pressure regulator.'
-          : 'Iri died before Mara reached the pressure regulator.',
-      evacuated: 'Another crew evacuated Iri from the pressure regulator.',
-      abandoned: 'Iri was abandoned at the pressure regulator.',
-    };
-    const fateContent = descriptions[iriFate.outcome];
+    const fateContent = describeKnownThreefoldIriFate(iriFate);
     if (!fateContent) {
       iriFateText.hidden = true;
       return;

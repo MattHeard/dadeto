@@ -268,8 +268,11 @@ footer {
       max(
         160px,
         calc(
-          (100svh - 336px - env(safe-area-inset-top) -
-                env(safe-area-inset-bottom)) * 160 / 144
+          (
+              100svh - 336px - env(safe-area-inset-top) -
+                env(safe-area-inset-bottom)
+            ) *
+            160 / 144
         )
       )
     );
@@ -422,4 +425,10 @@ footer {
   .utility-actions button {
     min-height: 40px;
   }
+}
+
+.campaign-tide-guide,
+#campaign-persistence {
+  margin: 0;
+  line-height: 24px;
 }

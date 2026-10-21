@@ -137,7 +137,7 @@ describe('THREEFOLD campaign outcomes', () => {
         },
       };
       const serialized = serializeThreefoldCampaignOutcomes(outcomes);
-      expect(JSON.parse(serialized).schemaVersion).toBe(2);
+      expect(JSON.parse(serialized).schemaVersion).toBe(3);
       expect(restoreThreefoldCampaignOutcomes(serialized)).toEqual(outcomes);
     }
     expect(
@@ -186,7 +186,7 @@ describe('THREEFOLD campaign outcomes', () => {
       restoreThreefoldCampaignOutcomes(
         JSON.stringify({
           game: 'threefold-campaign-outcomes',
-          schemaVersion: 3,
+          schemaVersion: 4,
           state: { iriFate: null },
         })
       )

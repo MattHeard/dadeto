@@ -48,36 +48,39 @@ const { startThreefoldPage } = await import(
   '../../../../src/core/browser/game/threefold/page.js'
 );
 
+test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
+  expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
+  expect(THREEFOLD_CSS).toContain('.campaign-tide-guide,');
+  expect(THREEFOLD_HTML).toContain('Harbor support shifts at 9 game minutes.');
+  expect(THREEFOLD_HTML).toContain('At 15, a forced,');
+  expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
+  expect(THREEFOLD_CSS).toContain(
+    'grid-template-columns: repeat(4, minmax(0, 1fr))'
+  );
+  expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
+  expect(THREEFOLD_CSS).toContain('transform: none');
+  expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
+  expect(THREEFOLD_HTML).toContain(
+    '<details id="iri-repair-log" class="witness-ledger" hidden>'
+  );
+  expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
+  expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
+  expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
+  expect(THREEFOLD_HTML).toContain('id="campaign-clock-text"');
+  expect(THREEFOLD_HTML).toContain('id="campaign-iri-fate-text"');
+  expect(THREEFOLD_HTML).toContain(
+    '<details id="episode-epilogue" class="witness-ledger" hidden>'
+  );
+  expect(THREEFOLD_HTML).toContain('id="episode-epilogue-outcomes"');
+  expect(THREEFOLD_HTML).toContain('aria-live="polite"');
+  expect(THREEFOLD_HTML).toContain('<details id="testimony"');
+  expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
+});
+
 describe('THREEFOLD page adapter', () => {
   beforeEach(() => {
     mockStartMosslightPage.mockClear();
     mockDrawGameFrame.mockClear();
-  });
-
-  test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
-    expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
-    expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
-    expect(THREEFOLD_CSS).toContain(
-      'grid-template-columns: repeat(4, minmax(0, 1fr))'
-    );
-    expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
-    expect(THREEFOLD_CSS).toContain('transform: none');
-    expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
-    expect(THREEFOLD_HTML).toContain(
-      '<details id="iri-repair-log" class="witness-ledger" hidden>'
-    );
-    expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
-    expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
-    expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
-    expect(THREEFOLD_HTML).toContain('id="campaign-clock-text"');
-    expect(THREEFOLD_HTML).toContain('id="campaign-iri-fate-text"');
-    expect(THREEFOLD_HTML).toContain(
-      '<details id="episode-epilogue" class="witness-ledger" hidden>'
-    );
-    expect(THREEFOLD_HTML).toContain('id="episode-epilogue-outcomes"');
-    expect(THREEFOLD_HTML).toContain('aria-live="polite"');
-    expect(THREEFOLD_HTML).toContain('<details id="testimony"');
-    expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
   });
 
   test('renders attributed accounts once and keeps the responsibility open', () => {
@@ -585,16 +588,24 @@ describe('THREEFOLD campaign places page', () => {
     );
 
     for (const [outcome, expected, milestoneId = 'regulator-encounter'] of [
-      ['trapped', 'Iri is trapped maintaining the pressure regulator.'],
+      ['trapped', 'Iri was last seen holding the pressure regulator.'],
       ['rescued', 'Mara rescued Iri from the pressure regulator.'],
-      ['escaped', 'Iri escaped before Mara reached the pressure regulator.'],
+      ['escaped', 'Iri escaped from the pressure regulator.'],
       [
         'dead',
         'Iri died when Mara grew into the pressure regulator.',
         'quay-regulator-growth',
       ],
+      [
+        'dead',
+        'Iri died in the surge through the forced, unrepaired Broken Gate.',
+        'quay-unchecked-gate-surge',
+      ],
       ['evacuated', 'Another crew evacuated Iri from the pressure regulator.'],
-      ['abandoned', 'Iri was abandoned at the pressure regulator.'],
+      [
+        'abandoned',
+        'Iri was left holding the pressure regulator; a later handoff may still be possible.',
+      ],
     ]) {
       page.drawFrame(
         {},
@@ -634,7 +645,7 @@ describe('THREEFOLD campaign places page', () => {
       }
     );
     expect(campaignIriFateText.textContent).toBe(
-      'Iri died before Mara reached the pressure regulator.'
+      "An account records Iri's death."
     );
     page.drawFrame(
       {},
@@ -653,7 +664,7 @@ describe('THREEFOLD campaign places page', () => {
       }
     );
     expect(campaignIriFateText.textContent).toBe(
-      'Iri died before Mara reached the pressure regulator.'
+      "An account records Iri's death."
     );
 
     page.drawFrame(
