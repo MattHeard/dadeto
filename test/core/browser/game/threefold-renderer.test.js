@@ -431,14 +431,52 @@ describe('THREEFOLD Mosslight handheld frame', () => {
       'drainage-floodwater'
     );
 
-    const aftermath = renderThreefoldFrame({
+    const aftermathState = {
       ...repaired,
       crisis: { ...repaired.crisis, elapsedMinutes: 15, stage: 'aftermath' },
-    });
+    };
+    const aftermath = renderThreefoldFrame(aftermathState);
     expect(aftermath.threefold.drainageState).toBe('receded');
     expect(aftermath.toast).toContain('LOWER WATER RECEDED');
     expect(aftermath.world.map.objects.map(object => object.id)).not.toContain(
       'drainage-floodwater'
+    );
+    const reportedAfterRepair = renderThreefoldFrame({
+      ...aftermathState,
+      episode: { ...aftermathState.episode, closedBy: 'reported' },
+    });
+    expect(reportedAfterRepair.threefold.episodeEpilogue.paragraphs).toContain(
+      'Floodwater recedes from the lower channel during aftermath.'
+    );
+  });
+
+  test('reports a flooded lower channel in the post-storm epilogue', () => {
+    const initial = createThreefoldSimulation(
+      THRESHOLDS,
+      createBrokenGateScene()
+    );
+    const reported = renderThreefoldFrame({
+      ...initial,
+      player: {
+        ...initial.player,
+        destroyedGeometryIds: ['relief-gate'],
+      },
+      crisis: {
+        ...initial.crisis,
+        elapsedMinutes: THRESHOLDS.aftermathAtMinutes,
+        stage: 'aftermath',
+      },
+      episode: {
+        ...initial.episode,
+        passengers: 'lost',
+        ferry: 'lost',
+        latchfolk: 'lost',
+        closedBy: 'reported',
+      },
+    });
+
+    expect(reported.threefold.episodeEpilogue.paragraphs).toContain(
+      'Floodwater remains in the lower channel after the storm.'
     );
   });
 });
@@ -612,6 +650,16 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
         'which warnings reached each settlement or what Iri understood about ' +
         'the wider consequences.',
     });
+    expect(frame.threefold.episodeEpilogue).toEqual({
+      title: 'Report filed',
+      paragraphs: [
+        'Mara files the storm report from the intact signal station.',
+        'Passenger outcome: passengers lost.',
+        'Latchfolk outcome: lost.',
+        'Relief gate: held.',
+        'The lower channel stays dry.',
+      ],
+    });
     expect(frame.toast).toBe(
       'EPISODE CLOSED · REPORT SENT THROUGH THE SIGNAL STATION'
     );
@@ -621,6 +669,9 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     expect(restored).not.toBeNull();
     expect(renderThreefoldFrame(restored).threefold.iriRepairLog).toEqual(
       frame.threefold.iriRepairLog
+    );
+    expect(renderThreefoldFrame(restored).threefold.episodeEpilogue).toEqual(
+      frame.threefold.episodeEpilogue
     );
   });
 
@@ -646,18 +697,48 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
 
     expect(frame.threefold.closedBy).toBe('departed');
     expect(frame.threefold.iriRepairLog).toBeNull();
+    expect(frame.threefold.episodeEpilogue).toMatchObject({
+      title: 'Departure',
+      paragraphs: [
+        'Mara leaves by the upland road; the signal station is rubble and no report is sent.',
+        'Passenger outcome: passengers lost.',
+        'Latchfolk outcome: lost.',
+        'Relief gate: held.',
+        'The lower channel stays dry.',
+      ],
+    });
     expect(frame.toast).toContain('SIGNAL STATION LOST');
     expect(frame.toast).toContain('NO REPORT SENT');
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(departed)
+    );
+    expect(restored).not.toBeNull();
+    expect(renderThreefoldFrame(restored).threefold.episodeEpilogue).toEqual(
+      frame.threefold.episodeEpilogue
+    );
   });
 
   test('keeps Iri repair log unavailable after departure with the station intact', () => {
-    const departed = createWithdrawnSimulation();
+    const departed = createWithdrawnSimulation({
+      passengers: 'evacuated',
+      latchfolk: 'warned',
+    });
     const frame = renderThreefoldFrame(departed);
 
     expect(frame.threefold).toMatchObject({
       signalStationDestroyed: false,
       closedBy: 'departed',
       iriRepairLog: null,
+    });
+    expect(frame.threefold.episodeEpilogue).toEqual({
+      title: 'Departure',
+      paragraphs: [
+        'The signal station stands, but Mara leaves by the upland road without filing a report.',
+        'Passenger outcome: passengers safe.',
+        'Latchfolk outcome: safe.',
+        'Relief gate: held.',
+        'The lower channel stays dry.',
+      ],
     });
   });
 

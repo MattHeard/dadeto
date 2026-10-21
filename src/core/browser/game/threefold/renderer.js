@@ -199,6 +199,7 @@ export function renderThreefoldFrame(state) {
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
     closedBy: state.episode.closedBy ?? null,
+    episodeEpilogue: getThreefoldEpisodeEpilogue(state, gateOutcome),
     iriRepairLog:
       state.episode.closedBy === 'reported'
         ? {
@@ -1109,6 +1110,46 @@ function getThreefoldToast(state, drainageState) {
       ? `${status} · RAT IN REACH · A FIGHT · X BYPASS`
       : status;
   return addClosurePrompt(state, encounterStatus, signalStationDestroyed);
+}
+
+/**
+ * Summarize the branch-specific, saved consequences after the Broken Gate closes.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation state.
+ * @param {{gateState: 'held'|'forced-open'|'repaired'|null, drainageState: 'dry'|'at-risk'|'flooded'|'receded'}} gateOutcome Derived gate outcome.
+ * @returns {{title: string, paragraphs: string[]}|null} Text-only epilogue for a closed episode.
+ */
+function getThreefoldEpisodeEpilogue(state, gateOutcome) {
+  if (gateOutcome.gateState === null) return null;
+  if (
+    state.episode.closedBy !== 'reported' &&
+    state.episode.closedBy !== 'departed'
+  )
+    return null;
+  const signalStationDestroyed = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+  );
+  const closure =
+    state.episode.closedBy === 'reported'
+      ? 'Mara files the storm report from the intact signal station.'
+      : signalStationDestroyed
+        ? 'Mara leaves by the upland road; the signal station is rubble and no report is sent.'
+        : 'The signal station stands, but Mara leaves by the upland road without filing a report.';
+  const channel =
+    gateOutcome.drainageState === 'dry'
+      ? 'The lower channel stays dry.'
+      : gateOutcome.drainageState === 'receded'
+        ? 'Floodwater recedes from the lower channel during aftermath.'
+        : 'Floodwater remains in the lower channel after the storm.';
+  return {
+    title: state.episode.closedBy === 'reported' ? 'Report filed' : 'Departure',
+    paragraphs: [
+      closure,
+      `Passenger outcome: ${getPassengerOutcomeLabel(state.episode).toLowerCase()}.`,
+      `Latchfolk outcome: ${state.episode.latchfolk}.`,
+      `Relief gate: ${gateOutcome.gateState}.`,
+      channel,
+    ],
+  };
 }
 
 /**

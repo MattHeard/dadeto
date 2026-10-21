@@ -78,6 +78,10 @@ describe('THREEFOLD page adapter', () => {
       '<details id="iri-repair-log" class="witness-ledger" hidden>'
     );
     expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
+    expect(THREEFOLD_HTML).toContain(
+      '<details id="episode-epilogue" class="witness-ledger" hidden>'
+    );
+    expect(THREEFOLD_HTML).toContain('id="episode-epilogue-outcomes"');
     expect(THREEFOLD_HTML).toContain('aria-live="polite"');
     expect(THREEFOLD_HTML).toContain('<details id="testimony"');
     expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
@@ -260,6 +264,7 @@ describe('THREEFOLD page adapter', () => {
       '#witness-ledger',
       '#testimony',
       '#iri-repair-log',
+      '#episode-epilogue',
     ];
     const nodes = new Map(
       selectors.map(selector => [
@@ -294,6 +299,7 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
     expect(nodes.get('#iri-repair-log').hidden).toBe(true);
+    expect(nodes.get('#episode-epilogue').hidden).toBe(true);
   });
 
   test('routes the Lantern Ward after the Silt Margin and isolates its controls', () => {
@@ -529,6 +535,80 @@ describe('THREEFOLD page adapter', () => {
   });
 });
 
+describe('THREEFOLD closure epilogue page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('renders each closure epilogue once and hides it for an open episode', () => {
+    const { documentObj, episodeEpilogue, episodeEpilogueList } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const epilogue = {
+      title: 'Departure',
+      paragraphs: [
+        'Mara leaves by the upland road without filing a report.',
+        'Passenger outcome: passengers safe.',
+        'Latchfolk outcome: safe.',
+      ],
+    };
+
+    page.drawFrame({}, { threefold: { episodeEpilogue: epilogue } });
+    const renderedOutcomes = episodeEpilogueList.children;
+    page.drawFrame({}, { threefold: { episodeEpilogue: epilogue } });
+
+    expect(episodeEpilogue.hidden).toBe(false);
+    expect(episodeEpilogue.summary.textContent).toBe(epilogue.title);
+    expect(episodeEpilogueList.children).toBe(renderedOutcomes);
+    expect(collectText(episodeEpilogueList.children)).toContain(
+      'Passenger outcome: passengers safe.'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          episodeEpilogue: {
+            ...epilogue,
+            title: 'Report filed',
+            paragraphs: [
+              ...epilogue.paragraphs,
+              'The lower channel stays dry.',
+            ],
+          },
+        },
+      }
+    );
+
+    expect(episodeEpilogue.summary.textContent).toBe('Report filed');
+    expect(episodeEpilogueList.children).toHaveLength(4);
+
+    episodeEpilogue.querySelector = () => null;
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          episodeEpilogue: {
+            ...epilogue,
+            paragraphs: [
+              ...epilogue.paragraphs,
+              'Floodwater remains in the lower channel after the storm.',
+            ],
+          },
+        },
+      }
+    );
+    expect(episodeEpilogueList.children).toHaveLength(4);
+
+    page.drawFrame({}, { threefold: { episodeEpilogue: null } });
+
+    expect(episodeEpilogue.hidden).toBe(true);
+    expect(episodeEpilogueList.children).toHaveLength(0);
+  });
+});
+
 /** Verify the route query, page copy, action label, and authored spawn together. */
 function assertHearthgapsRoute() {
   const selectors = [
@@ -724,12 +804,29 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? iriRepairLog.summary : null,
   };
+  const episodeEpilogueList = {
+    children: [],
+    replaceChildren() {
+      this.children = [];
+    },
+    appendChild(node) {
+      this.children.push(node);
+    },
+  };
+  const episodeEpilogue = {
+    hidden: true,
+    summary: { textContent: 'After the Broken Gate' },
+    querySelector: selector =>
+      selector === 'summary' ? episodeEpilogue.summary : null,
+  };
   return {
     list,
     testimonyList,
     responsibility,
     iriRepairLog,
     iriRepairLogText,
+    episodeEpilogue,
+    episodeEpilogueList,
     documentObj: {
       querySelector: selector => {
         if (selector === '#witness-ledger-entries') return list;
@@ -737,6 +834,9 @@ function createLedgerDocument() {
         if (selector === '#testimony-responsibility') return responsibility;
         if (selector === '#iri-repair-log') return iriRepairLog;
         if (selector === '#iri-repair-log-text') return iriRepairLogText;
+        if (selector === '#episode-epilogue') return episodeEpilogue;
+        if (selector === '#episode-epilogue-outcomes')
+          return episodeEpilogueList;
         return null;
       },
       createElement: tag => createFakeNode(tag),

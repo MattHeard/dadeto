@@ -15,6 +15,7 @@ import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
 const renderedTestimonyByList = new WeakMap();
+const renderedEpisodeEpilogueByList = new WeakMap();
 const SLUICE_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
     ['#chapter-subtitle', 'The Tidal Archive'],
@@ -281,6 +282,10 @@ export function startThreefoldPage(options) {
         options.documentObj,
         frame.threefold?.iriRepairLog || null
       );
+      renderThreefoldEpisodeEpilogue(
+        options.documentObj,
+        frame.threefold?.episodeEpilogue || null
+      );
     },
     saveFilename: 'threefold-save.json',
   });
@@ -369,6 +374,8 @@ function configureAlternateScenePage(documentObj, copy) {
   if (testimony) testimony.hidden = true;
   const iriRepairLog = documentObj?.querySelector?.('#iri-repair-log');
   if (iriRepairLog) iriRepairLog.hidden = true;
+  const episodeEpilogue = documentObj?.querySelector?.('#episode-epilogue');
+  if (episodeEpilogue) episodeEpilogue.hidden = true;
   const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');
   if (hearthgapsEntry) hearthgapsEntry.hidden = true;
   const weftwaysEntry = documentObj?.querySelector?.('#weftways-entry');
@@ -441,6 +448,32 @@ function renderThreefoldIriRepairLog(documentObj, record) {
   if (summary && summary.textContent !== record.title)
     summary.textContent = record.title;
   if (text.textContent !== record.text) text.textContent = record.text;
+}
+
+/**
+ * Render the report/departure aftermath as an accessible, collapsible record.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {{title: string, paragraphs: string[]}|null} epilogue Saved closure and outcomes.
+ * @returns {void}
+ */
+function renderThreefoldEpisodeEpilogue(documentObj, epilogue) {
+  const panel = documentObj?.querySelector?.('#episode-epilogue');
+  const list = documentObj?.querySelector?.('#episode-epilogue-outcomes');
+  if (!panel || !list) return;
+  panel.hidden = epilogue === null;
+  const signature = JSON.stringify(epilogue);
+  if (renderedEpisodeEpilogueByList.get(list) === signature) return;
+  renderedEpisodeEpilogueByList.set(list, signature);
+  list.replaceChildren();
+  if (!epilogue) return;
+  const summary = panel.querySelector?.('summary');
+  if (summary && summary.textContent !== epilogue.title)
+    summary.textContent = epilogue.title;
+  epilogue.paragraphs.forEach(text => {
+    const item = documentObj.createElement('li');
+    item.textContent = text;
+    list.appendChild(item);
+  });
 }
 
 /**
