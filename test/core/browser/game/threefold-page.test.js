@@ -40,7 +40,7 @@ jest.unstable_mockModule(
   '../../../../src/core/browser/game/mosslight-valley/renderer.js',
   () => ({
     drawGameFrame: mockDrawGameFrame,
-    toFramePayload: jest.fn(() => ({})),
+    toFramePayload: jest.fn(() => ({ shapes: [] })),
   })
 );
 
@@ -417,20 +417,6 @@ describe('THREEFOLD page adapter', () => {
     expect(page.saveFilename).toBe('threefold-save.json');
     expect(page.createRuntime({ env: new Map() }).getState().scene.id).toBe(
       'broken-gate'
-    );
-  });
-
-  test('falls back to in-memory storage when the browser denies localStorage', () => {
-    const windowObj = Object.defineProperty({}, 'localStorage', {
-      get() {
-        throw new Error('storage denied');
-      },
-    });
-    startThreefoldPage({ documentObj: {}, windowObj, navigatorObj: {} });
-    const page = mockStartMosslightPage.mock.calls[0][0];
-
-    expect(page.createRuntime({ env: new Map() }).getState().crisis.stage).toBe(
-      'rising'
     );
   });
 
@@ -1530,4 +1516,30 @@ test('names regional and campaign controls and announces unsaved progress', () =
   expect(THREEFOLD_HTML).toContain('Export region');
   expect(THREEFOLD_HTML).toContain('Backup campaign');
   expect(THREEFOLD_HTML).toContain('Restore campaign');
+});
+
+test('falls back to in-memory storage when the browser denies localStorage', () => {
+  mockStartMosslightPage.mockClear();
+  const windowObj = Object.defineProperty({}, 'localStorage', {
+    get() {
+      throw new Error('storage denied');
+    },
+  });
+  startThreefoldPage({ documentObj: {}, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+
+  const env = new Map();
+  const runtime = page.createRuntime({ env });
+  expect(runtime.getState().crisis.stage).toBe('rising');
+  runtime.dispatch('grow');
+  expect(runtime.getPersistenceStatus()).toEqual({
+    available: false,
+    dirty: true,
+  });
+  expect(runtime.frame().threefold.campaignPersistence.dirty).toBe(true);
+  const backup = runtime.exportCampaign();
+  const before = runtime.getSnapshot();
+  expect(() => runtime.importCampaign(backup)).toThrow('could not be saved');
+  expect(runtime.getSnapshot()).toEqual(before);
+  expect(env.size).toBe(0);
 });

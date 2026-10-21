@@ -80,7 +80,7 @@ export function createThreefoldRuntime(options = {}) {
   const env = opts.env || new Map();
   const scene = opts.scene;
   const storage = createThreefoldCampaignStorage(
-    opts.storage || createMapStorage(env)
+    'storage' in opts ? opts.storage : createMapStorage(env)
   );
   const createInitialState = () =>
     createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
