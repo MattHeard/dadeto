@@ -49,9 +49,11 @@ const SILT_MARGIN_PAGE_COPY = {
       'At 2.26 cm tall, Mara can guide the guardian aside, open the fine valve, ' +
         'and send a signal after the dew channel drains. Growing one rung breaks ' +
         'the root arch and crosses the rivulet, but kills the guardian and ' +
-        'disrupts the Choir signal. Water and consequences persist in this save.',
+        'disrupts the Choir signal. After a safe crossing, press E again to hear ' +
+        'Neme translate the Choir’s surviving relay trace. Water and consequences ' +
+        'persist in this save.',
     ],
-    ['#interact-label', 'E · GUIDE · OPEN VALVE · SEND SIGNAL'],
+    ['#interact-label', 'E · GUIDE · VALVE · SIGNAL · LISTEN'],
     ['#scene-link', 'Continue to the Lantern Ward'],
     [
       '#game-footer',
@@ -60,7 +62,7 @@ const SILT_MARGIN_PAGE_COPY = {
   ]),
   href: '/threefold/?scene=lantern-ward',
   ariaLabel:
-    'Guide the guardian, open the fine valve, or send the Choir signal',
+    'Guide the guardian, open the fine valve, send the Choir signal, or hear Neme’s reply',
 };
 const HEARTHGAPS_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -318,6 +320,12 @@ export function startThreefoldPage(options) {
         '#weftways-relay-disclosure-text',
         frame.threefold?.threadboundRelayDisclosure || null
       );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#silt-margin-quieting-evidence',
+        '#silt-margin-quieting-evidence-text',
+        frame.threefold?.siltMarginQuietingEvidence || null
+      );
       renderThreefoldEpisodeEpilogue(
         options.documentObj,
         frame.threefold?.episodeEpilogue || null
@@ -418,6 +426,10 @@ function configureAlternateScenePage(documentObj, copy) {
     '#weftways-relay-disclosure'
   );
   if (weftwaysRelayDisclosure) weftwaysRelayDisclosure.hidden = true;
+  const siltMarginQuietingEvidence = documentObj?.querySelector?.(
+    '#silt-margin-quieting-evidence'
+  );
+  if (siltMarginQuietingEvidence) siltMarginQuietingEvidence.hidden = true;
   const episodeEpilogue = documentObj?.querySelector?.('#episode-epilogue');
   if (episodeEpilogue) episodeEpilogue.hidden = true;
   const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');

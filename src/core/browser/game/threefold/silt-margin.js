@@ -29,7 +29,7 @@ const DEW_CROSSING_BOUNDS = {
   min: { x: 0.16, y: 0, z: 0 },
   max: { x: 0.216, y: 0.18, z: 0.045 },
 };
-/** @typedef {{guardian: 'present'|'guided-aside'|'killed', signal: 'blocked'|'sent'|'disrupted', waterPuzzle: ReturnType<typeof createThreefoldSiltMarginWaterPuzzle>}} ThreefoldSiltMarginState */
+/** @typedef {{guardian: 'present'|'guided-aside'|'killed', signal: 'blocked'|'sent'|'disrupted', quietingEvidenceHeard: boolean, waterPuzzle: ReturnType<typeof createThreefoldSiltMarginWaterPuzzle>}} ThreefoldSiltMarginState */
 /** @typedef {{min: {x: number, y: number}, max: {x: number, y: number}}} ThreefoldPlanarBounds */
 /** @typedef {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} ThreefoldSolidBounds */
 /** @typedef {{id: string, bounds: ThreefoldSolidBounds}} ThreefoldSolidObject */
@@ -117,6 +117,7 @@ export function createThreefoldSiltMarginState() {
   return {
     guardian: 'present',
     signal: 'blocked',
+    quietingEvidenceHeard: false,
     waterPuzzle: createThreefoldSiltMarginWaterPuzzle(),
   };
 }
@@ -132,6 +133,7 @@ export function normalizeThreefoldSiltMarginState(candidate) {
   const state = /** @type {Record<string, unknown>} */ (candidate);
   const guardian = state.guardian;
   const signal = state.signal;
+  const quietingEvidenceHeard = state.quietingEvidenceHeard ?? false;
   const waterPuzzle = normalizeThreefoldSiltMarginWaterPuzzle(
     state.waterPuzzle ??
       createThreefoldSiltMarginWaterPuzzle({ crossingOpen: signal === 'sent' })
@@ -142,6 +144,15 @@ export function normalizeThreefoldSiltMarginState(candidate) {
       (signal === 'blocked' || signal === 'sent')) ||
     (guardian === 'killed' && signal === 'disrupted');
   if (!consistent) throw new RangeError('Silt Margin state is inconsistent.');
+  if (typeof quietingEvidenceHeard !== 'boolean')
+    throw new RangeError('Silt Margin evidence state is invalid.');
+  if (
+    quietingEvidenceHeard &&
+    !(guardian === 'guided-aside' && signal === 'sent')
+  )
+    throw new RangeError(
+      'The Choir trace requires a safely crossed signal path.'
+    );
   if (
     signal === 'sent' &&
     !getThreefoldSiltMarginWaterStatus(waterPuzzle).crossingAvailable
@@ -152,6 +163,7 @@ export function normalizeThreefoldSiltMarginState(candidate) {
   return /** @type {ThreefoldSiltMarginState} */ ({
     guardian,
     signal,
+    quietingEvidenceHeard,
     waterPuzzle,
   });
 }

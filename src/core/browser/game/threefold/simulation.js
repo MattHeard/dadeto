@@ -693,6 +693,13 @@ function stepSiltMarginScene(state, action) {
           isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_SIGNAL_ID)
         ) {
           siltMargin = { ...siltMargin, signal: 'sent' };
+        } else if (
+          siltMargin.guardian === 'guided-aside' &&
+          siltMargin.signal === 'sent' &&
+          !siltMargin.quietingEvidenceHeard &&
+          isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_SIGNAL_ID)
+        ) {
+          siltMargin = { ...siltMargin, quietingEvidenceHeard: true };
         }
       }
       return {

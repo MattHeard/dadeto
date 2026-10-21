@@ -310,6 +310,7 @@ function renderThreefoldSluiceFrame(state) {
 function renderThreefoldSiltMarginFrame(state) {
   const guardian = state.siltMargin.guardian;
   const signal = state.siltMargin.signal;
+  const quietingEvidenceHeard = state.siltMargin.quietingEvidenceHeard;
   const growth = previewThreefoldGrowthEffects(state);
   const water = getThreefoldSiltMarginWaterStatus(state.siltMargin.waterPuzzle);
   const rootArchBroken = state.player.destroyedGeometryIds.includes(
@@ -324,9 +325,11 @@ function renderThreefoldSiltMarginFrame(state) {
     guardian === 'killed'
       ? 'ROOT BROKEN · GUARDIAN KILLED · CHOIR DISRUPTED'
       : guardian === 'guided-aside'
-        ? signal === 'sent'
-          ? 'DEW DIVERTED · GUARDIAN SAFE · SIGNAL SENT'
-          : 'GUARDIAN GUIDED · OPEN THE FINE VALVE'
+        ? quietingEvidenceHeard
+          ? 'NEME TRANSLATED A QUIETING TRACE'
+          : signal === 'sent'
+            ? 'SIGNAL SENT · NEME’S REPLY AWAITS'
+            : 'GUARDIAN GUIDED · OPEN THE FINE VALVE'
         : 'DEW BLOCKS THE ROOT · GROW OR OPEN THE VALVE';
   const frame = createThreefoldFramePayload({
     world: createSmallWorldFrameWorld(
@@ -402,11 +405,13 @@ function renderThreefoldSiltMarginFrame(state) {
       guardian === 'killed'
         ? 'ROOT BROKEN · CHOIR SIGNAL DISRUPTED'
         : guardian === 'guided-aside'
-          ? signal === 'sent'
-            ? 'DEW DIVERTED · THE CHOIR SIGNAL CROSSED'
-            : water.crossingAvailable
-              ? 'CROSSING OPEN · REACH THE CHOIR ROOT'
-              : 'OPEN THE FINE VALVE · WAIT FOR THE DEW'
+          ? quietingEvidenceHeard
+            ? 'NEME’S TRACE · FINAL SENDER UNKNOWN'
+            : signal === 'sent'
+              ? 'SIGNAL CROSSED · NEME’S REPLY AWAITS'
+              : water.crossingAvailable
+                ? 'CROSSING OPEN · REACH THE CHOIR ROOT'
+                : 'OPEN THE FINE VALVE · WAIT FOR THE DEW'
           : 'GROW THROUGH THE ROOT OR GUIDE THE GUARDIAN'
     ),
     captionShape(
@@ -422,6 +427,13 @@ function renderThreefoldSiltMarginFrame(state) {
     elapsedGameSeconds: state.elapsedGameSeconds,
     guardian,
     signal,
+    quietingEvidenceHeard,
+    siltMarginQuietingEvidence: quietingEvidenceHeard
+      ? {
+          title: 'Neme’s translated Choir trace',
+          text: 'Neme translates the Choir’s surviving pattern: downstream replies stopped after the emergency pressure-regulator bypass. The trace does not identify who sent the final message, what Iri knew, or who was responsible.',
+        }
+      : null,
     siltMarginWater: water,
     rootArchBroken,
     growthPreviewGeometryIds: growth.geometryIds,

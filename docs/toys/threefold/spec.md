@@ -4,7 +4,7 @@
 
 - Toy name: THREEFOLD — The Weight of Water
 - Owner: Dadeto game workstream
-- Last updated: 2026-10-20
+- Last updated: 2026-10-21
 
 ## Problem Statement
 
@@ -23,6 +23,7 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 - In scope: a separate selectable Silt Margin at scale −4 (2.26 cm), with a dew-channel crossing, two SI-unit water chambers, and a fine valve usable at that scale. Mara can guide the guardian, open the valve, and wait for the conserved water level to fall below the crossing threshold before reaching the Choir signal; or grow through the root arch and guardian, persisting the broken geometry, guardian death, and disrupted signal. The route, water, branch state, elapsed game seconds, and schema-v2 saves are independent of Broken Gate and Tidal Archive; schema-v1 Silt saves migrate. All regions use the Mosslight 160 × 144 frame and eight-pixel canvas grid while retaining continuous physical positions in simulation state.
 - The Broken Gate authors two conflicting accounts of the warning: the dock worker says they shouted the failing-gate warning toward the lower path; the Latchfolk watchkeeper says no such warning reached their post before the surge. The accessible testimony record preserves each speaker and statement source separately from the factual witness ledger and player-intention entries. It leaves warning-relay responsibility unresolved because the scene does not establish who held that duty. Save schema v6 carries these authored accounts; legacy Broken Gate saves restore them from the current authored record, while the Tidal Archive remains on schema v4 without them.
 - After either Weftways flow choice, an in-range interaction with Pell can reveal an optional Threadbound relay ledger. It records that downstream messages stopped arriving after an emergency pressure-regulator bypass while leaving the final sender, Iri's knowledge, and responsibility unresolved. Discovery persists in the route-isolated schema-v1 save; legacy route saves default to undiscovered.
+- After Mara guides the Silt Margin guardian aside, opens the crossing, and sends the Choir signal, one optional in-reach interaction lets Neme translate the surviving Quieting trace: downstream replies stopped after the emergency pressure-regulator bypass. The saved evidence leaves the final sender, Iri's knowledge, and responsibility unresolved; Silt saves without the optional field default to unheard.
 - Out of scope: autonomous individual passenger/NPC schedules beyond the warning-triggered Latchfolk departure, general combat beyond the single rat encounter, other settlement evacuation interactions, full-campaign epilogues and endings, waves, viscosity, turbulence, arbitrary free-surface geometry, later campaign scenes, and scales outside the authored bands.
 
 ## Actors and Interfaces

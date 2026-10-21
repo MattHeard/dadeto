@@ -54,17 +54,6 @@ describe('THREEFOLD page adapter', () => {
     mockDrawGameFrame.mockClear();
   });
 
-  test('exposes an accessible touch interaction for each episode choice', () => {
-    expect(THREEFOLD_HTML).toContain('data-action="interact"');
-    expect(THREEFOLD_HTML).toContain(
-      'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
-    );
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=weftways"');
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=grainlands"');
-  });
-
   test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
     expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
     expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
@@ -266,6 +255,7 @@ describe('THREEFOLD page adapter', () => {
       '#witness-ledger',
       '#testimony',
       '#iri-repair-log',
+      '#silt-margin-quieting-evidence',
       '#episode-epilogue',
     ];
     const nodes = new Map(
@@ -294,6 +284,9 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#chapter-heading').textContent).toContain(
       'Reroute the dew'
     );
+    expect(nodes.get('#interact-label').textContent).toBe(
+      'E · GUIDE · VALVE · SIGNAL · LISTEN'
+    );
     expect(nodes.get('#scene-link')).toMatchObject({
       textContent: 'Continue to the Lantern Ward',
       href: '/threefold/?scene=lantern-ward',
@@ -301,6 +294,7 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
     expect(nodes.get('#iri-repair-log').hidden).toBe(true);
+    expect(nodes.get('#silt-margin-quieting-evidence').hidden).toBe(true);
     expect(nodes.get('#episode-epilogue').hidden).toBe(true);
   });
 
@@ -534,6 +528,48 @@ describe('THREEFOLD page adapter', () => {
     expect(
       sluicePage.createRuntime({ env: new Map() }).getState().scene.id
     ).toBe('small-world-sluice');
+  });
+});
+
+describe('THREEFOLD Silt Margin evidence page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows Neme’s Quieting trace as an accessible disclosure only when heard', () => {
+    const { documentObj, siltMarginQuietingEvidence, siltMarginEvidenceText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Neme’s translated Choir trace',
+      text: 'Downstream replies stopped after the emergency bypass.',
+    };
+
+    page.drawFrame({}, { threefold: { siltMarginQuietingEvidence: record } });
+
+    expect(siltMarginQuietingEvidence.hidden).toBe(false);
+    expect(siltMarginQuietingEvidence.summary.textContent).toBe(record.title);
+    expect(siltMarginEvidenceText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { siltMarginQuietingEvidence: null } });
+    expect(siltMarginQuietingEvidence.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD standalone markup', () => {
+  test('exposes accessible touch interactions and route links', () => {
+    expect(THREEFOLD_HTML).toContain('data-action="interact"');
+    expect(THREEFOLD_HTML).toContain(
+      'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
+    );
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=weftways"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=grainlands"');
+    expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence"');
+    expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence-text"');
   });
 });
 
@@ -917,6 +953,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? latchfolkAid.summary : null,
   };
+  const siltMarginEvidenceText = { textContent: '' };
+  const siltMarginQuietingEvidence = {
+    hidden: true,
+    summary: { textContent: 'Old Choir trace' },
+    querySelector: selector =>
+      selector === 'summary' ? siltMarginQuietingEvidence.summary : null,
+  };
   const episodeEpilogueList = {
     children: [],
     replaceChildren() {
@@ -944,6 +987,8 @@ function createLedgerDocument() {
     ferryWreckSearchText,
     latchfolkAid,
     latchfolkAidText,
+    siltMarginQuietingEvidence,
+    siltMarginEvidenceText,
     episodeEpilogue,
     episodeEpilogueList,
     documentObj: {
@@ -961,6 +1006,10 @@ function createLedgerDocument() {
         if (selector === '#latchfolk-displacement-aid') return latchfolkAid;
         if (selector === '#latchfolk-displacement-aid-text')
           return latchfolkAidText;
+        if (selector === '#silt-margin-quieting-evidence')
+          return siltMarginQuietingEvidence;
+        if (selector === '#silt-margin-quieting-evidence-text')
+          return siltMarginEvidenceText;
         if (selector === '#episode-epilogue') return episodeEpilogue;
         if (selector === '#episode-epilogue-outcomes')
           return episodeEpilogueList;

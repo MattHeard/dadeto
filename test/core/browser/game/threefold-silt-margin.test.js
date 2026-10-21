@@ -35,6 +35,26 @@ function createSiltMarginRun() {
   );
 }
 
+/**
+ * Follow the safe crossing to the point where Neme can answer the Choir signal.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Signal sent in reach.
+ */
+function sendSiltMarginChoirSignal() {
+  let state = createSiltMarginRun();
+  state = stepThreefoldSimulation(state, { type: 'interact' });
+  state = stepThreefoldSimulation(state, { type: 'interact' });
+  state = stepThreefoldSimulation(state, {
+    type: 'wait',
+    elapsedGameMinutes: 1,
+  });
+  for (let step = 0; step < 46; step += 1)
+    state = stepThreefoldSimulation(state, {
+      type: 'move',
+      direction: 'right',
+    });
+  return stepThreefoldSimulation(state, { type: 'interact' });
+}
+
 describe('THREEFOLD Silt Margin crossing', () => {
   test('starts at the authored physical scale and renders a shared snapped frame', () => {
     const state = createSiltMarginRun();
@@ -86,6 +106,7 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(state.siltMargin).toMatchObject({
       guardian: 'guided-aside',
       signal: 'blocked',
+      quietingEvidenceHeard: false,
     });
     expect(
       renderThreefoldFrame(state).threefold.growthPreviewCreatureIds
@@ -114,10 +135,81 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(state.siltMargin).toMatchObject({
       guardian: 'guided-aside',
       signal: 'sent',
+      quietingEvidenceHeard: false,
     });
     expect(renderThreefoldFrame(state).threefold.signal).toBe('sent');
     expect(state.encounter.growthDeaths).toBeUndefined();
     expect(state.elapsedGameSeconds).toBe(795);
+  });
+
+  test('hears Neme’s Quieting trace once after the safe signal reaches the Choir', () => {
+    let state = sendSiltMarginChoirSignal();
+    expect(state.siltMargin.quietingEvidenceHeard).toBe(false);
+
+    for (let step = 0; step < 20; step += 1)
+      state = stepThreefoldSimulation(state, {
+        type: 'move',
+        direction: 'left',
+      });
+    const outOfReach = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(outOfReach.siltMargin.quietingEvidenceHeard).toBe(false);
+    expect(outOfReach.siltMargin.signal).toBe('sent');
+
+    state = outOfReach;
+    for (let step = 0; step < 20; step += 1)
+      state = stepThreefoldSimulation(state, {
+        type: 'move',
+        direction: 'right',
+      });
+    const waterBeforeReply = state.siltMargin.waterPuzzle;
+    const heard = stepThreefoldSimulation(state, { type: 'interact' });
+
+    expect(heard.siltMargin).toMatchObject({
+      guardian: 'guided-aside',
+      signal: 'sent',
+      quietingEvidenceHeard: true,
+    });
+    expect(heard.siltMargin.waterPuzzle.port.open).toBe(
+      waterBeforeReply.port.open
+    );
+    expect(
+      renderThreefoldFrame(heard).threefold.siltMarginWater.crossingAvailable
+    ).toBe(true);
+    const frame = renderThreefoldFrame(heard);
+    expect(frame.threefold.siltMarginQuietingEvidence).toEqual({
+      title: 'Neme’s translated Choir trace',
+      text: expect.stringContaining('downstream replies stopped'),
+    });
+    expect(frame.threefold.siltMarginQuietingEvidence.text).toContain(
+      'does not identify who sent the final message'
+    );
+    expect(frame.threefold.siltMarginQuietingEvidence.text).toContain(
+      'what Iri knew'
+    );
+    expect(frame.threefold.siltMarginQuietingEvidence.text).toContain(
+      'who was responsible'
+    );
+    expect(
+      frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
+    ).toBe(true);
+    expect(
+      frame.shapes
+        .filter(shape => shape.type === 'rect')
+        .every(shape => shape.width % 8 === 0 && shape.height % 8 === 0)
+    ).toBe(true);
+
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(heard)
+    );
+    expect(restored.siltMargin.quietingEvidenceHeard).toBe(true);
+    expect(
+      renderThreefoldFrame(restored).threefold.siltMarginQuietingEvidence
+    ).toEqual(frame.threefold.siltMarginQuietingEvidence);
+    const repeated = stepThreefoldSimulation(heard, { type: 'interact' });
+    expect(repeated.siltMargin.quietingEvidenceHeard).toBe(true);
+    expect(
+      renderThreefoldFrame(repeated).threefold.siltMarginQuietingEvidence
+    ).toEqual(frame.threefold.siltMarginQuietingEvidence);
   });
 
   test('blocks the rivulet before diversion and growth breaks the root arch as a second solution', () => {
@@ -209,7 +301,11 @@ describe('THREEFOLD Silt Margin crossing', () => {
         guardian: 'guided-aside',
         signal: 'blocked',
       })
-    ).toMatchObject({ guardian: 'guided-aside', signal: 'blocked' });
+    ).toMatchObject({
+      guardian: 'guided-aside',
+      signal: 'blocked',
+      quietingEvidenceHeard: false,
+    });
     expect(
       normalizeThreefoldSiltMarginState({
         guardian: 'guided-aside',
@@ -237,11 +333,13 @@ describe('THREEFOLD Silt Margin crossing', () => {
     completedLegacy.schemaVersion = 1;
     completedLegacy.state.siltMargin.guardian = 'guided-aside';
     completedLegacy.state.siltMargin.signal = 'sent';
+    delete completedLegacy.state.siltMargin.quietingEvidenceHeard;
     delete completedLegacy.state.siltMargin.waterPuzzle;
     const restoredSignal = restoreThreefoldSimulation(
       JSON.stringify(completedLegacy)
     );
     expect(restoredSignal.siltMargin.signal).toBe('sent');
+    expect(restoredSignal.siltMargin.quietingEvidenceHeard).toBe(false);
     expect(
       renderThreefoldFrame(restoredSignal).threefold.siltMarginWater
         .crossingAvailable
@@ -288,6 +386,22 @@ describe('THREEFOLD Silt Margin crossing', () => {
     );
     envelope.state.siltMargin = { guardian: 'killed', signal: 'sent' };
     expect(restoreThreefoldSimulation(JSON.stringify(envelope))).toBeNull();
+
+    const prematureEvidence = JSON.parse(
+      serializeThreefoldSimulation(createSiltMarginRun())
+    );
+    prematureEvidence.state.siltMargin.quietingEvidenceHeard = true;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(prematureEvidence))
+    ).toBeNull();
+
+    const invalidEvidenceFlag = JSON.parse(
+      serializeThreefoldSimulation(createSiltMarginRun())
+    );
+    invalidEvidenceFlag.state.siltMargin.quietingEvidenceHeard = 'yes';
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(invalidEvidenceFlag))
+    ).toBeNull();
 
     const missingEncounter = JSON.parse(
       serializeThreefoldSimulation(createSiltMarginRun())
