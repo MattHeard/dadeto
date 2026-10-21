@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), visit the Hearthgaps and Weftways routes, then continue to the Silt Margin, Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
+Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), visit Hearthgaps, Weftways, and Grainlands, then continue to the Silt Margin, Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -96,6 +96,12 @@ The route uses the same 160 × 144 Mosslight renderer and eight-pixel grid. Move
 From the Broken Gate page, open [/threefold/?scene=weftways](/threefold/?scene=weftways). Mara starts at scale −2 (20.32 cm) among the Threadbound caravan, navigator Pell, and pack beetles about 60 cm long. Move to Pell's bypass control and press E to protect the deep roots and caravan crossing while flooding the human low quay. The quay-side spill keeps those homes dry but floods the root crossing. Only a reachable first choice takes effect; later interactions cannot reverse it. Growing through a structure still damages it under the ordinary scale rules.
 
 The route uses the shared 160 × 144 Mosslight renderer and eight-pixel grid. Movement and the flow choice advance 15 seconds of game time; X waits its requested duration, and browser time does not advance the simulation. The choice, flooded feature, scale-caused rubble, and elapsed seconds roundtrip in schema v1 under a key isolated from Broken Gate and the other routes. Weftways actions do not advance Broken Gate's crisis or episode outcomes.
+
+## Grainlands
+
+From the Weftways page, open [/threefold/?scene=grainlands](/threefold/?scene=grainlands). Mara starts at scale −3 (6.77 cm) near Iru and the Nursery Clades. The 18 cm spider is a substantial predator at this scale. Press E beside Iru to help bait it away and preserve the Threadbound bridge. A grows Mara to −2, overpowers the spider, and breaks that bridge; the growth preview shows both physical consequences first.
+
+The route uses the shared 160 × 144 Mosslight renderer and eight-pixel grid. Its choice, broken crossing, and elapsed game seconds persist in schema v1 under a key isolated from the other routes. Movement, growth, and interaction advance explicit game time; the browser clock does not, and the Grainlands actions do not change Broken Gate outcomes.
 
 ## Lantern Ward
 

@@ -62,6 +62,7 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=weftways"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=grainlands"');
   });
 
   test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
@@ -471,6 +472,10 @@ describe('THREEFOLD page adapter', () => {
     assertWeftwaysRoute();
   });
 
+  test('selects Grainlands and labels the Iru spider interaction', () => {
+    assertGrainlandsRoute();
+  });
+
   test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
     startThreefoldPage({
       documentObj: { querySelector: () => null },
@@ -515,6 +520,7 @@ function assertHearthgapsRoute() {
     '#testimony',
     '#hearthgaps-entry',
     '#weftways-entry',
+    '#grainlands-entry',
   ];
   const elements = new Map(
     selectors.map(selector => [selector, { setAttribute: jest.fn() }])
@@ -546,6 +552,7 @@ function assertHearthgapsRoute() {
   );
   expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
   expect(elements.get('#weftways-entry').hidden).toBe(true);
+  expect(elements.get('#grainlands-entry').hidden).toBe(true);
 }
 
 /** Verify the Weftways query, route copy, control label, and authored scale. */
@@ -567,6 +574,7 @@ function assertWeftwaysRoute() {
     '#testimony',
     '#hearthgaps-entry',
     '#weftways-entry',
+    '#grainlands-entry',
   ];
   const elements = new Map(
     selectors.map(selector => [selector, { setAttribute: jest.fn() }])
@@ -590,9 +598,7 @@ function assertWeftwaysRoute() {
   expect(elements.get('#chapter-description').textContent).toContain(
     'protects the deep roots'
   );
-  expect(elements.get('#scene-link').href).toBe(
-    '/threefold/?scene=silt-margin'
-  );
+  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=grainlands');
   expect(elements.get('#e-control-label').textContent).toBe('CHOOSE FLOW');
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
     'aria-label',
@@ -600,6 +606,63 @@ function assertWeftwaysRoute() {
   );
   expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
   expect(elements.get('#weftways-entry').hidden).toBe(true);
+  expect(elements.get('#grainlands-entry').hidden).toBe(true);
+}
+
+/** Verify the Grainlands route query, authored scale, and nursery story copy. */
+function assertGrainlandsRoute() {
+  const selectors = [
+    '#chapter-subtitle',
+    '#chapter-tag',
+    '#chapter-eyebrow',
+    '#chapter-heading',
+    '#chapter-description',
+    '#interact-label',
+    '#a-control-label',
+    '#b-control-label',
+    '#e-control-label',
+    '#scene-link',
+    '#game-footer',
+    '#interact-control',
+    '#witness-ledger',
+    '#testimony',
+    '#hearthgaps-entry',
+    '#weftways-entry',
+    '#grainlands-entry',
+  ];
+  const elements = new Map(
+    selectors.map(selector => [selector, { setAttribute: jest.fn() }])
+  );
+  const documentObj = { querySelector: selector => elements.get(selector) };
+  const windowObj = {
+    location: { search: '?scene=grainlands' },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const state = page.createRuntime({ env: new Map() }).getState();
+
+  expect(state.scene.id).toBe('grainlands');
+  expect(state.player.scale).toBe(-3);
+  expect(elements.get('#chapter-subtitle').textContent).toBe('Grainlands');
+  expect(elements.get('#chapter-description').textContent).toContain(
+    'overpower it and break the Threadbound bridge'
+  );
+  expect(elements.get('#scene-link').href).toBe(
+    '/threefold/?scene=silt-margin'
+  );
+  expect(elements.get('#e-control-label').textContent).toBe('BAIT SPIDER');
+  expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+    'aria-label',
+    'Help Iru bait the Grainlands spider away'
+  );
+  expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+  expect(elements.get('#weftways-entry').hidden).toBe(true);
+  expect(elements.get('#grainlands-entry').hidden).toBe(true);
 }
 
 /**

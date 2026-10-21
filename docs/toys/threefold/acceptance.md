@@ -52,6 +52,7 @@
 - [x] Exact-head GitHub Full Check for the integrated Tidal Archive route passes all gates and coverage shards with 100% global and changed-file coverage; record its workflow and report artifact below.
 
 - [x] `/threefold/?scene=weftways` opens the scale −2 (20.32 cm) Threadbound caravan crossing with navigator Pell and physically oversized pack beetles on the shared Mosslight renderer. Reachable flow controls preserve Pell's bypass choice to protect the deep roots while flooding the human low quay, or preserve the quay while flooding the root crossing. Choice, damage, scale-caused rubble, and local time persist through route-isolated schema-v1 export/import; actions leave Broken Gate unchanged and every shape stays on the eight-pixel grid.
+- [x] `/threefold/?scene=grainlands` opens at scale −3 (6.77 cm) with Iru, Nursery Clades eggs, the Threadbound bridge, and a physically credible 18 cm spider. Growth preview and commit use the same collision volume: A grows to scale −2, overpowers the spider, and breaks the bridge; a reachable E interaction helps Iru bait the spider away and preserves the crossing. Spider fate, bridge damage, and local time persist through isolated schema-v1 export/import; route actions leave Broken Gate unchanged and every rendered shape stays on the eight-pixel grid.
 
 ## Evidence Collection
 

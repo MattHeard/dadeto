@@ -8,6 +8,7 @@ import { THREEFOLD_SILT_MARGIN_SCENE_ID } from './silt-margin.js';
 import { THREEFOLD_HEARTHGAPS_SCENE_ID } from './hearthgaps.js';
 import {
   createThreefoldSimulation,
+  isThreefoldGrainlandsSimulationState,
   isHighWorldSimulationState,
   isWeftwaysSimulationState,
   previewThreefoldGrowthEffects,
@@ -70,9 +71,13 @@ export function createThreefoldRuntime(options = {}) {
                 ? 'HEARTHGAPS'
                 : isWeftwaysSimulationState(state)
                   ? 'WEFTWAYS'
-                  : isHighWorldSimulationState(state)
-                    ? state.scene.displayName.replace(/^The /, '').toUpperCase()
-                    : 'THE BROKEN GATE',
+                  : isThreefoldGrainlandsSimulationState(state)
+                    ? 'GRAINLANDS'
+                    : isHighWorldSimulationState(state)
+                      ? state.scene.displayName
+                          .replace(/^The /, '')
+                          .toUpperCase()
+                      : 'THE BROKEN GATE',
       },
       day: 1,
       time:
@@ -84,9 +89,11 @@ export function createThreefoldRuntime(options = {}) {
               ? state.elapsedGameSeconds / 3600
               : isWeftwaysSimulationState(state)
                 ? state.elapsedGameSeconds / 3600
-                : isHighWorldSimulationState(state)
+                : isThreefoldGrainlandsSimulationState(state)
                   ? state.elapsedGameSeconds / 3600
-                  : state.crisis.elapsedMinutes / 60,
+                  : isHighWorldSimulationState(state)
+                    ? state.elapsedGameSeconds / 3600
+                    : state.crisis.elapsedMinutes / 60,
     },
   });
 

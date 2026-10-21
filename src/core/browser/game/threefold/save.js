@@ -23,6 +23,11 @@ import {
   normalizeThreefoldWeftwaysState,
   THREEFOLD_WEFTWAYS_SCENE_ID,
 } from './weftways.js';
+import {
+  createThreefoldGrainlandsScene,
+  normalizeThreefoldGrainlandsState,
+  THREEFOLD_GRAINLANDS_SCENE_ID,
+} from './grainlands.js';
 import { createThreefoldLanternWardScene } from './lantern-ward.js';
 import {
   createThreefoldSluiceScene,
@@ -40,6 +45,7 @@ import {
   isSiltMarginSimulationState,
   isSluiceSimulationState,
   isWeftwaysSimulationState,
+  isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { createScaleState } from './spatial.js';
 import {
@@ -67,6 +73,7 @@ const LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
 const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 2;
 const HEARTHGAPS_SIMULATION_SCHEMA_VERSION = 1;
 const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 1;
+const GRAINLANDS_SIMULATION_SCHEMA_VERSION = 1;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.small-world-sluice';
@@ -76,6 +83,8 @@ const HEARTHGAPS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.hearthgaps';
 const WEFTWAYS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.weftways';
+const GRAINLANDS_SIMULATION_SAVE_KEY =
+  'dadeto.threefold.simulation-save.v1.grainlands';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -129,6 +138,7 @@ export function serializeThreefoldSimulation(simulation) {
         !isSiltMarginSimulationState(simulation) &&
         !isHearthgapsSimulationState(simulation) &&
         !isWeftwaysSimulationState(simulation) &&
+        !isThreefoldGrainlandsSimulationState(simulation) &&
         !isHighWorldSimulationState(simulation),
     }),
     encounter: normalizeThreefoldEncounter(simulation.encounter),
@@ -145,6 +155,8 @@ export function serializeThreefoldSimulation(simulation) {
     state.hearthgaps = normalizeThreefoldHearthgapsState(simulation.hearthgaps);
   if (isWeftwaysSimulationState(simulation))
     state.weftways = normalizeThreefoldWeftwaysState(simulation.weftways);
+  if (isThreefoldGrainlandsSimulationState(simulation))
+    state.grainlands = normalizeThreefoldGrainlandsState(simulation.grainlands);
   if (simulation.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID)
     state.crownbackReach = normalizeThreefoldCrownbackReachState(
       /** @type {Record<string, any>} */ (simulation).crownbackReach
@@ -166,7 +178,9 @@ export function serializeThreefoldSimulation(simulation) {
           ? HEARTHGAPS_SIMULATION_SCHEMA_VERSION
           : isWeftwaysSimulationState(simulation)
             ? WEFTWAYS_SIMULATION_SCHEMA_VERSION
-            : SIMULATION_SCHEMA_VERSION,
+            : isThreefoldGrainlandsSimulationState(simulation)
+              ? GRAINLANDS_SIMULATION_SCHEMA_VERSION
+              : SIMULATION_SCHEMA_VERSION,
     sceneId: simulation.scene.id,
     state,
   });
@@ -181,28 +195,30 @@ export function restoreThreefoldSimulation(serialized) {
   const envelope = readSimulationEnvelope(serialized);
   if (!envelope) return null;
   try {
-    const isSluiceScene = envelope.sceneId === THREEFOLD_SLUICE_SCENE_ID;
-    const isSiltMarginScene =
-      envelope.sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID;
-    const isHearthgapsScene =
-      envelope.sceneId === THREEFOLD_HEARTHGAPS_SCENE_ID;
-    const isWeftwaysScene = envelope.sceneId === THREEFOLD_WEFTWAYS_SCENE_ID;
-    const isHighWorldScene = isThreefoldHighWorldSceneId(envelope.sceneId);
+    const sceneKinds = {
+      sluice: envelope.sceneId === THREEFOLD_SLUICE_SCENE_ID,
+      siltMargin: envelope.sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID,
+      hearthgaps: envelope.sceneId === THREEFOLD_HEARTHGAPS_SCENE_ID,
+      weftways: envelope.sceneId === THREEFOLD_WEFTWAYS_SCENE_ID,
+      grainlands: envelope.sceneId === THREEFOLD_GRAINLANDS_SCENE_ID,
+      highWorld: isThreefoldHighWorldSceneId(envelope.sceneId),
+    };
     const isTimedScene =
-      isSluiceScene ||
-      isSiltMarginScene ||
-      isHearthgapsScene ||
-      isWeftwaysScene ||
-      isHighWorldScene;
+      sceneKinds.sluice ||
+      sceneKinds.siltMargin ||
+      sceneKinds.hearthgaps ||
+      sceneKinds.weftways ||
+      sceneKinds.grainlands ||
+      sceneKinds.highWorld;
     if (!isTimedScene && envelope.sceneId !== 'broken-gate')
       throw new RangeError('Unknown scene.');
     if (
-      isSluiceScene &&
+      sceneKinds.sluice &&
       envelope.schemaVersion !== SLUICE_SIMULATION_SCHEMA_VERSION
     )
       throw new RangeError('Sluice save version is unsupported.');
     if (
-      isSiltMarginScene &&
+      sceneKinds.siltMargin &&
       ![
         LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION,
         SILT_MARGIN_SIMULATION_SCHEMA_VERSION,
@@ -210,25 +226,31 @@ export function restoreThreefoldSimulation(serialized) {
     )
       throw new RangeError('Silt Margin save version is unsupported.');
     if (
-      isHighWorldScene &&
+      sceneKinds.highWorld &&
       envelope.schemaVersion !== SIMULATION_SCHEMA_VERSION
     )
       throw new RangeError('High-world save version is unsupported.');
     if (
-      isHearthgapsScene &&
+      sceneKinds.hearthgaps &&
       envelope.schemaVersion !== HEARTHGAPS_SIMULATION_SCHEMA_VERSION
     )
       throw new RangeError('Hearthgaps save version is unsupported.');
     if (
-      isWeftwaysScene &&
+      sceneKinds.weftways &&
       envelope.schemaVersion !== WEFTWAYS_SIMULATION_SCHEMA_VERSION
     )
       throw new RangeError('Weftways save version is unsupported.');
+    if (
+      sceneKinds.grainlands &&
+      envelope.schemaVersion !== GRAINLANDS_SIMULATION_SCHEMA_VERSION
+    )
+      throw new RangeError('Grainlands save version is unsupported.');
     const usesBrokenGateSchema =
-      !isSiltMarginScene &&
-      !isHearthgapsScene &&
-      !isWeftwaysScene &&
-      !isHighWorldScene;
+      !sceneKinds.siltMargin &&
+      !sceneKinds.hearthgaps &&
+      !sceneKinds.weftways &&
+      !sceneKinds.grainlands &&
+      !sceneKinds.highWorld;
     const legacyV1 =
       usesBrokenGateSchema &&
       envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
@@ -283,7 +305,7 @@ export function restoreThreefoldSimulation(serialized) {
         ...restoredState,
         scene: createBrokenGateScene(),
       };
-    if (isHighWorldScene) {
+    if (sceneKinds.highWorld) {
       if (envelope.sceneId === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID) {
         const wakeformShoals = normalizeThreefoldWakeformShoalsState(
           state.wakeformShoals
@@ -311,26 +333,33 @@ export function restoreThreefoldSimulation(serialized) {
         });
       return restoreTimedScene(restoredState, state, highWorldScene);
     }
-    if (isSiltMarginScene)
+    if (sceneKinds.siltMargin)
       return restoreTimedScene(
         restoredState,
         state,
         createThreefoldSiltMarginScene(),
         { siltMargin: normalizeThreefoldSiltMarginState(state.siltMargin) }
       );
-    if (isHearthgapsScene)
+    if (sceneKinds.hearthgaps)
       return restoreTimedScene(
         restoredState,
         state,
         createThreefoldHearthgapsScene(),
         { hearthgaps: normalizeThreefoldHearthgapsState(state.hearthgaps) }
       );
-    if (isWeftwaysScene)
+    if (sceneKinds.weftways)
       return restoreTimedScene(
         restoredState,
         state,
         createThreefoldWeftwaysScene(),
         { weftways: normalizeThreefoldWeftwaysState(state.weftways) }
+      );
+    if (sceneKinds.grainlands)
+      return restoreTimedScene(
+        restoredState,
+        state,
+        createThreefoldGrainlandsScene(),
+        { grainlands: normalizeThreefoldGrainlandsState(state.grainlands) }
       );
     return restoreTimedScene(
       restoredState,
@@ -347,7 +376,7 @@ export function restoreThreefoldSimulation(serialized) {
  * Rebuild one independently timed scene after validating its saved state.
  * @param {Record<string, any>} restoredState Shared player, episode, and encounter state.
  * @param {Record<string, any>} state Serialized scene state.
- * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof createThreefoldWeftwaysScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>} scene Authored scene reconstruction.
+ * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof createThreefoldWeftwaysScene>|ReturnType<typeof createThreefoldGrainlandsScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>} scene Authored scene reconstruction.
  * @param {Record<string, any>} [sceneState] Validated scene-specific puzzle state.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Complete restored scene.
  */
@@ -525,6 +554,8 @@ function getSimulationElapsedGameSeconds(simulation) {
     return simulation.elapsedGameSeconds;
   if (isWeftwaysSimulationState(simulation))
     return simulation.elapsedGameSeconds;
+  if (isThreefoldGrainlandsSimulationState(simulation))
+    return simulation.elapsedGameSeconds;
   if (isHighWorldSimulationState(simulation))
     return simulation.elapsedGameSeconds;
   return null;
@@ -543,6 +574,8 @@ function getThreefoldSimulationSaveKey(sceneId) {
     return HEARTHGAPS_SIMULATION_SAVE_KEY;
   if (sceneId === THREEFOLD_WEFTWAYS_SCENE_ID)
     return WEFTWAYS_SIMULATION_SAVE_KEY;
+  if (sceneId === THREEFOLD_GRAINLANDS_SCENE_ID)
+    return GRAINLANDS_SIMULATION_SAVE_KEY;
   if (isThreefoldHighWorldSceneId(sceneId))
     return `${SIMULATION_SAVE_KEY}.${sceneId}`;
   return SIMULATION_SAVE_KEY;

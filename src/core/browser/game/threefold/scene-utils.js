@@ -4,14 +4,19 @@ import { createScaleState, heightAtScale } from './spatial.js';
  * Create the shared scale bounds used by THREEFOLD's authored region spawns.
  * @param {{x: number, y: number}} position Initial physical position.
  * @param {number} scale Initial discrete scale.
+ * @param {number} [minimumUnlockedScale] Lowest available scale; defaults to −2.
  * @returns {ReturnType<typeof createScaleState>} Independent player spawn.
  */
-export function createThreefoldPlayerSpawn(position, scale) {
+export function createThreefoldPlayerSpawn(
+  position,
+  scale,
+  minimumUnlockedScale = -2
+) {
   return createScaleState(position, {
     scale,
     anchor: 8,
     maximumAnchor: 8,
-    minimumUnlockedScale: -2,
+    minimumUnlockedScale,
     maximumUnlockedScale: 1,
   });
 }

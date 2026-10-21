@@ -10,6 +10,7 @@ import { createThreefoldCrownbackReachScene } from './crownback-reach.js';
 import { createThreefoldWakeformShoalsScene } from './wakeform-shoals.js';
 import { createThreefoldHearthgapsScene } from './hearthgaps.js';
 import { createThreefoldWeftwaysScene } from './weftways.js';
+import { createThreefoldGrainlandsScene } from './grainlands.js';
 import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
@@ -96,15 +97,37 @@ const WEFTWAYS_PAGE_COPY = {
         'low quay. The quay-side spill protects those homes and floods the ' +
         'root crossing. Reach either control before pressing E.',
     ],
-    ['#scene-link', 'Next playable route: the Silt Margin'],
+    ['#scene-link', 'Continue into the Grainlands'],
     [
       '#game-footer',
       'The route choice and its physical effects persist in this isolated save.',
     ],
   ]),
-  href: '/threefold/?scene=silt-margin',
+  href: '/threefold/?scene=grainlands',
   ariaLabel: 'Choose Pell’s root bypass or the quay-side spill',
   interactionLabel: 'CHOOSE FLOW',
+};
+const GRAINLANDS_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'Grainlands'],
+    ['#chapter-tag', 'SMALL WORLD · GRAINLANDS'],
+    ['#chapter-eyebrow', 'THE NURSERY CROSSING'],
+    ['#chapter-heading', 'Iru will not save one nest by flooding another.'],
+    [
+      '#chapter-description',
+      'At 6.77 cm, the spider is a formidable predator. Grow to scale −2 to ' +
+        'overpower it and break the Threadbound bridge, or help Iru bait it ' +
+        'away so the Nursery Clades keep their eggs and crossing.',
+    ],
+    ['#scene-link', 'Continue to the Silt Margin'],
+    [
+      '#game-footer',
+      'The spider, bridge, and route clock persist in this isolated save.',
+    ],
+  ]),
+  href: '/threefold/?scene=silt-margin',
+  ariaLabel: 'Help Iru bait the Grainlands spider away',
+  interactionLabel: 'BAIT SPIDER',
 };
 /** @type {Array<[string, string]>} */
 const HIGH_WORLD_CONTROL_UPDATES = [
@@ -218,6 +241,8 @@ export function startThreefoldPage(options) {
     configureHighWorldPage(options.documentObj, HEARTHGAPS_PAGE_COPY);
   else if (scene?.id === 'weftways')
     configureHighWorldPage(options.documentObj, WEFTWAYS_PAGE_COPY);
+  else if (scene?.id === 'grainlands')
+    configureHighWorldPage(options.documentObj, GRAINLANDS_PAGE_COPY);
   else if (scene?.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID)
     configureHighWorldPage(options.documentObj, LANTERN_WARD_PAGE_COPY);
   else if (scene?.id === 'belltops')
@@ -260,7 +285,7 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof createThreefoldWeftwaysScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof createThreefoldWeftwaysScene>|ReturnType<typeof createThreefoldGrainlandsScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
@@ -270,6 +295,7 @@ function sceneFromLocation(windowObj) {
   if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
   if (sceneId === 'hearthgaps') return createThreefoldHearthgapsScene();
   if (sceneId === 'weftways') return createThreefoldWeftwaysScene();
+  if (sceneId === 'grainlands') return createThreefoldGrainlandsScene();
   if (sceneId === 'lantern-ward')
     return lanternWard.createThreefoldLanternWardScene();
   if (sceneId === 'belltops') return createThreefoldBelltopsScene();
@@ -341,6 +367,8 @@ function configureAlternateScenePage(documentObj, copy) {
   if (hearthgapsEntry) hearthgapsEntry.hidden = true;
   const weftwaysEntry = documentObj?.querySelector?.('#weftways-entry');
   if (weftwaysEntry) weftwaysEntry.hidden = true;
+  const grainlandsEntry = documentObj?.querySelector?.('#grainlands-entry');
+  if (grainlandsEntry) grainlandsEntry.hidden = true;
 }
 
 /**

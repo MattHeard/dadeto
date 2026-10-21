@@ -3,6 +3,7 @@
 ## Initial Predicted Failure Classes
 
 - Weftways regression: the route uses a scale other than −2, omits Pell, the Threadbound, or oversized pack beetles, allows a flow control from out of reach, changes the route choice after it has been committed, or fails to persist the flood footprint, growth rubble, and local clock under its own key. Pell's bypass must protect the deep roots and flood the human low quay; the alternate spill protects the quay and floods the root crossing. Broken Gate episode state must remain untouched and all rendered shapes must stay on the eight-pixel grid.
+- Grainlands regression: the route starts outside scale −3, Iru or the Nursery Clades shelter is missing, the spider's 18 cm physical size is not formidable at 6.77 cm, or growth preview and commit disagree about breaking the Threadbound bridge. E must require reach and bait the spider away without breaking the crossing; A must overpower it and break the bridge. Route time and spider fate must survive schema-v1 export/import in an isolated save, without changing Broken Gate, and every rendered shape must stay on the eight-pixel grid.
 - Setup/configuration mismatch: page source exists but the build did not copy the standalone route or core modules.
 - Invalid or missing inputs: unsupported action names or malformed imports reach the simulation boundary.
 - Dependency/service unavailable: localStorage is denied or quota-limited.

@@ -21,6 +21,7 @@ import {
   THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
 } from './hearthgaps.js';
 import * as weftways from './weftways.js';
+import * as grainlands from './grainlands.js';
 import { getThreefoldSiltMarginWaterStatus } from './silt-margin-water.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
@@ -32,6 +33,7 @@ import {
   isHighWorldSimulationState,
   previewThreefoldGrowthEffects,
   isWeftwaysSimulationState,
+  isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
@@ -66,6 +68,8 @@ export function renderThreefoldFrame(state) {
     return renderThreefoldHearthgapsFrame(state);
   if (isWeftwaysSimulationState(state))
     return renderThreefoldWeftwaysFrame(state);
+  if (isThreefoldGrainlandsSimulationState(state))
+    return renderThreefoldGrainlandsFrame(state);
   const isHighWorld = isHighWorldSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = isHighWorld
@@ -633,6 +637,135 @@ function renderThreefoldWeftwaysFrame(state) {
     growthPreviewCreatureIds: growth.creatureIds,
     witnessLedger: [],
   });
+}
+
+/**
+ * Render Iru's nursery and the scale-aware spider decision on Mosslight's grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'grainlands'}}>} state Current Grainlands simulation.
+ * @returns {Record<string, any>} Snapped handheld frame and route state.
+ */
+function renderThreefoldGrainlandsFrame(state) {
+  const growth = previewThreefoldGrowthEffects(state);
+  const spiderFate = state.grainlands.spiderFate;
+  const bridgeOutcome = state.grainlands.bridgeOutcome;
+  const bridgeThreatened = growth.geometryIds.includes(
+    grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID
+  );
+  const bridgeColor =
+    bridgeOutcome === 'broken'
+      ? '#526e4b'
+      : bridgeThreatened
+        ? '#e16b5a'
+        : '#bfd77c';
+  const status =
+    spiderFate === 'baited-away'
+      ? 'Iru baits the spider away; the nursery crossing holds.'
+      : spiderFate === 'overpowered'
+        ? 'Mara overpowers the spider; growth breaks the bridge.'
+        : 'Iru distrusts repairs that drown another nest.';
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 0.8) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.4 - state.player.position.y) / 0.4) * 72
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'GRAINLANDS',
+      state.elapsedGameSeconds,
+      { x: 4, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Nursery Crossing';
+  frame.toast = status;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'GRAINLANDS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    ...[16, 40, 88, 136].map(x =>
+      createThreefoldRectShape([x, 36, 8, 8], '#526e4b')
+    ),
+    createThreefoldRectShape([32, 68, 24, 8], '#526e4b'),
+    createThreefoldRectShape([40, 60, 8, 16], '#526e4b'),
+    createThreefoldRectShape([48, 64, 24, 8], bridgeColor),
+    ...(bridgeOutcome === 'broken'
+      ? [createThreefoldRectShape([56, 72, 8, 8], '#182f36')]
+      : []),
+    ...grainlandsNurseryShapes({ x: 112, y: 52 }),
+    ...(spiderFate === 'baited-away'
+      ? []
+      : grainlandsSpiderShapes({ x: 64, y: 56 }, spiderFate === 'overpowered')),
+    createThreefoldRectShape([32, 76, 8, 8], '#b46b55'),
+    createThreefoldRectShape([32, 68, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([40, 76, 8, 8], '#d28b69'),
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      spiderFate === 'baited-away'
+        ? 'SPIDER BAITED · BRIDGE SAFE'
+        : spiderFate === 'overpowered'
+          ? 'SPIDER BEATEN · BRIDGE BROKE'
+          : 'IRU · NURSERY · SPIDER'
+    ),
+    captionShape({ x: 8, y: 136 }, 'E BAIT · A GROW · B SHRINK'),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    spiderFate,
+    bridgeOutcome,
+    nurseryId: grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID,
+    growthPreviewGeometryIds: growth.geometryIds,
+    growthPreviewCreatureIds: growth.creatureIds,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Draw Nursery Clades shelters and the eggs they protect.
+ * @param {{x: number, y: number}} origin Grid-aligned shelter origin.
+ * @returns {ThreefoldSpriteShape[]} Clade shelter and egg silhouettes.
+ */
+function grainlandsNurseryShapes(origin) {
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 24, 8], '#bfd77c'),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], '#d28b69'),
+    createThreefoldRectShape([origin.x + 8, origin.y + 8, 8, 16], '#526e4b'),
+    createThreefoldRectShape([origin.x, origin.y + 24, 24, 8], '#182f36'),
+    createThreefoldRectShape([origin.x + 8, origin.y + 16, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([origin.x + 16, origin.y + 16, 8, 8], '#e9d88d'),
+  ];
+}
+
+/**
+ * Draw a large predator, or the remains left by growth.
+ * @param {{x: number, y: number}} origin Grid-aligned spider position.
+ * @param {boolean} overpowered Whether growth defeated the spider.
+ * @returns {ThreefoldSpriteShape[]} Spider body and legs.
+ */
+function grainlandsSpiderShapes(origin, overpowered) {
+  const bodyColor = overpowered ? '#526e4b' : '#d28b69';
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 16, 8], bodyColor),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], '#b46b55'),
+    createThreefoldRectShape([origin.x - 8, origin.y - 8, 8, 8], '#182f36'),
+    createThreefoldRectShape([origin.x - 8, origin.y + 8, 8, 8], '#182f36'),
+    createThreefoldRectShape([origin.x + 16, origin.y + 8, 8, 8], '#182f36'),
+  ];
 }
 
 /**
