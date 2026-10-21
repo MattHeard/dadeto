@@ -75,6 +75,8 @@ Both repairs use the locking pawl beside the gate at scale −2. A successful re
 
 After aftermath, Mara can ask the surviving watchkeeper about a faint relay call asking for Iri. If she records that optional lead and then files a report through the intact signal station, an additional collapsible record presents Iri's first-person confession: Iri saw downstream relay messages thinning, suspected settlements were at risk, and left that uncertainty out of the handover while keeping the bypass open to hold Harrowfen's pressure line. The confession survives save/import, does not appear without the lead or after road departure, and does not name the final sender or what others knew.
 
+When that report reaches the surviving Latchfolk watchkeeper, they ask for the downstream relay stations to be traced before responsibility is assigned. The accessible epilogue keeps the final sender and any missed warnings unresolved. The request does not alter the storm's saved outcomes and is absent if Mara leaves without filing the report, lacks the optional lead, or the watchkeeper is lost.
+
 ## Tidal Archive
 
 The Tidal Archive is a separate route that uses the shared Mosslight 160 × 144 handheld renderer. Arrows move through the small-world scene; A grows, B shrinks, E operates the nearby service valve or reads the far-bank coil register, X waits 15 in-game minutes, and Y saves. The valve only turns when Mara is within reach at scale −2. Movement, scale changes, and interactions advance 15 seconds of game time; a wait advances its requested duration. Water does not use the browser clock.

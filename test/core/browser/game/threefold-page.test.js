@@ -665,6 +665,25 @@ describe('THREEFOLD closure epilogue page', () => {
     expect(episodeEpilogue.hidden).toBe(true);
     expect(episodeEpilogueList.children).toHaveLength(0);
   });
+
+  test('shows the Latchfolk request in the accessible report epilogue', () => {
+    const { documentObj, episodeEpilogueList } = createLedgerDocument();
+    const response =
+      'The report carries Iri’s account to the surviving Latchfolk watchkeeper. They ask for the downstream relay stations to be traced before responsibility is assigned; the final sender and missed warnings remain unknown.';
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          episodeEpilogue: { title: 'Report filed', paragraphs: [response] },
+        },
+      }
+    );
+
+    expect(collectText(episodeEpilogueList.children)).toContain(response);
+  });
 });
 
 describe('THREEFOLD witness lead page', () => {

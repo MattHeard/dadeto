@@ -1337,10 +1337,19 @@ function getThreefoldEpisodeEpilogue(state, gateOutcome) {
       : gateOutcome.drainageState === 'receded'
         ? 'Floodwater recedes from the lower channel during aftermath.'
         : 'Floodwater remains in the lower channel after the storm.';
+  const latchfolkResponse =
+    state.episode.closedBy === 'reported' &&
+    state.episode.latchfolk === 'safe' &&
+    hasLatchfolkIriLead(state)
+      ? [
+          'The report carries Iri’s account to the surviving Latchfolk watchkeeper. They ask for the downstream relay stations to be traced before responsibility is assigned; the final sender and missed warnings remain unknown.',
+        ]
+      : [];
   return {
     title: state.episode.closedBy === 'reported' ? 'Report filed' : 'Departure',
     paragraphs: [
       closure,
+      ...latchfolkResponse,
       `Passenger outcome: ${getPassengerOutcomeLabel(state.episode).toLowerCase()}.`,
       `Latchfolk outcome: ${state.episode.latchfolk}.`,
       `Relief gate: ${gateOutcome.gateState}.`,

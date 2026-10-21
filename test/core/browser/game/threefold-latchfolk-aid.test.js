@@ -190,8 +190,12 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
     const reported = stepThreefoldSimulation(atConsole, { type: 'interact' });
     const confession =
       renderThreefoldFrame(reported).threefold.iriRecordedConfession;
+    const epilogue = renderThreefoldFrame(reported).threefold.episodeEpilogue;
+    const communityResponse =
+      'The report carries Iri’s account to the surviving Latchfolk watchkeeper. They ask for the downstream relay stations to be traced before responsibility is assigned; the final sender and missed warnings remain unknown.';
 
     expect(reported.episode.closedBy).toBe('reported');
+    expect(epilogue.paragraphs).toContain(communityResponse);
     expect(confession.title).toBe("Iri's recorded confession");
     expect(confession.text).toContain(
       'I saw downstream relay messages thinning'
@@ -200,11 +204,42 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
       'left my uncertainty out of the handover'
     );
     expect(confession.text).toContain('does not identify the final sender');
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(reported)
+    );
     expect(
-      renderThreefoldFrame(
-        restoreThreefoldSimulation(serializeThreefoldSimulation(reported))
-      ).threefold.iriRecordedConfession
+      renderThreefoldFrame(restored).threefold.iriRecordedConfession
     ).toEqual(confession);
+    expect(renderThreefoldFrame(restored).threefold.episodeEpilogue).toEqual(
+      epilogue
+    );
+
+    const lostWatchkeeper = {
+      ...reported,
+      episode: { ...reported.episode, latchfolk: 'lost' },
+    };
+    expect(
+      renderThreefoldFrame(lostWatchkeeper).threefold.episodeEpilogue.paragraphs
+    ).not.toContain(communityResponse);
+
+    const withoutLead = createSafeWatchkeeperAftermath();
+    const reportConsole = withoutLead.scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const reportedWithoutLead = stepThreefoldSimulation(
+      {
+        ...withoutLead,
+        player: createScaleState(reportConsole.position, {
+          destroyedGeometryIds: withoutLead.player.destroyedGeometryIds,
+        }),
+      },
+      { type: 'interact' }
+    );
+    expect(reportedWithoutLead.episode.closedBy).toBe('reported');
+    expect(
+      renderThreefoldFrame(reportedWithoutLead).threefold.episodeEpilogue
+        .paragraphs
+    ).not.toContain(communityResponse);
 
     const road = state.scene.interactables.find(
       item => item.id === 'upland-road-exit'
@@ -222,6 +257,9 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
       type: 'interact',
     });
     expect(departed.episode.closedBy).toBe('departed');
+    expect(
+      renderThreefoldFrame(departed).threefold.episodeEpilogue.paragraphs
+    ).not.toContain(communityResponse);
     expect(renderThreefoldFrame(departed).threefold.iriRecordedConfession).toBe(
       null
     );

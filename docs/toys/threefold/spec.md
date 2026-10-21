@@ -54,6 +54,10 @@ After the crisis reaches aftermath and before the episode closes, Mara may inter
 
 When Mara records the optional watchkeeper relay lead during aftermath and later files a report through the intact signal station, reveal a separate first-person note from Iri. Iri admits seeing downstream relay messages thin, suspecting the settlements were at risk, and leaving that uncertainty out of the handover while keeping the bypass open to hold Harrowfen's pressure line. Derive the confession from the saved lead and report closure; do not add a save field. Keep it unavailable without the lead or after road departure, and do not identify the final sender or what anyone else knew.
 
+## Latchfolk response to Iri's report
+
+When the optional watchkeeper lead is recorded and Mara files the report at the intact station, the report carries Iri's account to the surviving Latchfolk watchkeeper. They request a trace of the downstream relay stations before anyone assigns responsibility. Derive this response from the saved lead, safe Latchfolk outcome, and reported closure; add no state or morality score. Keep it absent without the lead, after road departure, or when the watchkeeper did not survive. The response does not identify the final sender or which settlements missed warnings, and it does not change the storm outcomes.
+
 ## Optional aid for displaced Latchfolk
 
 If the forced-open gate floods the lower homes and the warned Latchfolk survive, Mara may help the watchkeeper arrange temporary shelter during aftermath. Record this as one optional witness-ledger observation, with no new saved flag. Its accessible journal text must distinguish homes that remain flooded from homes that drained after a late gate repair, while acknowledging damage remains. Do not change resident, passenger, gate, or channel outcomes. Keep the action out of reach, before aftermath, when residents are lost, when a pre-surge repair kept homes dry, after closure, and in other scenes. Repeats must not duplicate the record, and report/departure must remain available without it.
