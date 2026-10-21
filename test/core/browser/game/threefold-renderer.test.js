@@ -1,5 +1,9 @@
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
+import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
+import { createThreefoldCrownbackReachScene } from '../../../../src/core/browser/game/threefold/crownback-reach.js';
+import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
+import { createThreefoldWakeformShoalsScene } from '../../../../src/core/browser/game/threefold/wakeform-shoals.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 import {
@@ -91,7 +95,7 @@ describe('THREEFOLD status display', () => {
     expect(frame.toast).toBe(
       'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
     );
-    expect(frame.presentation.status).toContain('SCALE 0 · A 8/8 · RISING');
+    expect(frame.presentation.status).toContain('SCALE 0 · 1.83 m · A 8/8');
     expect(frame.shapes.some(shape => shape.actorId === 'mara')).toBe(true);
     expect(frame.threefold.tideProgress).toBe(0);
     expect(frame.shapes).toContainEqual(
@@ -114,6 +118,42 @@ describe('THREEFOLD status display', () => {
         fill: '#bfd77c',
       })
     );
+  });
+
+  test('shows scale, physical height, and Anchor in every route HUD row', () => {
+    const states = [
+      createThreefoldSimulation(THRESHOLDS),
+      createThreefoldSimulation(THRESHOLDS, createThreefoldSluiceScene()),
+      createThreefoldSimulation(THRESHOLDS, createThreefoldSiltMarginScene()),
+      createThreefoldSimulation(THRESHOLDS, createThreefoldBelltopsScene()),
+      createThreefoldSimulation(
+        THRESHOLDS,
+        createThreefoldCrownbackReachScene()
+      ),
+      createThreefoldSimulation(
+        THRESHOLDS,
+        createThreefoldWakeformShoalsScene()
+      ),
+    ];
+    const frames = states.map(renderThreefoldFrame);
+    const grownShoals = stepThreefoldSimulation(states.at(-1), {
+      type: 'grow',
+    });
+    frames.push(renderThreefoldFrame(grownShoals));
+
+    expect(frames.map(frame => frame.presentation.status)).toEqual([
+      'SCALE 0 · 1.83 m · A 8/8',
+      'SCALE -2 · 20.32 cm · A 8/8',
+      'SCALE -4 · 2.26 cm · A 8/8',
+      'SCALE +2 · 16.46 m · A 8/8',
+      'SCALE +3 · 49.38 m · A 8/8',
+      'SCALE +3 · 49.38 m · A 8/8',
+      'SCALE +4 · 148.13 m · A 7/8',
+    ]);
+    frames.forEach(frame =>
+      expect(frame.presentation.status.length).toBeLessThanOrEqual(30)
+    );
+    expect(frames[1].toast).toContain('WATER FOLLOWS SIM TIME');
   });
 });
 
@@ -292,7 +332,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     );
     expect(frame.threefold).toMatchObject({ scale: 1, crisisStage: 'surge' });
     expect(frame.dialogue).toBeNull();
-    expect(frame.presentation.status).toContain('SURGE');
+    expect(frame.presentation.status).toBe('SCALE +1 · 5.49 m · A 8/8');
     expect(frame.toast).toContain('SURGE');
     expect(frame.threefold.tideProgress).toBe(0.6);
     expect(frame.shapes).toContainEqual(

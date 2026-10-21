@@ -36,6 +36,7 @@ Run `npm run check:impact:run -- --files src/core/browser/game/threefold/high-wo
 ## Expected Observable Outputs
 
 - The page shows a Mosslight-style handheld frame labelled 160 × 144.
+- The status row identifies scale, physical height, and current/capacity Anchor for Broken Gate, Tidal Archive, Silt Margin, and each high-world route. Examples include `SCALE -4 · 2.26 cm · A 8/8` and `SCALE +4 · 148.13 m · A 7/8`; each stays within the 30-character HUD limit.
 - Every rendered canvas shape is positioned and sized on an eight-logical-pixel grid; terrain flecks and both scenes' water surfaces follow the same grid while the simulation values stay continuous and the scale change remains visible.
 - A relief-gate breach records what the frame showed before the action, the selected growth step, and resulting gate/channel/settlement facts. Later observed changes and repair link to the original breach; the accessible Witness Ledger uses text nodes and adds no moral score. Legacy saves without a ledger load with an empty history.
 - The standalone page uses eight-pixel spacing and control sizes, including the narrow-phone layout, and the face/system buttons are not rotated.

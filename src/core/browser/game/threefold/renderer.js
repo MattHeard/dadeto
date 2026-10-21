@@ -98,9 +98,7 @@ export function renderThreefoldFrame(state) {
       : getThreefoldToast(state, gateOutcome.drainageState),
     presentation: {
       palette: PALETTE,
-      status: isHighWorld
-        ? `SCALE ${formatScale(state.player.scale)} · ${heightMeters.toFixed(2)} M TALL`
-        : `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
+      status: formatScaleStatus(state.player),
     },
     spriteRenderer: (
       /** @type {Parameters<typeof spriteShapes>[0]} */ actor,
@@ -227,19 +225,21 @@ function renderThreefoldSluiceFrame(state) {
     ),
     dialogue: null,
     quickAction: 'interact',
-    toast: sluiceToast(water),
+    toast: `${sluiceToast(water)} · WATER FOLLOWS SIM TIME`,
     presentation: {
       palette: PALETTE,
-      status: `SCALE ${formatScale(state.player.scale)} · WATER MOVES WITH GAME TIME`,
+      status: formatScaleStatus(state.player),
     },
     spriteRenderer: () => [],
   });
   frame.quest = 'The Tidal Archive';
-  frame.toast = sluiceToast(water);
+  frame.toast = `${sluiceToast(water)} · WATER FOLLOWS SIM TIME`;
   frame.shapes = sluiceShapes(state, water);
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
     heightMeters,
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
     elapsedGameSeconds: state.elapsedGameSeconds,
     portOpen: water.portOpen,
     upperWaterSurfaceElevationMeters: water.upperWaterSurfaceElevationMeters,
@@ -288,7 +288,7 @@ function renderThreefoldSiltMarginFrame(state) {
     toast: status,
     presentation: {
       palette: PALETTE,
-      status: `MARA ${(heightAtScale(state.player.scale) * 100).toFixed(2)} CM · ${status}`,
+      status: formatScaleStatus(state.player),
     },
     spriteRenderer: () => [],
   });
@@ -1026,4 +1026,18 @@ function centerOf(minimum, maximum) {
  */
 function formatScale(scale) {
   return scale > 0 ? `+${scale}` : String(scale);
+}
+
+/**
+ * Show scale, physical height, and the remaining resource on one handheld row.
+ * @param {ReturnType<typeof import('./spatial.js').createScaleState>} player Current scale and Anchor state.
+ * @returns {string} Compact player measurement for the shared HUD.
+ */
+function formatScaleStatus(player) {
+  const heightMeters = heightAtScale(player.scale);
+  const heightLabel =
+    heightMeters < 1
+      ? `${(heightMeters * 100).toFixed(2)} cm`
+      : `${heightMeters.toFixed(2)} m`;
+  return `SCALE ${formatScale(player.scale)} · ${heightLabel} · A ${player.anchor}/${player.maximumAnchor}`;
 }

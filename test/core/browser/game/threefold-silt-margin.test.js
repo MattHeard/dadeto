@@ -44,7 +44,7 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(state.scene.id).toBe('silt-margin');
     expect(state.player.scale).toBe(-4);
     expect(frame.threefold.heightMeters * 100).toBeCloseTo(2.26, 2);
-    expect(frame.presentation.status).toContain('MARA 2.26 CM');
+    expect(frame.presentation.status).toBe('SCALE -4 · 2.26 cm · A 8/8');
     expect(frame.quest).toBe('The Silt Margin');
     expect(frame.threefold).toMatchObject({
       guardian: 'present',
