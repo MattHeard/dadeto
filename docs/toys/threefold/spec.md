@@ -65,3 +65,7 @@ This bounded model assumes constant chamber cross-sections and a well-mixed wate
 The first sluice-puzzle region now authors an upper reservoir and lower basin joined by a closed port. Open the service valve while Mara is in reach at scale −2; each deliberate action advances its physical water state, and a 15-minute wait raises the lower basin above the 0.3-metre crossing threshold. Grow to scale −1 to clear the crossing barrier. The route uses the shared Mosslight frame renderer, stores its state in a separate save namespace, and leaves the Broken Gate's render-only flood consequence unchanged.
 
 The Silt Margin uses the same solver for a shallow dew channel, root basin, and scale −4 fine valve. The water spans the walkable crossing until its surface drops to 0.025 metres; explicit waiting transfers conserved water through the open port. Growing through the root arch and guardian offers a second crossing route with persistent geometry and social consequences.
+
+## Optional Threadbound evidence disclosure
+
+After reading Pell's relay ledger, Mara may visit the marked caravan circle and share what it establishes: downstream relay tokens stopped arriving after an emergency pressure-regulator bypass. The disclosure is a separate, reachable, one-time action; it does not change the crossing decision or claim who sent the last message, what Iri knew, or who was responsible. Save it with the Weftways route, default missing legacy data to undisclosed, and expose the disclosure in an accessible record.

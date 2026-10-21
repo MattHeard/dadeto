@@ -1,0 +1,7 @@
+# THREEFOLD Threadbound evidence disclosure
+
+- Unexpected hurdle: the first focused impact command could not spawn its selector or git fallback in the restricted shell (`EPERM`). The reviewed rerun worked but exposed stale route-state/page-label expectations and lint formatting/JSDoc warnings.
+- Diagnosis: the new optional disclosure field is returned by canonical route normalization, so exact legacy-state assertions needed its safe `false` default. The page interaction label is authored by the scene configuration and has a separate page-adapter assertion.
+- Chosen fix: model sharing as a distinct in-range interaction at a visible caravan circle, gated on the saved relay-record discovery. Missing legacy fields default to undisclosed; accessible copy records the timing of lost messages while leaving sender, Iri's knowledge, and responsibility unresolved. Route choice and flood data remain canonical and unchanged.
+- Next-time guidance: distinguish discovery from disclosure in both state and tests; preserve a separate physical target when the player should make an optional choice. For sandbox `EPERM`, request reviewed child-process access before interpreting an impact fallback as a code failure.
+- Evidence: focused impact passed 24 related suites / 266 tests; changed-core coverage is 100% statements and branches, ESLint/core-parse pass, and duplication reports zero clones. Full local check, build, docs/reuse validation, and exact-head CI are tracked in Bead `dadeto-l9ga`.

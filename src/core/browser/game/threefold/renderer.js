@@ -575,7 +575,8 @@ function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
  * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
  */
 function renderThreefoldWeftwaysFrame(state) {
-  const { flowChoice, floodedGeometryIds, relayRecordRead } = state.weftways;
+  const { flowChoice, floodedGeometryIds, relayRecordRead, relayRecordShared } =
+    state.weftways;
   const rootFlooded = floodedGeometryIds.includes(
     weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
   );
@@ -586,8 +587,9 @@ function renderThreefoldWeftwaysFrame(state) {
   const beetleFates = new Set(
     (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
   );
-  const flowMessage =
-    flowChoice === 'pell-bypass'
+  const flowMessage = relayRecordShared
+    ? 'Mara shared the record; responsibility remains unresolved.'
+    : flowChoice === 'pell-bypass'
       ? 'Pell trusts Mara; roots hold, quay floods.'
       : flowChoice === 'quay-spill'
         ? 'Pell is wary; quay stays dry, root crossing floods.'
@@ -649,6 +651,11 @@ function renderThreefoldWeftwaysFrame(state) {
     createThreefoldRectShape([72, 72, 24, 8], '#182f36'),
     createThreefoldRectShape([16, 88, 16, 8], '#e9d88d'),
     createThreefoldRectShape([128, 88, 16, 8], '#d28b69'),
+    createThreefoldRectShape(
+      [40, 64, 8, 8],
+      relayRecordShared ? '#bfd77c' : '#e9d88d'
+    ),
+    createThreefoldRectShape([32, 72, 24, 8], '#526e4b'),
     createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
     captionShape(
@@ -663,9 +670,11 @@ function renderThreefoldWeftwaysFrame(state) {
       { x: 8, y: 136 },
       flowChoice === 'undecided'
         ? 'MOVE · E CHOOSE · A GROW · B SHRINK'
-        : relayRecordRead
-          ? 'THREADBOUND RECORD FOUND'
-          : 'REACH PELL · E READ RELAY LOG'
+        : relayRecordShared
+          ? 'CARAVAN KNOWS THE RECORD'
+          : relayRecordRead
+            ? 'REACH CAMP · E SHARE RECORD'
+            : 'REACH PELL · E READ RELAY LOG'
     ),
   ];
   return finishSmallWorldFrame(frame, {
@@ -677,6 +686,7 @@ function renderThreefoldWeftwaysFrame(state) {
     flowChoice,
     floodedGeometryIds: [...floodedGeometryIds],
     relayRecordRead,
+    relayRecordShared,
     threadboundRelayRecord: relayRecordRead
       ? {
           title: 'Threadbound relay ledger',
@@ -685,6 +695,16 @@ function renderThreefoldWeftwaysFrame(state) {
             'arriving after an emergency pressure-regulator bypass. It does ' +
             'not identify who sent the final message, what Iri knew, or who ' +
             'was responsible.',
+        }
+      : null,
+    threadboundRelayDisclosure: relayRecordShared
+      ? {
+          title: 'What Mara shared with the caravan',
+          text:
+            'Mara told the Threadbound caravan that downstream relay tokens ' +
+            'stopped arriving after an emergency pressure-regulator bypass. ' +
+            'The record still cannot identify the final sender, establish ' +
+            'what Iri knew, or assign responsibility.',
         }
       : null,
     packBeetleIds: state.scene.creatures.map(({ id }) => id),

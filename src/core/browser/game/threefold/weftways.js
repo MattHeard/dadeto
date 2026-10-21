@@ -7,6 +7,7 @@ export const THREEFOLD_WEFTWAYS_LOW_QUAY_ID = 'weftways-low-quay-homes';
 export const THREEFOLD_WEFTWAYS_PELL_BYPASS_ID = 'weftways-pell-bypass';
 export const THREEFOLD_WEFTWAYS_QUAY_SPILL_ID = 'weftways-quay-spill';
 export const THREEFOLD_WEFTWAYS_PELL_ID = 'weftways-pell';
+export const THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID = 'weftways-caravan-circle';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 2.4, y: 0.8 } };
 const ROOT_CROSSING_BOUNDS = {
@@ -23,6 +24,14 @@ const THREADBOUND_PELL = {
   bounds: {
     min: { x: 1.08, y: 0.52, z: 0 },
     max: { x: 1.16, y: 0.6, z: 0.18 },
+  },
+};
+const THREADBOUND_CARAVAN_CIRCLE = {
+  id: THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID,
+  position: { x: 0.6, y: 0.3 },
+  bounds: {
+    min: { x: 0.56, y: 0.26, z: 0 },
+    max: { x: 0.64, y: 0.34, z: 0.12 },
   },
 };
 const PACK_BEETLES = [
@@ -50,6 +59,7 @@ export function createThreefoldWeftwaysScene() {
     decorations: [],
     interactables: [
       copyThreadboundPell(),
+      copyThreadboundCaravanCircle(),
       createFlowControl(THREEFOLD_WEFTWAYS_PELL_BYPASS_ID, 0.2),
       createFlowControl(THREEFOLD_WEFTWAYS_QUAY_SPILL_ID, 2.2),
     ],
@@ -59,20 +69,21 @@ export function createThreefoldWeftwaysScene() {
 
 /**
  * Create the unresolved flow choice for the Threadbound crossing.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean}} Initial route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean}} Initial route state.
  */
 export function createThreefoldWeftwaysState() {
   return {
     flowChoice: 'undecided',
     floodedGeometryIds: [],
     relayRecordRead: false,
+    relayRecordShared: false,
   };
 }
 
 /**
  * Rebuild only the flood footprint implied by a saved choice.
  * @param {unknown} candidate Saved flow choice.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean}} Canonical route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean}} Canonical route state.
  */
 export function normalizeThreefoldWeftwaysState(candidate) {
   if (!candidate || typeof candidate !== 'object')
@@ -89,8 +100,14 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     state.relayRecordRead === undefined ? false : state.relayRecordRead;
   if (typeof relayRecordRead !== 'boolean')
     throw new RangeError('Weftways relay record state is invalid.');
+  const relayRecordShared =
+    state.relayRecordShared === undefined ? false : state.relayRecordShared;
+  if (typeof relayRecordShared !== 'boolean')
+    throw new RangeError('Weftways relay disclosure state is invalid.');
   if (choice === 'undecided' && relayRecordRead)
     throw new RangeError('Weftways relay record requires a flow choice.');
+  if (relayRecordShared && !relayRecordRead)
+    throw new RangeError('Weftways relay disclosure requires the record.');
   const floodedGeometryIds =
     choice === 'pell-bypass'
       ? [THREEFOLD_WEFTWAYS_LOW_QUAY_ID]
@@ -103,7 +120,12 @@ export function normalizeThreefoldWeftwaysState(candidate) {
       JSON.stringify(floodedGeometryIds)
   )
     throw new RangeError('Weftways flood footprint is inconsistent.');
-  return { flowChoice: choice, floodedGeometryIds, relayRecordRead };
+  return {
+    flowChoice: choice,
+    floodedGeometryIds,
+    relayRecordRead,
+    relayRecordShared,
+  };
 }
 
 /**
@@ -152,6 +174,21 @@ function copyThreadboundPell() {
     bounds: {
       min: { ...THREADBOUND_PELL.bounds.min },
       max: { ...THREADBOUND_PELL.bounds.max },
+    },
+  };
+}
+
+/**
+ * Copy the small gathering point where Mara can share discovered evidence.
+ * @returns {typeof THREADBOUND_CARAVAN_CIRCLE} Reachable caravan circle.
+ */
+function copyThreadboundCaravanCircle() {
+  return {
+    ...THREADBOUND_CARAVAN_CIRCLE,
+    position: { ...THREADBOUND_CARAVAN_CIRCLE.position },
+    bounds: {
+      min: { ...THREADBOUND_CARAVAN_CIRCLE.bounds.min },
+      max: { ...THREADBOUND_CARAVAN_CIRCLE.bounds.max },
     },
   };
 }

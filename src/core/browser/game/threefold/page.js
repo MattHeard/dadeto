@@ -98,18 +98,19 @@ const WEFTWAYS_PAGE_COPY = {
         'low quay. The quay-side spill protects those homes and floods the ' +
         'root crossing. Reach either control before pressing E. Once the ' +
         'crossing is set, reach Pell to inspect the optional caravan relay ' +
-        'ledger; it records the lost messages without assigning blame.',
+        'ledger; it records the lost messages without assigning blame. Then ' +
+        'visit the marked caravan circle if you choose to share that record.',
     ],
     ['#scene-link', 'Continue into the Grainlands'],
     [
       '#game-footer',
-      'Route choice, physical effects, and the discovered relay record persist in this isolated save.',
+      'Route choice, physical effects, and optional relay discovery and sharing persist in this isolated save.',
     ],
   ]),
   href: '/threefold/?scene=grainlands',
   ariaLabel:
-    'Choose a water route, then inspect Pell’s Threadbound relay ledger when nearby',
-  interactionLabel: 'CHOOSE FLOW · ASK PELL',
+    'Choose a water route, inspect Pell’s relay ledger, then optionally share it at the caravan circle',
+  interactionLabel: 'CHOOSE · READ · SHARE',
 };
 const GRAINLANDS_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -311,6 +312,12 @@ export function startThreefoldPage(options) {
         '#weftways-relay-record-text',
         frame.threefold?.threadboundRelayRecord || null
       );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#weftways-relay-disclosure',
+        '#weftways-relay-disclosure-text',
+        frame.threefold?.threadboundRelayDisclosure || null
+      );
       renderThreefoldEpisodeEpilogue(
         options.documentObj,
         frame.threefold?.episodeEpilogue || null
@@ -407,6 +414,10 @@ function configureAlternateScenePage(documentObj, copy) {
     '#weftways-relay-record'
   );
   if (weftwaysRelayRecord) weftwaysRelayRecord.hidden = true;
+  const weftwaysRelayDisclosure = documentObj?.querySelector?.(
+    '#weftways-relay-disclosure'
+  );
+  if (weftwaysRelayDisclosure) weftwaysRelayDisclosure.hidden = true;
   const episodeEpilogue = documentObj?.querySelector?.('#episode-epilogue');
   if (episodeEpilogue) episodeEpilogue.hidden = true;
   const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');

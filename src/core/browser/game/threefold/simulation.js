@@ -777,7 +777,7 @@ function stepFlowChoiceScene(state, action, choiceMade, controls) {
 }
 
 /**
- * Resolve the Weftways choice, then allow Pell to share one optional relay record.
+ * Resolve the Weftways choice, reveal Pell's record, then allow its disclosure.
  * @param {WeftwaysSimulationState} state Current caravan crossing.
  * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
  * @returns {WeftwaysSimulationState} Updated crossing or the original for unsupported actions.
@@ -808,19 +808,33 @@ function stepWeftwaysScene(state, action) {
           : {};
       }
       if (
-        route.relayRecordRead ||
-        !isThreefoldInteractableInReach(
+        !route.relayRecordRead &&
+        isThreefoldInteractableInReach(
           state,
           weftways.THREEFOLD_WEFTWAYS_PELL_ID
         )
       )
-        return {};
-      return {
-        weftways: weftways.normalizeThreefoldWeftwaysState({
-          ...route,
-          relayRecordRead: true,
-        }),
-      };
+        return {
+          weftways: weftways.normalizeThreefoldWeftwaysState({
+            ...route,
+            relayRecordRead: true,
+          }),
+        };
+      if (
+        route.relayRecordRead &&
+        !route.relayRecordShared &&
+        isThreefoldInteractableInReach(
+          state,
+          weftways.THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
+        )
+      )
+        return {
+          weftways: weftways.normalizeThreefoldWeftwaysState({
+            ...route,
+            relayRecordShared: true,
+          }),
+        };
+      return {};
     })
   );
 }
