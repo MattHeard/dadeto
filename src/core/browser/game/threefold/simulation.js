@@ -342,30 +342,7 @@ function stepThreefoldAction(state, action) {
         },
       ]
     );
-  if (isWeftwaysSimulationState(state))
-    return stepFlowChoiceScene(
-      state,
-      action,
-      state.weftways.flowChoice !== 'undecided',
-      [
-        {
-          id: weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
-          update: () => ({
-            weftways: weftways.normalizeThreefoldWeftwaysState({
-              flowChoice: 'pell-bypass',
-            }),
-          }),
-        },
-        {
-          id: weftways.THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
-          update: () => ({
-            weftways: weftways.normalizeThreefoldWeftwaysState({
-              flowChoice: 'quay-spill',
-            }),
-          }),
-        },
-      ]
-    );
+  if (isWeftwaysSimulationState(state)) return stepWeftwaysScene(state, action);
   if (isThreefoldGrainlandsSimulationState(state))
     return stepGrainlandsScene(state, action);
   if (isSiltMarginSimulationState(state))
@@ -795,6 +772,55 @@ function stepFlowChoiceScene(state, action, choiceMade, controls) {
         isThreefoldInteractableInReach(state, id)
       );
       return control?.update() ?? {};
+    })
+  );
+}
+
+/**
+ * Resolve the Weftways choice, then allow Pell to share one optional relay record.
+ * @param {WeftwaysSimulationState} state Current caravan crossing.
+ * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
+ * @returns {WeftwaysSimulationState} Updated crossing or the original for unsupported actions.
+ */
+function stepWeftwaysScene(state, action) {
+  return /** @type {WeftwaysSimulationState} */ (
+    commitSmallWorldSceneAction(state, action, () => {
+      if (action.type !== 'interact') return {};
+      const route = state.weftways;
+      if (route.flowChoice === 'undecided') {
+        const choice = [
+          {
+            id: weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
+            flowChoice: 'pell-bypass',
+          },
+          {
+            id: weftways.THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
+            flowChoice: 'quay-spill',
+          },
+        ].find(({ id }) => isThreefoldInteractableInReach(state, id));
+        return choice
+          ? {
+              weftways: weftways.normalizeThreefoldWeftwaysState({
+                flowChoice: choice.flowChoice,
+                relayRecordRead: route.relayRecordRead,
+              }),
+            }
+          : {};
+      }
+      if (
+        route.relayRecordRead ||
+        !isThreefoldInteractableInReach(
+          state,
+          weftways.THREEFOLD_WEFTWAYS_PELL_ID
+        )
+      )
+        return {};
+      return {
+        weftways: weftways.normalizeThreefoldWeftwaysState({
+          ...route,
+          relayRecordRead: true,
+        }),
+      };
     })
   );
 }

@@ -59,16 +59,20 @@ export function createThreefoldWeftwaysScene() {
 
 /**
  * Create the unresolved flow choice for the Threadbound crossing.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[]}} Initial route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean}} Initial route state.
  */
 export function createThreefoldWeftwaysState() {
-  return { flowChoice: 'undecided', floodedGeometryIds: [] };
+  return {
+    flowChoice: 'undecided',
+    floodedGeometryIds: [],
+    relayRecordRead: false,
+  };
 }
 
 /**
  * Rebuild only the flood footprint implied by a saved choice.
  * @param {unknown} candidate Saved flow choice.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[]}} Canonical route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean}} Canonical route state.
  */
 export function normalizeThreefoldWeftwaysState(candidate) {
   if (!candidate || typeof candidate !== 'object')
@@ -81,6 +85,12 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     choice !== 'quay-spill'
   )
     throw new RangeError('Weftways flow choice is invalid.');
+  const relayRecordRead =
+    state.relayRecordRead === undefined ? false : state.relayRecordRead;
+  if (typeof relayRecordRead !== 'boolean')
+    throw new RangeError('Weftways relay record state is invalid.');
+  if (choice === 'undecided' && relayRecordRead)
+    throw new RangeError('Weftways relay record requires a flow choice.');
   const floodedGeometryIds =
     choice === 'pell-bypass'
       ? [THREEFOLD_WEFTWAYS_LOW_QUAY_ID]
@@ -93,7 +103,7 @@ export function normalizeThreefoldWeftwaysState(candidate) {
       JSON.stringify(floodedGeometryIds)
   )
     throw new RangeError('Weftways flood footprint is inconsistent.');
-  return { flowChoice: choice, floodedGeometryIds };
+  return { flowChoice: choice, floodedGeometryIds, relayRecordRead };
 }
 
 /**

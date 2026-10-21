@@ -96,17 +96,20 @@ const WEFTWAYS_PAGE_COPY = {
       'At scale −2 (20.32 cm), navigator Pell knows a bypass that protects ' +
         'the deep roots and the oversized beetle caravan, but floods the human ' +
         'low quay. The quay-side spill protects those homes and floods the ' +
-        'root crossing. Reach either control before pressing E.',
+        'root crossing. Reach either control before pressing E. Once the ' +
+        'crossing is set, reach Pell to inspect the optional caravan relay ' +
+        'ledger; it records the lost messages without assigning blame.',
     ],
     ['#scene-link', 'Continue into the Grainlands'],
     [
       '#game-footer',
-      'The route choice and its physical effects persist in this isolated save.',
+      'Route choice, physical effects, and the discovered relay record persist in this isolated save.',
     ],
   ]),
   href: '/threefold/?scene=grainlands',
-  ariaLabel: 'Choose Pell’s root bypass or the quay-side spill',
-  interactionLabel: 'CHOOSE FLOW',
+  ariaLabel:
+    'Choose a water route, then inspect Pell’s Threadbound relay ledger when nearby',
+  interactionLabel: 'CHOOSE FLOW · ASK PELL',
 };
 const GRAINLANDS_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -302,6 +305,12 @@ export function startThreefoldPage(options) {
         '#latchfolk-displacement-aid-text',
         frame.threefold?.latchfolkAid || null
       );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#weftways-relay-record',
+        '#weftways-relay-record-text',
+        frame.threefold?.threadboundRelayRecord || null
+      );
       renderThreefoldEpisodeEpilogue(
         options.documentObj,
         frame.threefold?.episodeEpilogue || null
@@ -394,6 +403,10 @@ function configureAlternateScenePage(documentObj, copy) {
   if (testimony) testimony.hidden = true;
   const iriRepairLog = documentObj?.querySelector?.('#iri-repair-log');
   if (iriRepairLog) iriRepairLog.hidden = true;
+  const weftwaysRelayRecord = documentObj?.querySelector?.(
+    '#weftways-relay-record'
+  );
+  if (weftwaysRelayRecord) weftwaysRelayRecord.hidden = true;
   const episodeEpilogue = documentObj?.querySelector?.('#episode-epilogue');
   if (episodeEpilogue) episodeEpilogue.hidden = true;
   const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');

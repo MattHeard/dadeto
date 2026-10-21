@@ -713,6 +713,7 @@ function assertHearthgapsRoute() {
     '#interact-control',
     '#witness-ledger',
     '#testimony',
+    '#weftways-relay-record',
     '#hearthgaps-entry',
     '#weftways-entry',
     '#grainlands-entry',
@@ -767,6 +768,7 @@ function assertWeftwaysRoute() {
     '#interact-control',
     '#witness-ledger',
     '#testimony',
+    '#weftways-relay-record',
     '#hearthgaps-entry',
     '#weftways-entry',
     '#grainlands-entry',
@@ -794,11 +796,14 @@ function assertWeftwaysRoute() {
     'protects the deep roots'
   );
   expect(elements.get('#scene-link').href).toBe('/threefold/?scene=grainlands');
-  expect(elements.get('#e-control-label').textContent).toBe('CHOOSE FLOW');
+  expect(elements.get('#e-control-label').textContent).toBe(
+    'CHOOSE FLOW · ASK PELL'
+  );
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
     'aria-label',
-    'Choose Pell’s root bypass or the quay-side spill'
+    'Choose a water route, then inspect Pell’s Threadbound relay ledger when nearby'
   );
+  expect(elements.get('#weftways-relay-record').hidden).toBe(true);
   expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
   expect(elements.get('#weftways-entry').hidden).toBe(true);
   expect(elements.get('#grainlands-entry').hidden).toBe(true);

@@ -575,7 +575,7 @@ function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
  * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
  */
 function renderThreefoldWeftwaysFrame(state) {
-  const { flowChoice, floodedGeometryIds } = state.weftways;
+  const { flowChoice, floodedGeometryIds, relayRecordRead } = state.weftways;
   const rootFlooded = floodedGeometryIds.includes(
     weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
   );
@@ -659,7 +659,14 @@ function renderThreefoldWeftwaysFrame(state) {
           ? 'QUAY SAFE · ROOTS FLOOD'
           : 'PELL · CHOOSE A FLOW'
     ),
-    captionShape({ x: 8, y: 136 }, 'MOVE · E CHOOSE · A GROW · B SHRINK'),
+    captionShape(
+      { x: 8, y: 136 },
+      flowChoice === 'undecided'
+        ? 'MOVE · E CHOOSE · A GROW · B SHRINK'
+        : relayRecordRead
+          ? 'THREADBOUND RECORD FOUND'
+          : 'REACH PELL · E READ RELAY LOG'
+    ),
   ];
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
@@ -669,6 +676,17 @@ function renderThreefoldWeftwaysFrame(state) {
     elapsedGameSeconds: state.elapsedGameSeconds,
     flowChoice,
     floodedGeometryIds: [...floodedGeometryIds],
+    relayRecordRead,
+    threadboundRelayRecord: relayRecordRead
+      ? {
+          title: 'Threadbound relay ledger',
+          text:
+            'Pell’s caravan ledger shows downstream relay tokens stopped ' +
+            'arriving after an emergency pressure-regulator bypass. It does ' +
+            'not identify who sent the final message, what Iri knew, or who ' +
+            'was responsible.',
+        }
+      : null,
     packBeetleIds: state.scene.creatures.map(({ id }) => id),
     growthPreviewGeometryIds: growth.geometryIds,
     growthPreviewCreatureIds: growth.creatureIds,
