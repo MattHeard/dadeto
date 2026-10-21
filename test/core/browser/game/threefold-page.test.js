@@ -69,6 +69,7 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
     expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
     expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
+    expect(THREEFOLD_HTML).toContain('id="campaign-clock-text"');
     expect(THREEFOLD_HTML).toContain(
       '<details id="episode-epilogue" class="witness-ledger" hidden>'
     );
@@ -537,9 +538,13 @@ describe('THREEFOLD campaign places page', () => {
     mockDrawGameFrame.mockClear();
   });
 
-  test('shows multiple regions and hides the index for one current region', () => {
-    const { documentObj, campaignPlaces, campaignPlacesText } =
-      createLedgerDocument();
+  test('shows elapsed campaign time and hides an empty places index', () => {
+    const {
+      documentObj,
+      campaignPlaces,
+      campaignPlacesText,
+      campaignClockText,
+    } = createLedgerDocument();
     startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
     const page = mockStartMosslightPage.mock.calls[0][0];
 
@@ -551,12 +556,14 @@ describe('THREEFOLD campaign places page', () => {
             { id: 'broken-gate', label: 'Broken Gate', active: true },
             { id: 'silt-margin', label: 'Silt Margin', active: false },
           ],
+          campaignClock: { elapsedGameSeconds: 90 },
         },
       }
     );
 
     expect(campaignPlaces.hidden).toBe(false);
-    expect(campaignPlaces.summary.textContent).toBe('Places in this campaign');
+    expect(campaignPlaces.summary.textContent).toBe('Campaign status');
+    expect(campaignClockText.textContent).toBe('Campaign elapsed: 0h 1m 30s');
     expect(campaignPlacesText.textContent).toBe(
       'Broken Gate (current) · Silt Margin (saved)'
     );
@@ -569,6 +576,7 @@ describe('THREEFOLD campaign places page', () => {
             { id: 'broken-gate', label: 'Broken Gate', active: true },
             { id: 'silt-margin', label: 'Silt Margin', active: false },
           ],
+          campaignClock: { elapsedGameSeconds: 90 },
         },
       }
     );
@@ -580,6 +588,7 @@ describe('THREEFOLD campaign places page', () => {
           campaignPlaces: [
             { id: 'broken-gate', label: 'Broken Gate', active: true },
           ],
+          campaignClock: { elapsedGameSeconds: Number.NaN },
         },
       }
     );
@@ -1074,6 +1083,7 @@ function createLedgerDocument() {
     },
   };
   const campaignPlacesText = { textContent: '' };
+  const campaignClockText = { textContent: '' };
   const campaignPlaces = {
     hidden: true,
     summary: { textContent: 'Old campaign places' },
@@ -1172,6 +1182,7 @@ function createLedgerDocument() {
     list,
     campaignPlaces,
     campaignPlacesText,
+    campaignClockText,
     testimonyList,
     responsibility,
     iriRepairLog,
@@ -1199,6 +1210,7 @@ function createLedgerDocument() {
         if (selector === '#witness-ledger-entries') return list;
         if (selector === '#campaign-places') return campaignPlaces;
         if (selector === '#campaign-places-text') return campaignPlacesText;
+        if (selector === '#campaign-clock-text') return campaignClockText;
         if (selector === '#testimony-accounts') return testimonyList;
         if (selector === '#testimony-responsibility') return responsibility;
         if (selector === '#iri-repair-log') return iriRepairLog;

@@ -61,6 +61,11 @@ import {
   THREEFOLD_GATE_REPAIR_GEOMETRY_IDS,
 } from './episode.js';
 import { normalizeThreefoldSluicePuzzle } from './water-puzzle.js';
+import {
+  normalizeThreefoldElapsedGameSeconds,
+  restoreThreefoldCampaignClock,
+  serializeThreefoldCampaignClock,
+} from './campaign-clock.js';
 
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
@@ -89,6 +94,7 @@ const WEFTWAYS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.weftways';
 const GRAINLANDS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.grainlands';
+const CAMPAIGN_CLOCK_SAVE_KEY = 'dadeto.threefold.campaign-clock.v1';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -123,6 +129,20 @@ export function createThreefoldScaleSaveStore(storage) {
     SAVE_KEY,
     serializeThreefoldScaleSave,
     restoreThreefoldScaleSave
+  );
+}
+
+/**
+ * Bind the campaign-wide deterministic clock to its own storage entry.
+ * @param {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem?: (key: string) => void}|null|undefined} storage Storage boundary supplied by the caller.
+ * @returns {{load: () => {elapsedGameSeconds: number}|null, save: (state: {elapsedGameSeconds: number}) => boolean, clear: () => boolean}} Campaign clock save operations.
+ */
+export function createThreefoldCampaignClockSaveStore(storage) {
+  return createSaveStore(
+    storage,
+    CAMPAIGN_CLOCK_SAVE_KEY,
+    serializeThreefoldCampaignClock,
+    restoreThreefoldCampaignClock
   );
 }
 
@@ -174,7 +194,10 @@ export function serializeThreefoldSimulation(simulation) {
     );
   const elapsedGameSeconds = getSimulationElapsedGameSeconds(simulation);
   if (elapsedGameSeconds !== null)
-    state.elapsedGameSeconds = normalizeElapsedGameSeconds(elapsedGameSeconds);
+    state.elapsedGameSeconds = normalizeThreefoldElapsedGameSeconds(
+      elapsedGameSeconds,
+      'Small-world'
+    );
   return JSON.stringify({
     game: GAME_ID,
     schemaVersion: isSluiceSimulationState(simulation)
@@ -442,7 +465,10 @@ function restoreTimedScene(restoredState, state, scene, sceneState = {}) {
     ...restoredState,
     ...sceneState,
     scene,
-    elapsedGameSeconds: normalizeElapsedGameSeconds(state.elapsedGameSeconds),
+    elapsedGameSeconds: normalizeThreefoldElapsedGameSeconds(
+      state.elapsedGameSeconds,
+      'Small-world'
+    ),
   });
 }
 
@@ -636,19 +662,4 @@ function getThreefoldSimulationSaveKey(sceneId) {
   if (isThreefoldHighWorldSceneId(sceneId))
     return `${SIMULATION_SAVE_KEY}.${sceneId}`;
   return SIMULATION_SAVE_KEY;
-}
-
-/**
- * Validate explicit elapsed game seconds stored by a small-world scene.
- * @param {unknown} candidate Candidate elapsed time in seconds.
- * @returns {number} Non-negative finite in-game duration.
- */
-function normalizeElapsedGameSeconds(candidate) {
-  if (
-    typeof candidate !== 'number' ||
-    !Number.isFinite(candidate) ||
-    candidate < 0
-  )
-    throw new RangeError('Small-world elapsed game time is invalid.');
-  return candidate;
 }

@@ -1,4 +1,5 @@
 import {
+  createThreefoldCampaignClockSaveStore,
   createThreefoldSimulationSaveStore,
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
@@ -12,8 +13,13 @@ import {
   isHighWorldSimulationState,
   isWeftwaysSimulationState,
   previewThreefoldGrowthEffects,
+  getThreefoldWorldActionDurationSeconds,
   stepThreefoldSimulation,
 } from './simulation.js';
+import {
+  advanceThreefoldCampaignClock,
+  createThreefoldCampaignClock,
+} from './campaign-clock.js';
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
@@ -47,6 +53,7 @@ export function createThreefoldRuntime(options = {}) {
     createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
   const save =
     opts.save || createThreefoldSimulationSaveStore(storage, scene?.id);
+  const campaignClockSave = createThreefoldCampaignClockSaveStore(storage);
   const brokenGateCampaignState =
     scene?.id === THREEFOLD_BELLTOPS_SCENE_ID
       ? createThreefoldSimulationSaveStore(storage).load()
@@ -69,6 +76,8 @@ export function createThreefoldRuntime(options = {}) {
       : createInitialState();
   };
   let state = loadInitialState();
+  let campaignClock =
+    campaignClockSave.load() || createThreefoldCampaignClock();
   let running = false;
   let accumulator = 0;
   let tick = 0;
@@ -88,13 +97,17 @@ export function createThreefoldRuntime(options = {}) {
         ...rendered.threefold,
         ...(harborCampaign || {}),
         campaignPlaces: campaignPlaces(),
+        campaignClock: { ...campaignClock },
       },
     };
   };
   const snapshot = () => ({
     ...state,
     tick,
-    campaign: { places: campaignPlaces() },
+    campaign: {
+      places: campaignPlaces(),
+      clock: { ...campaignClock },
+    },
     world: {
       map: {
         name:
@@ -144,7 +157,7 @@ export function createThreefoldRuntime(options = {}) {
      * @returns {ReturnType<typeof stepThreefoldSimulation>} Updated simulation state.
      */
     const dispatchAction = action =>
-      stepThreefoldSimulation(state, { ...action, preActionFrame: frame() });
+      applyWorldAction({ ...action, preActionFrame: frame() });
     const direction = DIRECTIONS.find(action => pressed.has(action));
     if (direction) state = dispatchAction({ type: 'move', direction });
     else if (pressed.has('a') && !previousActions.has('a')) {
@@ -183,6 +196,27 @@ export function createThreefoldRuntime(options = {}) {
     return frame();
   }
 
+  /**
+   * Apply one player action and advance the independent campaign clock.
+   * @param {{type: string, direction?: string, elapsedGameMinutes?: number, preActionFrame?: Record<string, any>}} action Normalized world action.
+   * @returns {ReturnType<typeof stepThreefoldSimulation>} Updated simulation state.
+   */
+  function applyWorldAction(action) {
+    const elapsedGameSeconds = getThreefoldWorldActionDurationSeconds(
+      state,
+      action
+    );
+    state = stepThreefoldSimulation(state, action);
+    if (elapsedGameSeconds !== null) {
+      campaignClock = advanceThreefoldCampaignClock(
+        campaignClock,
+        elapsedGameSeconds
+      );
+      campaignClockSave.save(campaignClock);
+    }
+    return state;
+  }
+
   return {
     start: () => setRunning(true),
     pause: () => setRunning(false),
@@ -206,7 +240,7 @@ export function createThreefoldRuntime(options = {}) {
       const action = typeof command === 'string' ? command : command?.type;
       const normalized = normalizeCommand(action, command);
       if (normalized) {
-        state = stepThreefoldSimulation(state, {
+        applyWorldAction({
           ...normalized,
           preActionFrame: frame(),
         });

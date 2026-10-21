@@ -287,7 +287,8 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldCampaignPlaces(
         options.documentObj,
-        frame.threefold?.campaignPlaces || []
+        frame.threefold?.campaignPlaces || [],
+        frame.threefold?.campaignClock?.elapsedGameSeconds ?? 0
       );
       renderThreefoldTestimony(
         options.documentObj,
@@ -611,17 +612,33 @@ function renderThreefoldDisclosurePanel(
  * Show a compact index of the current and saved regions.
  * @param {any} documentObj Standalone page document adapter.
  * @param {Array<{id: string, label: string, active: boolean}>} places Current and saved authored regions.
+ * @param {number} elapsedGameSeconds Campaign-wide elapsed in-game time.
  * @returns {void}
  */
-function renderThreefoldCampaignPlaces(documentObj, places) {
+function renderThreefoldCampaignPlaces(
+  documentObj,
+  places,
+  elapsedGameSeconds
+) {
   const panel = documentObj?.querySelector?.('#campaign-places');
   const text = documentObj?.querySelector?.('#campaign-places-text');
-  if (!panel || !text) return;
-  panel.hidden = places.length < 2;
-  if (places.length < 2) return;
+  const clockText = documentObj?.querySelector?.('#campaign-clock-text');
+  if (!panel || !text || !clockText) return;
+  const safeElapsedGameSeconds =
+    Number.isFinite(elapsedGameSeconds) && elapsedGameSeconds >= 0
+      ? Math.floor(elapsedGameSeconds)
+      : 0;
+  panel.hidden = places.length < 2 && safeElapsedGameSeconds === 0;
+  if (panel.hidden) return;
   const summary = panel.querySelector?.('summary');
-  if (summary && summary.textContent !== 'Places in this campaign')
-    summary.textContent = 'Places in this campaign';
+  if (summary && summary.textContent !== 'Campaign status')
+    summary.textContent = 'Campaign status';
+  const hours = Math.floor(safeElapsedGameSeconds / 3600);
+  const minutes = Math.floor((safeElapsedGameSeconds % 3600) / 60);
+  const seconds = safeElapsedGameSeconds % 60;
+  const clockContent = `Campaign elapsed: ${hours}h ${minutes}m ${seconds}s`;
+  if (clockText.textContent !== clockContent)
+    clockText.textContent = clockContent;
   const content = places
     .map(place => `${place.label} (${place.active ? 'current' : 'saved'})`)
     .join(' · ');

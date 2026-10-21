@@ -1,5 +1,9 @@
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import {
+  getThreefoldActionDurationSeconds,
+  THREEFOLD_ACTION_GAME_SECONDS,
+} from './campaign-clock.js';
+import {
   advanceThreefoldEpisode,
   attemptThreefoldGateRepair,
   canHelpThreefoldDisplacedLatchfolk,
@@ -67,7 +71,7 @@ import {
   recoverAnchor,
 } from './spatial.js';
 
-const ACTION_GAME_MINUTES = 0.25;
+const ACTION_GAME_MINUTES = THREEFOLD_ACTION_GAME_SECONDS / 60;
 const ANCHOR_RECOVERY_MINUTES = 15;
 
 /** @typedef {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>}} BrokenGateSimulationState */
@@ -308,6 +312,18 @@ export function stepThreefoldSimulation(state, action) {
   const nextState = stepThreefoldAction(state, action);
   if (!action || !state || !nextState || state === nextState) return nextState;
   return recordGateWitnessEvent(state, nextState, action);
+}
+
+/**
+ * Return the deterministic duration of a world action for campaign time.
+ * Closed episodes and non-world commands do not advance the campaign clock.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current simulation.
+ * @param {ThreefoldWorldAction|null|undefined} action Candidate player action.
+ * @returns {number|null} Elapsed game seconds, or null for an inert action.
+ */
+export function getThreefoldWorldActionDurationSeconds(state, action) {
+  if (!state || isEpisodeClosed(state)) return null;
+  return getThreefoldActionDurationSeconds(action, state.scene.id);
 }
 
 /**
@@ -1057,15 +1073,7 @@ function growPlayerAtScene(state) {
 function smallWorldActionDurationSeconds(action) {
   if (!['move', 'grow', 'shrink', 'interact', 'wait'].includes(action.type))
     return null;
-  if (action.type !== 'wait') return ACTION_GAME_MINUTES * 60;
-  const elapsedGameMinutes = action.elapsedGameMinutes;
-  if (
-    typeof elapsedGameMinutes !== 'number' ||
-    !Number.isFinite(elapsedGameMinutes) ||
-    elapsedGameMinutes <= 0
-  )
-    return null;
-  return elapsedGameMinutes * 60;
+  return getThreefoldActionDurationSeconds(action, 'small-world');
 }
 
 /**

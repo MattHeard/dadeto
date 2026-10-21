@@ -184,6 +184,77 @@ describe('THREEFOLD handheld runtime', () => {
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0);
   });
 
+  test('persists campaign time across routes without merging their local clocks', () => {
+    const storage = createStorageAdapter();
+    const hearthgaps = createThreefoldRuntime({
+      scene: createThreefoldHearthgapsScene(),
+      storage,
+    });
+
+    hearthgaps.dispatch({ type: 'wait', elapsedGameMinutes: 2 });
+    expect(hearthgaps.getSnapshot().campaign.clock).toEqual({
+      elapsedGameSeconds: 120,
+    });
+    expect(hearthgaps.getState().elapsedGameSeconds).toBe(120);
+
+    const belltops = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+    expect(belltops.getSnapshot().campaign.clock).toEqual({
+      elapsedGameSeconds: 120,
+    });
+    expect(belltops.getState().elapsedGameSeconds).toBe(0);
+
+    belltops.dispatch('right');
+    expect(belltops.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(135);
+    expect(belltops.getState().elapsedGameSeconds).toBe(15);
+
+    const returnedHearthgaps = createThreefoldRuntime({
+      scene: createThreefoldHearthgapsScene(),
+      storage,
+    });
+    expect(
+      returnedHearthgaps.getSnapshot().campaign.clock.elapsedGameSeconds
+    ).toBe(135);
+    expect(returnedHearthgaps.getState().elapsedGameSeconds).toBe(120);
+    returnedHearthgaps.resetSave();
+    expect(
+      returnedHearthgaps.getSnapshot().campaign.clock.elapsedGameSeconds
+    ).toBe(135);
+    expect(returnedHearthgaps.getState().elapsedGameSeconds).toBe(0);
+  });
+
+  test('advances campaign time for explicit world actions only', () => {
+    const runtime = createThreefoldRuntime(new Map());
+    runtime.pause();
+    runtime.step(125, ['right']);
+    runtime.dispatch('pause');
+    runtime.dispatch('unsupported');
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 0 });
+    expect(runtime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(0);
+
+    runtime.dispatch('right');
+    expect(runtime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(15);
+
+    const closed = createThreefoldSimulation(
+      { urgentAtMinutes: 4, surgeAtMinutes: 9, aftermathAtMinutes: 15 },
+      createBrokenGateScene()
+    );
+    const closedRuntime = createThreefoldRuntime({
+      save: {
+        load: () => ({
+          ...closed,
+          episode: { ...closed.episode, closedBy: 'reported' },
+        }),
+      },
+    });
+    closedRuntime.dispatch('right');
+    expect(closedRuntime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(
+      0
+    );
+  });
+
   test('maps A to fight and X to bypass when the rat is in reach', () => {
     const runtime = createThreefoldRuntime(new Map());
     runtime.start();
