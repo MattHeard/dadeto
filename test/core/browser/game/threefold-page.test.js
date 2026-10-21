@@ -572,9 +572,12 @@ describe('THREEFOLD campaign places page', () => {
     expect(campaignIriFateText.hidden).toBe(true);
 
     for (const [outcome, expected] of [
-      ['alive', 'Iri is alive at the pressure regulator.'],
-      ['escaped', 'Iri escaped the pressure regulator.'],
-      ['dead', 'Iri died at the pressure regulator.'],
+      ['trapped', 'Iri is trapped maintaining the pressure regulator.'],
+      ['rescued', 'Mara rescued Iri from the pressure regulator.'],
+      ['escaped', 'Iri escaped before Mara reached the pressure regulator.'],
+      ['dead', 'Iri died before Mara reached the pressure regulator.'],
+      ['evacuated', 'Another crew evacuated Iri from the pressure regulator.'],
+      ['abandoned', 'Iri was abandoned at the pressure regulator.'],
     ]) {
       page.drawFrame(
         {},
@@ -614,7 +617,26 @@ describe('THREEFOLD campaign places page', () => {
       }
     );
     expect(campaignIriFateText.textContent).toBe(
-      'Iri died at the pressure regulator.'
+      'Iri died before Mara reached the pressure regulator.'
+    );
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: 0 },
+          campaignIriFate: {
+            outcome: 'dead',
+            milestoneId: 'regulator-failure',
+            elapsedGameSeconds: 0,
+          },
+        },
+      }
+    );
+    expect(campaignIriFateText.textContent).toBe(
+      'Iri died before Mara reached the pressure regulator.'
     );
 
     page.drawFrame(

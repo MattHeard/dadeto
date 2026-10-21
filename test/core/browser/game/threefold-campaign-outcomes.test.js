@@ -18,30 +18,76 @@ describe('THREEFOLD campaign outcomes', () => {
   });
 
   test('records authored outcomes at campaign milestones and prevents backtracking', () => {
-    const alive = recordThreefoldIriFate(createThreefoldCampaignOutcomes(), {
-      outcome: 'alive',
+    const trapped = recordThreefoldIriFate(createThreefoldCampaignOutcomes(), {
+      outcome: 'trapped',
       milestoneId: 'regulator-encounter',
       elapsedGameSeconds: 30,
     });
-    expect(alive.iriFate).toEqual({
-      outcome: 'alive',
+    expect(trapped.iriFate).toEqual({
+      outcome: 'trapped',
       milestoneId: 'regulator-encounter',
       elapsedGameSeconds: 30,
     });
 
-    const escaped = recordThreefoldIriFate(alive, {
+    const abandoned = recordThreefoldIriFate(trapped, {
+      outcome: 'abandoned',
+      milestoneId: 'regulator-left-unattended',
+      elapsedGameSeconds: 40,
+    });
+    const rescued = recordThreefoldIriFate(abandoned, {
+      outcome: 'rescued',
+      milestoneId: 'regulator-rescue',
+      elapsedGameSeconds: 50,
+    });
+    expect(rescued.iriFate.outcome).toBe('rescued');
+    expect(
+      recordThreefoldIriFate(rescued, {
+        outcome: 'abandoned',
+        milestoneId: 'rescue-reversal',
+        elapsedGameSeconds: 60,
+      })
+    ).toEqual(rescued);
+
+    const escaped = recordThreefoldIriFate(trapped, {
       outcome: 'escaped',
-      milestoneId: 'regulator-evacuation',
+      milestoneId: 'regulator-escape',
       elapsedGameSeconds: 45,
     });
     expect(escaped.iriFate.outcome).toBe('escaped');
     expect(
       recordThreefoldIriFate(escaped, {
-        outcome: 'alive',
-        milestoneId: 'stale-alive-milestone',
+        outcome: 'trapped',
+        milestoneId: 'late-regulator-arrival',
         elapsedGameSeconds: 60,
       })
     ).toEqual(escaped);
+    expect(
+      recordThreefoldIriFate(escaped, {
+        outcome: 'abandoned',
+        milestoneId: 'late-abandonment',
+        elapsedGameSeconds: 60,
+      })
+    ).toEqual(escaped);
+    expect(
+      recordThreefoldIriFate(escaped, {
+        outcome: 'rescued',
+        milestoneId: 'late-rescue',
+        elapsedGameSeconds: 60,
+      })
+    ).toEqual(escaped);
+
+    const evacuated = recordThreefoldIriFate(trapped, {
+      outcome: 'evacuated',
+      milestoneId: 'crew-evacuation',
+      elapsedGameSeconds: 45,
+    });
+    expect(
+      recordThreefoldIriFate(evacuated, {
+        outcome: 'trapped',
+        milestoneId: 'late-regulator-arrival',
+        elapsedGameSeconds: 60,
+      })
+    ).toEqual(evacuated);
 
     const dead = recordThreefoldIriFate(escaped, {
       outcome: 'dead',
@@ -73,20 +119,59 @@ describe('THREEFOLD campaign outcomes', () => {
   });
 
   test('roundtrips a campaign-specific versioned envelope', () => {
-    const outcomes = {
-      iriFate: {
-        outcome: 'escaped',
-        milestoneId: 'regulator-evacuation',
-        elapsedGameSeconds: 540,
-      },
-    };
-    const serialized = serializeThreefoldCampaignOutcomes(outcomes);
-    expect(restoreThreefoldCampaignOutcomes(serialized)).toEqual(outcomes);
+    for (const outcome of [
+      'trapped',
+      'rescued',
+      'escaped',
+      'dead',
+      'evacuated',
+      'abandoned',
+    ]) {
+      const outcomes = {
+        iriFate: {
+          outcome,
+          milestoneId: 'regulator-encounter',
+          elapsedGameSeconds: 540,
+        },
+      };
+      const serialized = serializeThreefoldCampaignOutcomes(outcomes);
+      expect(JSON.parse(serialized).schemaVersion).toBe(2);
+      expect(restoreThreefoldCampaignOutcomes(serialized)).toEqual(outcomes);
+    }
     expect(
       restoreThreefoldCampaignOutcomes(
         serializeThreefoldCampaignOutcomes(createThreefoldCampaignOutcomes())
       )
     ).toEqual({ iriFate: null });
+  });
+
+  test('migrates version-one living status without losing campaign evidence', () => {
+    const legacyEnvelope = outcome =>
+      JSON.stringify({
+        game: 'threefold-campaign-outcomes',
+        schemaVersion: 1,
+        state: {
+          iriFate: {
+            outcome,
+            milestoneId: 'regulator-encounter',
+            elapsedGameSeconds: 30,
+          },
+        },
+      });
+    expect(restoreThreefoldCampaignOutcomes(legacyEnvelope('alive'))).toEqual({
+      iriFate: {
+        outcome: 'trapped',
+        milestoneId: 'regulator-encounter',
+        elapsedGameSeconds: 30,
+      },
+    });
+    expect(
+      restoreThreefoldCampaignOutcomes(legacyEnvelope('escaped')).iriFate
+        .outcome
+    ).toBe('escaped');
+    expect(restoreThreefoldCampaignOutcomes(legacyEnvelope('trapped'))).toBe(
+      null
+    );
   });
 
   test('rejects unrelated, unsupported, and malformed campaign outcome saves', () => {
@@ -99,7 +184,7 @@ describe('THREEFOLD campaign outcomes', () => {
       restoreThreefoldCampaignOutcomes(
         JSON.stringify({
           game: 'threefold-campaign-outcomes',
-          schemaVersion: 2,
+          schemaVersion: 3,
           state: { iriFate: null },
         })
       )
@@ -109,6 +194,21 @@ describe('THREEFOLD campaign outcomes', () => {
         JSON.stringify({
           game: 'threefold-campaign-outcomes',
           schemaVersion: 1,
+        })
+      )
+    ).toBeNull();
+    expect(
+      restoreThreefoldCampaignOutcomes(
+        JSON.stringify({
+          game: 'threefold-campaign-outcomes',
+          schemaVersion: 2,
+          state: {
+            iriFate: {
+              outcome: 'unknown',
+              milestoneId: 'regulator-encounter',
+              elapsedGameSeconds: 30,
+            },
+          },
         })
       )
     ).toBeNull();
@@ -131,21 +231,21 @@ describe('THREEFOLD campaign outcomes', () => {
     ).toThrow('Campaign Iri fate is invalid.');
     expect(() =>
       createThreefoldCampaignOutcomes({
-        outcome: 'alive',
+        outcome: 'trapped',
         milestoneId: 1,
         elapsedGameSeconds: 30,
       })
     ).toThrow('Campaign Iri fate is invalid.');
     expect(() =>
       createThreefoldCampaignOutcomes({
-        outcome: 'alive',
+        outcome: 'trapped',
         milestoneId: 'Regulator Encounter',
         elapsedGameSeconds: 30,
       })
     ).toThrow('Campaign Iri fate is invalid.');
     expect(() =>
       createThreefoldCampaignOutcomes({
-        outcome: 'alive',
+        outcome: 'trapped',
         milestoneId: 'regulator-encounter',
         elapsedGameSeconds: -1,
       })
@@ -200,7 +300,9 @@ describe('THREEFOLD campaign outcomes', () => {
     expect(brokenGate.getSnapshot().campaign.iriFate).toBeNull();
     expect(brokenGate.frame().threefold.campaignIriFate).toBeNull();
 
-    expect(brokenGate.recordIriFate('alive', 'regulator-encounter')).toBe(true);
+    expect(brokenGate.recordIriFate('trapped', 'regulator-encounter')).toBe(
+      true
+    );
     brokenGate.dispatch('right');
     expect(brokenGate.recordIriFate('escaped', 'regulator-evacuation')).toBe(
       true
@@ -221,7 +323,7 @@ describe('THREEFOLD campaign outcomes', () => {
       storage,
     });
     expect(otherRoute.getSnapshot().campaign.iriFate).toEqual(fate);
-    expect(otherRoute.recordIriFate('alive', 'stale-regulator-report')).toBe(
+    expect(otherRoute.recordIriFate('trapped', 'stale-regulator-report')).toBe(
       false
     );
     expect(otherRoute.frame().threefold.campaignIriFate).toEqual(fate);

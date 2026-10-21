@@ -614,7 +614,7 @@ function renderThreefoldDisclosurePanel(
  * @param {any} documentObj Standalone page document adapter.
  * @param {Array<{id: string, label: string, active: boolean}>} places Current and saved authored regions.
  * @param {number} elapsedGameSeconds Campaign-wide elapsed in-game time.
- * @param {{outcome: 'alive'|'escaped'|'dead', milestoneId: string, elapsedGameSeconds: number}|null} iriFate Resolved Iri campaign outcome, kept hidden until discovered.
+ * @param {import('./campaign-outcomes.js').ThreefoldIriFate|null} iriFate Resolved Iri campaign outcome, kept hidden until discovered.
  * @returns {void}
  */
 function renderThreefoldCampaignPlaces(
@@ -651,9 +651,12 @@ function renderThreefoldCampaignPlaces(
   if (text.textContent !== content) text.textContent = content;
   if (iriFate !== null) {
     const descriptions = {
-      alive: 'Iri is alive at the pressure regulator.',
-      escaped: 'Iri escaped the pressure regulator.',
-      dead: 'Iri died at the pressure regulator.',
+      trapped: 'Iri is trapped maintaining the pressure regulator.',
+      rescued: 'Mara rescued Iri from the pressure regulator.',
+      escaped: 'Iri escaped before Mara reached the pressure regulator.',
+      dead: 'Iri died before Mara reached the pressure regulator.',
+      evacuated: 'Another crew evacuated Iri from the pressure regulator.',
+      abandoned: 'Iri was abandoned at the pressure regulator.',
     };
     const fateContent = descriptions[iriFate.outcome];
     if (!fateContent) {

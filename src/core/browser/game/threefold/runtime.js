@@ -234,7 +234,7 @@ export function createThreefoldRuntime(options = {}) {
 
   /**
    * Record a story-authored Iri outcome at the current campaign milestone.
-   * @param {'alive'|'escaped'|'dead'} outcome Resolved campaign fate.
+   * @param {import('./campaign-outcomes.js').ThreefoldIriOutcome} outcome Resolved campaign state.
    * @param {string} milestoneId Stable identifier for the authored event.
    * @returns {boolean} Whether a valid outcome transition was persisted.
    */

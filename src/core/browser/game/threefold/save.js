@@ -154,7 +154,7 @@ export function createThreefoldCampaignClockSaveStore(storage) {
 /**
  * Bind explicit campaign outcomes to storage outside all route saves.
  * @param {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem?: (key: string) => void}|null|undefined} storage Storage boundary supplied by the caller.
- * @returns {{load: () => {iriFate: {outcome: 'alive'|'escaped'|'dead', milestoneId: string, elapsedGameSeconds: number}|null}|null, save: (state: {iriFate: {outcome: 'alive'|'escaped'|'dead', milestoneId: string, elapsedGameSeconds: number}|null}) => boolean, clear: () => boolean}} Campaign outcome save operations.
+ * @returns {{load: () => {iriFate: import('./campaign-outcomes.js').ThreefoldIriFate|null}|null, save: (state: {iriFate: import('./campaign-outcomes.js').ThreefoldIriFate|null}) => boolean, clear: () => boolean}} Campaign outcome save operations.
  */
 export function createThreefoldCampaignOutcomesSaveStore(storage) {
   return createSaveStore(
