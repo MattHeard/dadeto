@@ -384,7 +384,7 @@ describe('THREEFOLD page adapter', () => {
       href: '/threefold/?scene=crownback-reach',
     });
     expect(nodes.get('#interact-control').hidden).toBe(false);
-    expect(nodes.get('#e-control-label').textContent).toBe('CHECK REGULATOR');
+    expect(nodes.get('#e-control-label').textContent).toBe('QUAY ACTION');
   });
 
   test('tolerates a document without the witness ledger list', () => {

@@ -180,18 +180,19 @@ const BELLTOPS_PAGE_COPY = {
       'The watchtower and harbor crane stand within Mara’s next growth ' +
         'footprint. Iri maintains the pressure regulator beside the Quay ' +
         'control panel; Orla keeps the tower watch, while stormbirds ride the ' +
-        'roofline. E checks the regulator. A shows the structures and ' +
-        'residents at risk; B lets Mara step down to +1.',
+        'roofline. E operates the nearest reachable panel or crane drive. ' +
+        'Check Iri, then release them or fit the crane governor first; taking it disables harbor lifting. ' +
+        'The HUD and campaign status show each action and its risk. A still grows into its displayed footprint; B steps down to +1.',
     ],
     ['#scene-link', 'Continue to Crownback Reach'],
     [
       '#game-footer',
-      'Harbor geometry and resident fates persist in the Belltops save.',
+      'Regional geometry and shared machinery/fates persist across visits.',
     ],
   ]),
   href: '/threefold/?scene=crownback-reach',
-  ariaLabel: 'Check the Quay pressure regulator when in reach',
-  interactionLabel: 'CHECK REGULATOR',
+  ariaLabel: 'Use the nearest reachable Quay panel or crane drive',
+  interactionLabel: 'QUAY ACTION',
 };
 const CROWNBACK_REACH_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([

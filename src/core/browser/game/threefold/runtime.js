@@ -1,4 +1,9 @@
 import {
+  applyThreefoldQuayInteraction,
+  getThreefoldQuayContent,
+  hasThreefoldQuayIriDeath,
+} from './quay-regulator.js';
+import {
   advanceThreefoldPressureNetwork,
   createThreefoldPressureNetwork,
   describeThreefoldPressureNetwork,
@@ -40,7 +45,6 @@ import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import {
-  isThreefoldBelltopsRegulatorInReach,
   THREEFOLD_BELLTOPS_IRI_ID,
   THREEFOLD_BELLTOPS_SCENE_ID,
 } from './belltops.js';
@@ -115,6 +119,8 @@ export function createThreefoldRuntime(options = {}) {
       { ...savedCampaignRuns, [state.scene.id]: state },
       state.scene.id
     );
+  const quayContent = () =>
+    getThreefoldQuayContent(state, pressureNetwork, campaignOutcomes.iriFate);
   const campaignPressure = () => {
     const sites = getThreefoldCampaignPressureState({
       ...savedCampaignRuns,
@@ -126,16 +132,25 @@ export function createThreefoldRuntime(options = {}) {
         label: describeThreefoldPressureNetwork(pressureNetwork),
         state: pressureNetwork.nurseryFlooded ? 'flooded' : 'dry',
       });
+    const quay = quayContent();
+    if (quay)
+      sites.push({
+        id: 'quay-machinery',
+        label: quay.text,
+        state: quay.craneAvailable ? 'available' : 'unavailable',
+      });
     return sites;
   };
 
   const frame = () => {
-    const rendered = renderThreefoldFrame(state, pressureNetwork);
+    const quay = quayContent();
+    const rendered = renderThreefoldFrame(state, pressureNetwork, quay);
     return {
       ...rendered,
       threefold: {
         ...rendered.threefold,
         ...(harborCampaign || {}),
+        quayRegulator: quay,
         campaignPlaces: campaignPlaces(),
         campaignPressure: campaignPressure(),
         campaignClock: { ...campaignClock },
@@ -258,18 +273,15 @@ export function createThreefoldRuntime(options = {}) {
       state,
       action
     );
-    const discoversTrappedIri =
-      !campaignOutcomes.iriFate &&
-      action.type === 'interact' &&
-      !state.encounter.growthDeaths?.some(
-        (/** @type {{creatureId: string}} */ death) =>
-          death.creatureId === THREEFOLD_BELLTOPS_IRI_ID
-      ) &&
-      isThreefoldBelltopsRegulatorInReach(state);
-    const hadIriGrowthDeath = state.encounter.growthDeaths?.some(
-      (/** @type {{creatureId: string}} */ death) =>
-        death.creatureId === THREEFOLD_BELLTOPS_IRI_ID
-    );
+    const quayAction =
+      action.type === 'interact'
+        ? applyThreefoldQuayInteraction(
+            state,
+            pressureNetwork,
+            campaignOutcomes.iriFate
+          )
+        : null;
+    const hadIriGrowthDeath = hasThreefoldQuayIriDeath(state);
     state = stepThreefoldSimulation(state, action);
     if (elapsedGameSeconds !== null) {
       campaignClock = advanceThreefoldCampaignClock(
@@ -278,12 +290,9 @@ export function createThreefoldRuntime(options = {}) {
       );
       campaignClockSave.save(campaignClock);
     }
-    const hasIriGrowthDeath = state.encounter.growthDeaths?.some(
-      (/** @type {{creatureId: string}} */ death) =>
-        death.creatureId === THREEFOLD_BELLTOPS_IRI_ID
-    );
-    if (discoversTrappedIri) {
-      recordIriFate('trapped', 'quay-regulator-found');
+    const hasIriGrowthDeath = hasThreefoldQuayIriDeath(state);
+    if (quayAction?.outcome) {
+      recordIriFate(quayAction.outcome, quayAction.milestoneId);
     } else if (
       action.type === 'grow' &&
       !hadIriGrowthDeath &&
@@ -292,7 +301,11 @@ export function createThreefoldRuntime(options = {}) {
       recordIriFate('dead', 'quay-regulator-growth');
     }
     if (elapsedGameSeconds !== null)
-      synchronizePressureNetwork(action, elapsedGameSeconds);
+      synchronizePressureNetwork(
+        action,
+        elapsedGameSeconds,
+        quayAction?.network || pressureNetwork
+      );
     return state;
   }
 
@@ -310,6 +323,7 @@ export function createThreefoldRuntime(options = {}) {
     });
     if (JSON.stringify(next) === JSON.stringify(campaignOutcomes)) return false;
     campaignOutcomes = next;
+    projectCampaignIri();
     return campaignOutcomesSave.save(campaignOutcomes);
   }
 
@@ -317,9 +331,14 @@ export function createThreefoldRuntime(options = {}) {
    * Apply observed route controls to the shared water and retain permanent damage.
    * @param {{type: string}} action Explicit action, or a zero-duration load marker.
    * @param {number} durationSeconds Elapsed deterministic game seconds.
+   * @param {import('./pressure-network.js').ThreefoldPressureNetwork} [base] Current action machinery changes before water advances.
    * @returns {void}
    */
-  function synchronizePressureNetwork(action, durationSeconds) {
+  function synchronizePressureNetwork(
+    action,
+    durationSeconds,
+    base = pressureNetwork
+  ) {
     const runs =
       /** @type {Record<string, ReturnType<typeof createThreefoldSimulation>|null>} */ ({
         ...savedCampaignRuns,
@@ -327,9 +346,13 @@ export function createThreefoldRuntime(options = {}) {
       });
     const facts = getThreefoldCampaignPressureState(runs);
     const nursery = runs.grainlands;
+    const quay = runs.belltops;
     const nextPressureNetwork = advanceThreefoldPressureNetwork(
-      pressureNetwork,
+      base,
       {
+        craneDestroyed:
+          quay?.player.destroyedGeometryIds.includes('belltops-harbor-crane') ||
+          false,
         regulatorFailed: facts.some(
           site => site.id === 'belltops-quay' && site.state === 'damaged'
         ),
@@ -358,6 +381,7 @@ export function createThreefoldRuntime(options = {}) {
       pressureSave.save(pressureNetwork);
     }
     projectPressureDamage();
+    projectCampaignIri();
   }
 
   /**
@@ -372,20 +396,60 @@ export function createThreefoldRuntime(options = {}) {
         active: pressureNetwork.regulatorFailed,
       },
       {
+        sceneId: 'belltops',
+        id: 'belltops-harbor-crane',
+        active: pressureNetwork.craneDestroyed,
+      },
+      {
         sceneId: 'grainlands',
         id: THREEFOLD_GRAINLANDS_NURSERY_ID,
         active: pressureNetwork.nurseryDamaged,
       },
-    ].find(item => item.sceneId === state.scene.id && item.active);
-    if (!damage || state.player.destroyedGeometryIds.includes(damage.id))
-      return;
+    ].filter(
+      item =>
+        item.sceneId === state.scene.id &&
+        item.active &&
+        !state.player.destroyedGeometryIds.includes(item.id)
+    );
+    if (damage.length === 0) return;
     state = {
       ...state,
       player: {
         ...state.player,
-        destroyedGeometryIds: [...state.player.destroyedGeometryIds, damage.id],
+        destroyedGeometryIds: [
+          ...state.player.destroyedGeometryIds,
+          ...damage.map(item => item.id),
+        ].sort(),
       },
     };
+  }
+
+  /**
+   * Keep departed Iri out of later collision previews without inventing a death.
+   * Preserve a locally recorded growth corpse; a region reset cannot revive it.
+   * @returns {void}
+   */
+  function projectCampaignIri() {
+    const fate = campaignOutcomes.iriFate;
+    if (!fate && !pressureNetwork.operatorReleased) return;
+    const outcome = fate?.outcome || '';
+    const hasLocalDeath = hasThreefoldQuayIriDeath(state);
+    const departed =
+      pressureNetwork.operatorReleased ||
+      ['rescued', 'escaped', 'evacuated'].includes(outcome) ||
+      (outcome === 'dead' && !hasLocalDeath);
+    if (!departed) return;
+    const residents = /** @type {Array<{id: string}>} */ (
+      state.scene.creatures
+    );
+    const creatures = residents.filter(
+      creature => creature.id !== THREEFOLD_BELLTOPS_IRI_ID
+    );
+    if (creatures.length === state.scene.creatures.length) return;
+    state = /** @type {typeof state} */ ({
+      ...state,
+      scene: { ...state.scene, creatures },
+    });
   }
 
   synchronizePressureNetwork({ type: 'load' }, 0);

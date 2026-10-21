@@ -330,7 +330,7 @@ describe('THREEFOLD campaign outcomes', () => {
     expect(otherRoute.frame().threefold.campaignIriFate).toEqual(fate);
   });
 
-  test('records Iri trapped at the reachable Quay panel and preserves it', () => {
+  test('finds Iri and preserves the subsequent explicit Quay rescue', () => {
     const values = new Map();
     const storage = {
       getItem: key => values.get(key) ?? null,
@@ -352,13 +352,18 @@ describe('THREEFOLD campaign outcomes', () => {
     expect(runtime.getSnapshot().campaign.iriFate).toEqual(fate);
 
     runtime.dispatch('interact');
-    expect(runtime.getSnapshot().campaign.iriFate).toEqual(fate);
+    const rescued = {
+      outcome: 'rescued',
+      milestoneId: 'quay-rescue-without-governor',
+      elapsedGameSeconds: 30,
+    };
+    expect(runtime.getSnapshot().campaign.iriFate).toEqual(rescued);
     expect(
       createThreefoldRuntime({
         scene: createThreefoldBelltopsScene(),
         storage,
       }).getSnapshot().campaign.iriFate
-    ).toEqual(fate);
+    ).toEqual(rescued);
   });
 
   test('does not discover Iri at the Quay from outside interaction reach', () => {
