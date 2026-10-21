@@ -7,6 +7,10 @@
 3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, `/threefold/?scene=crownback-reach` for the +3 Crownback encounter, or `/threefold/?scene=shoals` for the offshore +4 intervention.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
+## Persistent Damage Across Chunk Loads
+
+Run `npm run check:impact:run -- --files test/core/browser/game/threefold-spatial.test.js` to verify the unloaded-chunk persistence boundary. Grow through geometry while its chunk is loaded, serialize and restore the scale state, then project a separately loaded chunk and reload the original chunk. The separate chunk stays intact, damaged geometry remains omitted at the growth and finer views, and projection leaves both source geometry and restored state unchanged.
+
 ## Small-World Hydraulic Model
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-water.test.js` to exercise the water-transfer primitive. An open port moves water down the physical surface-height gradient, conserves cubic-metre volume, and stops at the port sill or hydrostatic equalization. Closed ports, equal surfaces, zero-duration steps, and dry sources leave both chambers unchanged. The solver drives the Tidal Archive puzzle; Broken Gate floodwater remains a visual consequence only.
