@@ -724,6 +724,26 @@ describe('THREEFOLD closure epilogue page', () => {
     page.drawFrame({}, { threefold: { orlaHarborResponse: null } });
     expect(orlaHarborResponse.hidden).toBe(true);
   });
+
+  test('shows ferry engineer availability in an accessible page record', () => {
+    const { documentObj, harborEngineerAvailability, harborEngineerText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Harbor engineering support',
+      text: 'The ferry engineer is available to advise the harbor crew.',
+    };
+
+    page.drawFrame({}, { threefold: { harborEngineerAvailability: record } });
+
+    expect(harborEngineerAvailability.hidden).toBe(false);
+    expect(harborEngineerAvailability.summary.textContent).toBe(record.title);
+    expect(harborEngineerText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { harborEngineerAvailability: null } });
+    expect(harborEngineerAvailability.hidden).toBe(true);
+  });
 });
 
 describe('THREEFOLD witness lead page', () => {
@@ -1035,6 +1055,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? orlaHarborResponse.summary : null,
   };
+  const harborEngineerText = { textContent: '' };
+  const harborEngineerAvailability = {
+    hidden: true,
+    summary: { textContent: 'Old engineer availability' },
+    querySelector: selector =>
+      selector === 'summary' ? harborEngineerAvailability.summary : null,
+  };
   const ferryWreckSearchText = { textContent: '' };
   const ferryWreckSearch = {
     hidden: true,
@@ -1090,6 +1117,8 @@ function createLedgerDocument() {
     harborMemorialText,
     orlaHarborResponse,
     orlaHarborResponseText,
+    harborEngineerAvailability,
+    harborEngineerText,
     ferryWreckSearch,
     ferryWreckSearchText,
     latchfolkAid,
@@ -1114,6 +1143,10 @@ function createLedgerDocument() {
         if (selector === '#belltops-watch-response') return orlaHarborResponse;
         if (selector === '#belltops-watch-response-text')
           return orlaHarborResponseText;
+        if (selector === '#harbor-engineer-availability')
+          return harborEngineerAvailability;
+        if (selector === '#harbor-engineer-availability-text')
+          return harborEngineerText;
         if (selector === '#ferry-wreck-search') return ferryWreckSearch;
         if (selector === '#ferry-wreck-search-text')
           return ferryWreckSearchText;

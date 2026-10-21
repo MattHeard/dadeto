@@ -315,6 +315,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#harbor-engineer-availability',
+        '#harbor-engineer-availability-text',
+        frame.threefold?.harborEngineerAvailability || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#iri-witness-lead',
         '#iri-witness-lead-text',
         frame.threefold?.iriWitnessLead || null

@@ -41,6 +41,10 @@ describe('THREEFOLD handheld runtime', () => {
       title: "Orla's harbor response",
       text: "Orla's trust in Mara's harbor judgment is shaken after both passenger groups were lost with the ferry. She asks for a full account; the record does not establish which warnings reached the ferry.",
     });
+    expect(harbor.frame().threefold.harborEngineerAvailability).toEqual({
+      title: 'Harbor engineering support',
+      text: 'The ferry engineer remained aboard when the ferry went down; no ferry engineer is available to advise the harbor crew.',
+    });
     expect(harbor.getState().episode.ferry).toBe('afloat');
   });
 
@@ -55,6 +59,9 @@ describe('THREEFOLD handheld runtime', () => {
     ).toBeUndefined();
     expect(
       harborWithoutSource.frame().threefold.orlaHarborResponse
+    ).toBeUndefined();
+    expect(
+      harborWithoutSource.frame().threefold.harborEngineerAvailability
     ).toBeUndefined();
 
     createThreefoldSimulationSaveStore(storage).save(
@@ -73,6 +80,9 @@ describe('THREEFOLD handheld runtime', () => {
     expect(
       harborWithFerryAfloat.frame().threefold.orlaHarborResponse
     ).toBeUndefined();
+    expect(
+      harborWithFerryAfloat.frame().threefold.harborEngineerAvailability
+    ).toBeUndefined();
 
     const otherRegion = createThreefoldRuntime({
       scene: createThreefoldGrainlandsScene(),
@@ -80,6 +90,9 @@ describe('THREEFOLD handheld runtime', () => {
     });
     expect(otherRegion.frame().threefold.harborMemorial).toBeUndefined();
     expect(otherRegion.frame().threefold.orlaHarborResponse).toBeUndefined();
+    expect(
+      otherRegion.frame().threefold.harborEngineerAvailability
+    ).toBeUndefined();
   });
 
   test('does not memorialize an invalid Broken Gate save', () => {
@@ -93,6 +106,7 @@ describe('THREEFOLD handheld runtime', () => {
 
     expect(harbor.frame().threefold.harborMemorial).toBeUndefined();
     expect(harbor.frame().threefold.orlaHarborResponse).toBeUndefined();
+    expect(harbor.frame().threefold.harborEngineerAvailability).toBeUndefined();
   });
 
   test('keeps Hearthgaps snapshot time on its isolated region clock', () => {

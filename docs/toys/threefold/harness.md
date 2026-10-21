@@ -106,6 +106,10 @@ Save a Broken Gate run after the ferry is lost, then open Belltops with the same
 
 Using the same saved Broken Gate outcomes, verify Orla's accessible response reflects the two-group evacuation, partial loss, and total loss without assigning knowledge of warnings or changing the simulation. Verify no response appears for a missing/invalid save, an afloat ferry, or another region. Keep the response derived rather than saved; require 100% statements and branches for each changed core file, clean ESLint/core-parse, and zero clones.
 
+## Harbor engineer availability
+
+Using the same saved ferry-loss outcomes, verify the engineer in the first passenger group is available to advise Orla after full or partial rescue and unavailable when both groups are lost. Verify the accessible record is hidden for missing/invalid saves, an afloat ferry, and other regions. Keep it derived from the existing passenger outcome; require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
+
 ## Troubleshooting Hooks
 
 - Verbose mode command: `npm run check`.
