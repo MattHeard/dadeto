@@ -114,6 +114,10 @@ Using the same saved ferry-loss outcomes, verify the engineer in the first passe
 
 Without filing the Broken Gate report or revealing Iri's optional confession, discover the Tidal Archive coil-register trace, Neme's Silt Margin translation, and Pell's Weftways relay record using each route's own prerequisites. Verify each record survives its route save/export/import and does not claim a final sender, Iri's knowledge, or responsibility. Do not infer Iri's fate: the regulator encounter and explicit alive/escaped/dead state are future campaign work.
 
+## Weftways negotiator loss
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/weftways.js src/core/browser/game/threefold/simulation.js src/core/browser/game/threefold/renderer.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-weftways.test.js test/core/browser/game/threefold-weftways-page.test.js`. Shrink to scale −3, place Mara wholly inside Pell's authored bounds, confirm the next-growth preview, and grow. Verify `growthDeaths` saves Pell's stable ID and `growth` cause through export/import; his living marker and contact do not return. After selecting a flow, the caravan circle must let Mara read and share the preserved record, and accessible text must name the relay keeper without inventing Pell's posthumous answer. Also verify the death preview and all 160 × 144 scene shapes remain on the eight-pixel grid. Require 100% statements and branches for each changed core file, clean ESLint/core-parse, and zero clones.
+
 ## Troubleshooting Hooks
 
 - Verbose mode command: `npm run check`.

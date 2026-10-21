@@ -20,6 +20,7 @@ import {
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import {
   createThreefoldSimulation,
+  previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/simulation.js';
 import { isThreefoldInteractableInReach } from '../../../../src/core/browser/game/threefold/scene-utils.js';
@@ -119,16 +120,76 @@ const approachBrazier = state =>
 const approachRestitutionTable = state =>
   approachInteractable(state, THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID);
 
+/**
+ * Place the player at one authored interaction point for a simulation assertion.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current crossing.
+ * @param {string} interactableId Target interaction point.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Crossing at the target.
+ */
+function placeAtWeftwaysInteractable(state, interactableId) {
+  const target = state.scene.interactables.find(
+    ({ id }) => id === interactableId
+  );
+  return {
+    ...state,
+    player: { ...state.player, position: { ...target.position } },
+  };
+}
+
+/**
+ * Interact at one authored point without simulating the travel between points.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current crossing.
+ * @param {string} interactableId Target interaction point.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated crossing.
+ */
+function interactAtWeftwaysPoint(state, interactableId) {
+  return stepThreefoldSimulation(
+    placeAtWeftwaysInteractable(state, interactableId),
+    { type: 'interact' }
+  );
+}
+
+/** @returns {ReturnType<typeof createThreefoldSimulation>} Mara inside Pell at scale −3. */
+function createPellGrowthPreviewState() {
+  const state = stepThreefoldSimulation(createWeftwaysRun(), {
+    type: 'shrink',
+  });
+  return {
+    ...state,
+    player: { ...state.player, position: { x: 1.12, y: 0.56 } },
+  };
+}
+
+/** @returns {ReturnType<typeof createThreefoldSimulation>} Route after Pell's saved growth death. */
+function createPellGrowthDeathState() {
+  return stepThreefoldSimulation(createPellGrowthPreviewState(), {
+    type: 'grow',
+  });
+}
+
+/** @returns {ReturnType<typeof createThreefoldSimulation>} Reloaded Pell growth-death route. */
+function reloadPellGrowthDeathState() {
+  return restoreThreefoldSimulation(
+    serializeThreefoldSimulation(createPellGrowthDeathState())
+  );
+}
+
 describe('THREEFOLD Weftways caravan bypass', () => {
   test('authors the s = −2 Threadbound crossing and its oversized pack beetles', () => {
     const scene = createThreefoldWeftwaysScene();
     const state = createWeftwaysRun();
     const frame = renderThreefoldFrame(state);
-    const beetles = scene.creatures;
+    const beetles = scene.creatures.filter(({ id }) =>
+      id.startsWith('weftways-pack-beetle-')
+    );
+    const pell = scene.creatures.find(
+      ({ id }) => id === THREEFOLD_WEFTWAYS_PELL_ID
+    );
     const beetleLength = beetles[0].bounds.max.x - beetles[0].bounds.min.x;
 
     expect(state.scene.id).toBe('weftways');
     expect(state.player.scale).toBe(-2);
+    expect(state.player.minimumUnlockedScale).toBe(-3);
     expect(heightAtScale(state.player.scale)).toBeCloseTo(0.2032, 4);
     expect(scene.interactables.map(({ id }) => id)).toContain('weftways-pell');
     expect(scene.interactables.map(({ id }) => id)).toContain(
@@ -149,6 +210,11 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     );
     expect(beetleLength).toBeCloseTo(0.6, 5);
     expect(beetleLength / heightAtScale(-2)).toBeGreaterThan(2.9);
+    expect(pell).toMatchObject({
+      id: THREEFOLD_WEFTWAYS_PELL_ID,
+      displayName: 'PELL',
+      growthRule: 'overlap',
+    });
     expect(frame.quest).toBe('The Threadbound Crossing');
     expect(frame.threefold).toMatchObject({
       flowChoice: 'undecided',
@@ -452,6 +518,125 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       ).toEqual(state.weftways);
     }
   );
+});
+
+describe('THREEFOLD Weftways negotiator loss', () => {
+  test('previews, saves, and permanently renders Pell’s growth death', () => {
+    let state = createPellGrowthPreviewState();
+
+    expect(state.player.scale).toBe(-3);
+    expect(previewThreefoldGrowthEffects(state).creatureIds).toContain(
+      THREEFOLD_WEFTWAYS_PELL_ID
+    );
+    expect(
+      renderThreefoldFrame(state).shapes.map(({ text }) => text)
+    ).toContain('A KILLS PELL');
+
+    state = stepThreefoldSimulation(state, { type: 'grow' });
+    expect(state.encounter.growthDeaths).toContainEqual({
+      creatureId: THREEFOLD_WEFTWAYS_PELL_ID,
+      cause: 'growth',
+    });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(state)
+    );
+    expect(restored.encounter.growthDeaths).toContainEqual({
+      creatureId: THREEFOLD_WEFTWAYS_PELL_ID,
+      cause: 'growth',
+    });
+    const frame = renderThreefoldFrame(restored);
+    expect(frame.threefold).toMatchObject({
+      pellDied: true,
+      threadboundPellOutcome: {
+        title: 'Pell’s death and the caravan relay keeper',
+      },
+    });
+    expect(frame.shapes).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ x: 80, y: 56 }),
+        expect.objectContaining({ x: 80, y: 64 }),
+      ])
+    );
+  });
+
+  test('moves Pell’s ledger contact to the keeper and preserves read/share actions', () => {
+    let state = reloadPellGrowthDeathState();
+    state = interactAtWeftwaysPoint(state, THREEFOLD_WEFTWAYS_PELL_ID);
+    expect(state.weftways.relayRecordRead).toBe(false);
+
+    state = interactAtWeftwaysPoint(state, THREEFOLD_WEFTWAYS_PELL_BYPASS_ID);
+    expect(state.weftways.flowChoice).toBe('pell-bypass');
+    state = interactAtWeftwaysPoint(
+      state,
+      THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
+    );
+    expect(state.weftways.relayRecordRead).toBe(true);
+    let frame = renderThreefoldFrame(state);
+    expect(frame.threefold.threadboundRelayRecord.text).toContain(
+      'The relay keeper preserves Pell’s caravan ledger'
+    );
+    expect(frame.toast).toContain('relay keeper');
+
+    state = interactAtWeftwaysPoint(
+      state,
+      THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
+    );
+    expect(state.weftways.relayRecordShared).toBe(true);
+    frame = renderThreefoldFrame(state);
+    expect(frame.toast).toContain('shared Pell’s record with the relay keeper');
+  });
+
+  test('lets the keeper preserve the ledger privately after Pell dies', () => {
+    let state = {
+      ...reloadPellGrowthDeathState(),
+      weftways: normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+      }),
+    };
+    state = interactAtWeftwaysPoint(
+      state,
+      THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
+    );
+    state = interactAtWeftwaysPoint(state, THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID);
+
+    expect(state.weftways.relayRecordConcealed).toBe(true);
+    expect(renderThreefoldFrame(state).toast).toContain(
+      'keeps Pell’s record private from the relay keeper'
+    );
+  });
+
+  test('keeps the post-spill offer and independent notice with the relay keeper', () => {
+    let state = {
+      ...reloadPellGrowthDeathState(),
+      weftways: normalizeThreefoldWeftwaysState({
+        flowChoice: 'quay-spill',
+      }),
+    };
+    let frame = renderThreefoldFrame(state);
+    expect(frame.toast).toContain(
+      'relay keeper preserves Pell’s crossing choice'
+    );
+    expect(frame.shapes.map(({ text }) => text)).toContain(
+      'REACH CARAVAN CIRCLE · E READ COPY'
+    );
+
+    state = interactAtWeftwaysPoint(
+      state,
+      THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
+    );
+    state = interactAtWeftwaysPoint(
+      state,
+      THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID
+    );
+    frame = renderThreefoldFrame(state);
+    expect(frame.threefold.threadboundIndependentPublication.title).toBe(
+      'Caravan relay keeper’s independent notice'
+    );
+    expect(frame.toast).toContain('Pell’s answer is unknown');
+    expect(frame.threefold.threadboundRelayRestitution.text).toContain(
+      'Pell’s answer is unknown'
+    );
+  });
 });
 
 describe('THREEFOLD Threadbound privacy choice', () => {

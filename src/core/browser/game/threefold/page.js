@@ -375,6 +375,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#weftways-pell-outcome',
+        '#weftways-pell-outcome-text',
+        frame.threefold?.threadboundPellOutcome || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#tidal-archive-quieting-trace',
         '#tidal-archive-quieting-trace-text',
         frame.threefold?.archiveQuietingTrace || null
@@ -506,6 +512,10 @@ function configureAlternateScenePage(documentObj, copy) {
   );
   if (weftwaysIndependentPublication)
     weftwaysIndependentPublication.hidden = true;
+  const weftwaysPellOutcome = documentObj?.querySelector?.(
+    '#weftways-pell-outcome'
+  );
+  if (weftwaysPellOutcome) weftwaysPellOutcome.hidden = true;
   const siltMarginQuietingEvidence = documentObj?.querySelector?.(
     '#silt-margin-quieting-evidence'
   );

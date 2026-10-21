@@ -31,6 +31,13 @@ const THREADBOUND_PELL = {
     max: { x: 1.16, y: 0.6, z: 0.18 },
   },
 };
+const THREADBOUND_PELL_CREATURE = {
+  id: THREEFOLD_WEFTWAYS_PELL_ID,
+  displayName: 'PELL',
+  growthRule: /** @type {'overlap'} */ ('overlap'),
+  position: THREADBOUND_PELL.position,
+  bounds: THREADBOUND_PELL.bounds,
+};
 const THREADBOUND_CARAVAN_CIRCLE = {
   id: THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID,
   position: { x: 0.6, y: 0.3 },
@@ -74,14 +81,14 @@ const CROSSING_GEOMETRY = [
 
 /**
  * Create the authored scale −2 Threadbound caravan crossing.
- * @returns {{id: 'weftways', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: never[], geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, decorations: [], interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<{id: string, position: {x: number, y: number}, growthRule: 'overlap', bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Independent Threadbound crossing.
+ * @returns {{id: 'weftways', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: never[], geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, decorations: [], interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<{id: string, displayName?: string, position: {x: number, y: number}, growthRule: 'overlap', bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Independent Threadbound crossing.
  */
 export function createThreefoldWeftwaysScene() {
   return {
     id: THREEFOLD_WEFTWAYS_SCENE_ID,
     displayName: 'Weftways',
     bounds: sceneUtils.copyThreefoldBounds(SCENE_BOUNDS),
-    spawn: sceneUtils.createThreefoldPlayerSpawn({ x: 1.2, y: 0.4 }, -2),
+    spawn: sceneUtils.createThreefoldPlayerSpawn({ x: 1.2, y: 0.4 }, -2, -3),
     baseBodyWidthMeters: 0.4,
     areas: [],
     geometry: sceneUtils.copyThreefoldGeometryList(CROSSING_GEOMETRY),
@@ -95,8 +102,22 @@ export function createThreefoldWeftwaysScene() {
       createFlowControl(THREEFOLD_WEFTWAYS_PELL_BYPASS_ID, 0.2),
       createFlowControl(THREEFOLD_WEFTWAYS_QUAY_SPILL_ID, 2.2),
     ],
-    creatures: PACK_BEETLES.map(sceneUtils.copyThreefoldCreature),
+    creatures: [
+      ...PACK_BEETLES.map(sceneUtils.copyThreefoldCreature),
+      sceneUtils.copyThreefoldCreature(THREADBOUND_PELL_CREATURE),
+    ],
   };
+}
+
+/**
+ * Check whether Pell's death by growth is part of this route's saved encounter.
+ * @param {{growthDeaths?: Array<{creatureId: string}>}} encounter Saved encounter outcomes.
+ * @returns {boolean} Whether Pell was killed by growth.
+ */
+export function hasThreefoldWeftwaysPellGrowthDeath(encounter) {
+  return (encounter.growthDeaths || []).some(
+    ({ creatureId }) => creatureId === THREEFOLD_WEFTWAYS_PELL_ID
+  );
 }
 
 /**

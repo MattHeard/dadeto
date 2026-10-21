@@ -807,9 +807,20 @@ function stepFlowChoiceScene(state, action, choiceMade, controls) {
  */
 function stepWeftwaysScene(state, action) {
   return /** @type {WeftwaysSimulationState} */ (
-    commitSmallWorldSceneAction(state, action, () => {
-      if (action.type !== 'interact') return {};
+    commitSmallWorldSceneAction(state, action, ({ creatureIds }) => {
+      if (action.type !== 'interact')
+        return creatureIds.length > 0
+          ? {
+              encounter: recordThreefoldGrowthDeaths(
+                state.encounter,
+                creatureIds
+              ),
+            }
+          : {};
       const route = state.weftways;
+      const pellDied = weftways.hasThreefoldWeftwaysPellGrowthDeath(
+        state.encounter
+      );
       if (route.flowChoice === 'undecided') {
         const choice = [
           {
@@ -834,7 +845,9 @@ function stepWeftwaysScene(state, action) {
         !route.relayRecordRead &&
         isThreefoldInteractableInReach(
           state,
-          weftways.THREEFOLD_WEFTWAYS_PELL_ID
+          pellDied
+            ? weftways.THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
+            : weftways.THREEFOLD_WEFTWAYS_PELL_ID
         )
       )
         return {

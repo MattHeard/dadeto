@@ -616,6 +616,9 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordDestroyed,
     relayRestitutionNegotiated,
   } = state.weftways;
+  const pellDied = weftways.hasThreefoldWeftwaysPellGrowthDeath(
+    state.encounter
+  );
   const rootFlooded = floodedGeometryIds.includes(
     weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
   );
@@ -627,26 +630,40 @@ function renderThreefoldWeftwaysFrame(state) {
     (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
   );
   const flowMessage = relayRecordShared
-    ? 'Mara shared the record; responsibility remains unresolved.'
+    ? pellDied
+      ? 'Mara shared Pell’s record with the relay keeper; responsibility remains unresolved.'
+      : 'Mara shared the record; responsibility remains unresolved.'
     : relayRecordConcealed
-      ? 'Mara keeps Pell’s record private.'
+      ? pellDied
+        ? 'Mara keeps Pell’s record private from the relay keeper.'
+        : 'Mara keeps Pell’s record private.'
       : relayRecordDestroyed
         ? 'Mara destroyed the record; responsibility remains unresolved.'
         : relayRestitutionNegotiated
-          ? flowChoice === 'pell-bypass'
-            ? 'Pell accepts Mara’s offer to carry relay tokens and help restore the route.'
-            : 'Pell defers terms until root-channel damage is assessed.'
+          ? pellDied
+            ? 'The relay keeper records Mara’s offer and will carry it onward; Pell’s answer is unknown.'
+            : flowChoice === 'pell-bypass'
+              ? 'Pell accepts Mara’s offer to carry relay tokens and help restore the route.'
+              : 'Pell defers terms until root-channel damage is assessed.'
           : flowChoice === 'pell-bypass'
-            ? 'Pell trusts Mara; roots hold, quay floods.'
+            ? pellDied
+              ? 'The relay keeper preserves Pell’s crossing choice; roots hold, quay floods.'
+              : 'Pell trusts Mara; roots hold, quay floods.'
             : flowChoice === 'quay-spill'
-              ? 'Pell is wary; quay stays dry, root crossing floods.'
-              : 'Pell knows a bypass through the deep roots.';
+              ? pellDied
+                ? 'The relay keeper preserves Pell’s crossing choice; quay stays dry, root crossing floods.'
+                : 'Pell is wary; quay stays dry, root crossing floods.'
+              : pellDied
+                ? 'The relay keeper can discuss the crossing and preserve its evidence.'
+                : 'Pell knows a bypass through the deep roots.';
   const threadboundIndependentPublication =
     flowChoice === 'quay-spill'
       ? {
-          title: 'Pell’s independent relay notice',
+          title: pellDied
+            ? 'Caravan relay keeper’s independent notice'
+            : 'Pell’s independent relay notice',
           text:
-            'After the root crossing flooded, Pell posted a notice from the ' +
+            `After the root crossing flooded, ${pellDied ? 'the caravan relay keeper published' : 'Pell posted'} a notice from the ` +
             'caravan’s own relay notes to help the downstream crews restore ' +
             'their route. The notes say relay tokens stopped arriving after ' +
             'the emergency pressure-regulator bypass. They do not identify ' +
@@ -710,8 +727,12 @@ function renderThreefoldWeftwaysFrame(state) {
       { x: 48, y: 80 },
       beetleFates.has('weftways-pack-beetle-2')
     ),
-    createThreefoldRectShape([80, 64, 8, 8], '#d28b69'),
-    createThreefoldRectShape([80, 56, 8, 8], '#e9d88d'),
+    ...(!pellDied
+      ? [
+          createThreefoldRectShape([80, 64, 8, 8], '#d28b69'),
+          createThreefoldRectShape([80, 56, 8, 8], '#e9d88d'),
+        ]
+      : []),
     createThreefoldRectShape([72, 72, 24, 8], '#182f36'),
     createThreefoldRectShape([16, 88, 16, 8], '#e9d88d'),
     createThreefoldRectShape([128, 88, 16, 8], '#d28b69'),
@@ -743,10 +764,16 @@ function renderThreefoldWeftwaysFrame(state) {
     captionShape(
       { x: 8, y: 126 },
       flowChoice === 'pell-bypass'
-        ? 'ROOTS SAFE · QUAY FLOODS'
+        ? pellDied
+          ? 'RELAY KEEPER · ROOTS SAFE · QUAY FLOODS'
+          : 'ROOTS SAFE · QUAY FLOODS'
         : flowChoice === 'quay-spill'
-          ? 'QUAY SAFE · ROOTS FLOOD'
-          : 'PELL · CHOOSE A FLOW'
+          ? pellDied
+            ? 'RELAY KEEPER · QUAY SAFE · ROOTS FLOOD'
+            : 'QUAY SAFE · ROOTS FLOOD'
+          : pellDied
+            ? 'CARAVAN KEEPER · CHOOSE A FLOW'
+            : 'PELL · CHOOSE A FLOW'
     ),
     captionShape(
       { x: 8, y: 136 },
@@ -759,13 +786,20 @@ function renderThreefoldWeftwaysFrame(state) {
             : relayRecordDestroyed
               ? 'LEDGER DESTROYED · FACTS UNRESOLVED'
               : relayRestitutionNegotiated
-                ? flowChoice === 'pell-bypass'
-                  ? 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR'
-                  : 'PELL DEFERS · ROOT DAMAGE TO ASSESS'
+                ? pellDied
+                  ? 'KEEPER CARRIES OFFER · PELL ANSWER UNKNOWN'
+                  : flowChoice === 'pell-bypass'
+                    ? 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR'
+                    : 'PELL DEFERS · ROOT DAMAGE TO ASSESS'
                 : relayRecordRead
                   ? 'E SHARE · REPAIR · KEEP · DESTROY'
-                  : 'REACH PELL · E READ RELAY LOG'
+                  : pellDied
+                    ? 'REACH CARAVAN CIRCLE · E READ COPY'
+                    : 'REACH PELL · E READ RELAY LOG'
     ),
+    ...(growth.creatureIds.includes(weftways.THREEFOLD_WEFTWAYS_PELL_ID)
+      ? [captionShape({ x: 8, y: 24 }, 'A KILLS PELL', true)]
+      : []),
   ];
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
@@ -780,13 +814,24 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordConcealed,
     relayRecordDestroyed,
     relayRestitutionNegotiated,
+    pellDied,
+    threadboundPellOutcome: pellDied
+      ? {
+          title: 'Pell’s death and the caravan relay keeper',
+          text:
+            'Mara’s growth killed Pell. The caravan relay keeper now preserves ' +
+            'his record and can discuss the crossing and carry route-repair ' +
+            'offers onward. Pell does not return, and his response to any offer ' +
+            'after his death is unknown.',
+        }
+      : null,
     threadboundIndependentPublication,
     threadboundRelayRecord:
       relayRecordRead && !relayRecordDestroyed
         ? {
             title: 'Threadbound relay ledger',
             text:
-              'Pell’s caravan ledger shows downstream relay tokens stopped ' +
+              `${pellDied ? 'The relay keeper preserves Pell’s caravan ledger, which shows' : 'Pell’s caravan ledger shows'} downstream relay tokens stopped ` +
               'arriving after an emergency pressure-regulator bypass. It does ' +
               'not identify who sent the final message, what Iri knew, or who ' +
               'was responsible.',
@@ -823,8 +868,9 @@ function renderThreefoldWeftwaysFrame(state) {
     threadboundRelayRestitution: relayRestitutionNegotiated
       ? {
           title: 'Threadbound relay restitution',
-          text:
-            flowChoice === 'pell-bypass'
+          text: pellDied
+            ? 'Mara offered to carry replacement relay tokens to downstream settlements and help restore their route. The caravan relay keeper records the offer and will carry it onward; Pell’s answer is unknown. The offer does not identify the final sender, establish what Iri knew, or assign responsibility.'
+            : flowChoice === 'pell-bypass'
               ? 'Mara offered to carry replacement relay tokens to downstream ' +
                 'settlements and help restore their route. Pell accepts the ' +
                 'plan. The agreement does not identify the final sender, ' +
@@ -836,7 +882,9 @@ function renderThreefoldWeftwaysFrame(state) {
                 'or assign responsibility.',
         }
       : null,
-    packBeetleIds: state.scene.creatures.map(({ id }) => id),
+    packBeetleIds: state.scene.creatures
+      .filter(({ id }) => id.startsWith('weftways-pack-beetle-'))
+      .map(({ id }) => id),
     growthPreviewGeometryIds: growth.geometryIds,
     growthPreviewCreatureIds: growth.creatureIds,
     witnessLedger: [],

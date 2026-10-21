@@ -302,4 +302,46 @@ describe('THREEFOLD Weftways page record', () => {
     );
     expect(publicationPanel.hidden).toBe(true);
   });
+
+  test('shows Pell’s saved growth death and successor accessibly', () => {
+    const summary = { textContent: '' };
+    const text = { textContent: '' };
+    const outcomePanel = {
+      hidden: true,
+      querySelector: selector => (selector === 'summary' ? summary : null),
+    };
+    const documentObj = {
+      querySelector: selector =>
+        selector === '#weftways-pell-outcome'
+          ? outcomePanel
+          : selector === '#weftways-pell-outcome-text'
+            ? text
+            : null,
+    };
+    const windowObj = {
+      location: { search: '?scene=weftways' },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    };
+    const outcome = {
+      title: 'Pell’s death and the caravan relay keeper',
+      text: 'The relay keeper preserves Pell’s record and carries route offers onward.',
+    };
+
+    expect(THREEFOLD_HTML).toContain('id="weftways-pell-outcome"');
+    expect(THREEFOLD_HTML).toContain('id="weftways-pell-outcome-text"');
+    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    expect(outcomePanel.hidden).toBe(true);
+    page.drawFrame({}, { threefold: { threadboundPellOutcome: outcome } });
+
+    expect(outcomePanel.hidden).toBe(false);
+    expect(summary.textContent).toBe(outcome.title);
+    expect(text.textContent).toBe(outcome.text);
+    page.drawFrame({}, { threefold: { threadboundPellOutcome: null } });
+    expect(outcomePanel.hidden).toBe(true);
+  });
 });
