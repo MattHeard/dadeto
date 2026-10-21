@@ -369,7 +369,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       direction: 'right',
     },
   ])(
-    'reveals, optionally shares, and saves relay evidence after $choice',
+    'reveals relay evidence without requiring Iri’s report after $choice',
     testCase => {
       let state = approachFlowControl(
         createWeftwaysRun(),
@@ -387,6 +387,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       const frame = renderThreefoldFrame(state);
       const record = frame.threefold.threadboundRelayRecord;
 
+      expect(frame.threefold).not.toHaveProperty('iriRecordedConfession');
       expect(state.weftways).toMatchObject({
         flowChoice: committedChoice,
         relayRecordRead: true,

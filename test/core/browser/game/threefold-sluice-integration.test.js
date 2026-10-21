@@ -132,7 +132,7 @@ describe('THREEFOLD playable small-world sluice', () => {
     expect(crossed.player.position.x).toBeGreaterThan(grown.player.position.x);
   });
 
-  test('finds the Quieting trace only within reach beyond the open crossing', () => {
+  test('finds the Quieting trace only in reach, independent of Iri’s report', () => {
     const dry = {
       ...createSluiceSimulation(),
       player: createScaleState(
@@ -177,6 +177,7 @@ describe('THREEFOLD playable small-world sluice', () => {
       title: 'Tidal Archive coil register',
       text: expect.stringContaining('downstream replies stopping afterward'),
     });
+    expect(frame.threefold).not.toHaveProperty('iriRecordedConfession');
     expect(
       frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
     ).toBe(true);

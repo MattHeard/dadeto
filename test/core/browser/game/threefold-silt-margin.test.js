@@ -142,7 +142,7 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(state.elapsedGameSeconds).toBe(795);
   });
 
-  test('hears Neme’s Quieting trace once after the safe signal reaches the Choir', () => {
+  test('hears Neme’s trace after the safe signal without Iri’s report', () => {
     let state = sendSiltMarginChoirSignal();
     expect(state.siltMargin.quietingEvidenceHeard).toBe(false);
 
@@ -176,6 +176,7 @@ describe('THREEFOLD Silt Margin crossing', () => {
       renderThreefoldFrame(heard).threefold.siltMarginWater.crossingAvailable
     ).toBe(true);
     const frame = renderThreefoldFrame(heard);
+    expect(frame.threefold).not.toHaveProperty('iriRecordedConfession');
     expect(frame.threefold.siltMarginQuietingEvidence).toEqual({
       title: 'Neme’s translated Choir trace',
       text: expect.stringContaining('downstream replies stopped'),

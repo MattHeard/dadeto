@@ -110,6 +110,10 @@ Using the same saved Broken Gate outcomes, verify Orla's accessible response ref
 
 Using the same saved ferry-loss outcomes, verify the engineer in the first passenger group is available to advise Orla after full or partial rescue and unavailable when both groups are lost. Verify the accessible record is hidden for missing/invalid saves, an afloat ferry, and other regions. Keep it derived from the existing passenger outcome; require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
 
+## Alternate Quieting evidence
+
+Without filing the Broken Gate report or revealing Iri's optional confession, discover the Tidal Archive coil-register trace, Neme's Silt Margin translation, and Pell's Weftways relay record using each route's own prerequisites. Verify each record survives its route save/export/import and does not claim a final sender, Iri's knowledge, or responsibility. Do not infer Iri's fate: the regulator encounter and explicit alive/escaped/dead state are future campaign work.
+
 ## Troubleshooting Hooks
 
 - Verbose mode command: `npm run check`.
