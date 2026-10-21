@@ -1,3 +1,5 @@
+import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
+
 const PASSENGER_OUTCOMES = {
   evacuated: {
     memorial: 'Both passenger groups reached shore before the ferry went down.',
@@ -22,7 +24,11 @@ const PASSENGER_OUTCOMES = {
 
 const THREEFOLD_CAMPAIGN_PLACES = [
   { id: 'broken-gate', label: 'Broken Gate' },
-  { id: 'sluice', label: 'Tidal Archive' },
+  {
+    id: 'sluice',
+    sceneId: THREEFOLD_SLUICE_SCENE_ID,
+    label: 'Tidal Archive',
+  },
   { id: 'silt-margin', label: 'Silt Margin' },
   { id: 'hearthgaps', label: 'Hearthgaps' },
   { id: 'weftways', label: 'Weftways' },
@@ -33,7 +39,7 @@ const THREEFOLD_CAMPAIGN_PLACES = [
   { id: 'wakeform-shoals', label: 'Wakeform Shoals' },
 ];
 export const THREEFOLD_CAMPAIGN_SCENE_IDS = Object.freeze(
-  THREEFOLD_CAMPAIGN_PLACES.map(place => place.id)
+  THREEFOLD_CAMPAIGN_PLACES.map(place => place.sceneId || place.id)
 );
 
 /**
@@ -43,13 +49,14 @@ export const THREEFOLD_CAMPAIGN_SCENE_IDS = Object.freeze(
  * @returns {Array<{id: string, label: string, active: boolean}>} Authored-order region index.
  */
 export function getThreefoldCampaignPlaces(savedRuns, activeSceneId) {
-  return THREEFOLD_CAMPAIGN_PLACES.filter(
-    place =>
-      place.id === activeSceneId ||
-      savedRuns?.[place.id]?.scene?.id === place.id
-  ).map(place => ({
+  return THREEFOLD_CAMPAIGN_PLACES.filter(place => {
+    const sceneId = place.sceneId || place.id;
+    const isActive = sceneId === activeSceneId;
+    const isSaved = savedRuns?.[sceneId]?.scene?.id === sceneId;
+    return isActive || isSaved;
+  }).map(({ sceneId, ...place }) => ({
     ...place,
-    active: place.id === activeSceneId,
+    active: (sceneId || place.id) === activeSceneId,
   }));
 }
 

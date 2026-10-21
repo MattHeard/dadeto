@@ -10,6 +10,7 @@ import { createThreefoldWeftwaysScene } from '../../../../src/core/browser/game/
 import { createThreefoldGrainlandsScene } from '../../../../src/core/browser/game/threefold/grainlands.js';
 import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
 import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
+import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { createThreefoldSimulationSaveStore } from '../../../../src/core/browser/game/threefold/save.js';
 
 describe('THREEFOLD handheld runtime', () => {
@@ -76,6 +77,32 @@ describe('THREEFOLD handheld runtime', () => {
     expect(runtime.getSnapshot().campaign.places).toEqual(places);
     expect(runtime.frame().threefold.campaignPlaces).toEqual(places);
     expect(runtime.getState().scene.id).toBe('belltops');
+  });
+
+  test('indexes the Tidal Archive by its canonical scene ID', () => {
+    const storage = createStorageAdapter();
+    const archiveScene = createThreefoldSluiceScene();
+    const archiveRun = createThreefoldSimulation(
+      { urgentAtMinutes: 4, surgeAtMinutes: 9, aftermathAtMinutes: 15 },
+      archiveScene
+    );
+    createThreefoldSimulationSaveStore(storage, archiveScene.id).save(
+      archiveRun
+    );
+
+    const gate = createThreefoldRuntime({ storage });
+    expect(gate.getSnapshot().campaign.places).toContainEqual({
+      id: 'sluice',
+      label: 'Tidal Archive',
+      active: false,
+    });
+
+    const archive = createThreefoldRuntime({ scene: archiveScene, storage });
+    expect(archive.getSnapshot().campaign.places).toContainEqual({
+      id: 'sluice',
+      label: 'Tidal Archive',
+      active: true,
+    });
   });
 
   test('does not carry an unsaved or surviving ferry into the harbor', () => {
