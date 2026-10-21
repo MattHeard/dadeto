@@ -1,6 +1,7 @@
 import {
   createThreefoldSluiceScene,
   THREEFOLD_SLUICE_SCENE_ID,
+  THREEFOLD_TIDAL_ARCHIVE_TRACE_ID,
 } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
 import {
@@ -30,9 +31,12 @@ describe('THREEFOLD playable small-world sluice', () => {
       id: THREEFOLD_SLUICE_SCENE_ID,
       bounds: { min: { x: 0, y: 0 }, max: { x: 6, y: 4.5 } },
       spawn: { scale: -2 },
-      interactables: [{ id: 'sluice-service-valve' }],
       creatures: [],
     });
+    expect(first.interactables.map(({ id }) => id)).toEqual([
+      'sluice-service-valve',
+      THREEFOLD_TIDAL_ARCHIVE_TRACE_ID,
+    ]);
     expect(first.geometry[0].id).toBe('sluice-crossing-barrier');
     expect(first.geometry[0]).not.toBe(second.geometry[0]);
     expect(first.decorations).not.toBe(second.decorations);
@@ -128,6 +132,57 @@ describe('THREEFOLD playable small-world sluice', () => {
     expect(crossed.player.position.x).toBeGreaterThan(grown.player.position.x);
   });
 
+  test('finds the Quieting trace only in reach, independent of Iri’s report', () => {
+    const dry = {
+      ...createSluiceSimulation(),
+      player: createScaleState(
+        { x: 5.55, y: 2.1 },
+        { scale: -1, minimumUnlockedScale: -2, maximumUnlockedScale: 1 }
+      ),
+    };
+    expect(
+      stepThreefoldSimulation(dry, { type: 'interact' }).archiveTraceHeard
+    ).toBe(false);
+
+    const ready = createArchiveCrossingReadySimulation();
+    const away = {
+      ...ready,
+      player: createScaleState(
+        { x: 2.5, y: 3.1 },
+        { scale: -1, minimumUnlockedScale: -2, maximumUnlockedScale: 1 }
+      ),
+    };
+    expect(renderThreefoldFrame(away).threefold.crossingAvailable).toBe(true);
+    expect(
+      stepThreefoldSimulation(away, { type: 'interact' }).archiveTraceHeard
+    ).toBe(false);
+
+    const near = {
+      ...ready,
+      player: createScaleState(
+        { x: 5.55, y: 2.1 },
+        { scale: -1, minimumUnlockedScale: -2, maximumUnlockedScale: 1 }
+      ),
+    };
+    expect(near.scene.interactables.map(({ id }) => id)).toContain(
+      THREEFOLD_TIDAL_ARCHIVE_TRACE_ID
+    );
+    const found = stepThreefoldSimulation(near, { type: 'interact' });
+    const repeated = stepThreefoldSimulation(found, { type: 'interact' });
+    const frame = renderThreefoldFrame(found);
+
+    expect(found.archiveTraceHeard).toBe(true);
+    expect(repeated.archiveTraceHeard).toBe(true);
+    expect(frame.threefold.archiveQuietingTrace).toMatchObject({
+      title: 'Tidal Archive coil register',
+      text: expect.stringContaining('downstream replies stopping afterward'),
+    });
+    expect(frame.threefold).not.toHaveProperty('iriRecordedConfession');
+    expect(
+      frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
+    ).toBe(true);
+  });
+
   test('renders water heights on the shared fixed-resolution Mosslight frame', () => {
     let state = createSluiceSimulation();
     const dryFrame = renderThreefoldFrame(state);
@@ -161,7 +216,7 @@ describe('THREEFOLD playable small-world sluice', () => {
     expect(raisedFrame.toast).toContain('CROSSING SEALED');
   });
 
-  test('roundtrips the sluice through schema v4 with a separate browser save key', () => {
+  test('roundtrips the sluice through schema v5 with a separate browser save key', () => {
     let simulation = createSluiceSimulation();
     simulation = stepThreefoldSimulation(simulation, { type: 'interact' });
     simulation = stepThreefoldSimulation(simulation, {
@@ -185,10 +240,11 @@ describe('THREEFOLD playable small-world sluice', () => {
     });
 
     expect(envelope).toMatchObject({
-      schemaVersion: 4,
+      schemaVersion: 5,
       sceneId: THREEFOLD_SLUICE_SCENE_ID,
       state: {
         elapsedGameSeconds: 135,
+        archiveTraceHeard: false,
         sluicePuzzle: { port: { open: true } },
       },
     });
@@ -198,6 +254,13 @@ describe('THREEFOLD playable small-world sluice', () => {
         JSON.stringify({ ...envelope, schemaVersion: 3 })
       )
     ).toBeNull();
+    const legacySluiceSave = JSON.parse(serialized);
+    legacySluiceSave.schemaVersion = 4;
+    delete legacySluiceSave.state.archiveTraceHeard;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacySluiceSave))
+        .archiveTraceHeard
+    ).toBe(false);
     expect(runtime.getSnapshot().world.map.name).toBe('THE TIDAL ARCHIVE');
     expect(runtime.getSnapshot().world.time).toBe(0);
     sluiceStore.save(simulation);
@@ -220,6 +283,23 @@ describe('THREEFOLD playable small-world sluice', () => {
       )
     ).toThrow('Invalid THREEFOLD save data.');
   });
+
+  test('preserves the archive trace and rejects malformed schema-v5 discovery state', () => {
+    const found = stepThreefoldSimulation(
+      createArchiveCrossingReadySimulation(),
+      { type: 'interact' }
+    );
+    const serialized = serializeThreefoldSimulation(found);
+    const restored = restoreThreefoldSimulation(serialized);
+    const malformed = JSON.parse(serialized);
+    malformed.state.archiveTraceHeard = 'yes';
+
+    expect(restored.archiveTraceHeard).toBe(true);
+    expect(
+      renderThreefoldFrame(restored).threefold.archiveQuietingTrace
+    ).toEqual(renderThreefoldFrame(found).threefold.archiveQuietingTrace);
+    expect(restoreThreefoldSimulation(JSON.stringify(malformed))).toBeNull();
+  });
 });
 
 /**
@@ -231,6 +311,26 @@ function createSluiceSimulation() {
     CRISIS_THRESHOLDS,
     createThreefoldSluiceScene()
   );
+}
+
+/**
+ * Create a sluice whose water and player scale open the far-bank crossing.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Crossing-ready state.
+ */
+function createArchiveCrossingReadySimulation() {
+  let state = createSluiceSimulation();
+  state = stepThreefoldSimulation(state, { type: 'interact' });
+  state = stepThreefoldSimulation(state, {
+    type: 'wait',
+    elapsedGameMinutes: 15,
+  });
+  return {
+    ...state,
+    player: createScaleState(
+      { x: 5.55, y: 2.1 },
+      { scale: -1, minimumUnlockedScale: -2, maximumUnlockedScale: 1 }
+    ),
+  };
 }
 
 /**

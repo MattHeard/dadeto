@@ -1,0 +1,7 @@
+# THREEFOLD shared pressure view
+
+- **Unexpected hurdle:** The shared Dolt lock still prevented Beads access. The impact selector also rejected the changed standalone HTML path and could not spawn Git in the default read-only sandbox.
+- **Diagnosis:** Belltops, Hearthgaps, and Silt Margin already persist the relevant physical outcomes in their own validated route saves. Copying those outcomes into another mutable save would create conflicting sources of truth, so this loop builds one read-only campaign projection instead.
+- **Fix:** `getThreefoldCampaignPressureState` summarizes Quay regulator integrity, the Hearthgaps flow choice and flood footprint, and the Silt crossing and Choir signal. The runtime exposes it in snapshots and the accessible campaign status. Grainlands, machinery replacement cost, and rescue consequences remain unmodeled until their mechanics are authored.
+- **Evidence:** Focused campaign/page Jest passed 2 suites / 44 tests. `npm run build` passed. `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates across five all-unit shards (986 suites), including lint, TSDoc, and zero-clone duplication. `git diff --check` passed.
+- **Next time:** Continue the Rank 1 pressure network with Grainlands' water shelter and a source-grounded replacement-machinery tradeoff. When the Dolt lock clears, record this loop's contract and evidence on its owning Bead; after pushing, poll exact-head Full Check and Terraform Validate.

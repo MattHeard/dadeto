@@ -54,14 +54,6 @@ describe('THREEFOLD page adapter', () => {
     mockDrawGameFrame.mockClear();
   });
 
-  test('exposes an accessible touch interaction for each episode choice', () => {
-    expect(THREEFOLD_HTML).toContain('data-action="interact"');
-    expect(THREEFOLD_HTML).toContain(
-      'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
-    );
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
-  });
-
   test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
     expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
     expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
@@ -71,6 +63,18 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
     expect(THREEFOLD_CSS).toContain('transform: none');
     expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
+    expect(THREEFOLD_HTML).toContain(
+      '<details id="iri-repair-log" class="witness-ledger" hidden>'
+    );
+    expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
+    expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
+    expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
+    expect(THREEFOLD_HTML).toContain('id="campaign-clock-text"');
+    expect(THREEFOLD_HTML).toContain('id="campaign-iri-fate-text"');
+    expect(THREEFOLD_HTML).toContain(
+      '<details id="episode-epilogue" class="witness-ledger" hidden>'
+    );
+    expect(THREEFOLD_HTML).toContain('id="episode-epilogue-outcomes"');
     expect(THREEFOLD_HTML).toContain('aria-live="polite"');
     expect(THREEFOLD_HTML).toContain('<details id="testimony"');
     expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
@@ -217,6 +221,172 @@ describe('THREEFOLD page adapter', () => {
     );
   });
 
+  test('shows the recovered Iri log only when the frame includes a reported clue', () => {
+    const { documentObj, iriRepairLog, iriRepairLogText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: "Iri's pressure-regulator log",
+      text: 'The surviving log cannot establish what Iri knew.',
+    };
+
+    page.drawFrame({}, { threefold: { iriRepairLog: record } });
+
+    expect(iriRepairLog.hidden).toBe(false);
+    expect(iriRepairLogText.textContent).toBe(record.text);
+    expect(iriRepairLog.summary.textContent).toBe(record.title);
+    page.drawFrame({}, { threefold: { iriRepairLog: record } });
+
+    page.drawFrame({}, { threefold: { iriRepairLog: null } });
+
+    expect(iriRepairLog.hidden).toBe(true);
+  });
+
+  test('routes the Silt Margin through the Mosslight page and configures its crossing copy', () => {
+    const selectors = [
+      '#chapter-subtitle',
+      '#chapter-tag',
+      '#chapter-eyebrow',
+      '#chapter-heading',
+      '#chapter-description',
+      '#interact-label',
+      '#scene-link',
+      '#game-footer',
+      '#interact-control',
+      '#witness-ledger',
+      '#testimony',
+      '#iri-repair-log',
+      '#silt-margin-quieting-evidence',
+      '#episode-epilogue',
+    ];
+    const nodes = new Map(
+      selectors.map(selector => [
+        selector,
+        {
+          textContent: '',
+          hidden: false,
+          href: '',
+          setAttribute: jest.fn(),
+        },
+      ])
+    );
+    const documentObj = { querySelector: selector => nodes.get(selector) };
+    startThreefoldPage({
+      documentObj,
+      windowObj: { location: { search: '?scene=silt-margin' } },
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const runtime = page.createRuntime({});
+
+    expect(runtime.getState().scene.id).toBe('silt-margin');
+    expect(runtime.getState().player.scale).toBe(-4);
+    expect(runtime.getSnapshot().world.map.name).toBe('THE SILT MARGIN');
+    expect(nodes.get('#chapter-heading').textContent).toContain(
+      'Reroute the dew'
+    );
+    expect(nodes.get('#interact-label').textContent).toBe(
+      'E · GUIDE · VALVE · SIGNAL · LISTEN'
+    );
+    expect(nodes.get('#scene-link')).toMatchObject({
+      textContent: 'Continue to the Lantern Ward',
+      href: '/threefold/?scene=lantern-ward',
+    });
+    expect(nodes.get('#witness-ledger').hidden).toBe(true);
+    expect(nodes.get('#testimony').hidden).toBe(true);
+    expect(nodes.get('#iri-repair-log').hidden).toBe(true);
+    expect(nodes.get('#silt-margin-quieting-evidence').hidden).toBe(true);
+    expect(nodes.get('#episode-epilogue').hidden).toBe(true);
+  });
+
+  test('routes the Lantern Ward after the Silt Margin and isolates its controls', () => {
+    const selectors = [
+      '#chapter-subtitle',
+      '#chapter-tag',
+      '#chapter-eyebrow',
+      '#chapter-heading',
+      '#chapter-description',
+      '#interact-label',
+      '#scene-link',
+      '#game-footer',
+      '#a-control-label',
+      '#b-control-label',
+      '#e-control-label',
+      '#interact-control',
+      '#witness-ledger',
+      '#testimony',
+    ];
+    const nodes = new Map(
+      selectors.map(selector => [
+        selector,
+        {
+          textContent: '',
+          hidden: false,
+          href: '',
+          setAttribute: jest.fn(),
+        },
+      ])
+    );
+    const documentObj = { querySelector: selector => nodes.get(selector) };
+    startThreefoldPage({
+      documentObj,
+      windowObj: { location: { search: '?scene=lantern-ward' } },
+      navigatorObj: {},
+    });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const runtime = page.createRuntime({});
+
+    expect(runtime.getState().scene.id).toBe('lantern-ward');
+    expect(runtime.getState().player.scale).toBe(3);
+    expect(runtime.getSnapshot().world.map.name).toBe('LANTERN WARD');
+    expect(nodes.get('#chapter-heading').textContent).toContain(
+      'At +3, one more rung'
+    );
+    expect(nodes.get('#chapter-description').textContent).toContain(
+      'Mira and Tov'
+    );
+    expect(nodes.get('#scene-link')).toMatchObject({
+      textContent: 'Continue to the Belltops',
+      href: '/threefold/?scene=belltops',
+    });
+    expect(nodes.get('#a-control-label').textContent).toBe('GROW');
+    expect(nodes.get('#b-control-label').textContent).toBe('SHRINK');
+    expect(nodes.get('#interact-control').hidden).toBe(true);
+    expect(nodes.get('#witness-ledger').hidden).toBe(true);
+    expect(nodes.get('#testimony').hidden).toBe(true);
+    expect(runtime.getState().scene.id).toBe('lantern-ward');
+
+    expect(() =>
+      startThreefoldPage({
+        documentObj: { querySelector: () => null },
+        windowObj: { location: { search: '?scene=lantern-ward' } },
+        navigatorObj: {},
+      })
+    ).not.toThrow();
+
+    startThreefoldPage({
+      documentObj,
+      windowObj: { location: { search: '?scene=belltops' } },
+      navigatorObj: {},
+    });
+    const belltopsPage = mockStartMosslightPage.mock.calls.at(-1)[0];
+    const belltopsRuntime = belltopsPage.createRuntime({});
+
+    expect(belltopsRuntime.getState().scene.id).toBe('belltops');
+    expect(belltopsRuntime.getState().player.scale).toBe(2);
+    expect(belltopsRuntime.getSnapshot().world.map.name).toBe('BELLTOPS');
+    expect(nodes.get('#chapter-description').textContent).toMatch(
+      /Iri.*pressure regulator/
+    );
+    expect(nodes.get('#scene-link')).toMatchObject({
+      textContent: 'Continue to Crownback Reach',
+      href: '/threefold/?scene=crownback-reach',
+    });
+    expect(nodes.get('#interact-control').hidden).toBe(false);
+    expect(nodes.get('#e-control-label').textContent).toBe('CHECK REGULATOR');
+  });
+
   test('tolerates a document without the witness ledger list', () => {
     const drawFrame = jest.fn();
     startThreefoldPage({
@@ -318,13 +488,27 @@ describe('THREEFOLD page adapter', () => {
     expect(elements.get('#chapter-subtitle').textContent).toBe(
       'The Tidal Archive'
     );
-    expect(elements.get('#scene-link').href).toBe('/threefold/');
+    expect(elements.get('#scene-link').href).toBe(
+      '/threefold/?scene=silt-margin'
+    );
     expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
       'aria-label',
-      'Operate the sluice service valve'
+      'Operate the sluice valve or inspect the far-bank coil register'
     );
     expect(elements.get('#witness-ledger').hidden).toBe(true);
     expect(elements.get('#testimony').hidden).toBe(true);
+  });
+
+  test('selects the Hearthgaps route and labels its reachable runoff choice', () => {
+    assertHearthgapsRoute();
+  });
+
+  test('selects the Weftways route and labels its reachable flow choices', () => {
+    assertWeftwaysRoute();
+  });
+
+  test('selects Grainlands and labels the Iru spider interaction', () => {
+    assertGrainlandsRoute();
   });
 
   test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
@@ -352,6 +536,759 @@ describe('THREEFOLD page adapter', () => {
   });
 });
 
+describe('THREEFOLD campaign places page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows elapsed campaign time and hides an empty places index', () => {
+    const {
+      documentObj,
+      campaignPlaces,
+      campaignPlacesText,
+      campaignClockText,
+      campaignPressureText,
+      campaignIriFateText,
+    } = createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+            { id: 'silt-margin', label: 'Silt Margin', active: false },
+          ],
+          campaignClock: { elapsedGameSeconds: 90 },
+          campaignPressure: [
+            {
+              id: 'belltops-quay',
+              label: 'Quay pressure regulator',
+              state: 'damaged',
+            },
+            {
+              id: 'hearthgaps-runoff',
+              label: 'Hearthgaps runoff',
+              state: 'shared-bypass',
+              detail: 'hearthgaps-brin-homes',
+            },
+            {
+              id: 'silt-margin-choir',
+              label: 'Silt Margin crossing and Choir signal',
+              state: 'sent',
+              detail: 'crossing-open',
+            },
+          ],
+        },
+      }
+    );
+
+    expect(campaignPlaces.hidden).toBe(false);
+    expect(campaignPlaces.summary.textContent).toBe('Campaign status');
+    expect(campaignClockText.textContent).toBe('Campaign elapsed: 0h 1m 30s');
+    expect(campaignPlacesText.textContent).toBe(
+      'Broken Gate (current) · Silt Margin (saved)'
+    );
+    expect(campaignIriFateText.hidden).toBe(true);
+    expect(campaignPressureText.hidden).toBe(false);
+    expect(campaignPressureText.textContent).toBe(
+      'Quay regulator damaged · Hearthgaps shared bypass; Brin homes flooded · Silt Margin Choir signal sent; crossing open'
+    );
+
+    for (const [outcome, expected, milestoneId = 'regulator-encounter'] of [
+      ['trapped', 'Iri is trapped maintaining the pressure regulator.'],
+      ['rescued', 'Mara rescued Iri from the pressure regulator.'],
+      ['escaped', 'Iri escaped before Mara reached the pressure regulator.'],
+      [
+        'dead',
+        'Iri died when Mara grew into the pressure regulator.',
+        'quay-regulator-growth',
+      ],
+      ['evacuated', 'Another crew evacuated Iri from the pressure regulator.'],
+      ['abandoned', 'Iri was abandoned at the pressure regulator.'],
+    ]) {
+      page.drawFrame(
+        {},
+        {
+          threefold: {
+            campaignPlaces: [
+              { id: 'broken-gate', label: 'Broken Gate', active: true },
+            ],
+            campaignClock: { elapsedGameSeconds: 0 },
+            campaignIriFate: {
+              outcome,
+              milestoneId,
+              elapsedGameSeconds: 0,
+            },
+          },
+        }
+      );
+      expect(campaignPlaces.hidden).toBe(false);
+      expect(campaignIriFateText.hidden).toBe(false);
+      expect(campaignIriFateText.textContent).toBe(expected);
+    }
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: 0 },
+          campaignIriFate: {
+            outcome: 'dead',
+            milestoneId: 'regulator-failure',
+            elapsedGameSeconds: 0,
+          },
+        },
+      }
+    );
+    expect(campaignIriFateText.textContent).toBe(
+      'Iri died before Mara reached the pressure regulator.'
+    );
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: 0 },
+          campaignIriFate: {
+            outcome: 'dead',
+            milestoneId: 'regulator-failure',
+            elapsedGameSeconds: 0,
+          },
+        },
+      }
+    );
+    expect(campaignIriFateText.textContent).toBe(
+      'Iri died before Mara reached the pressure regulator.'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: 0 },
+          campaignIriFate: {
+            outcome: 'unknown',
+            milestoneId: 'invalid-record',
+            elapsedGameSeconds: 0,
+          },
+        },
+      }
+    );
+    expect(campaignIriFateText.hidden).toBe(true);
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+            { id: 'silt-margin', label: 'Silt Margin', active: false },
+          ],
+          campaignClock: { elapsedGameSeconds: 90 },
+        },
+      }
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: Number.NaN },
+        },
+      }
+    );
+    expect(campaignPlaces.hidden).toBe(true);
+    expect(campaignIriFateText.hidden).toBe(true);
+    expect(campaignPressureText.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD campaign pressure page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('keeps a blocked Choir signal distinct from a successful transmission', () => {
+    const { documentObj, campaignPressureText } = createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const site = {
+      id: 'silt-margin-choir',
+      label: 'Silt Margin crossing and Choir signal',
+      state: 'blocked',
+      detail: 'crossing-flooded',
+    };
+
+    page.drawFrame({}, { threefold: { campaignPressure: [site] } });
+    expect(campaignPressureText.hidden).toBe(false);
+    expect(campaignPressureText.textContent).toBe(
+      'Silt Margin Choir signal blocked; crossing flooded'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPressure: [
+            { ...site, state: 'sent', detail: 'crossing-open' },
+          ],
+        },
+      }
+    );
+    expect(campaignPressureText.textContent).toBe(
+      'Silt Margin Choir signal sent; crossing open'
+    );
+  });
+
+  test('presents saved pressure choices when there is no route index or clock', () => {
+    const { documentObj, campaignPlaces, campaignPressureText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPressure: [
+            {
+              id: 'hearthgaps-runoff',
+              label: 'Hearthgaps runoff',
+              state: 'brin-diversion',
+              detail: 'hearthgaps-downstream-homes',
+            },
+            {
+              id: 'silt-margin-choir',
+              label: 'Silt Margin crossing and Choir signal',
+              state: 'disrupted',
+              detail: 'crossing-flooded',
+            },
+            {
+              id: 'future-route',
+              label: 'Future route status',
+              state: 'unknown',
+            },
+          ],
+        },
+      }
+    );
+
+    expect(campaignPlaces.hidden).toBe(false);
+    expect(campaignPressureText.hidden).toBe(false);
+    expect(campaignPressureText.textContent).toBe(
+      'Hearthgaps Brin diversion; downstream homes flooded · Silt Margin Choir signal disrupted; crossing flooded · Future route status'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPressure: [
+            {
+              id: 'hearthgaps-runoff',
+              label: 'Hearthgaps runoff',
+              state: 'shared-bypass',
+              detail: 'unknown-footprint',
+            },
+          ],
+        },
+      }
+    );
+    expect(campaignPressureText.textContent).toBe(
+      'Hearthgaps shared bypass; no homes flooded'
+    );
+  });
+});
+
+describe('THREEFOLD Silt Margin evidence page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows Neme’s Quieting trace as an accessible disclosure only when heard', () => {
+    const { documentObj, siltMarginQuietingEvidence, siltMarginEvidenceText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Neme’s translated Choir trace',
+      text: 'Downstream replies stopped after the emergency bypass.',
+    };
+
+    page.drawFrame({}, { threefold: { siltMarginQuietingEvidence: record } });
+
+    expect(siltMarginQuietingEvidence.hidden).toBe(false);
+    expect(siltMarginQuietingEvidence.summary.textContent).toBe(record.title);
+    expect(siltMarginEvidenceText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { siltMarginQuietingEvidence: null } });
+    expect(siltMarginQuietingEvidence.hidden).toBe(true);
+  });
+
+  test('shows the Tidal Archive trace as an accessible disclosure only when found', () => {
+    const { documentObj, tidalArchiveQuietingTrace, tidalArchiveTraceText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Tidal Archive coil register',
+      text: 'Downstream replies stopped after the emergency bypass.',
+    };
+
+    page.drawFrame({}, { threefold: { archiveQuietingTrace: record } });
+
+    expect(tidalArchiveQuietingTrace.hidden).toBe(false);
+    expect(tidalArchiveQuietingTrace.summary.textContent).toBe(record.title);
+    expect(tidalArchiveTraceText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { archiveQuietingTrace: null } });
+    expect(tidalArchiveQuietingTrace.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD standalone markup', () => {
+  test('exposes accessible touch interactions and route links', () => {
+    expect(THREEFOLD_HTML).toContain('data-action="interact"');
+    expect(THREEFOLD_HTML).toContain(
+      'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
+    );
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=weftways"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=grainlands"');
+    expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence"');
+    expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence-text"');
+    expect(THREEFOLD_HTML).toContain('id="campaign-pressure-text"');
+  });
+});
+
+describe('THREEFOLD closure epilogue page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('renders each closure epilogue once and hides it for an open episode', () => {
+    const { documentObj, episodeEpilogue, episodeEpilogueList } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const epilogue = {
+      title: 'Departure',
+      paragraphs: [
+        'Mara leaves by the upland road without filing a report.',
+        'Passenger outcome: passengers safe.',
+        'Latchfolk outcome: safe.',
+      ],
+    };
+
+    page.drawFrame({}, { threefold: { episodeEpilogue: epilogue } });
+    const renderedOutcomes = episodeEpilogueList.children;
+    page.drawFrame({}, { threefold: { episodeEpilogue: epilogue } });
+
+    expect(episodeEpilogue.hidden).toBe(false);
+    expect(episodeEpilogue.summary.textContent).toBe(epilogue.title);
+    expect(episodeEpilogueList.children).toBe(renderedOutcomes);
+    expect(collectText(episodeEpilogueList.children)).toContain(
+      'Passenger outcome: passengers safe.'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          episodeEpilogue: {
+            ...epilogue,
+            title: 'Report filed',
+            paragraphs: [
+              ...epilogue.paragraphs,
+              'The lower channel stays dry.',
+            ],
+          },
+        },
+      }
+    );
+
+    expect(episodeEpilogue.summary.textContent).toBe('Report filed');
+    expect(episodeEpilogueList.children).toHaveLength(4);
+
+    episodeEpilogue.querySelector = () => null;
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          episodeEpilogue: {
+            ...epilogue,
+            paragraphs: [
+              ...epilogue.paragraphs,
+              'Floodwater remains in the lower channel after the storm.',
+            ],
+          },
+        },
+      }
+    );
+    expect(episodeEpilogueList.children).toHaveLength(4);
+
+    page.drawFrame({}, { threefold: { episodeEpilogue: null } });
+
+    expect(episodeEpilogue.hidden).toBe(true);
+    expect(episodeEpilogueList.children).toHaveLength(0);
+  });
+
+  test('shows the Latchfolk request in the accessible report epilogue', () => {
+    const { documentObj, episodeEpilogueList } = createLedgerDocument();
+    const response =
+      'The report carries Iri’s account to the surviving Latchfolk watchkeeper. They ask for the downstream relay stations to be traced before responsibility is assigned; the final sender and missed warnings remain unknown.';
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          episodeEpilogue: { title: 'Report filed', paragraphs: [response] },
+        },
+      }
+    );
+
+    expect(collectText(episodeEpilogueList.children)).toContain(response);
+  });
+
+  test('shows a saved ferry memorial in an accessible page record', () => {
+    const { documentObj, harborMemorial, harborMemorialText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Harrowfen ferry memorial',
+      text: 'The Belltops harbor bell marks the ferry lost in the surge.',
+    };
+
+    page.drawFrame({}, { threefold: { harborMemorial: record } });
+
+    expect(harborMemorial.hidden).toBe(false);
+    expect(harborMemorial.summary.textContent).toBe(record.title);
+    expect(harborMemorialText.textContent).toContain('lost in the surge');
+
+    page.drawFrame({}, { threefold: { harborMemorial: null } });
+    expect(harborMemorial.hidden).toBe(true);
+  });
+
+  test("shows Orla's outcome-specific response in an accessible page record", () => {
+    const { documentObj, orlaHarborResponse, orlaHarborResponseText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: "Orla's harbor response",
+      text: 'Orla keeps her trust provisional after the partial ferry loss.',
+    };
+
+    page.drawFrame({}, { threefold: { orlaHarborResponse: record } });
+
+    expect(orlaHarborResponse.hidden).toBe(false);
+    expect(orlaHarborResponse.summary.textContent).toBe(record.title);
+    expect(orlaHarborResponseText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { orlaHarborResponse: null } });
+    expect(orlaHarborResponse.hidden).toBe(true);
+  });
+
+  test('shows ferry engineer availability in an accessible page record', () => {
+    const { documentObj, harborEngineerAvailability, harborEngineerText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Harbor engineering support',
+      text: 'The ferry engineer is available to advise the harbor crew.',
+    };
+
+    page.drawFrame({}, { threefold: { harborEngineerAvailability: record } });
+
+    expect(harborEngineerAvailability.hidden).toBe(false);
+    expect(harborEngineerAvailability.summary.textContent).toBe(record.title);
+    expect(harborEngineerText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { harborEngineerAvailability: null } });
+    expect(harborEngineerAvailability.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD witness lead page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows the watchkeeper relay lead only after the frame records it', () => {
+    const { documentObj, iriWitnessLead, iriWitnessLeadText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: "The Watchkeeper's relay account",
+      text: 'The caller asked for Iri, but the source remains unknown.',
+    };
+
+    page.drawFrame({}, { threefold: { iriWitnessLead: record } });
+    page.drawFrame({}, { threefold: { iriWitnessLead: record } });
+
+    expect(iriWitnessLead.hidden).toBe(false);
+    expect(iriWitnessLead.summary.textContent).toBe(record.title);
+    expect(iriWitnessLeadText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { iriWitnessLead: null } });
+
+    expect(iriWitnessLead.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD ferry search page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows the saved wreck search as an accessible disclosure', () => {
+    const { documentObj, ferryWreckSearch, ferryWreckSearchText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Ferry wreck search',
+      text: 'One passenger group reached shore; the other was lost.',
+    };
+
+    page.drawFrame({}, { threefold: { ferryWreckSearch: record } });
+
+    expect(ferryWreckSearch.hidden).toBe(false);
+    expect(ferryWreckSearch.summary.textContent).toBe(record.title);
+    expect(ferryWreckSearchText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { ferryWreckSearch: null } });
+
+    expect(ferryWreckSearch.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD displaced Latchfolk aid page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows the saved aid as an accessible disclosure', () => {
+    const { documentObj, latchfolkAid, latchfolkAidText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Help for displaced Latchfolk',
+      text: 'Mara and the watchkeeper help arrange temporary shelter.',
+    };
+
+    page.drawFrame({}, { threefold: { latchfolkAid: record } });
+
+    expect(latchfolkAid.hidden).toBe(false);
+    expect(latchfolkAid.summary.textContent).toBe(record.title);
+    expect(latchfolkAidText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { latchfolkAid: null } });
+
+    expect(latchfolkAid.hidden).toBe(true);
+  });
+});
+
+/** Verify the route query, page copy, action label, and authored spawn together. */
+function assertHearthgapsRoute() {
+  const selectors = [
+    '#chapter-subtitle',
+    '#chapter-tag',
+    '#chapter-eyebrow',
+    '#chapter-heading',
+    '#chapter-description',
+    '#interact-label',
+    '#a-control-label',
+    '#b-control-label',
+    '#e-control-label',
+    '#scene-link',
+    '#game-footer',
+    '#interact-control',
+    '#witness-ledger',
+    '#testimony',
+    '#weftways-relay-record',
+    '#hearthgaps-entry',
+    '#weftways-entry',
+    '#grainlands-entry',
+  ];
+  const elements = new Map(
+    selectors.map(selector => [selector, { setAttribute: jest.fn() }])
+  );
+  const documentObj = { querySelector: selector => elements.get(selector) };
+  const windowObj = {
+    location: { search: '?scene=hearthgaps' },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const state = page.createRuntime({ env: new Map() }).getState();
+
+  expect(state.scene.id).toBe('hearthgaps');
+  expect(state.player.scale).toBe(-1);
+  expect(elements.get('#chapter-subtitle').textContent).toBe('Hearthgaps');
+  expect(elements.get('#chapter-description').textContent).toContain(
+    'downstream settlement'
+  );
+  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=weftways');
+  expect(elements.get('#e-control-label').textContent).toBe('CHOOSE RUNOFF');
+  expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+    'aria-label',
+    'Choose the Brin diversion or shared runoff bypass'
+  );
+  expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+  expect(elements.get('#weftways-entry').hidden).toBe(true);
+  expect(elements.get('#grainlands-entry').hidden).toBe(true);
+}
+
+/** Verify the Weftways query, route copy, control label, and authored scale. */
+function assertWeftwaysRoute() {
+  const selectors = [
+    '#chapter-subtitle',
+    '#chapter-tag',
+    '#chapter-eyebrow',
+    '#chapter-heading',
+    '#chapter-description',
+    '#interact-label',
+    '#a-control-label',
+    '#b-control-label',
+    '#e-control-label',
+    '#scene-link',
+    '#game-footer',
+    '#interact-control',
+    '#witness-ledger',
+    '#testimony',
+    '#weftways-relay-record',
+    '#weftways-relay-destruction',
+    '#weftways-relay-restitution',
+    '#hearthgaps-entry',
+    '#weftways-entry',
+    '#grainlands-entry',
+  ];
+  const elements = new Map(
+    selectors.map(selector => [selector, { setAttribute: jest.fn() }])
+  );
+  const documentObj = { querySelector: selector => elements.get(selector) };
+  const windowObj = {
+    location: { search: '?scene=weftways' },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const state = page.createRuntime({ env: new Map() }).getState();
+
+  expect(state.scene.id).toBe('weftways');
+  expect(state.player.scale).toBe(-2);
+  expect(elements.get('#chapter-subtitle').textContent).toBe('Weftways');
+  expect(elements.get('#chapter-description').textContent).toContain(
+    'protects the deep roots'
+  );
+  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=grainlands');
+  expect(elements.get('#e-control-label').textContent).toBe(
+    'CHOOSE · READ · SHARE · REPAIR · PRIVATE · DESTROY'
+  );
+  expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+    'aria-label',
+    'Choose a water route, inspect Pell’s relay ledger, then share it at the caravan circle, negotiate repairs at the marked table, keep it private at the knot cache, or destroy it at the brazier'
+  );
+  expect(elements.get('#weftways-relay-record').hidden).toBe(true);
+  expect(elements.get('#weftways-relay-restitution').hidden).toBe(true);
+  expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+  expect(elements.get('#weftways-entry').hidden).toBe(true);
+  expect(elements.get('#grainlands-entry').hidden).toBe(true);
+}
+
+/** Verify the Grainlands route query, authored scale, and nursery story copy. */
+function assertGrainlandsRoute() {
+  const selectors = [
+    '#chapter-subtitle',
+    '#chapter-tag',
+    '#chapter-eyebrow',
+    '#chapter-heading',
+    '#chapter-description',
+    '#interact-label',
+    '#a-control-label',
+    '#b-control-label',
+    '#e-control-label',
+    '#scene-link',
+    '#game-footer',
+    '#interact-control',
+    '#witness-ledger',
+    '#testimony',
+    '#hearthgaps-entry',
+    '#weftways-entry',
+    '#grainlands-entry',
+  ];
+  const elements = new Map(
+    selectors.map(selector => [selector, { setAttribute: jest.fn() }])
+  );
+  const documentObj = { querySelector: selector => elements.get(selector) };
+  const windowObj = {
+    location: { search: '?scene=grainlands' },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const state = page.createRuntime({ env: new Map() }).getState();
+
+  expect(state.scene.id).toBe('grainlands');
+  expect(state.player.scale).toBe(-3);
+  expect(elements.get('#chapter-subtitle').textContent).toBe('Grainlands');
+  expect(elements.get('#chapter-description').textContent).toContain(
+    'overpower it and break the Threadbound bridge'
+  );
+  expect(elements.get('#scene-link').href).toBe(
+    '/threefold/?scene=silt-margin'
+  );
+  expect(elements.get('#e-control-label').textContent).toBe('IRU / HATCH');
+  expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+    'aria-label',
+    'Help Iru bait the spider or close the nearby nursery inlet hatch'
+  );
+  expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+  expect(elements.get('#weftways-entry').hidden).toBe(true);
+  expect(elements.get('#grainlands-entry').hidden).toBe(true);
+}
+
 /**
  * Create the minimum DOM surface used by the text-only ledger and testimony renderers.
  * @returns {{documentObj: any, list: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}, testimonyList: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}, responsibility: {textContent: string}}} Fake document and lists.
@@ -366,6 +1303,16 @@ function createLedgerDocument() {
       this.children.push(node);
     },
   };
+  const campaignPlacesText = { textContent: '' };
+  const campaignClockText = { textContent: '' };
+  const campaignPressureText = { hidden: true, textContent: '' };
+  const campaignIriFateText = { hidden: true, textContent: '' };
+  const campaignPlaces = {
+    hidden: true,
+    summary: { textContent: 'Old campaign places' },
+    querySelector: selector =>
+      selector === 'summary' ? campaignPlaces.summary : null,
+  };
   const testimonyList = {
     children: [],
     replaceChildren() {
@@ -376,15 +1323,153 @@ function createLedgerDocument() {
     },
   };
   const responsibility = { textContent: '' };
+  const iriRepairLogText = { textContent: '' };
+  const iriRepairLog = {
+    hidden: true,
+    summary: { textContent: 'Old pressure regulator log' },
+    querySelector: selector =>
+      selector === 'summary' ? iriRepairLog.summary : null,
+  };
+  const iriWitnessLeadText = { textContent: '' };
+  const iriWitnessLead = {
+    hidden: true,
+    summary: { textContent: 'Old watchkeeper account' },
+    querySelector: selector =>
+      selector === 'summary' ? iriWitnessLead.summary : null,
+  };
+  const harborMemorialText = { textContent: '' };
+  const harborMemorial = {
+    hidden: true,
+    summary: { textContent: 'Old ferry memorial' },
+    querySelector: selector =>
+      selector === 'summary' ? harborMemorial.summary : null,
+  };
+  const orlaHarborResponseText = { textContent: '' };
+  const orlaHarborResponse = {
+    hidden: true,
+    summary: { textContent: 'Old harbor response' },
+    querySelector: selector =>
+      selector === 'summary' ? orlaHarborResponse.summary : null,
+  };
+  const harborEngineerText = { textContent: '' };
+  const harborEngineerAvailability = {
+    hidden: true,
+    summary: { textContent: 'Old engineer availability' },
+    querySelector: selector =>
+      selector === 'summary' ? harborEngineerAvailability.summary : null,
+  };
+  const ferryWreckSearchText = { textContent: '' };
+  const ferryWreckSearch = {
+    hidden: true,
+    summary: { textContent: 'Old ferry search' },
+    querySelector: selector =>
+      selector === 'summary' ? ferryWreckSearch.summary : null,
+  };
+  const latchfolkAidText = { textContent: '' };
+  const latchfolkAid = {
+    hidden: true,
+    summary: { textContent: 'Old Latchfolk aid' },
+    querySelector: selector =>
+      selector === 'summary' ? latchfolkAid.summary : null,
+  };
+  const siltMarginEvidenceText = { textContent: '' };
+  const siltMarginQuietingEvidence = {
+    hidden: true,
+    summary: { textContent: 'Old Choir trace' },
+    querySelector: selector =>
+      selector === 'summary' ? siltMarginQuietingEvidence.summary : null,
+  };
+  const tidalArchiveTraceText = { textContent: '' };
+  const tidalArchiveQuietingTrace = {
+    hidden: true,
+    summary: { textContent: 'Old Tidal Archive trace' },
+    querySelector: selector =>
+      selector === 'summary' ? tidalArchiveQuietingTrace.summary : null,
+  };
+  const episodeEpilogueList = {
+    children: [],
+    replaceChildren() {
+      this.children = [];
+    },
+    appendChild(node) {
+      this.children.push(node);
+    },
+  };
+  const episodeEpilogue = {
+    hidden: true,
+    summary: { textContent: 'After the Broken Gate' },
+    querySelector: selector =>
+      selector === 'summary' ? episodeEpilogue.summary : null,
+  };
   return {
     list,
+    campaignPlaces,
+    campaignPlacesText,
+    campaignClockText,
+    campaignPressureText,
+    campaignIriFateText,
     testimonyList,
     responsibility,
+    iriRepairLog,
+    iriRepairLogText,
+    iriWitnessLead,
+    iriWitnessLeadText,
+    harborMemorial,
+    harborMemorialText,
+    orlaHarborResponse,
+    orlaHarborResponseText,
+    harborEngineerAvailability,
+    harborEngineerText,
+    ferryWreckSearch,
+    ferryWreckSearchText,
+    latchfolkAid,
+    latchfolkAidText,
+    siltMarginQuietingEvidence,
+    siltMarginEvidenceText,
+    tidalArchiveQuietingTrace,
+    tidalArchiveTraceText,
+    episodeEpilogue,
+    episodeEpilogueList,
     documentObj: {
       querySelector: selector => {
         if (selector === '#witness-ledger-entries') return list;
+        if (selector === '#campaign-places') return campaignPlaces;
+        if (selector === '#campaign-places-text') return campaignPlacesText;
+        if (selector === '#campaign-clock-text') return campaignClockText;
+        if (selector === '#campaign-pressure-text') return campaignPressureText;
+        if (selector === '#campaign-iri-fate-text') return campaignIriFateText;
         if (selector === '#testimony-accounts') return testimonyList;
         if (selector === '#testimony-responsibility') return responsibility;
+        if (selector === '#iri-repair-log') return iriRepairLog;
+        if (selector === '#iri-repair-log-text') return iriRepairLogText;
+        if (selector === '#iri-witness-lead') return iriWitnessLead;
+        if (selector === '#iri-witness-lead-text') return iriWitnessLeadText;
+        if (selector === '#harbor-memorial') return harborMemorial;
+        if (selector === '#harbor-memorial-text') return harborMemorialText;
+        if (selector === '#belltops-watch-response') return orlaHarborResponse;
+        if (selector === '#belltops-watch-response-text')
+          return orlaHarborResponseText;
+        if (selector === '#harbor-engineer-availability')
+          return harborEngineerAvailability;
+        if (selector === '#harbor-engineer-availability-text')
+          return harborEngineerText;
+        if (selector === '#ferry-wreck-search') return ferryWreckSearch;
+        if (selector === '#ferry-wreck-search-text')
+          return ferryWreckSearchText;
+        if (selector === '#latchfolk-displacement-aid') return latchfolkAid;
+        if (selector === '#latchfolk-displacement-aid-text')
+          return latchfolkAidText;
+        if (selector === '#silt-margin-quieting-evidence')
+          return siltMarginQuietingEvidence;
+        if (selector === '#silt-margin-quieting-evidence-text')
+          return siltMarginEvidenceText;
+        if (selector === '#tidal-archive-quieting-trace')
+          return tidalArchiveQuietingTrace;
+        if (selector === '#tidal-archive-quieting-trace-text')
+          return tidalArchiveTraceText;
+        if (selector === '#episode-epilogue') return episodeEpilogue;
+        if (selector === '#episode-epilogue-outcomes')
+          return episodeEpilogueList;
         return null;
       },
       createElement: tag => createFakeNode(tag),

@@ -1,0 +1,6 @@
+# THREEFOLD Silt Margin droplet bridge retrospective
+
+- **Unexpected hurdle:** The first Silt Margin Full Check failed at 99.942% branch coverage even though every impact suite passed. The artifact identified untested sent-signal rendering, branch normalization, and unsupported-save handling. The first side-route regression also assumed the wrong mapping between directional input and world Y.
+- **Diagnosis:** Read the exact-head workflow logs and merged coverage maps, then checked the movement reducer and scene collision bounds. The dew crossing originally covered only the center strip, leaving a walk-around path on either side.
+- **Chosen fix:** Reused the hydraulic port solver for conserved dew-channel water, made the crossing span the full walkable lane, and retained the separate root-growth route. Added assertions for the previously uncovered branches, schema-v1 migration, invalid Silt versions, both puzzle paths, and the upper-edge collision attempt.
+- **Next-time guidance:** For a new THREEFOLD hydraulic obstacle, verify the collision bounds cover the whole playable lane, check directional world-coordinate signs before writing route tests, inspect merged branch maps when Full Check fails, and test both signal outcomes through the renderer.

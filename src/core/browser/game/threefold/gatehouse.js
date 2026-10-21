@@ -1,4 +1,5 @@
 import {
+  copyThreefoldCreature,
   copyThreefoldGeometry,
   createThreefoldPlayerSpawn,
 } from './scene-utils.js';
@@ -134,7 +135,7 @@ export function createBrokenGateScene() {
     areas: GATEHOUSE_AREAS.map(copyArea),
     geometry: GATEHOUSE_GEOMETRY.map(copyThreefoldGeometry),
     interactables: GATEHOUSE_INTERACTABLES.map(copyInteractable),
-    creatures: [copyCreature(GATEHOUSE_RAT)],
+    creatures: [copyThreefoldCreature(GATEHOUSE_RAT)],
   };
 }
 
@@ -147,21 +148,6 @@ function copyInteractable(item) {
     id: item.id,
     position: { ...item.position },
     bounds: { min: { ...item.bounds.min }, max: { ...item.bounds.max } },
-  };
-}
-
-/**
- * @param {typeof GATEHOUSE_RAT} creature Authored creature.
- * @returns {typeof GATEHOUSE_RAT} Independent creature value.
- */
-function copyCreature(creature) {
-  return {
-    ...creature,
-    position: { ...creature.position },
-    bounds: {
-      min: { ...creature.bounds.min },
-      max: { ...creature.bounds.max },
-    },
   };
 }
 
