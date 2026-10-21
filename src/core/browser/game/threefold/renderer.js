@@ -68,11 +68,13 @@ const RAT_SILHOUETTE = [
  * World geometry scales around Mara while her 12x12 pixel sprite stays fixed.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current gatehouse simulation.
  * @param {import('./pressure-network.js').ThreefoldPressureNetwork} [pressureNetwork] Shared campaign water.
+ * @param {ReturnType<typeof import('./quay-regulator.js').getThreefoldQuayContent>} [quayContent] Current physical Quay operation.
  * @returns {Record<string, any>} Shared 160x144 Mosslight frame plus THREEFOLD metadata.
  */
 export function renderThreefoldFrame(
   state,
-  pressureNetwork = createThreefoldPressureNetwork()
+  pressureNetwork = createThreefoldPressureNetwork(),
+  quayContent = null
 ) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
   if (isSiltMarginSimulationState(state))
@@ -121,9 +123,11 @@ export function renderThreefoldFrame(
       : isGatehouseRatInReach(state)
         ? 'fight'
         : 'grow',
-    toast: isHighWorld
-      ? getHighWorldToast(state)
-      : getThreefoldToast(state, gateOutcome.drainageState),
+    toast: quayContent
+      ? quayContent.hud
+      : isHighWorld
+        ? getHighWorldToast(state)
+        : getThreefoldToast(state, gateOutcome.drainageState),
     presentation: {
       palette: PALETTE,
       status: formatScaleStatus(state.player),
@@ -275,6 +279,14 @@ export function renderThreefoldFrame(
         ? /** @type {Record<string, any>} */ (state).wakeformShoals
         : null,
   };
+  if (quayContent && !quayContent.craneAvailable)
+    frame.shapes.push(
+      captionShape(
+        { x: 8, y: 104 },
+        pressureNetwork.craneDestroyed ? 'CRANE LOST' : 'CRANE IDLE',
+        true
+      )
+    );
   return alignThreefoldFrame(frame);
 }
 

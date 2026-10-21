@@ -11,6 +11,8 @@ const FLAGS = [
   'nurseryDamaged',
   'bypassOpen',
   'nurseryFlooded',
+  'operatorReleased',
+  'craneDestroyed',
 ];
 const CHAMBERS = [
   { id: 'quay-feeder', floorElevationMeters: 0, areaSquareMeters: 0.1 },
@@ -22,8 +24,9 @@ const CHAMBERS = [
   },
 ];
 
-/** @typedef {{volumesCubicMeters: number[], regulatorFailed: boolean, hatchClosed: boolean, nurseryDamaged: boolean, bypassOpen: boolean, nurseryFlooded: boolean}} ThreefoldPressureNetwork */
-/** @typedef {{regulatorFailed: boolean, nurseryDamaged: boolean, closeHatch: boolean, coordinatedBypass: boolean}} ThreefoldPressureInputs */
+/** @typedef {'crane'|'carried'|'installed'|'lost'} ThreefoldGovernorState */
+/** @typedef {{governorState: ThreefoldGovernorState, operatorReleased: boolean, craneDestroyed: boolean, volumesCubicMeters: number[], regulatorFailed: boolean, hatchClosed: boolean, nurseryDamaged: boolean, bypassOpen: boolean, nurseryFlooded: boolean}} ThreefoldPressureNetwork */
+/** @typedef {{regulatorFailed: boolean, nurseryDamaged: boolean, closeHatch: boolean, coordinatedBypass: boolean, craneDestroyed?: boolean}} ThreefoldPressureInputs */
 
 /**
  * Create the regulated five-litre local feeder and two empty receiving basins.
@@ -38,6 +41,9 @@ export function createThreefoldPressureNetwork() {
     nurseryDamaged: false,
     bypassOpen: false,
     nurseryFlooded: false,
+    operatorReleased: false,
+    craneDestroyed: false,
+    governorState: 'crane',
   };
 }
 
@@ -63,7 +69,13 @@ export function advanceThreefoldPressureNetwork(
     nurseryDamaged: state.nurseryDamaged || inputs.nurseryDamaged,
     hatchClosed: state.hatchClosed || inputs.closeHatch,
     bypassOpen: state.bypassOpen || inputs.coordinatedBypass,
+    craneDestroyed: state.craneDestroyed || inputs.craneDestroyed === true,
   };
+  if (
+    (next.governorState === 'crane' && next.craneDestroyed) ||
+    (next.governorState === 'installed' && next.regulatorFailed)
+  )
+    next.governorState = 'lost';
   const steps = Math.min(600, Math.ceil(durationSeconds));
   for (let index = 0; index < steps; index += 1)
     next = advancePressurePorts(next, durationSeconds / steps);
@@ -101,7 +113,9 @@ function advancePressurePorts(state, durationSeconds) {
     reliefFlow.chambers[0],
     nursery,
     createPressurePort(
-      state.regulatorFailed && (!state.hatchClosed || state.nurseryDamaged),
+      (state.regulatorFailed ||
+        (state.operatorReleased && state.governorState !== 'installed')) &&
+        (!state.hatchClosed || state.nurseryDamaged),
       0.00001
     ),
     durationSeconds
@@ -168,7 +182,7 @@ export function describeThreefoldPressureNetwork(state) {
 export function serializeThreefoldPressureNetwork(state) {
   return JSON.stringify({
     game: GAME_ID,
-    schemaVersion: 1,
+    schemaVersion: 2,
     state: normalizeThreefoldPressureNetwork(state),
   });
 }
@@ -183,9 +197,16 @@ export function restoreThreefoldPressureNetwork(serialized) {
   const parsed = parseJsonOrNull(serialized);
   if (!parsed || typeof parsed !== 'object') return null;
   const envelope = /** @type {Record<string, unknown>} */ (parsed);
-  if (envelope.game !== GAME_ID || envelope.schemaVersion !== 1) return null;
+  if (
+    envelope.game !== GAME_ID ||
+    ![1, 2].includes(/** @type {number} */ (envelope.schemaVersion))
+  )
+    return null;
   try {
-    return normalizeThreefoldPressureNetwork(envelope.state);
+    return normalizeThreefoldPressureNetwork(
+      envelope.state,
+      envelope.schemaVersion === 1
+    );
   } catch {
     return null;
   }
@@ -194,12 +215,28 @@ export function restoreThreefoldPressureNetwork(serialized) {
 /**
  * Check conserved physical volumes and the complete campaign flag record.
  * @param {unknown} candidate Stored network state.
+ * @param {boolean} [legacy] Whether this is the original hydraulic-only envelope.
  * @returns {ThreefoldPressureNetwork} Canonical campaign state.
  */
-function normalizeThreefoldPressureNetwork(candidate) {
+function normalizeThreefoldPressureNetwork(candidate, legacy = false) {
   if (!candidate || typeof candidate !== 'object')
     throw new TypeError('Pressure network state is invalid.');
-  const record = /** @type {Record<string, unknown>} */ (candidate);
+  const record = /** @type {Record<string, unknown>} */ ({
+    .../** @type {Record<string, unknown>} */ (candidate),
+    ...(legacy
+      ? {
+          governorState: 'crane',
+          operatorReleased: false,
+          craneDestroyed: false,
+        }
+      : {}),
+  });
+  if (
+    !['crane', 'carried', 'installed', 'lost'].includes(
+      /** @type {string} */ (record.governorState)
+    )
+  )
+    throw new TypeError('Pressure network governor is invalid.');
   const volumes = record.volumesCubicMeters;
   if (
     !Array.isArray(volumes) ||
@@ -219,9 +256,17 @@ function normalizeThreefoldPressureNetwork(candidate) {
       return [key, record[key]];
     })
   );
+  if (
+    (record.governorState === 'crane' && flags.craneDestroyed) ||
+    (record.governorState === 'installed' && flags.regulatorFailed)
+  )
+    throw new RangeError(
+      'A destroyed machine cannot supply an operating governor.'
+    );
   const state = /** @type {ThreefoldPressureNetwork} */ ({
     ...flags,
     volumesCubicMeters: [...volumes],
+    governorState: record.governorState,
   });
   state.nurseryFlooded =
     state.nurseryFlooded ||

@@ -198,7 +198,7 @@ describe('THREEFOLD shared physical pressure network', () => {
       '123',
       '{}',
       JSON.stringify({ ...envelope, game: 'threefold' }),
-      JSON.stringify({ ...envelope, schemaVersion: 2 }),
+      JSON.stringify({ ...envelope, schemaVersion: 3 }),
     ])
       expect(restoreThreefoldPressureNetwork(input)).toBeNull();
     const invalidStates = [

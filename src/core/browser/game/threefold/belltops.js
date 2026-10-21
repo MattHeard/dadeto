@@ -2,6 +2,7 @@ import { createThreefoldHighWorldScene } from './high-world-scenes.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
 
 export const THREEFOLD_BELLTOPS_SCENE_ID = 'belltops';
+export const THREEFOLD_BELLTOPS_CRANE_DRIVE_ID = 'belltops-crane-governor';
 export const THREEFOLD_BELLTOPS_PRESSURE_REGULATOR_ID =
   'belltops-pressure-regulator-control';
 export { THREEFOLD_BELLTOPS_IRI_ID } from './high-world-scenes.js';
@@ -16,7 +17,17 @@ export function createThreefoldBelltopsScene() {
   const scene = createThreefoldHighWorldScene(THREEFOLD_BELLTOPS_SCENE_ID);
   return /** @type {ThreefoldBelltopsScene} */ ({
     ...scene,
-    interactables: [createPressureRegulatorControl()],
+    interactables: [
+      createPressureRegulatorControl(),
+      {
+        id: THREEFOLD_BELLTOPS_CRANE_DRIVE_ID,
+        position: { x: -6.2, y: -1 },
+        bounds: {
+          min: { x: -6.5, y: -1.3, z: 0 },
+          max: { x: -5.9, y: -0.7, z: 2 },
+        },
+      },
+    ],
   });
 }
 

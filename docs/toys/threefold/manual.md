@@ -143,7 +143,7 @@ Orla's accessible harbor response also changes with that saved outcome: she trus
 
 The ferry engineer is part of the first passenger group. If that group reached shore, the accessible harbor record shows the engineer is available to advise Orla's crew; if both groups were lost, no ferry engineer is available in Belltops.
 
-The regulator encounter establishes the reachable trapped state and the growth-caused death. Its failure now releases the shared nursery water channel described below. Iri’s rescue actions and replacement machinery remain future work.
+The regulator encounter establishes the reachable trapped state and the growth-caused death. Its failure now releases the shared nursery water channel described below. The crane governor and rescue handoff are available as described below.
 
 ## Crownback Reach
 
@@ -163,4 +163,12 @@ The Quay regulator feeds a small pressure-reduced channel into the Grainlands nu
 
 In Grainlands, approach the small hatch marker above the nursery and press E to close its inlet. Its color changes when sealed. Growing into the nursery breaks the hatch and shelter, so a sealed inlet cannot protect a demolished structure. The shared campaign status reports current water depth; flood damage remains recorded after drainage. Flooded water and broken shelter appear on the same 160 × 144 screen.
 
-Alternatively, establish the shared bypass in Hearthgaps and send the Choir signal from the surviving Silt Margin route. Both actions coordinate the relief outlet. The earlier damage to Brin homes remains; opening this relief does not repair it. A regional reset or regional import cannot undo shared water consequences. Regional exported files contain regional progress; shared pressure, campaign time, and Iri outcomes remain in their separate browser campaign records. Iri's rescue and replacement machinery are not yet available.
+Alternatively, establish the shared bypass in Hearthgaps and send the Choir signal from the surviving Silt Margin route. Both actions coordinate the relief outlet. The earlier damage to Brin homes remains; opening this relief does not repair it. A regional reset or regional import cannot undo shared water consequences. Regional exported files contain regional progress; shared pressure, campaign time, and Iri outcomes remain in their separate browser campaign records. Iri’s Quay handoff is described below.
+
+## Releasing Iri from the Quay regulator
+
+Press E at the nearest reachable Quay panel to check Iri. The next press releases Iri: read the HUD and campaign status first. Without a replacement governor, the nursery feeder opens. Earlier Grainlands hatch or Hearthgaps/Choir relief work can mitigate the water; a later repair does not erase flood damage.
+
+For a governed handoff, move toward the harbor crane until the HUD offers TAKE GOVERNOR. E removes its governor and permanently stops harbor lifting; the crane stays standing and the screen marks CRANE IDLE. Return within reach of the panel, use E to FIT GOVERNOR, then press E again to RELEASE IRI. The installed governor controls the feed when Iri leaves. Each operation requires a new press, so holding E cannot silently commit several choices.
+
+A destroyed crane cannot supply its governor, and a destroyed regulator cannot accept one. If installed machinery is later destroyed, its governor is lost; a carried governor survives crane damage. Reopening a region cannot duplicate the part or bring a departed Iri back. The other investigation routes remain available. Campaign status and the handheld HUD show the current handoff and machine cost; this is not yet the complete Return Tide finale.
