@@ -594,8 +594,13 @@ function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
  * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
  */
 function renderThreefoldWeftwaysFrame(state) {
-  const { flowChoice, floodedGeometryIds, relayRecordRead, relayRecordShared } =
-    state.weftways;
+  const {
+    flowChoice,
+    floodedGeometryIds,
+    relayRecordRead,
+    relayRecordShared,
+    relayRecordConcealed,
+  } = state.weftways;
   const rootFlooded = floodedGeometryIds.includes(
     weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
   );
@@ -608,11 +613,13 @@ function renderThreefoldWeftwaysFrame(state) {
   );
   const flowMessage = relayRecordShared
     ? 'Mara shared the record; responsibility remains unresolved.'
-    : flowChoice === 'pell-bypass'
-      ? 'Pell trusts Mara; roots hold, quay floods.'
-      : flowChoice === 'quay-spill'
-        ? 'Pell is wary; quay stays dry, root crossing floods.'
-        : 'Pell knows a bypass through the deep roots.';
+    : relayRecordConcealed
+      ? 'Mara keeps Pell’s record private.'
+      : flowChoice === 'pell-bypass'
+        ? 'Pell trusts Mara; roots hold, quay floods.'
+        : flowChoice === 'quay-spill'
+          ? 'Pell is wary; quay stays dry, root crossing floods.'
+          : 'Pell knows a bypass through the deep roots.';
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 2.4) * 144
   );
@@ -674,6 +681,10 @@ function renderThreefoldWeftwaysFrame(state) {
       [40, 64, 8, 8],
       relayRecordShared ? '#bfd77c' : '#e9d88d'
     ),
+    createThreefoldRectShape(
+      [112, 40, 8, 8],
+      relayRecordConcealed ? '#bfd77c' : '#8aa27b'
+    ),
     createThreefoldRectShape([32, 72, 24, 8], '#526e4b'),
     createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
@@ -691,9 +702,11 @@ function renderThreefoldWeftwaysFrame(state) {
         ? 'MOVE · E CHOOSE · A GROW · B SHRINK'
         : relayRecordShared
           ? 'CARAVAN KNOWS THE RECORD'
-          : relayRecordRead
-            ? 'REACH CAMP · E SHARE RECORD'
-            : 'REACH PELL · E READ RELAY LOG'
+          : relayRecordConcealed
+            ? 'MARA KEPT THE RECORD PRIVATE'
+            : relayRecordRead
+              ? 'E SHARE AT CAMP · KEEP AT CACHE'
+              : 'REACH PELL · E READ RELAY LOG'
     ),
   ];
   return finishSmallWorldFrame(frame, {
@@ -706,6 +719,7 @@ function renderThreefoldWeftwaysFrame(state) {
     floodedGeometryIds: [...floodedGeometryIds],
     relayRecordRead,
     relayRecordShared,
+    relayRecordConcealed,
     threadboundRelayRecord: relayRecordRead
       ? {
           title: 'Threadbound relay ledger',
@@ -724,6 +738,15 @@ function renderThreefoldWeftwaysFrame(state) {
             'stopped arriving after an emergency pressure-regulator bypass. ' +
             'The record still cannot identify the final sender, establish ' +
             'what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayConcealment: relayRecordConcealed
+      ? {
+          title: 'What Mara kept private',
+          text:
+            'Mara chose not to share Pell’s relay ledger with the caravan and ' +
+            'kept the record for herself. It still cannot identify the final ' +
+            'sender, establish what Iri knew, or assign responsibility.',
         }
       : null,
     packBeetleIds: state.scene.creatures.map(({ id }) => id),

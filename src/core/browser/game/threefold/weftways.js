@@ -8,6 +8,8 @@ export const THREEFOLD_WEFTWAYS_PELL_BYPASS_ID = 'weftways-pell-bypass';
 export const THREEFOLD_WEFTWAYS_QUAY_SPILL_ID = 'weftways-quay-spill';
 export const THREEFOLD_WEFTWAYS_PELL_ID = 'weftways-pell';
 export const THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID = 'weftways-caravan-circle';
+export const THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID =
+  'weftways-private-knot-cache';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 2.4, y: 0.8 } };
 const ROOT_CROSSING_BOUNDS = {
@@ -34,6 +36,14 @@ const THREADBOUND_CARAVAN_CIRCLE = {
     max: { x: 0.64, y: 0.34, z: 0.12 },
   },
 };
+const THREADBOUND_PRIVATE_CACHE = {
+  id: THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID,
+  position: { x: 1.8, y: 0.64 },
+  bounds: {
+    min: { x: 1.75, y: 0.59, z: 0 },
+    max: { x: 1.85, y: 0.69, z: 0.12 },
+  },
+};
 const PACK_BEETLES = [
   createPackBeetle('weftways-pack-beetle-1', { x: 0.45, y: 0.16 }),
   createPackBeetle('weftways-pack-beetle-2', { x: 1.1, y: 0.16 }),
@@ -58,8 +68,9 @@ export function createThreefoldWeftwaysScene() {
     geometry: sceneUtils.copyThreefoldGeometryList(CROSSING_GEOMETRY),
     decorations: [],
     interactables: [
-      copyThreadboundPell(),
-      copyThreadboundCaravanCircle(),
+      copyThreadboundInteractable(THREADBOUND_PELL),
+      copyThreadboundInteractable(THREADBOUND_CARAVAN_CIRCLE),
+      copyThreadboundInteractable(THREADBOUND_PRIVATE_CACHE),
       createFlowControl(THREEFOLD_WEFTWAYS_PELL_BYPASS_ID, 0.2),
       createFlowControl(THREEFOLD_WEFTWAYS_QUAY_SPILL_ID, 2.2),
     ],
@@ -69,7 +80,7 @@ export function createThreefoldWeftwaysScene() {
 
 /**
  * Create the unresolved flow choice for the Threadbound crossing.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean}} Initial route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean}} Initial route state.
  */
 export function createThreefoldWeftwaysState() {
   return {
@@ -77,13 +88,14 @@ export function createThreefoldWeftwaysState() {
     floodedGeometryIds: [],
     relayRecordRead: false,
     relayRecordShared: false,
+    relayRecordConcealed: false,
   };
 }
 
 /**
  * Rebuild only the flood footprint implied by a saved choice.
  * @param {unknown} candidate Saved flow choice.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean}} Canonical route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean}} Canonical route state.
  */
 export function normalizeThreefoldWeftwaysState(candidate) {
   if (!candidate || typeof candidate !== 'object')
@@ -104,10 +116,20 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     state.relayRecordShared === undefined ? false : state.relayRecordShared;
   if (typeof relayRecordShared !== 'boolean')
     throw new RangeError('Weftways relay disclosure state is invalid.');
+  const relayRecordConcealed =
+    state.relayRecordConcealed === undefined
+      ? false
+      : state.relayRecordConcealed;
+  if (typeof relayRecordConcealed !== 'boolean')
+    throw new RangeError('Weftways relay privacy state is invalid.');
   if (choice === 'undecided' && relayRecordRead)
     throw new RangeError('Weftways relay record requires a flow choice.');
   if (relayRecordShared && !relayRecordRead)
     throw new RangeError('Weftways relay disclosure requires the record.');
+  if (relayRecordConcealed && !relayRecordRead)
+    throw new RangeError('Weftways privacy choice requires the record.');
+  if (relayRecordShared && relayRecordConcealed)
+    throw new RangeError('Weftways relay choices conflict.');
   const floodedGeometryIds =
     choice === 'pell-bypass'
       ? [THREEFOLD_WEFTWAYS_LOW_QUAY_ID]
@@ -125,6 +147,7 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     floodedGeometryIds,
     relayRecordRead,
     relayRecordShared,
+    relayRecordConcealed,
   };
 }
 
@@ -164,31 +187,17 @@ function createPackBeetle(id, position) {
 }
 
 /**
- * Copy Pell's actor data into one independently mutable scene.
- * @returns {typeof THREADBOUND_PELL} Independent navigator actor.
+ * Copy one authored Threadbound character or choice target for this scene.
+ * @param {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE} interactable Authored route actor or target.
+ * @returns {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE} Independently mutable scene object.
  */
-function copyThreadboundPell() {
+function copyThreadboundInteractable(interactable) {
   return {
-    ...THREADBOUND_PELL,
-    position: { ...THREADBOUND_PELL.position },
+    ...interactable,
+    position: { ...interactable.position },
     bounds: {
-      min: { ...THREADBOUND_PELL.bounds.min },
-      max: { ...THREADBOUND_PELL.bounds.max },
-    },
-  };
-}
-
-/**
- * Copy the small gathering point where Mara can share discovered evidence.
- * @returns {typeof THREADBOUND_CARAVAN_CIRCLE} Reachable caravan circle.
- */
-function copyThreadboundCaravanCircle() {
-  return {
-    ...THREADBOUND_CARAVAN_CIRCLE,
-    position: { ...THREADBOUND_CARAVAN_CIRCLE.position },
-    bounds: {
-      min: { ...THREADBOUND_CARAVAN_CIRCLE.bounds.min },
-      max: { ...THREADBOUND_CARAVAN_CIRCLE.bounds.max },
+      min: { ...interactable.bounds.min },
+      max: { ...interactable.bounds.max },
     },
   };
 }

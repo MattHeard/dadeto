@@ -102,18 +102,19 @@ const WEFTWAYS_PAGE_COPY = {
         'root crossing. Reach either control before pressing E. Once the ' +
         'crossing is set, reach Pell to inspect the optional caravan relay ' +
         'ledger; it records the lost messages without assigning blame. Then ' +
-        'visit the marked caravan circle if you choose to share that record.',
+        'visit the marked caravan circle to share it or the knot cache to ' +
+        'keep it private.',
     ],
     ['#scene-link', 'Continue into the Grainlands'],
     [
       '#game-footer',
-      'Route choice, physical effects, and optional relay discovery and sharing persist in this isolated save.',
+      'Route choice, physical effects, and optional relay discovery and response persist in this isolated save.',
     ],
   ]),
   href: '/threefold/?scene=grainlands',
   ariaLabel:
-    'Choose a water route, inspect Pell’s relay ledger, then optionally share it at the caravan circle',
-  interactionLabel: 'CHOOSE · READ · SHARE',
+    'Choose a water route, inspect Pell’s relay ledger, then share it at the caravan circle or keep it private at the knot cache',
+  interactionLabel: 'CHOOSE · READ · SHARE · KEEP PRIVATE',
 };
 const GRAINLANDS_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -323,6 +324,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#weftways-relay-concealment',
+        '#weftways-relay-concealment-text',
+        frame.threefold?.threadboundRelayConcealment || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#tidal-archive-quieting-trace',
         '#tidal-archive-quieting-trace-text',
         frame.threefold?.archiveQuietingTrace || null
@@ -433,6 +440,10 @@ function configureAlternateScenePage(documentObj, copy) {
     '#weftways-relay-disclosure'
   );
   if (weftwaysRelayDisclosure) weftwaysRelayDisclosure.hidden = true;
+  const weftwaysRelayConcealment = documentObj?.querySelector?.(
+    '#weftways-relay-concealment'
+  );
+  if (weftwaysRelayConcealment) weftwaysRelayConcealment.hidden = true;
   const siltMarginQuietingEvidence = documentObj?.querySelector?.(
     '#silt-margin-quieting-evidence'
   );

@@ -73,7 +73,8 @@ const SLUICE_SIMULATION_SCHEMA_VERSION = 5;
 const LEGACY_SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 1;
 const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 2;
 const HEARTHGAPS_SIMULATION_SCHEMA_VERSION = 1;
-const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 1;
+const LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION = 1;
+const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 2;
 const GRAINLANDS_SIMULATION_SCHEMA_VERSION = 1;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
@@ -244,7 +245,10 @@ export function restoreThreefoldSimulation(serialized) {
       throw new RangeError('Hearthgaps save version is unsupported.');
     if (
       sceneKinds.weftways &&
-      envelope.schemaVersion !== WEFTWAYS_SIMULATION_SCHEMA_VERSION
+      ![
+        LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION,
+        WEFTWAYS_SIMULATION_SCHEMA_VERSION,
+      ].includes(envelope.schemaVersion)
     )
       throw new RangeError('Weftways save version is unsupported.');
     if (
@@ -359,7 +363,13 @@ export function restoreThreefoldSimulation(serialized) {
         restoredState,
         state,
         createThreefoldWeftwaysScene(),
-        { weftways: normalizeThreefoldWeftwaysState(state.weftways) }
+        {
+          weftways: normalizeThreefoldWeftwaysState(
+            envelope.schemaVersion === LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION
+              ? { ...state.weftways, relayRecordConcealed: false }
+              : state.weftways
+          ),
+        }
       );
     if (sceneKinds.grainlands)
       return restoreTimedScene(

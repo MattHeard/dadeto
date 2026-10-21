@@ -853,11 +853,11 @@ function assertWeftwaysRoute() {
   );
   expect(elements.get('#scene-link').href).toBe('/threefold/?scene=grainlands');
   expect(elements.get('#e-control-label').textContent).toBe(
-    'CHOOSE · READ · SHARE'
+    'CHOOSE · READ · SHARE · KEEP PRIVATE'
   );
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
     'aria-label',
-    'Choose a water route, inspect Pell’s relay ledger, then optionally share it at the caravan circle'
+    'Choose a water route, inspect Pell’s relay ledger, then share it at the caravan circle or keep it private at the knot cache'
   );
   expect(elements.get('#weftways-relay-record').hidden).toBe(true);
   expect(elements.get('#hearthgaps-entry').hidden).toBe(true);

@@ -50,6 +50,8 @@ describe('THREEFOLD Weftways page record', () => {
       textContent: 'What Mara shared with the caravan',
     };
     const disclosureText = { textContent: '' };
+    const concealmentSummary = { textContent: 'What Mara kept private' };
+    const concealmentText = { textContent: '' };
     const panel = {
       hidden: false,
       querySelector: selector => (selector === 'summary' ? summary : null),
@@ -58,6 +60,11 @@ describe('THREEFOLD Weftways page record', () => {
       hidden: false,
       querySelector: selector =>
         selector === 'summary' ? disclosureSummary : null,
+    };
+    const concealmentPanel = {
+      hidden: false,
+      querySelector: selector =>
+        selector === 'summary' ? concealmentSummary : null,
     };
     const documentObj = {
       querySelector: selector =>
@@ -69,7 +76,11 @@ describe('THREEFOLD Weftways page record', () => {
               ? disclosurePanel
               : selector === '#weftways-relay-disclosure-text'
                 ? disclosureText
-                : null,
+                : selector === '#weftways-relay-concealment'
+                  ? concealmentPanel
+                  : selector === '#weftways-relay-concealment-text'
+                    ? concealmentText
+                    : null,
     };
     const windowObj = {
       location: { search: '?scene=weftways' },
@@ -88,6 +99,8 @@ describe('THREEFOLD Weftways page record', () => {
       '<details id="weftways-relay-disclosure" class="witness-ledger" hidden>'
     );
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-disclosure-text"');
+    expect(THREEFOLD_HTML).toContain('id="weftways-relay-concealment"');
+    expect(THREEFOLD_HTML).toContain('id="weftways-relay-concealment-text"');
     startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
     const page = mockStartMosslightPage.mock.calls[0][0];
     expect(panel.hidden).toBe(true);
@@ -118,6 +131,23 @@ describe('THREEFOLD Weftways page record', () => {
     expect(disclosureSummary.textContent).toBe(disclosure.title);
     expect(disclosureText.textContent).toBe(disclosure.text);
 
+    const concealment = {
+      title: 'What Mara kept private',
+      text: 'Mara keeps the ledger private and its claims unresolved.',
+    };
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          threadboundRelayRecord: record,
+          threadboundRelayConcealment: concealment,
+        },
+      }
+    );
+    expect(concealmentPanel.hidden).toBe(false);
+    expect(concealmentSummary.textContent).toBe(concealment.title);
+    expect(concealmentText.textContent).toBe(concealment.text);
+
     page.drawFrame(
       {},
       {
@@ -129,5 +159,6 @@ describe('THREEFOLD Weftways page record', () => {
     );
     expect(panel.hidden).toBe(true);
     expect(disclosurePanel.hidden).toBe(true);
+    expect(concealmentPanel.hidden).toBe(true);
   });
 });

@@ -6,6 +6,7 @@ import {
   THREEFOLD_WEFTWAYS_LOW_QUAY_ID,
   THREEFOLD_WEFTWAYS_PELL_ID,
   THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
+  THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID,
   THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
   THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID,
 } from '../../../../src/core/browser/game/threefold/weftways.js';
@@ -95,6 +96,13 @@ const approachPell = state =>
 const approachCaravanCircle = state =>
   approachInteractable(state, THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID);
 
+/**
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current crossing.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated crossing.
+ */
+const approachPrivateCache = state =>
+  approachInteractable(state, THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID);
+
 describe('THREEFOLD Weftways caravan bypass', () => {
   test('authors the s = −2 Threadbound crossing and its oversized pack beetles', () => {
     const scene = createThreefoldWeftwaysScene();
@@ -110,6 +118,9 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     expect(scene.interactables.map(({ id }) => id)).toContain(
       THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
     );
+    expect(scene.interactables.map(({ id }) => id)).toContain(
+      THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID
+    );
     expect(beetles).toHaveLength(2);
     expect(beetles.every(({ growthRule }) => growthRule === 'overlap')).toBe(
       true
@@ -122,8 +133,10 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       floodedGeometryIds: [],
       relayRecordRead: false,
       relayRecordShared: false,
+      relayRecordConcealed: false,
       threadboundRelayRecord: null,
       threadboundRelayDisclosure: null,
+      threadboundRelayConcealment: null,
       elapsedGameSeconds: 0,
     });
     expect(frame.threefold.packBeetleIds).toEqual(beetles.map(({ id }) => id));
@@ -147,6 +160,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       floodedGeometryIds: [],
       relayRecordRead: false,
       relayRecordShared: false,
+      relayRecordConcealed: false,
     });
     expect(scene.spawn).not.toBe(createThreefoldWeftwaysScene().spawn);
 
@@ -219,6 +233,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
         floodedGeometryIds: testCase.floodedGeometryIds,
         relayRecordRead: false,
         relayRecordShared: false,
+        relayRecordConcealed: false,
       });
       expect(state.elapsedGameSeconds).toBe(previousTime + 15);
       expect(state.crisis).toEqual(createWeftwaysRun().crisis);
@@ -287,13 +302,16 @@ describe('THREEFOLD Weftways caravan bypass', () => {
         flowChoice: committedChoice,
         relayRecordRead: true,
         relayRecordShared: false,
+        relayRecordConcealed: false,
       });
       expect(record.title).toBe('Threadbound relay ledger');
       expect(record.text).toContain('stopped arriving after an emergency');
       expect(record.text).toContain('what Iri knew');
       expect(record.text).toContain('who was responsible');
       expect(
-        frame.shapes.some(({ text }) => text === 'REACH CAMP · E SHARE RECORD')
+        frame.shapes.some(
+          ({ text }) => text === 'E SHARE AT CAMP · KEEP AT CACHE'
+        )
       ).toBe(true);
 
       state = approachCaravanCircle(state);
@@ -310,6 +328,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
         flowChoice: committedChoice,
         relayRecordRead: true,
         relayRecordShared: true,
+        relayRecordConcealed: false,
       });
       expect(disclosure.title).toBe('What Mara shared with the caravan');
       expect(disclosure.text).toContain('stopped arriving after an emergency');
@@ -331,9 +350,89 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       const repeated = stepThreefoldSimulation(state, { type: 'interact' });
       expect(repeated.weftways).toEqual(state.weftways);
       expect(repeated.weftways.flowChoice).toBe(committedChoice);
+
+      const afterPrivateCache = stepThreefoldSimulation(
+        approachPrivateCache(state),
+        { type: 'interact' }
+      );
+      expect(afterPrivateCache.weftways).toEqual(state.weftways);
     }
   );
+});
 
+describe('THREEFOLD Threadbound privacy choice', () => {
+  test('Mara can keep Pell’s ledger private once, only after reading it in reach', () => {
+    let state = approachFlowControl(
+      createWeftwaysRun(),
+      THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
+      'left'
+    );
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    const committedRoute = {
+      flowChoice: state.weftways.flowChoice,
+      floodedGeometryIds: [...state.weftways.floodedGeometryIds],
+    };
+
+    state = approachPrivateCache(state);
+    expect(
+      isThreefoldInteractableInReach(state, THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID)
+    ).toBe(true);
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.weftways.relayRecordConcealed).toBe(false);
+
+    state = approachPell(state);
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.weftways.relayRecordRead).toBe(true);
+    expect(
+      isThreefoldInteractableInReach(state, THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID)
+    ).toBe(false);
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.weftways.relayRecordConcealed).toBe(false);
+
+    state = approachPrivateCache(state);
+    expect(
+      isThreefoldInteractableInReach(state, THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID)
+    ).toBe(true);
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    const frame = renderThreefoldFrame(state);
+    const concealment = frame.threefold.threadboundRelayConcealment;
+    expect(state.weftways).toMatchObject({
+      ...committedRoute,
+      relayRecordRead: true,
+      relayRecordShared: false,
+      relayRecordConcealed: true,
+    });
+    expect(concealment.title).toBe('What Mara kept private');
+    expect(concealment.text).toContain(
+      'chose not to share Pell’s relay ledger'
+    );
+    expect(concealment.text).toContain('final sender');
+    expect(concealment.text).toContain('what Iri knew');
+    expect(concealment.text).toContain('assign responsibility');
+    expect(
+      frame.shapes.some(({ text }) => text === 'MARA KEPT THE RECORD PRIVATE')
+    ).toBe(true);
+    expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
+      true
+    );
+
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(state)
+    );
+    expect(restored.weftways).toEqual(state.weftways);
+    expect(
+      renderThreefoldFrame(restored).threefold.threadboundRelayConcealment
+    ).toEqual(concealment);
+
+    const atCaravanCircle = approachCaravanCircle(state);
+    const repeated = stepThreefoldSimulation(atCaravanCircle, {
+      type: 'interact',
+    });
+    expect(repeated.weftways).toEqual(state.weftways);
+  });
+});
+
+describe('THREEFOLD Weftways persistence and validation', () => {
   test('sharing requires a discovered record and physical reach', () => {
     let state = approachFlowControl(
       createWeftwaysRun(),
@@ -367,7 +466,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     expect(state.weftways.relayRecordShared).toBe(false);
   });
 
-  test('exports both flow outcomes under an isolated schema-v1 save key', () => {
+  test('exports both flow outcomes under an isolated route save key', () => {
     let state = approachFlowControl(
       createWeftwaysRun(),
       THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
@@ -382,7 +481,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     const envelope = JSON.parse(serialized);
     const restored = restoreThreefoldSimulation(serialized);
 
-    expect(envelope.schemaVersion).toBe(1);
+    expect(envelope.schemaVersion).toBe(2);
     expect(envelope.sceneId).toBe('weftways');
     expect(restored).toEqual(state);
     expect(renderThreefoldFrame(restored).toast).toBe(
@@ -438,27 +537,31 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     ).toThrow('Weftways flood footprint is inconsistent.');
     expect(
       restoreThreefoldSimulation(
-        JSON.stringify({ ...envelope, schemaVersion: 2 })
+        JSON.stringify({ ...envelope, schemaVersion: 3 })
       )
     ).toBeNull();
     const legacyRoute = JSON.parse(serialized);
-    delete legacyRoute.state.weftways.relayRecordRead;
-    delete legacyRoute.state.weftways.relayRecordShared;
+    legacyRoute.schemaVersion = 1;
+    legacyRoute.state.weftways.relayRecordRead = true;
+    legacyRoute.state.weftways.relayRecordShared = false;
+    delete legacyRoute.state.weftways.relayRecordConcealed;
     expect(
       restoreThreefoldSimulation(JSON.stringify(legacyRoute)).weftways
-        .relayRecordRead
-    ).toBe(false);
-    expect(
-      restoreThreefoldSimulation(JSON.stringify(legacyRoute)).weftways
-        .relayRecordShared
-    ).toBe(false);
-    expect(
-      normalizeThreefoldWeftwaysState({ flowChoice: 'pell-bypass' })
-        .relayRecordRead
-    ).toBe(false);
+    ).toMatchObject({
+      relayRecordRead: true,
+      relayRecordShared: false,
+      relayRecordConcealed: false,
+    });
     expect(
       normalizeThreefoldWeftwaysState({ flowChoice: 'pell-bypass' })
-        .relayRecordShared
+    ).toMatchObject({
+      relayRecordRead: false,
+      relayRecordShared: false,
+      relayRecordConcealed: false,
+    });
+    expect(
+      normalizeThreefoldWeftwaysState({ flowChoice: 'pell-bypass' })
+        .relayRecordConcealed
     ).toBe(false);
     expect(() =>
       normalizeThreefoldWeftwaysState({
@@ -490,6 +593,29 @@ describe('THREEFOLD Weftways caravan bypass', () => {
         relayRecordShared: true,
       })
     ).toThrow('Weftways relay disclosure requires the record.');
+  });
+
+  test('rejects invalid and conflicting private relay decisions', () => {
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRecordConcealed: 'yes',
+      })
+    ).toThrow('Weftways relay privacy state is invalid.');
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRecordConcealed: true,
+      })
+    ).toThrow('Weftways privacy choice requires the record.');
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRecordRead: true,
+        relayRecordShared: true,
+        relayRecordConcealed: true,
+      })
+    ).toThrow('Weftways relay choices conflict.');
   });
 
   test('scale growth through the quay homes leaves durable rubble', () => {
