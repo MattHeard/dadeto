@@ -381,6 +381,73 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(waited.crisis.elapsedMinutes).toBe(0);
   });
 
+  test.each([1, 2])(
+    'rejects contradictory guardian deaths in schema %s',
+    schemaVersion => {
+      const initial = JSON.parse(
+        serializeThreefoldSimulation(createSiltMarginRun())
+      );
+      initial.schemaVersion = schemaVersion;
+      for (const guardian of ['present', 'guided-aside']) {
+        const envelope = structuredClone(initial);
+        envelope.state.siltMargin.guardian = guardian;
+        envelope.state.encounter.growthDeaths = [
+          { creatureId: 'silt-margin-guardian', cause: 'growth' },
+        ];
+        expect(restoreThreefoldSimulation(JSON.stringify(envelope))).toBeNull();
+      }
+      for (const deaths of [
+        undefined,
+        [],
+        [{ creatureId: 'unrelated-creature', cause: 'growth' }],
+      ]) {
+        const envelope = structuredClone(initial);
+        envelope.state.siltMargin.guardian = 'killed';
+        envelope.state.siltMargin.signal = 'disrupted';
+        envelope.state.encounter.growthDeaths = deaths;
+        expect(restoreThreefoldSimulation(JSON.stringify(envelope))).toBeNull();
+      }
+    }
+  );
+
+  test.each([1, 2])(
+    'keeps genuine guardian outcomes readable in schema %s',
+    schemaVersion => {
+      for (const [guardian, signal] of [
+        ['present', 'blocked'],
+        ['guided-aside', 'blocked'],
+        ['guided-aside', 'sent'],
+        ['killed', 'disrupted'],
+      ]) {
+        const envelope = JSON.parse(
+          serializeThreefoldSimulation(createSiltMarginRun())
+        );
+        envelope.schemaVersion = schemaVersion;
+        envelope.state.siltMargin = {
+          guardian,
+          signal,
+          quietingEvidenceHeard: false,
+          waterPuzzle: createThreefoldSiltMarginWaterPuzzle({
+            crossingOpen: signal === 'sent',
+          }),
+        };
+        if (schemaVersion === 1) delete envelope.state.siltMargin.waterPuzzle;
+        if (guardian === 'killed')
+          envelope.state.encounter.growthDeaths = [
+            { creatureId: 'silt-margin-guardian', cause: 'growth' },
+          ];
+        const restored = restoreThreefoldSimulation(JSON.stringify(envelope));
+        expect(restored).not.toBeNull();
+        expect(restored.siltMargin).toMatchObject({ guardian, signal });
+        expect(
+          (restored.encounter.growthDeaths || []).some(
+            death => death.creatureId === 'silt-margin-guardian'
+          )
+        ).toBe(guardian === 'killed');
+      }
+    }
+  );
+
   test('rejects impossible saved branch combinations', () => {
     const envelope = JSON.parse(
       serializeThreefoldSimulation(createSiltMarginRun())

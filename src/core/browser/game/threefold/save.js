@@ -40,6 +40,7 @@ import {
 import {
   createThreefoldSiltMarginScene,
   normalizeThreefoldSiltMarginState,
+  THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
   THREEFOLD_SILT_MARGIN_SCENE_ID,
 } from './silt-margin.js';
 import {
@@ -413,7 +414,12 @@ export function restoreThreefoldSimulation(serialized) {
         restoredState,
         state,
         createThreefoldSiltMarginScene(),
-        { siltMargin: normalizeThreefoldSiltMarginState(state.siltMargin) }
+        {
+          siltMargin: normalizeSiltMarginEncounter(
+            state.siltMargin,
+            restoredState.encounter
+          ),
+        }
       );
     if (sceneKinds.hearthgaps)
       return restoreTimedScene(
@@ -455,6 +461,24 @@ export function restoreThreefoldSimulation(serialized) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Restore the guardian branch only when its permanent death record agrees.
+ * @param {unknown} candidate Saved Silt Margin branch.
+ * @param {import('./encounter.js').ThreefoldEncounter} encounter Canonical encounter record.
+ * @returns {ReturnType<typeof normalizeThreefoldSiltMarginState>} Consistent route outcome.
+ */
+function normalizeSiltMarginEncounter(candidate, encounter) {
+  const branch = normalizeThreefoldSiltMarginState(candidate);
+  const guardianDied = (encounter.growthDeaths || []).some(
+    death => death.creatureId === THREEFOLD_SILT_MARGIN_GUARDIAN_ID
+  );
+  if (guardianDied !== (branch.guardian === 'killed'))
+    throw new RangeError(
+      'Silt Margin guardian fate disagrees with its death record.'
+    );
+  return branch;
 }
 
 /**
