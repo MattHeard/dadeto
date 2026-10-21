@@ -42,9 +42,39 @@ export function isThreefoldInteractableInReach(state, id) {
 export function copyThreefoldGeometry(geometry) {
   return {
     id: geometry.id,
-    bounds: {
-      min: { ...geometry.bounds.min },
-      max: { ...geometry.bounds.max },
-    },
+    bounds: copyThreefoldBounds(geometry.bounds),
   };
+}
+
+/**
+ * Copy planar or volumetric bounds without sharing mutable coordinates.
+ * @template {{[axis: string]: number}} Axis
+ * @param {{min: Axis, max: Axis}} bounds Authored limits.
+ * @returns {{min: Axis, max: Axis}} Independent bounds.
+ */
+export function copyThreefoldBounds(bounds) {
+  return { min: { ...bounds.min }, max: { ...bounds.max } };
+}
+
+/**
+ * Copy a creature while retaining its authored extension fields.
+ * @template {{position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} Creature
+ * @param {Creature} creature Authored creature data.
+ * @returns {Creature} Independent creature value.
+ */
+export function copyThreefoldCreature(creature) {
+  return {
+    ...creature,
+    position: { ...creature.position },
+    bounds: copyThreefoldBounds(creature.bounds),
+  };
+}
+
+/**
+ * Copy a list of authored structures into an independent scene.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometries Authored structures.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Independent geometry values.
+ */
+export function copyThreefoldGeometryList(geometries) {
+  return geometries.map(copyThreefoldGeometry);
 }

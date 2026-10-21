@@ -1,4 +1,5 @@
 import { createScaleState } from './spatial.js';
+import { copyThreefoldBounds } from './scene-utils.js';
 
 const SCENE_BOUNDS = { min: { x: -24, y: -18 }, max: { x: 24, y: 18 } };
 
@@ -154,7 +155,7 @@ export function createThreefoldHighWorldScene(sceneId) {
   return {
     id: sceneId,
     displayName: definition.displayName,
-    bounds: copyBounds(bounds),
+    bounds: copyThreefoldBounds(bounds),
     spawn: createScaleState(definition.spawnPosition || { x: 0, y: 0 }, {
       scale: definition.scale,
       anchor: 8,
@@ -163,7 +164,7 @@ export function createThreefoldHighWorldScene(sceneId) {
       maximumUnlockedScale: definition.maximumUnlockedScale,
     }),
     baseBodyWidthMeters: 0.4,
-    areas: [{ id: sceneId, bounds: copyBounds(bounds) }],
+    areas: [{ id: sceneId, bounds: copyThreefoldBounds(bounds) }],
     geometry: definition.geometry.map(copyStructure),
     decorations: [],
     interactables: [],
@@ -181,22 +182,12 @@ export function isThreefoldHighWorldSceneId(sceneId) {
 }
 
 /**
- * Copy planar or volumetric bounds so callers cannot mutate authored constants.
- * @template {{[axis: string]: number}} TAxis
- * @param {{min: TAxis, max: TAxis}} bounds Authored limits.
- * @returns {{min: TAxis, max: TAxis}} Independent limits.
- */
-function copyBounds(bounds) {
-  return { min: { ...bounds.min }, max: { ...bounds.max } };
-}
-
-/**
  * Copy a structure with independent physical bounds.
  * @param {ThreefoldHighWorldStructure} structure Authored geometry.
  * @returns {ThreefoldHighWorldStructure} Independent structure value.
  */
 function copyStructure(structure) {
-  return { ...structure, bounds: copyBounds(structure.bounds) };
+  return { ...structure, bounds: copyThreefoldBounds(structure.bounds) };
 }
 
 /**
@@ -208,7 +199,7 @@ function copyResident(resident) {
   return {
     ...resident,
     position: { ...resident.position },
-    bounds: copyBounds(resident.bounds),
+    bounds: copyThreefoldBounds(resident.bounds),
   };
 }
 

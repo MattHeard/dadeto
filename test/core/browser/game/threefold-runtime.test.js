@@ -6,6 +6,7 @@ import {
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/game/threefold/hearthgaps.js';
+import { createThreefoldWeftwaysScene } from '../../../../src/core/browser/game/threefold/weftways.js';
 
 describe('THREEFOLD handheld runtime', () => {
   test('keeps Hearthgaps snapshot time on its isolated region clock', () => {
@@ -16,6 +17,21 @@ describe('THREEFOLD handheld runtime', () => {
 
     expect(runtime.getSnapshot().world).toMatchObject({
       map: { name: 'HEARTHGAPS' },
+      time: 0,
+    });
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 2 });
+    expect(runtime.getSnapshot().world.time).toBe(2 / 60);
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0);
+  });
+
+  test('keeps Weftways snapshot time on its isolated region clock', () => {
+    const runtime = createThreefoldRuntime({
+      scene: createThreefoldWeftwaysScene(),
+      storage: new Map(),
+    });
+
+    expect(runtime.getSnapshot().world).toMatchObject({
+      map: { name: 'WEFTWAYS' },
       time: 0,
     });
     runtime.dispatch({ type: 'wait', elapsedGameMinutes: 2 });

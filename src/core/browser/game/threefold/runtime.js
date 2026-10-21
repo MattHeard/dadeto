@@ -9,6 +9,7 @@ import { THREEFOLD_HEARTHGAPS_SCENE_ID } from './hearthgaps.js';
 import {
   createThreefoldSimulation,
   isHighWorldSimulationState,
+  isWeftwaysSimulationState,
   previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from './simulation.js';
@@ -67,9 +68,11 @@ export function createThreefoldRuntime(options = {}) {
               ? 'THE SILT MARGIN'
               : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
                 ? 'HEARTHGAPS'
-                : isHighWorldSimulationState(state)
-                  ? state.scene.displayName.replace(/^The /, '').toUpperCase()
-                  : 'THE BROKEN GATE',
+                : isWeftwaysSimulationState(state)
+                  ? 'WEFTWAYS'
+                  : isHighWorldSimulationState(state)
+                    ? state.scene.displayName.replace(/^The /, '').toUpperCase()
+                    : 'THE BROKEN GATE',
       },
       day: 1,
       time:
@@ -79,9 +82,11 @@ export function createThreefoldRuntime(options = {}) {
             ? state.elapsedGameSeconds / 3600
             : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
               ? state.elapsedGameSeconds / 3600
-              : isHighWorldSimulationState(state)
+              : isWeftwaysSimulationState(state)
                 ? state.elapsedGameSeconds / 3600
-                : state.crisis.elapsedMinutes / 60,
+                : isHighWorldSimulationState(state)
+                  ? state.elapsedGameSeconds / 3600
+                  : state.crisis.elapsedMinutes / 60,
     },
   });
 

@@ -61,6 +61,7 @@ describe('THREEFOLD page adapter', () => {
     );
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=weftways"');
   });
 
   test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
@@ -466,6 +467,10 @@ describe('THREEFOLD page adapter', () => {
     assertHearthgapsRoute();
   });
 
+  test('selects the Weftways route and labels its reachable flow choices', () => {
+    assertWeftwaysRoute();
+  });
+
   test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
     startThreefoldPage({
       documentObj: { querySelector: () => null },
@@ -509,6 +514,7 @@ function assertHearthgapsRoute() {
     '#witness-ledger',
     '#testimony',
     '#hearthgaps-entry',
+    '#weftways-entry',
   ];
   const elements = new Map(
     selectors.map(selector => [selector, { setAttribute: jest.fn() }])
@@ -532,13 +538,68 @@ function assertHearthgapsRoute() {
   expect(elements.get('#chapter-description').textContent).toContain(
     'downstream settlement'
   );
-  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=sluice');
+  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=weftways');
   expect(elements.get('#e-control-label').textContent).toBe('CHOOSE RUNOFF');
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
     'aria-label',
     'Choose the Brin diversion or shared runoff bypass'
   );
   expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+  expect(elements.get('#weftways-entry').hidden).toBe(true);
+}
+
+/** Verify the Weftways query, route copy, control label, and authored scale. */
+function assertWeftwaysRoute() {
+  const selectors = [
+    '#chapter-subtitle',
+    '#chapter-tag',
+    '#chapter-eyebrow',
+    '#chapter-heading',
+    '#chapter-description',
+    '#interact-label',
+    '#a-control-label',
+    '#b-control-label',
+    '#e-control-label',
+    '#scene-link',
+    '#game-footer',
+    '#interact-control',
+    '#witness-ledger',
+    '#testimony',
+    '#hearthgaps-entry',
+    '#weftways-entry',
+  ];
+  const elements = new Map(
+    selectors.map(selector => [selector, { setAttribute: jest.fn() }])
+  );
+  const documentObj = { querySelector: selector => elements.get(selector) };
+  const windowObj = {
+    location: { search: '?scene=weftways' },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const state = page.createRuntime({ env: new Map() }).getState();
+
+  expect(state.scene.id).toBe('weftways');
+  expect(state.player.scale).toBe(-2);
+  expect(elements.get('#chapter-subtitle').textContent).toBe('Weftways');
+  expect(elements.get('#chapter-description').textContent).toContain(
+    'protects the deep roots'
+  );
+  expect(elements.get('#scene-link').href).toBe(
+    '/threefold/?scene=silt-margin'
+  );
+  expect(elements.get('#e-control-label').textContent).toBe('CHOOSE FLOW');
+  expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+    'aria-label',
+    'Choose Pell’s root bypass or the quay-side spill'
+  );
+  expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+  expect(elements.get('#weftways-entry').hidden).toBe(true);
 }
 
 /**

@@ -25,6 +25,13 @@ const CULVERT_DECORATION = {
     max: { x: 1, y: 0.24, z: 0.08 },
   },
 };
+const SETTLEMENT_HOMES = [
+  { id: THREEFOLD_HEARTHGAPS_BRIN_HOME_ID, bounds: HOME_BOUNDS.brin },
+  {
+    id: THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
+    bounds: HOME_BOUNDS.downstream,
+  },
+];
 
 /**
  * Create the authored scale −1 Hearthgaps culvert settlement.
@@ -34,20 +41,11 @@ export function createThreefoldHearthgapsScene() {
   return {
     id: THREEFOLD_HEARTHGAPS_SCENE_ID,
     displayName: 'Hearthgaps',
-    bounds: copySceneBounds(),
+    bounds: sceneUtils.copyThreefoldBounds(SCENE_BOUNDS),
     spawn: sceneUtils.createThreefoldPlayerSpawn({ x: 0.6, y: 0.2 }, -1),
     baseBodyWidthMeters: 0.4,
     areas: [],
-    geometry: [
-      sceneUtils.copyThreefoldGeometry({
-        id: THREEFOLD_HEARTHGAPS_BRIN_HOME_ID,
-        bounds: HOME_BOUNDS.brin,
-      }),
-      sceneUtils.copyThreefoldGeometry({
-        id: THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
-        bounds: HOME_BOUNDS.downstream,
-      }),
-    ],
+    geometry: sceneUtils.copyThreefoldGeometryList(SETTLEMENT_HOMES),
     decorations: [sceneUtils.copyThreefoldGeometry(CULVERT_DECORATION)],
     interactables: [
       createRunoffControl(THREEFOLD_HEARTHGAPS_BRIN_GATE_ID, 0.16),
@@ -96,14 +94,6 @@ export function normalizeThreefoldHearthgapsState(candidate) {
     runoffChoice: choice,
     floodedHomeIds,
   };
-}
-
-/**
- * Copy scene bounds so consumers cannot mutate the authored definition.
- * @returns {{min: {x: number, y: number}, max: {x: number, y: number}}} Independent bounds.
- */
-function copySceneBounds() {
-  return { min: { ...SCENE_BOUNDS.min }, max: { ...SCENE_BOUNDS.max } };
 }
 
 /**

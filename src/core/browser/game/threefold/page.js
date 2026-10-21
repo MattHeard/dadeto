@@ -9,6 +9,7 @@ import { createThreefoldBelltopsScene } from './belltops.js';
 import { createThreefoldCrownbackReachScene } from './crownback-reach.js';
 import { createThreefoldWakeformShoalsScene } from './wakeform-shoals.js';
 import { createThreefoldHearthgapsScene } from './hearthgaps.js';
+import { createThreefoldWeftwaysScene } from './weftways.js';
 import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
@@ -72,15 +73,38 @@ const HEARTHGAPS_PAGE_COPY = {
         'shared bypass and let the water reach Brin’s homes instead. Move to ' +
         'either control before pressing E; the choice and flood damage persist.',
     ],
-    ['#scene-link', 'Return to the Tidal Archive'],
+    ['#scene-link', 'Continue to the Weftways'],
     [
       '#game-footer',
       'Movement and runoff choices advance 15 seconds of explicit game time.',
     ],
   ]),
-  href: '/threefold/?scene=sluice',
+  href: '/threefold/?scene=weftways',
   ariaLabel: 'Choose the Brin diversion or shared runoff bypass',
   interactionLabel: 'CHOOSE RUNOFF',
+};
+const WEFTWAYS_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'Weftways'],
+    ['#chapter-tag', 'SMALL WORLD · WEFTWAYS'],
+    ['#chapter-eyebrow', 'THE THREADBOUND CROSSING'],
+    ['#chapter-heading', 'Choose which side of the roots takes the water.'],
+    [
+      '#chapter-description',
+      'At scale −2 (20.32 cm), navigator Pell knows a bypass that protects ' +
+        'the deep roots and the oversized beetle caravan, but floods the human ' +
+        'low quay. The quay-side spill protects those homes and floods the ' +
+        'root crossing. Reach either control before pressing E.',
+    ],
+    ['#scene-link', 'Next playable route: the Silt Margin'],
+    [
+      '#game-footer',
+      'The route choice and its physical effects persist in this isolated save.',
+    ],
+  ]),
+  href: '/threefold/?scene=silt-margin',
+  ariaLabel: 'Choose Pell’s root bypass or the quay-side spill',
+  interactionLabel: 'CHOOSE FLOW',
 };
 /** @type {Array<[string, string]>} */
 const HIGH_WORLD_CONTROL_UPDATES = [
@@ -192,6 +216,8 @@ export function startThreefoldPage(options) {
     configureSiltMarginPage(options.documentObj);
   else if (scene?.id === 'hearthgaps')
     configureHighWorldPage(options.documentObj, HEARTHGAPS_PAGE_COPY);
+  else if (scene?.id === 'weftways')
+    configureHighWorldPage(options.documentObj, WEFTWAYS_PAGE_COPY);
   else if (scene?.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID)
     configureHighWorldPage(options.documentObj, LANTERN_WARD_PAGE_COPY);
   else if (scene?.id === 'belltops')
@@ -234,7 +260,7 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof createThreefoldWeftwaysScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
@@ -243,6 +269,7 @@ function sceneFromLocation(windowObj) {
   if (sceneId === 'sluice') return createThreefoldSluiceScene();
   if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
   if (sceneId === 'hearthgaps') return createThreefoldHearthgapsScene();
+  if (sceneId === 'weftways') return createThreefoldWeftwaysScene();
   if (sceneId === 'lantern-ward')
     return lanternWard.createThreefoldLanternWardScene();
   if (sceneId === 'belltops') return createThreefoldBelltopsScene();
@@ -312,6 +339,8 @@ function configureAlternateScenePage(documentObj, copy) {
   if (testimony) testimony.hidden = true;
   const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');
   if (hearthgapsEntry) hearthgapsEntry.hidden = true;
+  const weftwaysEntry = documentObj?.querySelector?.('#weftways-entry');
+  if (weftwaysEntry) weftwaysEntry.hidden = true;
 }
 
 /**

@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), continue to the Silt Margin, then reach the Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
+Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), visit the Hearthgaps and Weftways routes, then continue to the Silt Margin, Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -90,6 +90,12 @@ The Silt Margin saves its branch, conserved water state, and elapsed seconds in 
 From the Broken Gate page, open [/threefold/?scene=hearthgaps](/threefold/?scene=hearthgaps). Mara starts among the culverts at scale −1 (60.96 cm). Move within reach of Brin's runoff gate and press E to divert the flow: Brin's homes stay dry and the downstream homes flood. Move to the far control and press E to open the shared bypass instead: downstream homes stay dry and Brin's homes flood. Only the first reachable choice takes effect; the flood damage is visible and stays with this route's save. Growing through a home still damages that structure under the ordinary scale rules.
 
 The route uses the same 160 × 144 Mosslight renderer and eight-pixel grid. Movement and the choice advance 15 seconds of game time; X waits the requested duration, and browser time does not advance the simulation. The branch, physical home damage, and elapsed seconds roundtrip in schema v1 under a storage key isolated from Broken Gate and the other routes. Hearthgaps actions do not advance Broken Gate's crisis or episode outcomes.
+
+## Weftways
+
+From the Broken Gate page, open [/threefold/?scene=weftways](/threefold/?scene=weftways). Mara starts at scale −2 (20.32 cm) among the Threadbound caravan, navigator Pell, and pack beetles about 60 cm long. Move to Pell's bypass control and press E to protect the deep roots and caravan crossing while flooding the human low quay. The quay-side spill keeps those homes dry but floods the root crossing. Only a reachable first choice takes effect; later interactions cannot reverse it. Growing through a structure still damages it under the ordinary scale rules.
+
+The route uses the shared 160 × 144 Mosslight renderer and eight-pixel grid. Movement and the flow choice advance 15 seconds of game time; X waits its requested duration, and browser time does not advance the simulation. The choice, flooded feature, scale-caused rubble, and elapsed seconds roundtrip in schema v1 under a key isolated from Broken Gate and the other routes. Weftways actions do not advance Broken Gate's crisis or episode outcomes.
 
 ## Lantern Ward
 

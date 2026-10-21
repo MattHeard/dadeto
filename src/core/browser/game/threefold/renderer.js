@@ -20,6 +20,7 @@ import {
   THREEFOLD_HEARTHGAPS_BRIN_HOME_ID,
   THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
 } from './hearthgaps.js';
+import * as weftways from './weftways.js';
 import { getThreefoldSiltMarginWaterStatus } from './silt-margin-water.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
@@ -30,6 +31,7 @@ import {
   isHearthgapsSimulationState,
   isHighWorldSimulationState,
   previewThreefoldGrowthEffects,
+  isWeftwaysSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
@@ -62,6 +64,8 @@ export function renderThreefoldFrame(state) {
     return renderThreefoldSiltMarginFrame(state);
   if (isHearthgapsSimulationState(state))
     return renderThreefoldHearthgapsFrame(state);
+  if (isWeftwaysSimulationState(state))
+    return renderThreefoldWeftwaysFrame(state);
   const isHighWorld = isHighWorldSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = isHighWorld
@@ -521,6 +525,129 @@ function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
           ),
         ]
       : []),
+  ];
+}
+
+/**
+ * Render the Threadbound crossing and its two flow choices on the handheld grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'weftways'}}>} state Current Weftways simulation.
+ * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
+ */
+function renderThreefoldWeftwaysFrame(state) {
+  const { flowChoice, floodedGeometryIds } = state.weftways;
+  const rootFlooded = floodedGeometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+  );
+  const quayFlooded = floodedGeometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_LOW_QUAY_ID
+  );
+  const growth = previewThreefoldGrowthEffects(state);
+  const beetleFates = new Set(
+    (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
+  );
+  const flowMessage =
+    flowChoice === 'pell-bypass'
+      ? "Pell's bypass protects roots; quay floods."
+      : flowChoice === 'quay-spill'
+        ? 'Quay homes stay dry; root crossing floods.'
+        : 'Pell knows a bypass through the deep roots.';
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 2.4) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.8 - state.player.position.y) / 0.8) * 72
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'WEFTWAYS',
+      state.elapsedGameSeconds,
+      { x: 7, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: flowMessage,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Threadbound Crossing';
+  frame.toast = flowMessage;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'WEFTWAYS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    createThreefoldRectShape([8, 68, 144, 8], '#526e4b'),
+    createThreefoldRectShape([24, 44, 8, 32], '#526e4b'),
+    createThreefoldRectShape([40, 36, 8, 40], '#526e4b'),
+    createThreefoldRectShape([56, 44, 8, 32], '#526e4b'),
+    createThreefoldRectShape(
+      [72, 60, 24, 8],
+      rootFlooded ? '#25a9b8' : '#bfd77c'
+    ),
+    createThreefoldRectShape([96, 52, 8, 24], '#526e4b'),
+    createThreefoldRectShape([112, 44, 32, 8], '#d28b69'),
+    createThreefoldRectShape([112, 52, 8, 24], '#b46b55'),
+    createThreefoldRectShape([128, 52, 8, 24], '#b46b55'),
+    ...(quayFlooded
+      ? [createThreefoldRectShape([104, 68, 40, 8], '#25a9b8')]
+      : []),
+    ...weftwaysBeetleShapes(
+      { x: 24, y: 80 },
+      beetleFates.has('weftways-pack-beetle-1')
+    ),
+    ...weftwaysBeetleShapes(
+      { x: 48, y: 80 },
+      beetleFates.has('weftways-pack-beetle-2')
+    ),
+    createThreefoldRectShape([80, 64, 8, 8], '#d28b69'),
+    createThreefoldRectShape([80, 56, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([72, 72, 24, 8], '#182f36'),
+    createThreefoldRectShape([16, 88, 16, 8], '#e9d88d'),
+    createThreefoldRectShape([128, 88, 16, 8], '#d28b69'),
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      flowChoice === 'pell-bypass'
+        ? 'ROOTS SAFE · QUAY FLOODS'
+        : flowChoice === 'quay-spill'
+          ? 'QUAY SAFE · ROOTS FLOOD'
+          : 'PELL · CHOOSE A FLOW'
+    ),
+    captionShape({ x: 8, y: 136 }, 'MOVE · E CHOOSE · A GROW · B SHRINK'),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    flowChoice,
+    floodedGeometryIds: [...floodedGeometryIds],
+    packBeetleIds: state.scene.creatures.map(({ id }) => id),
+    growthPreviewGeometryIds: growth.geometryIds,
+    growthPreviewCreatureIds: growth.creatureIds,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Draw a pack beetle or its remains at one grid-aligned caravan position.
+ * @param {{x: number, y: number}} origin Beetle canvas position.
+ * @param {boolean} lost Whether growth permanently removed the beetle.
+ * @returns {ThreefoldSpriteShape[]} Beetle silhouette.
+ */
+function weftwaysBeetleShapes(origin, lost) {
+  const shell = lost ? '#526e4b' : '#bfd77c';
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 16, 8], shell),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], shell),
+    createThreefoldRectShape([origin.x + 4, origin.y + 8, 8, 8], '#d28b69'),
+    createThreefoldRectShape([origin.x - 8, origin.y + 8, 8, 8], '#182f36'),
   ];
 }
 
