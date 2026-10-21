@@ -724,6 +724,38 @@ describe('THREEFOLD campaign pressure page', () => {
     mockDrawGameFrame.mockClear();
   });
 
+  test('keeps a blocked Choir signal distinct from a successful transmission', () => {
+    const { documentObj, campaignPressureText } = createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const site = {
+      id: 'silt-margin-choir',
+      label: 'Silt Margin crossing and Choir signal',
+      state: 'blocked',
+      detail: 'crossing-flooded',
+    };
+
+    page.drawFrame({}, { threefold: { campaignPressure: [site] } });
+    expect(campaignPressureText.hidden).toBe(false);
+    expect(campaignPressureText.textContent).toBe(
+      'Silt Margin Choir signal blocked; crossing flooded'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPressure: [
+            { ...site, state: 'sent', detail: 'crossing-open' },
+          ],
+        },
+      }
+    );
+    expect(campaignPressureText.textContent).toBe(
+      'Silt Margin Choir signal sent; crossing open'
+    );
+  });
+
   test('presents saved pressure choices when there is no route index or clock', () => {
     const { documentObj, campaignPlaces, campaignPressureText } =
       createLedgerDocument();
