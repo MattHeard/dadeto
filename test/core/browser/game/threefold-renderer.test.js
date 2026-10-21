@@ -5,6 +5,10 @@ import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/gam
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { createThreefoldWakeformShoalsScene } from '../../../../src/core/browser/game/threefold/wakeform-shoals.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
+import {
+  restoreThreefoldSimulation,
+  serializeThreefoldSimulation,
+} from '../../../../src/core/browser/game/threefold/save.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 import {
   createThreefoldSimulation,
@@ -600,8 +604,23 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     const frame = renderThreefoldFrame(reported);
 
     expect(frame.threefold.closedBy).toBe('reported');
+    expect(frame.threefold.iriRepairLog).toEqual({
+      title: "Iri's pressure-regulator log",
+      text:
+        'An earlier log credits Iri with an emergency pressure-regulator bypass. ' +
+        'It records that downstream messages were lost, but cannot establish ' +
+        'which warnings reached each settlement or what Iri understood about ' +
+        'the wider consequences.',
+    });
     expect(frame.toast).toBe(
       'EPISODE CLOSED · REPORT SENT THROUGH THE SIGNAL STATION'
+    );
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(reported)
+    );
+    expect(restored).not.toBeNull();
+    expect(renderThreefoldFrame(restored).threefold.iriRepairLog).toEqual(
+      frame.threefold.iriRepairLog
     );
   });
 
@@ -626,8 +645,20 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     const frame = renderThreefoldFrame(departed);
 
     expect(frame.threefold.closedBy).toBe('departed');
+    expect(frame.threefold.iriRepairLog).toBeNull();
     expect(frame.toast).toContain('SIGNAL STATION LOST');
     expect(frame.toast).toContain('NO REPORT SENT');
+  });
+
+  test('keeps Iri repair log unavailable after departure with the station intact', () => {
+    const departed = createWithdrawnSimulation();
+    const frame = renderThreefoldFrame(departed);
+
+    expect(frame.threefold).toMatchObject({
+      signalStationDestroyed: false,
+      closedBy: 'departed',
+      iriRepairLog: null,
+    });
   });
 
   test.each([

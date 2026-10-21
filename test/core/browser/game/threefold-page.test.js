@@ -74,6 +74,10 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
     expect(THREEFOLD_CSS).toContain('transform: none');
     expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
+    expect(THREEFOLD_HTML).toContain(
+      '<details id="iri-repair-log" class="witness-ledger" hidden>'
+    );
+    expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
     expect(THREEFOLD_HTML).toContain('aria-live="polite"');
     expect(THREEFOLD_HTML).toContain('<details id="testimony"');
     expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
@@ -220,6 +224,28 @@ describe('THREEFOLD page adapter', () => {
     );
   });
 
+  test('shows the recovered Iri log only when the frame includes a reported clue', () => {
+    const { documentObj, iriRepairLog, iriRepairLogText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: "Iri's pressure-regulator log",
+      text: 'The surviving log cannot establish what Iri knew.',
+    };
+
+    page.drawFrame({}, { threefold: { iriRepairLog: record } });
+
+    expect(iriRepairLog.hidden).toBe(false);
+    expect(iriRepairLogText.textContent).toBe(record.text);
+    expect(iriRepairLog.summary.textContent).toBe(record.title);
+    page.drawFrame({}, { threefold: { iriRepairLog: record } });
+
+    page.drawFrame({}, { threefold: { iriRepairLog: null } });
+
+    expect(iriRepairLog.hidden).toBe(true);
+  });
+
   test('routes the Silt Margin through the Mosslight page and configures its crossing copy', () => {
     const selectors = [
       '#chapter-subtitle',
@@ -233,6 +259,7 @@ describe('THREEFOLD page adapter', () => {
       '#interact-control',
       '#witness-ledger',
       '#testimony',
+      '#iri-repair-log',
     ];
     const nodes = new Map(
       selectors.map(selector => [
@@ -266,6 +293,7 @@ describe('THREEFOLD page adapter', () => {
     });
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
+    expect(nodes.get('#iri-repair-log').hidden).toBe(true);
   });
 
   test('routes the Lantern Ward after the Silt Margin and isolates its controls', () => {
@@ -689,15 +717,26 @@ function createLedgerDocument() {
     },
   };
   const responsibility = { textContent: '' };
+  const iriRepairLogText = { textContent: '' };
+  const iriRepairLog = {
+    hidden: true,
+    summary: { textContent: 'Old pressure regulator log' },
+    querySelector: selector =>
+      selector === 'summary' ? iriRepairLog.summary : null,
+  };
   return {
     list,
     testimonyList,
     responsibility,
+    iriRepairLog,
+    iriRepairLogText,
     documentObj: {
       querySelector: selector => {
         if (selector === '#witness-ledger-entries') return list;
         if (selector === '#testimony-accounts') return testimonyList;
         if (selector === '#testimony-responsibility') return responsibility;
+        if (selector === '#iri-repair-log') return iriRepairLog;
+        if (selector === '#iri-repair-log-text') return iriRepairLogText;
         return null;
       },
       createElement: tag => createFakeNode(tag),

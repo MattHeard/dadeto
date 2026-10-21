@@ -199,6 +199,17 @@ export function renderThreefoldFrame(state) {
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
     closedBy: state.episode.closedBy ?? null,
+    iriRepairLog:
+      state.episode.closedBy === 'reported'
+        ? {
+            title: "Iri's pressure-regulator log",
+            text:
+              'An earlier log credits Iri with an emergency pressure-regulator bypass. ' +
+              'It records that downstream messages were lost, but cannot establish ' +
+              'which warnings reached each settlement or what Iri understood about ' +
+              'the wider consequences.',
+          }
+        : null,
     witnessLedger: (state.episode.witnessLedger || []).map(
       presentThreefoldWitnessEntry
     ),

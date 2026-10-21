@@ -277,6 +277,10 @@ export function startThreefoldPage(options) {
         options.documentObj,
         frame.threefold?.testimony || null
       );
+      renderThreefoldIriRepairLog(
+        options.documentObj,
+        frame.threefold?.iriRepairLog || null
+      );
     },
     saveFilename: 'threefold-save.json',
   });
@@ -363,6 +367,8 @@ function configureAlternateScenePage(documentObj, copy) {
   if (witnessLedger) witnessLedger.hidden = true;
   const testimony = documentObj?.querySelector?.('#testimony');
   if (testimony) testimony.hidden = true;
+  const iriRepairLog = documentObj?.querySelector?.('#iri-repair-log');
+  if (iriRepairLog) iriRepairLog.hidden = true;
   const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');
   if (hearthgapsEntry) hearthgapsEntry.hidden = true;
   const weftwaysEntry = documentObj?.querySelector?.('#weftways-entry');
@@ -417,6 +423,24 @@ function renderThreefoldTestimony(documentObj, testimony) {
   const responsibility = documentObj.querySelector('#testimony-responsibility');
   if (responsibility)
     responsibility.textContent = `${testimony.responsibility.question} Status: ${testimony.responsibility.status}.`;
+}
+
+/**
+ * Reveal the optional recovered log only after a report closes the episode.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {{title: string, text: string}|null} record Authored report attachment.
+ * @returns {void}
+ */
+function renderThreefoldIriRepairLog(documentObj, record) {
+  const panel = documentObj?.querySelector?.('#iri-repair-log');
+  const text = documentObj?.querySelector?.('#iri-repair-log-text');
+  if (!panel || !text) return;
+  panel.hidden = record === null;
+  if (!record) return;
+  const summary = panel.querySelector?.('summary');
+  if (summary && summary.textContent !== record.title)
+    summary.textContent = record.title;
+  if (text.textContent !== record.text) text.textContent = record.text;
 }
 
 /**
