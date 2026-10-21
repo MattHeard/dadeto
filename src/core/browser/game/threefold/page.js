@@ -178,9 +178,10 @@ const BELLTOPS_PAGE_COPY = {
     [
       '#chapter-description',
       'The watchtower and harbor crane stand within Mara’s next growth ' +
-        'footprint. Orla keeps the tower watch, while stormbirds ride the ' +
-        'roofline. A shows the structures and residents at risk; B lets Mara ' +
-        'step down to +1.',
+        'footprint. Iri maintains the pressure regulator beside the Quay ' +
+        'control panel; Orla keeps the tower watch, while stormbirds ride the ' +
+        'roofline. E checks the regulator. A shows the structures and ' +
+        'residents at risk; B lets Mara step down to +1.',
     ],
     ['#scene-link', 'Continue to Crownback Reach'],
     [
@@ -189,7 +190,8 @@ const BELLTOPS_PAGE_COPY = {
     ],
   ]),
   href: '/threefold/?scene=crownback-reach',
-  ariaLabel: 'No district interaction is available',
+  ariaLabel: 'Check the Quay pressure regulator when in reach',
+  interactionLabel: 'CHECK REGULATOR',
 };
 const CROWNBACK_REACH_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -654,7 +656,10 @@ function renderThreefoldCampaignPlaces(
       trapped: 'Iri is trapped maintaining the pressure regulator.',
       rescued: 'Mara rescued Iri from the pressure regulator.',
       escaped: 'Iri escaped before Mara reached the pressure regulator.',
-      dead: 'Iri died before Mara reached the pressure regulator.',
+      dead:
+        iriFate.milestoneId === 'quay-regulator-growth'
+          ? 'Iri died when Mara grew into the pressure regulator.'
+          : 'Iri died before Mara reached the pressure regulator.',
       evacuated: 'Another crew evacuated Iri from the pressure regulator.',
       abandoned: 'Iri was abandoned at the pressure regulator.',
     };

@@ -4,6 +4,7 @@ import {
 } from '../../../../src/core/browser/game/threefold/lantern-ward.js';
 import {
   createThreefoldBelltopsScene,
+  isThreefoldBelltopsRegulatorInReach,
   THREEFOLD_BELLTOPS_SCENE_ID,
 } from '../../../../src/core/browser/game/threefold/belltops.js';
 import {
@@ -26,6 +27,31 @@ const THRESHOLDS = {
 };
 
 describe('THREEFOLD Lantern Ward district', () => {
+  test('places the Quay panel in physical reach and rejects out-of-reach contact', () => {
+    const initial = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldBelltopsScene()
+    );
+    const farAway = {
+      ...initial,
+      player: {
+        ...initial.player,
+        position: { x: 24, y: 18 },
+      },
+    };
+    const otherRegion = {
+      ...initial,
+      scene: { ...initial.scene, id: 'lantern-ward' },
+    };
+
+    expect(isThreefoldBelltopsRegulatorInReach(initial)).toBe(true);
+    expect(isThreefoldBelltopsRegulatorInReach(farAway)).toBe(false);
+    expect(isThreefoldBelltopsRegulatorInReach(otherRegion)).toBe(false);
+    expect(stepThreefoldSimulation(farAway, { type: 'interact' })).toBe(
+      farAway
+    );
+  });
+
   test('previews the authored +3 to +4 city footprint without changing the state', () => {
     const scene = createThreefoldLanternWardScene();
     const initial = createThreefoldSimulation(THRESHOLDS, scene);
@@ -140,25 +166,37 @@ describe('THREEFOLD Lantern Ward district', () => {
       maximumUnlockedScale: 3,
     });
     expect(growth).toEqual({
-      geometryIds: ['belltops-harbor-crane', 'belltops-watchtower'],
+      geometryIds: [
+        'belltops-harbor-crane',
+        'belltops-pressure-regulator',
+        'belltops-watchtower',
+      ],
       occupantIds: [],
-      creatureIds: ['belltops-sentry-orla', 'belltops-stormbird'],
+      creatureIds: [
+        'belltops-iri',
+        'belltops-sentry-orla',
+        'belltops-stormbird',
+      ],
     });
     expect(initial).toEqual(unchanged);
     expect(frame.world.map.name).toBe('BELLTOPS');
     expect(frame.quest).toBe('The Belltops');
     expect(frame.toast).toContain('BELLTOPS AND ITS RESIDENTS ARE AT RISK');
-    expect(labels).toContain('A BREAKS HARBOR CRANE + WATCHTOWER');
-    expect(labels).toContain('A KILLS ORLA + STORMBIRD');
+    expect(labels).toContain(
+      'A BREAKS HARBOR CRANE + PRESSURE REGULATOR + WATCHTOWER'
+    );
+    expect(labels).toContain('A KILLS IRI + ORLA + STORMBIRD');
 
     const grown = stepThreefoldSimulation(initial, { type: 'grow' });
 
     expect(grown.player.scale).toBe(3);
     expect(grown.player.destroyedGeometryIds).toEqual([
       'belltops-harbor-crane',
+      'belltops-pressure-regulator',
       'belltops-watchtower',
     ]);
     expect(grown.encounter.growthDeaths).toEqual([
+      { creatureId: 'belltops-iri', cause: 'growth' },
       { creatureId: 'belltops-sentry-orla', cause: 'growth' },
       { creatureId: 'belltops-stormbird', cause: 'growth' },
     ]);

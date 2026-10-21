@@ -3,10 +3,12 @@ import { copyThreefoldBounds } from './scene-utils.js';
 
 const SCENE_BOUNDS = { min: { x: -24, y: -18 }, max: { x: 24, y: 18 } };
 
+export const THREEFOLD_BELLTOPS_IRI_ID = 'belltops-iri';
+
 /** @typedef {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} ThreefoldHighWorldVolumeBounds */
 /** @typedef {{id: string, displayName: string, bounds: ThreefoldHighWorldVolumeBounds}} ThreefoldHighWorldStructure */
 /** @typedef {{id: string, displayName: string, growthRule: 'overlap', position: {x: number, y: number}, bounds: ThreefoldHighWorldVolumeBounds}} ThreefoldHighWorldResident */
-/** @typedef {{id: 'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: ThreefoldHighWorldStructure[], decorations: [], interactables: [], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldScene */
+/** @typedef {{id: 'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: ThreefoldHighWorldStructure[], decorations: [], interactables: Array<{id: string, position: {x: number, y: number}, bounds: ThreefoldHighWorldVolumeBounds}>, creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldScene */
 /** @typedef {{displayName: string, scale: number, minimumUnlockedScale: number, maximumUnlockedScale: number, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}, spawnPosition?: {x: number, y: number}, geometry: ThreefoldHighWorldStructure[], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldSceneDefinition */
 
 /** @type {Record<'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals', ThreefoldHighWorldSceneDefinition>} */
@@ -62,6 +64,12 @@ const SCENE_DEFINITIONS = {
     maximumUnlockedScale: 3,
     creatures: [
       createHighWorldResident(
+        THREEFOLD_BELLTOPS_IRI_ID,
+        'IRI',
+        { x: 3.4, y: 1 },
+        createVolumeBounds({ x: 3.2, y: 0.8, z: 0 }, { x: 3.6, y: 1.2, z: 1.8 })
+      ),
+      createHighWorldResident(
         'belltops-sentry-orla',
         'ORLA',
         { x: 5, y: 0 },
@@ -81,6 +89,11 @@ const SCENE_DEFINITIONS = {
       ),
     ],
     geometry: [
+      createHighWorldStructure(
+        'belltops-pressure-regulator',
+        'PRESSURE REGULATOR',
+        createVolumeBounds({ x: 2.8, y: -0.2, z: 0 }, { x: 4, y: 2.2, z: 3 })
+      ),
       createHighWorldStructure(
         'belltops-watchtower',
         'WATCHTOWER',
@@ -145,9 +158,9 @@ const SCENE_DEFINITIONS = {
 };
 
 /**
- * Create an isolated high-world city region from its authored scene data.
+ * Create an isolated high-world region from its authored physical definition.
  * @param {'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals'} sceneId Authored region identifier.
- * @returns {ThreefoldHighWorldScene} Fresh city geometry and population state.
+ * @returns {ThreefoldHighWorldScene} Fresh scene geometry and population state.
  */
 export function createThreefoldHighWorldScene(sceneId) {
   const definition = SCENE_DEFINITIONS[sceneId];
@@ -167,7 +180,7 @@ export function createThreefoldHighWorldScene(sceneId) {
     areas: [{ id: sceneId, bounds: copyThreefoldBounds(bounds) }],
     geometry: definition.geometry.map(copyStructure),
     decorations: [],
-    interactables: [],
+    interactables: /** @type {ThreefoldHighWorldScene['interactables']} */ ([]),
     creatures: definition.creatures.map(copyResident),
   };
 }

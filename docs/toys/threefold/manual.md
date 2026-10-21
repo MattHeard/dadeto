@@ -133,7 +133,7 @@ The Lantern Ward export includes the district's destroyed buildings and resident
 
 ## Belltops
 
-Continue from the Lantern Ward to open [/threefold/?scene=belltops](/threefold/?scene=belltops). Mara starts at scale +2, 16.46 m tall, with +3 unlocked. The Mosslight screen previews the watchtower and harbor crane in Mara's next growth footprint, along with Orla and the stormbird. A remains growth and commits the displayed structural damage and resident fates; B steps down to +1. Belltops uses the shared high-world reducer and local game clock without advancing Broken Gate's episode.
+Continue from the Lantern Ward to open [/threefold/?scene=belltops](/threefold/?scene=belltops). Mara starts at scale +2, 16.46 m tall, with +3 unlocked. The Mosslight screen previews the watchtower, harbor crane, and Quay pressure regulator in Mara's next growth footprint, along with Iri, Orla, and the stormbird. E checks the reachable regulator panel and records that Iri is trapped there; the campaign status remembers the milestone across regions. A remains growth and commits the displayed structural damage and resident fates, including the regulator collapse and Iri's death if Mara grows; B steps down to +1. Belltops uses the shared high-world reducer and local game clock without advancing Broken Gate's episode.
 
 Belltops exports preserve its damaged harbor structures and resident fates under a save key separate from Lantern Ward, Silt Margin, Tidal Archive, and Broken Gate.
 
@@ -142,6 +142,8 @@ If the saved Broken Gate run records the ferry lost, the harbor bell's accessibl
 Orla's accessible harbor response also changes with that saved outcome: she trusts Mara's rescue account after both groups reach shore, keeps trust provisional after a partial rescue, and asks for a full account when both groups are lost. The text leaves unknown warnings unresolved and adds no relationship score or save field.
 
 The ferry engineer is part of the first passenger group. If that group reached shore, the accessible harbor record shows the engineer is available to advise Orla's crew; if both groups were lost, no ferry engineer is available in Belltops.
+
+The regulator encounter currently establishes only the reachable trapped state and the growth-caused death. The connected pressure-system choices and rescue machinery are not yet available.
 
 ## Crownback Reach
 

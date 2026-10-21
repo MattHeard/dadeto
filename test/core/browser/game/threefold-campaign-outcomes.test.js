@@ -7,6 +7,7 @@ import {
 import { createThreefoldCampaignOutcomesSaveStore } from '../../../../src/core/browser/game/threefold/save.js';
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
 import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
+import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
 
 describe('THREEFOLD campaign outcomes', () => {
   test('starts without publishing an undiscovered Iri outcome', () => {
@@ -328,4 +329,97 @@ describe('THREEFOLD campaign outcomes', () => {
     );
     expect(otherRoute.frame().threefold.campaignIriFate).toEqual(fate);
   });
+
+  test('records Iri trapped at the reachable Quay panel and preserves it', () => {
+    const values = new Map();
+    const storage = {
+      getItem: key => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: key => values.delete(key),
+    };
+    const runtime = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+    expect(runtime.getSnapshot().campaign.iriFate).toBeNull();
+
+    runtime.dispatch('interact');
+    const fate = {
+      outcome: 'trapped',
+      milestoneId: 'quay-regulator-found',
+      elapsedGameSeconds: 15,
+    };
+    expect(runtime.getSnapshot().campaign.iriFate).toEqual(fate);
+
+    runtime.dispatch('interact');
+    expect(runtime.getSnapshot().campaign.iriFate).toEqual(fate);
+    expect(
+      createThreefoldRuntime({
+        scene: createThreefoldBelltopsScene(),
+        storage,
+      }).getSnapshot().campaign.iriFate
+    ).toEqual(fate);
+  });
+
+  test('does not discover Iri at the Quay from outside interaction reach', () => {
+    const scene = createThreefoldBelltopsScene();
+    const runtime = createThreefoldRuntime({
+      scene: {
+        ...scene,
+        spawn: { ...scene.spawn, position: { x: 20, y: 16 } },
+      },
+      storage: createRuntimeStorage(),
+    });
+
+    runtime.dispatch('interact');
+
+    expect(runtime.getSnapshot().campaign.iriFate).toBeNull();
+  });
+
+  test('records a warned Belltops growth death as a campaign fate', () => {
+    const storage = createRuntimeStorage();
+    const runtime = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+    runtime.start();
+    runtime.step(125, ['a']);
+
+    expect(runtime.getSnapshot().campaign.iriFate).toEqual({
+      outcome: 'dead',
+      milestoneId: 'quay-regulator-growth',
+      elapsedGameSeconds: 15,
+    });
+    expect(runtime.getState().encounter.growthDeaths).toContainEqual({
+      creatureId: 'belltops-iri',
+      cause: 'growth',
+    });
+    runtime.dispatch('grow');
+    expect(runtime.getSnapshot().campaign.iriFate.milestoneId).toBe(
+      'quay-regulator-growth'
+    );
+
+    storage.removeItem('dadeto.threefold.campaign-outcomes.v1');
+    const restoredWithoutCampaignFate = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+    restoredWithoutCampaignFate.dispatch('interact');
+    expect(
+      restoredWithoutCampaignFate.getSnapshot().campaign.iriFate
+    ).toBeNull();
+  });
 });
+
+/**
+ * Create isolated browser-style storage for a runtime test.
+ * @returns {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem: (key: string) => boolean}} Storage adapter.
+ */
+function createRuntimeStorage() {
+  const values = new Map();
+  return {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key),
+  };
+}

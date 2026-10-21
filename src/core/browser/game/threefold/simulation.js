@@ -955,6 +955,14 @@ function stepWeftwaysScene(state, action) {
  */
 function stepHighWorldScene(state, action) {
   if (action.type === 'interact') {
+    if (
+      state.scene.id === belltops.THREEFOLD_BELLTOPS_SCENE_ID &&
+      belltops.isThreefoldBelltopsRegulatorInReach(state)
+    )
+      return /** @type {HighWorldSimulationState} */ ({
+        ...state,
+        elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
+      });
     if (state.scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID) {
       if (
         /** @type {CrownbackReachSimulationState} */ (state).crownbackReach

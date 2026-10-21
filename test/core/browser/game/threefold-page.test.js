@@ -376,12 +376,15 @@ describe('THREEFOLD page adapter', () => {
     expect(belltopsRuntime.getState().scene.id).toBe('belltops');
     expect(belltopsRuntime.getState().player.scale).toBe(2);
     expect(belltopsRuntime.getSnapshot().world.map.name).toBe('BELLTOPS');
-    expect(nodes.get('#chapter-description').textContent).toContain('Orla');
+    expect(nodes.get('#chapter-description').textContent).toMatch(
+      /Iri.*pressure regulator/
+    );
     expect(nodes.get('#scene-link')).toMatchObject({
       textContent: 'Continue to Crownback Reach',
       href: '/threefold/?scene=crownback-reach',
     });
-    expect(nodes.get('#interact-control').hidden).toBe(true);
+    expect(nodes.get('#interact-control').hidden).toBe(false);
+    expect(nodes.get('#e-control-label').textContent).toBe('CHECK REGULATOR');
   });
 
   test('tolerates a document without the witness ledger list', () => {
@@ -571,11 +574,15 @@ describe('THREEFOLD campaign places page', () => {
     );
     expect(campaignIriFateText.hidden).toBe(true);
 
-    for (const [outcome, expected] of [
+    for (const [outcome, expected, milestoneId = 'regulator-encounter'] of [
       ['trapped', 'Iri is trapped maintaining the pressure regulator.'],
       ['rescued', 'Mara rescued Iri from the pressure regulator.'],
       ['escaped', 'Iri escaped before Mara reached the pressure regulator.'],
-      ['dead', 'Iri died before Mara reached the pressure regulator.'],
+      [
+        'dead',
+        'Iri died when Mara grew into the pressure regulator.',
+        'quay-regulator-growth',
+      ],
       ['evacuated', 'Another crew evacuated Iri from the pressure regulator.'],
       ['abandoned', 'Iri was abandoned at the pressure regulator.'],
     ]) {
@@ -589,7 +596,7 @@ describe('THREEFOLD campaign places page', () => {
             campaignClock: { elapsedGameSeconds: 0 },
             campaignIriFate: {
               outcome,
-              milestoneId: 'regulator-encounter',
+              milestoneId,
               elapsedGameSeconds: 0,
             },
           },

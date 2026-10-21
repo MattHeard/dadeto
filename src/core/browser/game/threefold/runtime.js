@@ -28,7 +28,11 @@ import {
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
-import { THREEFOLD_BELLTOPS_SCENE_ID } from './belltops.js';
+import {
+  isThreefoldBelltopsRegulatorInReach,
+  THREEFOLD_BELLTOPS_IRI_ID,
+  THREEFOLD_BELLTOPS_SCENE_ID,
+} from './belltops.js';
 import {
   getThreefoldCampaignPlaces,
   getThreefoldHarborCampaignContent,
@@ -221,6 +225,18 @@ export function createThreefoldRuntime(options = {}) {
       state,
       action
     );
+    const discoversTrappedIri =
+      !campaignOutcomes.iriFate &&
+      action.type === 'interact' &&
+      !state.encounter.growthDeaths?.some(
+        (/** @type {{creatureId: string}} */ death) =>
+          death.creatureId === THREEFOLD_BELLTOPS_IRI_ID
+      ) &&
+      isThreefoldBelltopsRegulatorInReach(state);
+    const hadIriGrowthDeath = state.encounter.growthDeaths?.some(
+      (/** @type {{creatureId: string}} */ death) =>
+        death.creatureId === THREEFOLD_BELLTOPS_IRI_ID
+    );
     state = stepThreefoldSimulation(state, action);
     if (elapsedGameSeconds !== null) {
       campaignClock = advanceThreefoldCampaignClock(
@@ -228,6 +244,19 @@ export function createThreefoldRuntime(options = {}) {
         elapsedGameSeconds
       );
       campaignClockSave.save(campaignClock);
+    }
+    const hasIriGrowthDeath = state.encounter.growthDeaths?.some(
+      (/** @type {{creatureId: string}} */ death) =>
+        death.creatureId === THREEFOLD_BELLTOPS_IRI_ID
+    );
+    if (discoversTrappedIri) {
+      recordIriFate('trapped', 'quay-regulator-found');
+    } else if (
+      action.type === 'grow' &&
+      !hadIriGrowthDeath &&
+      hasIriGrowthDeath
+    ) {
+      recordIriFate('dead', 'quay-regulator-growth');
     }
     return state;
   }
