@@ -35,6 +35,7 @@ import {
 } from './belltops.js';
 import {
   getThreefoldCampaignPlaces,
+  getThreefoldCampaignPressureState,
   getThreefoldHarborCampaignContent,
   THREEFOLD_CAMPAIGN_SCENE_IDS,
 } from './campaign.js';
@@ -101,6 +102,11 @@ export function createThreefoldRuntime(options = {}) {
       { ...savedCampaignRuns, [state.scene.id]: state },
       state.scene.id
     );
+  const campaignPressure = () =>
+    getThreefoldCampaignPressureState({
+      ...savedCampaignRuns,
+      [state.scene.id]: state,
+    });
 
   const frame = () => {
     const rendered = renderThreefoldFrame(state);
@@ -110,6 +116,7 @@ export function createThreefoldRuntime(options = {}) {
         ...rendered.threefold,
         ...(harborCampaign || {}),
         campaignPlaces: campaignPlaces(),
+        campaignPressure: campaignPressure(),
         campaignClock: { ...campaignClock },
         campaignIriFate: campaignOutcomes.iriFate
           ? { ...campaignOutcomes.iriFate }
@@ -122,6 +129,7 @@ export function createThreefoldRuntime(options = {}) {
     tick,
     campaign: {
       places: campaignPlaces(),
+      pressure: campaignPressure(),
       clock: { ...campaignClock },
       iriFate: campaignOutcomes.iriFate
         ? { ...campaignOutcomes.iriFate }

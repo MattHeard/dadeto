@@ -287,12 +287,7 @@ export function startThreefoldPage(options) {
         options.documentObj,
         frame.threefold?.witnessLedger || []
       );
-      renderThreefoldCampaignPlaces(
-        options.documentObj,
-        frame.threefold?.campaignPlaces || [],
-        frame.threefold?.campaignClock?.elapsedGameSeconds ?? 0,
-        frame.threefold?.campaignIriFate || null
-      );
+      renderThreefoldCampaignPlaces(options.documentObj, frame);
       renderThreefoldTestimony(
         options.documentObj,
         frame.threefold?.testimony || null
@@ -614,29 +609,32 @@ function renderThreefoldDisclosurePanel(
 /**
  * Show a compact index of the current and saved regions.
  * @param {any} documentObj Standalone page document adapter.
- * @param {Array<{id: string, label: string, active: boolean}>} places Current and saved authored regions.
- * @param {number} elapsedGameSeconds Campaign-wide elapsed in-game time.
- * @param {import('./campaign-outcomes.js').ThreefoldIriFate|null} iriFate Resolved Iri campaign outcome, kept hidden until discovered.
+ * @param {{threefold?: {campaignPlaces?: Array<{id: string, label: string, active: boolean}>, campaignClock?: {elapsedGameSeconds?: number}, campaignIriFate?: import('./campaign-outcomes.js').ThreefoldIriFate|null, campaignPressure?: Array<{id: string, label: string, state: string, detail?: string}>}}} frame Current rendered campaign frame.
  * @returns {void}
  */
-function renderThreefoldCampaignPlaces(
-  documentObj,
-  places,
-  elapsedGameSeconds,
-  iriFate
-) {
+function renderThreefoldCampaignPlaces(documentObj, frame) {
+  const places = frame.threefold?.campaignPlaces || [];
+  const elapsedGameSeconds =
+    frame.threefold?.campaignClock?.elapsedGameSeconds ?? 0;
+  const iriFate = frame.threefold?.campaignIriFate || null;
+  const pressure = frame.threefold?.campaignPressure || [];
   const panel = documentObj?.querySelector?.('#campaign-places');
   const text = documentObj?.querySelector?.('#campaign-places-text');
   const clockText = documentObj?.querySelector?.('#campaign-clock-text');
   const iriFateText = documentObj?.querySelector?.('#campaign-iri-fate-text');
-  if (!panel || !text || !clockText || !iriFateText) return;
+  const pressureText = documentObj?.querySelector?.('#campaign-pressure-text');
+  if (!panel || !text || !clockText || !iriFateText || !pressureText) return;
   iriFateText.hidden = iriFate === null;
+  pressureText.hidden = pressure.length === 0;
   const safeElapsedGameSeconds =
     Number.isFinite(elapsedGameSeconds) && elapsedGameSeconds >= 0
       ? Math.floor(elapsedGameSeconds)
       : 0;
   panel.hidden =
-    places.length < 2 && safeElapsedGameSeconds === 0 && iriFate === null;
+    places.length < 2 &&
+    safeElapsedGameSeconds === 0 &&
+    iriFate === null &&
+    pressure.length === 0;
   if (panel.hidden) return;
   const summary = panel.querySelector?.('summary');
   if (summary && summary.textContent !== 'Campaign status')
@@ -651,6 +649,11 @@ function renderThreefoldCampaignPlaces(
     .map(place => `${place.label} (${place.active ? 'current' : 'saved'})`)
     .join(' · ');
   if (text.textContent !== content) text.textContent = content;
+  const pressureContent = pressure
+    .map(describeCampaignPressureSite)
+    .join(' · ');
+  if (pressureText.textContent !== pressureContent)
+    pressureText.textContent = pressureContent;
   if (iriFate !== null) {
     const descriptions = {
       trapped: 'Iri is trapped maintaining the pressure regulator.',
@@ -671,6 +674,38 @@ function renderThreefoldCampaignPlaces(
     if (iriFateText.textContent !== fateContent)
       iriFateText.textContent = fateContent;
   }
+}
+
+/**
+ * Present a saved hydraulic outcome without exposing internal route IDs.
+ * @param {{id: string, label: string, state: string, detail?: string}} site Campaign pressure-system source.
+ * @returns {string} Accessible pressure-system status.
+ */
+function describeCampaignPressureSite(site) {
+  if (site.id === 'belltops-quay') return `Quay regulator ${site.state}`;
+  if (site.id === 'hearthgaps-runoff') {
+    const choice =
+      site.state === 'brin-diversion' ? 'Brin diversion' : 'shared bypass';
+    const floodedHomes =
+      site.detail === 'hearthgaps-brin-homes'
+        ? 'Brin homes flooded'
+        : site.detail === 'hearthgaps-downstream-homes'
+          ? 'downstream homes flooded'
+          : 'no homes flooded';
+    return `Hearthgaps ${choice}; ${floodedHomes}`;
+  }
+  if (site.id === 'silt-margin-choir') {
+    const signal =
+      site.state === 'sent'
+        ? 'Choir signal sent'
+        : site.state === 'disrupted'
+          ? 'Choir signal disrupted'
+          : 'Choir signal blocked';
+    const crossing =
+      site.detail === 'crossing-open' ? 'crossing open' : 'crossing flooded';
+    return `Silt Margin ${signal}; ${crossing}`;
+  }
+  return site.label;
 }
 
 /**

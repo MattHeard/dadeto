@@ -548,6 +548,7 @@ describe('THREEFOLD campaign places page', () => {
       campaignPlaces,
       campaignPlacesText,
       campaignClockText,
+      campaignPressureText,
       campaignIriFateText,
     } = createLedgerDocument();
     startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
@@ -562,6 +563,25 @@ describe('THREEFOLD campaign places page', () => {
             { id: 'silt-margin', label: 'Silt Margin', active: false },
           ],
           campaignClock: { elapsedGameSeconds: 90 },
+          campaignPressure: [
+            {
+              id: 'belltops-quay',
+              label: 'Quay pressure regulator',
+              state: 'damaged',
+            },
+            {
+              id: 'hearthgaps-runoff',
+              label: 'Hearthgaps runoff',
+              state: 'shared-bypass',
+              detail: 'hearthgaps-brin-homes',
+            },
+            {
+              id: 'silt-margin-choir',
+              label: 'Silt Margin crossing and Choir signal',
+              state: 'sent',
+              detail: 'crossing-open',
+            },
+          ],
         },
       }
     );
@@ -573,6 +593,10 @@ describe('THREEFOLD campaign places page', () => {
       'Broken Gate (current) · Silt Margin (saved)'
     );
     expect(campaignIriFateText.hidden).toBe(true);
+    expect(campaignPressureText.hidden).toBe(false);
+    expect(campaignPressureText.textContent).toBe(
+      'Quay regulator damaged · Hearthgaps shared bypass; Brin homes flooded · Silt Margin Choir signal sent; crossing open'
+    );
 
     for (const [outcome, expected, milestoneId = 'regulator-encounter'] of [
       ['trapped', 'Iri is trapped maintaining the pressure regulator.'],
@@ -690,6 +714,73 @@ describe('THREEFOLD campaign places page', () => {
     );
     expect(campaignPlaces.hidden).toBe(true);
     expect(campaignIriFateText.hidden).toBe(true);
+    expect(campaignPressureText.hidden).toBe(true);
+  });
+});
+
+describe('THREEFOLD campaign pressure page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('presents saved pressure choices when there is no route index or clock', () => {
+    const { documentObj, campaignPlaces, campaignPressureText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPressure: [
+            {
+              id: 'hearthgaps-runoff',
+              label: 'Hearthgaps runoff',
+              state: 'brin-diversion',
+              detail: 'hearthgaps-downstream-homes',
+            },
+            {
+              id: 'silt-margin-choir',
+              label: 'Silt Margin crossing and Choir signal',
+              state: 'disrupted',
+              detail: 'crossing-flooded',
+            },
+            {
+              id: 'future-route',
+              label: 'Future route status',
+              state: 'unknown',
+            },
+          ],
+        },
+      }
+    );
+
+    expect(campaignPlaces.hidden).toBe(false);
+    expect(campaignPressureText.hidden).toBe(false);
+    expect(campaignPressureText.textContent).toBe(
+      'Hearthgaps Brin diversion; downstream homes flooded · Silt Margin Choir signal disrupted; crossing flooded · Future route status'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPressure: [
+            {
+              id: 'hearthgaps-runoff',
+              label: 'Hearthgaps runoff',
+              state: 'shared-bypass',
+              detail: 'unknown-footprint',
+            },
+          ],
+        },
+      }
+    );
+    expect(campaignPressureText.textContent).toBe(
+      'Hearthgaps shared bypass; no homes flooded'
+    );
   });
 });
 
@@ -752,6 +843,7 @@ describe('THREEFOLD standalone markup', () => {
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=grainlands"');
     expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence"');
     expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence-text"');
+    expect(THREEFOLD_HTML).toContain('id="campaign-pressure-text"');
   });
 });
 
@@ -1181,6 +1273,7 @@ function createLedgerDocument() {
   };
   const campaignPlacesText = { textContent: '' };
   const campaignClockText = { textContent: '' };
+  const campaignPressureText = { hidden: true, textContent: '' };
   const campaignIriFateText = { hidden: true, textContent: '' };
   const campaignPlaces = {
     hidden: true,
@@ -1281,6 +1374,7 @@ function createLedgerDocument() {
     campaignPlaces,
     campaignPlacesText,
     campaignClockText,
+    campaignPressureText,
     campaignIriFateText,
     testimonyList,
     responsibility,
@@ -1310,6 +1404,7 @@ function createLedgerDocument() {
         if (selector === '#campaign-places') return campaignPlaces;
         if (selector === '#campaign-places-text') return campaignPlacesText;
         if (selector === '#campaign-clock-text') return campaignClockText;
+        if (selector === '#campaign-pressure-text') return campaignPressureText;
         if (selector === '#campaign-iri-fate-text') return campaignIriFateText;
         if (selector === '#testimony-accounts') return testimonyList;
         if (selector === '#testimony-responsibility') return responsibility;

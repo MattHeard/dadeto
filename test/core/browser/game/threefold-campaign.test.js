@@ -1,9 +1,191 @@
 import {
+  getThreefoldCampaignPressureState,
   getThreefoldCampaignPlaces,
   getThreefoldHarborCampaignContent,
 } from '../../../../src/core/browser/game/threefold/campaign.js';
+import { createThreefoldSiltMarginWaterPuzzle } from '../../../../src/core/browser/game/threefold/silt-margin-water.js';
+import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/game/threefold/hearthgaps.js';
+import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
+import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
+import { createThreefoldSimulation } from '../../../../src/core/browser/game/threefold/simulation.js';
+import { createThreefoldSimulationSaveStore } from '../../../../src/core/browser/game/threefold/save.js';
 
 describe('THREEFOLD campaign continuity', () => {
+  test('publishes saved regional pressure outcomes in any active route', () => {
+    const values = new Map();
+    const storage = {
+      getItem: key => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: key => values.delete(key),
+    };
+    const thresholds = {
+      urgentAtMinutes: 4,
+      surgeAtMinutes: 9,
+      aftermathAtMinutes: 15,
+    };
+    const hearthgaps = createThreefoldSimulation(
+      thresholds,
+      createThreefoldHearthgapsScene()
+    );
+    hearthgaps.hearthgaps = {
+      runoffChoice: 'shared-bypass',
+      floodedHomeIds: ['hearthgaps-brin-homes'],
+    };
+    expect(
+      createThreefoldSimulationSaveStore(storage, 'hearthgaps').save(hearthgaps)
+    ).toBe(true);
+
+    const runtime = createThreefoldRuntime({
+      storage,
+      scene: createThreefoldBelltopsScene(),
+    });
+    const pressure = runtime.getSnapshot().campaign.pressure;
+    expect(pressure).toContainEqual({
+      id: 'hearthgaps-runoff',
+      label: 'Hearthgaps runoff',
+      state: 'shared-bypass',
+      detail: 'hearthgaps-brin-homes',
+    });
+    expect(runtime.frame().threefold.campaignPressure).toEqual(pressure);
+
+    runtime.resetSave();
+    expect(runtime.getSnapshot().campaign.pressure).toContainEqual(
+      expect.objectContaining({ id: 'hearthgaps-runoff' })
+    );
+  });
+
+  test('combines saved Quay, Hearthgaps, and Silt pressure outcomes', () => {
+    expect(
+      getThreefoldCampaignPressureState({
+        belltops: {
+          scene: { id: 'belltops' },
+          player: { destroyedGeometryIds: ['belltops-pressure-regulator'] },
+        },
+        hearthgaps: {
+          scene: { id: 'hearthgaps' },
+          hearthgaps: { runoffChoice: 'shared-bypass' },
+        },
+        'silt-margin': {
+          scene: { id: 'silt-margin' },
+          siltMargin: {
+            guardian: 'guided-aside',
+            signal: 'sent',
+            quietingEvidenceHeard: false,
+            waterPuzzle: createThreefoldSiltMarginWaterPuzzle({
+              crossingOpen: true,
+            }),
+          },
+        },
+      })
+    ).toEqual([
+      {
+        id: 'belltops-quay',
+        label: 'Quay pressure regulator',
+        state: 'damaged',
+      },
+      {
+        id: 'hearthgaps-runoff',
+        label: 'Hearthgaps runoff',
+        state: 'shared-bypass',
+        detail: 'hearthgaps-brin-homes',
+      },
+      {
+        id: 'silt-margin-choir',
+        label: 'Silt Margin crossing and Choir signal',
+        state: 'sent',
+        detail: 'crossing-open',
+      },
+    ]);
+  });
+
+  test('omits undecided, invalid, and mismatched region records', () => {
+    expect(
+      getThreefoldCampaignPressureState({
+        belltops: {
+          scene: { id: 'belltops' },
+          player: {},
+        },
+        hearthgaps: {
+          scene: { id: 'hearthgaps' },
+          hearthgaps: { runoffChoice: 'undecided' },
+        },
+        'silt-margin': {
+          scene: { id: 'silt-margin' },
+          siltMargin: { guardian: 'present', signal: 'sent' },
+        },
+        grainlands: {
+          scene: { id: 'grainlands' },
+          grainlands: { spiderFate: 'present', bridgeOutcome: 'intact' },
+        },
+        weftways: {
+          scene: { id: 'hearthgaps' },
+          hearthgaps: { runoffChoice: 'shared-bypass' },
+        },
+      })
+    ).toEqual([
+      {
+        id: 'belltops-quay',
+        label: 'Quay pressure regulator',
+        state: 'intact',
+      },
+    ]);
+    expect(getThreefoldCampaignPressureState(null)).toEqual([]);
+    expect(
+      getThreefoldCampaignPressureState({
+        belltops: {
+          scene: { id: 'belltops' },
+          player: { destroyedGeometryIds: [] },
+        },
+      })
+    ).toEqual([
+      {
+        id: 'belltops-quay',
+        label: 'Quay pressure regulator',
+        state: 'intact',
+      },
+    ]);
+    expect(
+      getThreefoldCampaignPressureState({
+        hearthgaps: {
+          scene: { id: 'hearthgaps' },
+          hearthgaps: { runoffChoice: 'not-a-choice' },
+        },
+      })
+    ).toEqual([]);
+  });
+
+  test('derives the Hearthgaps flood footprint and closed Choir crossing', () => {
+    expect(
+      getThreefoldCampaignPressureState({
+        hearthgaps: {
+          scene: { id: 'hearthgaps' },
+          hearthgaps: { runoffChoice: 'brin-diversion' },
+        },
+        'silt-margin': {
+          scene: { id: 'silt-margin' },
+          siltMargin: {
+            guardian: 'present',
+            signal: 'blocked',
+            waterPuzzle: createThreefoldSiltMarginWaterPuzzle(),
+          },
+        },
+      })
+    ).toEqual([
+      {
+        id: 'hearthgaps-runoff',
+        label: 'Hearthgaps runoff',
+        state: 'brin-diversion',
+        detail: 'hearthgaps-downstream-homes',
+      },
+      {
+        id: 'silt-margin-choir',
+        label: 'Silt Margin crossing and Choir signal',
+        state: 'blocked',
+        detail: 'crossing-flooded',
+      },
+    ]);
+  });
+
   test('indexes the active and valid saved regions in authored order', () => {
     expect(
       getThreefoldCampaignPlaces(

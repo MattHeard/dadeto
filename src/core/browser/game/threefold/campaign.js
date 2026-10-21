@@ -1,4 +1,10 @@
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
+import { getThreefoldSiltMarginWaterStatus } from './silt-margin-water.js';
+import {
+  normalizeThreefoldSiltMarginState,
+  THREEFOLD_SILT_MARGIN_SCENE_ID,
+} from './silt-margin.js';
+import { normalizeThreefoldHearthgapsState } from './hearthgaps.js';
 
 const PASSENGER_OUTCOMES = {
   evacuated: {
@@ -58,6 +64,69 @@ export function getThreefoldCampaignPlaces(savedRuns, activeSceneId) {
     ...place,
     active: (sceneId || place.id) === activeSceneId,
   }));
+}
+
+/**
+ * Derive the shared pressure-system view from validated, independently saved routes.
+ * @param {Record<string, any>} savedRuns Candidate route saves keyed by scene ID.
+ * @returns {Array<{id: string, label: string, state: string, detail?: string}>} Known pressure outcomes in authored route order.
+ */
+export function getThreefoldCampaignPressureState(savedRuns) {
+  const pressure = [];
+  const belltops = savedRuns?.belltops;
+  if (belltops?.scene?.id === 'belltops') {
+    const destroyedGeometryIds = belltops.player?.destroyedGeometryIds;
+    const regulatorDamaged =
+      Array.isArray(destroyedGeometryIds) &&
+      destroyedGeometryIds.includes('belltops-pressure-regulator');
+    pressure.push({
+      id: 'belltops-quay',
+      label: 'Quay pressure regulator',
+      state: regulatorDamaged ? 'damaged' : 'intact',
+    });
+  }
+
+  const hearthgaps = savedRuns?.hearthgaps;
+  if (
+    hearthgaps?.scene?.id === 'hearthgaps' &&
+    hearthgaps.hearthgaps?.runoffChoice !== undefined
+  ) {
+    try {
+      const route = normalizeThreefoldHearthgapsState(hearthgaps.hearthgaps);
+      if (route.runoffChoice !== 'undecided') {
+        pressure.push({
+          id: 'hearthgaps-runoff',
+          label: 'Hearthgaps runoff',
+          state: route.runoffChoice,
+          detail: route.floodedHomeIds.join(','),
+        });
+      }
+    } catch {
+      // Invalid route data does not contribute to the campaign pressure view.
+    }
+  }
+
+  const siltMargin = savedRuns?.[THREEFOLD_SILT_MARGIN_SCENE_ID];
+  if (
+    siltMargin?.scene?.id === THREEFOLD_SILT_MARGIN_SCENE_ID &&
+    siltMargin.siltMargin
+  ) {
+    try {
+      const route = normalizeThreefoldSiltMarginState(siltMargin.siltMargin);
+      pressure.push({
+        id: 'silt-margin-choir',
+        label: 'Silt Margin crossing and Choir signal',
+        state: route.signal,
+        detail: getThreefoldSiltMarginWaterStatus(route.waterPuzzle)
+          .crossingAvailable
+          ? 'crossing-open'
+          : 'crossing-flooded',
+      });
+    } catch {
+      // Invalid route data does not contribute to the campaign pressure view.
+    }
+  }
+  return pressure;
 }
 
 /**
