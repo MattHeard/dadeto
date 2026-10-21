@@ -279,6 +279,7 @@ export function startMosslightPage(options) {
       },
     },
     saveFilename: options.saveFilename || 'mosslight-valley-save.json',
+    saveTransfers: options.saveTransfers || [],
   });
   documentObj.addEventListener('keydown', onKeyDown);
   documentObj.addEventListener('keyup', onKeyUp);
@@ -388,7 +389,7 @@ function bindUtilityControls(options) {
   });
   listen('#save-game', 'click', () => {
     runtime.save();
-    status.textContent = 'Saved on this device.';
+    status.textContent = describeSavePersistence(runtime);
   });
   listen('#reset-game', 'click', () => {
     if (!windowObj.confirm(resetSavePrompt(runtime.getSlot()))) return;
@@ -396,22 +397,37 @@ function bindUtilityControls(options) {
     onReset();
     draw();
   });
-  listen('#export-game', 'click', () =>
-    download(runtime.exportSave(), saveFilename, windowObj)
-  );
-  const importInput = documentObj.querySelector('#import-game');
-  listen('#import-button', 'click', () => importInput.click());
-  importInput.addEventListener('change', async () => {
-    const file = importInput.files?.[0];
-    if (!file) return;
-    try {
-      runtime.importSave(await file.text());
-      slotPicker.value = String(runtime.getSlot());
-      draw();
-    } catch {
-      status.textContent = 'That save could not be read.';
-    }
-  });
+  const transfers = [
+    {
+      exportSelector: '#export-game',
+      importSelector: '#import-button',
+      inputSelector: '#import-game',
+      exportMethod: 'exportSave',
+      importMethod: 'importSave',
+      filename: saveFilename,
+      errorText: 'That save could not be read.',
+    },
+    ...options.saveTransfers,
+  ];
+  for (const transfer of transfers) {
+    bindExportControl(
+      documentObj.querySelector(transfer.exportSelector),
+      () =>
+        download(
+          runtime[transfer.exportMethod](),
+          transfer.filename,
+          windowObj
+        ),
+      status
+    );
+    bindImportControl(documentObj, runtime, transfer, {
+      onImport: () => {
+        slotPicker.value = String(runtime.getSlot());
+        draw();
+      },
+      status,
+    });
+  }
   listen('#pause-game', 'click', () => {
     runtime.pause();
     status.textContent = 'Paused · resume when ready.';
@@ -422,4 +438,60 @@ function bindUtilityControls(options) {
       () => {}
     )
   );
+}
+
+/**
+ * Bind a named export action with accessible failure feedback.
+ * @param {any} button Export button.
+ * @param {() => void} exportFile Bound file creation operation.
+ * @param {any} status Accessible status element.
+ * @returns {void}
+ */
+function bindExportControl(button, exportFile, status) {
+  button.addEventListener('click', () => {
+    try {
+      exportFile();
+    } catch {
+      status.textContent = 'That backup could not be created.';
+    }
+  });
+}
+
+/**
+ * Bind a named import format to shared file-reading and status behavior.
+ * @param {any} documentObj Injected page document.
+ * @param {any} runtime Save operations.
+ * @param {any} transfer Named file format descriptor.
+ * @param {any} page Import callback and accessible status element.
+ * @returns {void}
+ */
+function bindImportControl(documentObj, runtime, transfer, page) {
+  const input = documentObj.querySelector(transfer.inputSelector);
+  documentObj
+    .querySelector(transfer.importSelector)
+    .addEventListener('click', () => input.click());
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      runtime[transfer.importMethod](await file.text());
+      page.onImport();
+      if (transfer.successText) page.status.textContent = transfer.successText;
+    } catch {
+      page.status.textContent = transfer.errorText;
+    } finally {
+      input.value = '';
+    }
+  });
+}
+
+/**
+ * Report whether the runtime could persist the requested save.
+ * @param {any} runtime Game exposing optional persistence feedback.
+ * @returns {string} Accessible save result.
+ */
+function describeSavePersistence(runtime) {
+  if (runtime.getPersistenceStatus?.().dirty)
+    return 'Progress is only in this open page. Back up before leaving.';
+  return 'Saved on this device.';
 }

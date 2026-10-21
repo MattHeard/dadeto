@@ -514,7 +514,7 @@ describe('THREEFOLD Silt Margin crossing', () => {
     );
     siltStore.save(createSiltMarginRun());
 
-    expect(values.size).toBe(3);
+    expect(values.size).toBe(1);
     expect(gateStore.load().scene.id).toBe('broken-gate');
     expect(archiveStore.load().scene.id).toBe('small-world-sluice');
     expect(siltStore.load().scene.id).toBe('silt-margin');

@@ -1506,3 +1506,28 @@ function collectText(nodes) {
     .map(node => `${node.textContent || ''}${collectText(node.children || [])}`)
     .join(' ');
 }
+
+test('names regional and campaign controls and announces unsaved progress', () => {
+  mockStartMosslightPage.mockClear();
+  const { documentObj } = createLedgerDocument();
+  const persistence = { textContent: '' };
+  const query = documentObj.querySelector;
+  documentObj.querySelector = selector =>
+    selector === '#campaign-persistence' ? persistence : query(selector);
+  startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  expect(page.saveTransfers[0]).toMatchObject({
+    exportMethod: 'exportCampaign',
+    importMethod: 'importCampaign',
+    filename: 'threefold-campaign.json',
+  });
+  page.drawFrame({}, { threefold: { campaignPersistence: { dirty: true } } });
+  expect(persistence.textContent).toContain(
+    'Back up your campaign before leaving'
+  );
+  page.drawFrame({}, { threefold: { campaignPersistence: { dirty: false } } });
+  expect(persistence.textContent).toBe('');
+  expect(THREEFOLD_HTML).toContain('Export region');
+  expect(THREEFOLD_HTML).toContain('Backup campaign');
+  expect(THREEFOLD_HTML).toContain('Restore campaign');
+});

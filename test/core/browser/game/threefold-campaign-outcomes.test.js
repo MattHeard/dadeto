@@ -1,3 +1,4 @@
+import { createThreefoldCampaignStorage } from '../../../../src/core/browser/game/threefold/campaign-storage.js';
 import {
   createThreefoldCampaignOutcomes,
   recordThreefoldIriFate,
@@ -404,7 +405,9 @@ describe('THREEFOLD campaign outcomes', () => {
       'quay-regulator-growth'
     );
 
-    storage.removeItem('dadeto.threefold.campaign-outcomes.v1');
+    createThreefoldCampaignStorage(storage).removeItem(
+      'dadeto.threefold.campaign-outcomes.v1'
+    );
     const restoredWithoutCampaignFate = createThreefoldRuntime({
       scene: createThreefoldBelltopsScene(),
       storage,

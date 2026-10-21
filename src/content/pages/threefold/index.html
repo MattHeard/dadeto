@@ -247,6 +247,7 @@
             <summary>After the Broken Gate</summary>
             <ol id="episode-epilogue-outcomes" aria-live="polite"></ol>
           </details>
+          <p id="campaign-persistence" role="status" aria-live="polite"></p>
           <nav class="utility-actions" aria-label="Save controls">
             <label class="slot-picker" hidden
               >SAVE SLOT
@@ -257,8 +258,16 @@
               </select>
             </label>
             <button id="save-game">Save</button>
-            <button id="export-game">Export</button>
-            <button id="import-button">Import</button>
+            <button id="export-game">Export region</button>
+            <button id="import-button">Import region</button>
+            <button id="export-campaign">Backup campaign</button>
+            <button id="import-campaign-button">Restore campaign</button>
+            <input
+              id="import-campaign"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            />
             <input
               id="import-game"
               type="file"

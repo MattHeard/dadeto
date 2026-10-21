@@ -1,4 +1,9 @@
 import {
+  createThreefoldCampaignStorage,
+  THREEFOLD_CAMPAIGN_RECORD_KEYS,
+  THREEFOLD_SHARED_SAVE_KEYS,
+} from './campaign-storage.js';
+import {
   restoreThreefoldPressureNetwork,
   serializeThreefoldPressureNetwork,
 } from './pressure-network.js';
@@ -103,8 +108,6 @@ const WEFTWAYS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.weftways';
 const GRAINLANDS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.grainlands';
-const CAMPAIGN_CLOCK_SAVE_KEY = 'dadeto.threefold.campaign-clock.v1';
-const CAMPAIGN_OUTCOMES_SAVE_KEY = 'dadeto.threefold.campaign-outcomes.v1';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -150,7 +153,7 @@ export function createThreefoldScaleSaveStore(storage) {
 export function createThreefoldCampaignClockSaveStore(storage) {
   return createSaveStore(
     storage,
-    CAMPAIGN_CLOCK_SAVE_KEY,
+    THREEFOLD_SHARED_SAVE_KEYS.clock,
     serializeThreefoldCampaignClock,
     restoreThreefoldCampaignClock
   );
@@ -164,7 +167,7 @@ export function createThreefoldCampaignClockSaveStore(storage) {
 export function createThreefoldCampaignOutcomesSaveStore(storage) {
   return createSaveStore(
     storage,
-    CAMPAIGN_OUTCOMES_SAVE_KEY,
+    THREEFOLD_SHARED_SAVE_KEYS.outcomes,
     serializeThreefoldCampaignOutcomes,
     restoreThreefoldCampaignOutcomes
   );
@@ -178,7 +181,7 @@ export function createThreefoldCampaignOutcomesSaveStore(storage) {
 export function createThreefoldPressureNetworkSaveStore(storage) {
   return createSaveStore(
     storage,
-    'dadeto.threefold.pressure-network.v1',
+    THREEFOLD_SHARED_SAVE_KEYS.pressure,
     serializeThreefoldPressureNetwork,
     restoreThreefoldPressureNetwork
   );
@@ -584,6 +587,8 @@ function runStorageMutation(storage, method, key, value) {
  * @returns {{load: () => T|null, save: (state: T) => boolean, clear: () => boolean}} Storage operations.
  */
 function createSaveStore(storage, key, serialize, restore) {
+  if (THREEFOLD_CAMPAIGN_RECORD_KEYS.includes(key))
+    storage = createThreefoldCampaignStorage(storage);
   return {
     load: () => {
       try {

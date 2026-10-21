@@ -273,11 +273,7 @@ describe('THREEFOLD Lantern Ward district', () => {
     expect(wardStore.save(grownWard)).toBe(true);
     expect(belltopsStore.save(grownBelltops)).toBe(true);
     expect(gateStore.save(gate)).toBe(true);
-    expect([...values.keys()].sort()).toEqual([
-      'dadeto.threefold.simulation-save.v1',
-      'dadeto.threefold.simulation-save.v1.belltops',
-      'dadeto.threefold.simulation-save.v1.lantern-ward',
-    ]);
+    expect([...values.keys()].sort()).toEqual(['dadeto.threefold.campaign.v1']);
     expect(wardStore.load()).toEqual(grownWard);
     expect(belltopsStore.load()).toEqual(grownBelltops);
     expect(gateStore.load()).toEqual(gate);

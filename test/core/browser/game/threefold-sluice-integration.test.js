@@ -266,8 +266,7 @@ describe('THREEFOLD playable small-world sluice', () => {
     sluiceStore.save(simulation);
     brokenGateStore.save(createThreefoldSimulation(CRISIS_THRESHOLDS));
     expect([...storage.keys()].sort()).toEqual([
-      'dadeto.threefold.simulation-save.v1',
-      'dadeto.threefold.simulation-save.v1.small-world-sluice',
+      'dadeto.threefold.campaign.v1',
     ]);
 
     envelope.state.sluicePuzzle.chambers[1].volumeCubicMeters += 1;

@@ -284,6 +284,13 @@ export function startThreefoldPage(options) {
       /** @type {Record<string, any>} */ frame
     ) => {
       (options.drawFrame || drawGameFrame)(context, frame);
+      const persistence = options.documentObj.querySelector(
+        '#campaign-persistence'
+      );
+      if (persistence)
+        persistence.textContent = frame.threefold?.campaignPersistence?.dirty
+          ? 'Progress is only in this open page. Back up your campaign before leaving; this device could not save it.'
+          : '';
       renderThreefoldWitnessLedger(
         options.documentObj,
         frame.threefold?.witnessLedger || []
@@ -401,6 +408,19 @@ export function startThreefoldPage(options) {
       );
     },
     saveFilename: 'threefold-save.json',
+    saveTransfers: [
+      {
+        exportSelector: '#export-campaign',
+        importSelector: '#import-campaign-button',
+        inputSelector: '#import-campaign',
+        exportMethod: 'exportCampaign',
+        importMethod: 'importCampaign',
+        filename: 'threefold-campaign.json',
+        successText: 'Campaign restored on this device.',
+        errorText:
+          'Campaign could not be restored. Your current progress has been kept.',
+      },
+    ],
   });
 }
 

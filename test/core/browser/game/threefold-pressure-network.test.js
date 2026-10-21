@@ -1,3 +1,4 @@
+import { createThreefoldCampaignStorage } from '../../../../src/core/browser/game/threefold/campaign-storage.js';
 import {
   advanceThreefoldPressureNetwork,
   createThreefoldPressureNetwork,
@@ -334,7 +335,11 @@ describe('THREEFOLD pressure network across real region runtimes', () => {
     signalSent => {
       const storage = storageAdapter();
       seedBypass(storage, signalSent);
-      const savedRoutes = [...storage.values.entries()];
+      const savedRoutes = Object.entries(
+        createThreefoldCampaignStorage(storage).readCampaign().records
+      ).filter(
+        ([key, value]) => key.includes('simulation-save') && value !== null
+      );
       const quay = createThreefoldRuntime({
         storage,
         scene: createThreefoldBelltopsScene(),
@@ -345,7 +350,9 @@ describe('THREEFOLD pressure network across real region runtimes', () => {
       expect(network.bypassOpen).toBe(signalSent);
       expect(network.nurseryFlooded).toBe(!signalSent);
       for (const [key, value] of savedRoutes)
-        expect(storage.getItem(key)).toBe(value);
+        expect(createThreefoldCampaignStorage(storage).getItem(key)).toBe(
+          value
+        );
       const nursery = createThreefoldRuntime({
         storage,
         scene: createThreefoldGrainlandsScene(),

@@ -1,3 +1,4 @@
+import { createThreefoldCampaignStorage } from '../../../../src/core/browser/game/threefold/campaign-storage.js';
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
 import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
 import { createThreefoldGrainlandsScene } from '../../../../src/core/browser/game/threefold/grainlands.js';
@@ -199,7 +200,9 @@ describe('THREEFOLD finite replacement governor and nonlethal rescue', () => {
     const runtime = quayRuntime(storage);
     runtime.dispatch('interact');
     runtime.dispatch('interact');
-    storage.removeItem('dadeto.threefold.campaign-outcomes.v1');
+    createThreefoldCampaignStorage(storage).removeItem(
+      'dadeto.threefold.campaign-outcomes.v1'
+    );
     const restored = quayRuntime(storage);
     expect(restored.getSnapshot().campaign.iriFate).toBeNull();
     expect(

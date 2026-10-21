@@ -165,10 +165,7 @@ describe('THREEFOLD Wakeform Shoals', () => {
       true
     );
     expect([...storageValues.keys()].sort()).toEqual([
-      'dadeto.threefold.simulation-save.v1',
-      'dadeto.threefold.simulation-save.v1.belltops',
-      'dadeto.threefold.simulation-save.v1.crownback-reach',
-      'dadeto.threefold.simulation-save.v1.wakeform-shoals',
+      'dadeto.threefold.campaign.v1',
     ]);
     expect(shoalsStore.load()).toEqual(diverted);
     expect(

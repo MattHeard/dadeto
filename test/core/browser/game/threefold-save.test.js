@@ -575,7 +575,7 @@ describe('THREEFOLD complete-run save codec', () => {
     expect(values.size).toBe(1);
     expect(store.clear()).toBe(true);
     expect(store.load()).toBeNull();
-    expect(values.size).toBe(0);
+    expect(values.size).toBe(1);
   });
 
   test('fails safely when complete-run storage is missing, corrupt, or throws', () => {
