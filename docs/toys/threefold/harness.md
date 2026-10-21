@@ -15,6 +15,10 @@ Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaig
 
 Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaign-clock.js src/core/browser/game/threefold/simulation.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/runtime.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-campaign-clock.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-page.test.js`. In two route runtimes sharing storage, advance time by an explicit wait and a movement action; verify the campaign clock survives a route reload and resetting one route, while each route's local elapsed time remains independent. Unsupported commands and closed episodes must not advance it, and the accessible campaign status must report elapsed game seconds without using browser time. Require 100% statements and branches for each changed core file, clean ESLint/core-parse, and zero clones.
 
+## Campaign-level Iri fate record
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaign-outcomes.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/runtime.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-campaign-outcomes.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-page.test.js`. Before recording a fate, confirm the campaign snapshot and accessible status reveal no outcome. Record `alive` at `regulator-encounter`, advance one accepted world action, then record `escaped` at `regulator-evacuation`; verify campaign elapsed seconds are attached, state survives a runtime reload, switching to Silt Margin, and resetting Broken Gate, while route saves remain independent. Verify escaped cannot revert to alive, dead is terminal, and backdated milestones are ignored. Test the `dead` accessible label and all three saved envelope outcomes. The dedicated campaign key must reject malformed or unsupported envelopes and never enter any region export. Require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
+
 ## Persistent Damage Across Chunk Loads
 
 Run `npm run check:impact:run -- --files test/core/browser/game/threefold-spatial.test.js` to verify the unloaded-chunk persistence boundary. Grow through geometry while its chunk is loaded, serialize and restore the scale state, then project a separately loaded chunk and reload the original chunk. The separate chunk stays intact, damaged geometry remains omitted at the growth and finer views, and projection leaves both source geometry and restored state unchanged.
@@ -120,7 +124,7 @@ Using the same saved ferry-loss outcomes, verify the engineer in the first passe
 
 ## Alternate Quieting evidence
 
-Without filing the Broken Gate report or revealing Iri's optional confession, discover the Tidal Archive coil-register trace, Neme's Silt Margin translation, and Pell's Weftways relay record using each route's own prerequisites. Verify each record survives its route save/export/import and does not claim a final sender, Iri's knowledge, or responsibility. Do not infer Iri's fate: the regulator encounter and explicit alive/escaped/dead state are future campaign work.
+Without filing the Broken Gate report or revealing Iri's optional confession, discover the Tidal Archive coil-register trace, Neme's Silt Margin translation, and Pell's Weftways relay record using each route's own prerequisites. Verify each record survives its route save/export/import and does not claim a final sender, Iri's knowledge, or responsibility. Do not infer Iri's fate from these records; route actions that establish the campaign-level regulator outcome remain future work.
 
 ## Weftways negotiator loss
 

@@ -1,4 +1,5 @@
 import {
+  createThreefoldCampaignOutcomesSaveStore,
   createThreefoldCampaignClockSaveStore,
   createThreefoldSimulationSaveStore,
   restoreThreefoldSimulation,
@@ -20,6 +21,10 @@ import {
   advanceThreefoldCampaignClock,
   createThreefoldCampaignClock,
 } from './campaign-clock.js';
+import {
+  createThreefoldCampaignOutcomes,
+  recordThreefoldIriFate,
+} from './campaign-outcomes.js';
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
@@ -54,6 +59,8 @@ export function createThreefoldRuntime(options = {}) {
   const save =
     opts.save || createThreefoldSimulationSaveStore(storage, scene?.id);
   const campaignClockSave = createThreefoldCampaignClockSaveStore(storage);
+  const campaignOutcomesSave =
+    createThreefoldCampaignOutcomesSaveStore(storage);
   const brokenGateCampaignState =
     scene?.id === THREEFOLD_BELLTOPS_SCENE_ID
       ? createThreefoldSimulationSaveStore(storage).load()
@@ -78,6 +85,8 @@ export function createThreefoldRuntime(options = {}) {
   let state = loadInitialState();
   let campaignClock =
     campaignClockSave.load() || createThreefoldCampaignClock();
+  let campaignOutcomes =
+    campaignOutcomesSave.load() || createThreefoldCampaignOutcomes();
   let running = false;
   let accumulator = 0;
   let tick = 0;
@@ -98,6 +107,9 @@ export function createThreefoldRuntime(options = {}) {
         ...(harborCampaign || {}),
         campaignPlaces: campaignPlaces(),
         campaignClock: { ...campaignClock },
+        campaignIriFate: campaignOutcomes.iriFate
+          ? { ...campaignOutcomes.iriFate }
+          : null,
       },
     };
   };
@@ -107,6 +119,9 @@ export function createThreefoldRuntime(options = {}) {
     campaign: {
       places: campaignPlaces(),
       clock: { ...campaignClock },
+      iriFate: campaignOutcomes.iriFate
+        ? { ...campaignOutcomes.iriFate }
+        : null,
     },
     world: {
       map: {
@@ -217,6 +232,23 @@ export function createThreefoldRuntime(options = {}) {
     return state;
   }
 
+  /**
+   * Record a story-authored Iri outcome at the current campaign milestone.
+   * @param {'alive'|'escaped'|'dead'} outcome Resolved campaign fate.
+   * @param {string} milestoneId Stable identifier for the authored event.
+   * @returns {boolean} Whether a valid outcome transition was persisted.
+   */
+  function recordIriFate(outcome, milestoneId) {
+    const next = recordThreefoldIriFate(campaignOutcomes, {
+      outcome,
+      milestoneId,
+      elapsedGameSeconds: campaignClock.elapsedGameSeconds,
+    });
+    if (JSON.stringify(next) === JSON.stringify(campaignOutcomes)) return false;
+    campaignOutcomes = next;
+    return campaignOutcomesSave.save(campaignOutcomes);
+  }
+
   return {
     start: () => setRunning(true),
     pause: () => setRunning(false),
@@ -250,6 +282,7 @@ export function createThreefoldRuntime(options = {}) {
     },
     getSnapshot: snapshot,
     getState: () => state,
+    recordIriFate,
     getJournal: () =>
       (state.episode.witnessLedger || []).map(presentThreefoldWitnessEntry),
     save() {

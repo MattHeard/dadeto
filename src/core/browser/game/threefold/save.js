@@ -66,6 +66,10 @@ import {
   restoreThreefoldCampaignClock,
   serializeThreefoldCampaignClock,
 } from './campaign-clock.js';
+import {
+  restoreThreefoldCampaignOutcomes,
+  serializeThreefoldCampaignOutcomes,
+} from './campaign-outcomes.js';
 
 const GAME_ID = 'threefold';
 const SAVE_SCHEMA_VERSION = 1;
@@ -95,6 +99,7 @@ const WEFTWAYS_SIMULATION_SAVE_KEY =
 const GRAINLANDS_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.grainlands';
 const CAMPAIGN_CLOCK_SAVE_KEY = 'dadeto.threefold.campaign-clock.v1';
+const CAMPAIGN_OUTCOMES_SAVE_KEY = 'dadeto.threefold.campaign-outcomes.v1';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -143,6 +148,20 @@ export function createThreefoldCampaignClockSaveStore(storage) {
     CAMPAIGN_CLOCK_SAVE_KEY,
     serializeThreefoldCampaignClock,
     restoreThreefoldCampaignClock
+  );
+}
+
+/**
+ * Bind explicit campaign outcomes to storage outside all route saves.
+ * @param {{getItem: (key: string) => string|null, setItem: (key: string, value: string) => void, removeItem?: (key: string) => void}|null|undefined} storage Storage boundary supplied by the caller.
+ * @returns {{load: () => {iriFate: {outcome: 'alive'|'escaped'|'dead', milestoneId: string, elapsedGameSeconds: number}|null}|null, save: (state: {iriFate: {outcome: 'alive'|'escaped'|'dead', milestoneId: string, elapsedGameSeconds: number}|null}) => boolean, clear: () => boolean}} Campaign outcome save operations.
+ */
+export function createThreefoldCampaignOutcomesSaveStore(storage) {
+  return createSaveStore(
+    storage,
+    CAMPAIGN_OUTCOMES_SAVE_KEY,
+    serializeThreefoldCampaignOutcomes,
+    restoreThreefoldCampaignOutcomes
   );
 }
 

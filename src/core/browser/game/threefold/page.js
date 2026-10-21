@@ -288,7 +288,8 @@ export function startThreefoldPage(options) {
       renderThreefoldCampaignPlaces(
         options.documentObj,
         frame.threefold?.campaignPlaces || [],
-        frame.threefold?.campaignClock?.elapsedGameSeconds ?? 0
+        frame.threefold?.campaignClock?.elapsedGameSeconds ?? 0,
+        frame.threefold?.campaignIriFate || null
       );
       renderThreefoldTestimony(
         options.documentObj,
@@ -613,22 +614,27 @@ function renderThreefoldDisclosurePanel(
  * @param {any} documentObj Standalone page document adapter.
  * @param {Array<{id: string, label: string, active: boolean}>} places Current and saved authored regions.
  * @param {number} elapsedGameSeconds Campaign-wide elapsed in-game time.
+ * @param {{outcome: 'alive'|'escaped'|'dead', milestoneId: string, elapsedGameSeconds: number}|null} iriFate Resolved Iri campaign outcome, kept hidden until discovered.
  * @returns {void}
  */
 function renderThreefoldCampaignPlaces(
   documentObj,
   places,
-  elapsedGameSeconds
+  elapsedGameSeconds,
+  iriFate
 ) {
   const panel = documentObj?.querySelector?.('#campaign-places');
   const text = documentObj?.querySelector?.('#campaign-places-text');
   const clockText = documentObj?.querySelector?.('#campaign-clock-text');
-  if (!panel || !text || !clockText) return;
+  const iriFateText = documentObj?.querySelector?.('#campaign-iri-fate-text');
+  if (!panel || !text || !clockText || !iriFateText) return;
+  iriFateText.hidden = iriFate === null;
   const safeElapsedGameSeconds =
     Number.isFinite(elapsedGameSeconds) && elapsedGameSeconds >= 0
       ? Math.floor(elapsedGameSeconds)
       : 0;
-  panel.hidden = places.length < 2 && safeElapsedGameSeconds === 0;
+  panel.hidden =
+    places.length < 2 && safeElapsedGameSeconds === 0 && iriFate === null;
   if (panel.hidden) return;
   const summary = panel.querySelector?.('summary');
   if (summary && summary.textContent !== 'Campaign status')
@@ -643,6 +649,20 @@ function renderThreefoldCampaignPlaces(
     .map(place => `${place.label} (${place.active ? 'current' : 'saved'})`)
     .join(' · ');
   if (text.textContent !== content) text.textContent = content;
+  if (iriFate !== null) {
+    const descriptions = {
+      alive: 'Iri is alive at the pressure regulator.',
+      escaped: 'Iri escaped the pressure regulator.',
+      dead: 'Iri died at the pressure regulator.',
+    };
+    const fateContent = descriptions[iriFate.outcome];
+    if (!fateContent) {
+      iriFateText.hidden = true;
+      return;
+    }
+    if (iriFateText.textContent !== fateContent)
+      iriFateText.textContent = fateContent;
+  }
 }
 
 /**

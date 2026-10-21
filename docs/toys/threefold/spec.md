@@ -65,6 +65,8 @@ The Tidal Archive coil register, Neme's Silt Margin translation, and Pell's Weft
 
 The accessible campaign status derives the current and previously saved regions from validated scene saves and reports one persisted, action-based campaign clock. That clock is separate from each route's crisis or water clock, advances only through supported in-game actions, and does not use browser wall time. Region saves remain isolated and undiscovered character outcomes stay private. The clock establishes a deterministic milestone source for later cross-region state; the regulator encounter and explicit Iri fate remain future work.
 
+The campaign outcome envelope stores Iri's authored `alive`, `escaped`, or `dead` result beside the elapsed game time and stable milestone that established it. The record is independent of every region save, survives a single-region reset, and is shown in accessible campaign status only after discovery. Escape cannot revert to alive, death is terminal, and a later milestone cannot be recorded at an earlier campaign time. The encounter and route-specific actions that establish these outcomes are still future work.
+
 ## Campaign continuity: Harrowfen ferry memorial
 
 When Belltops opens and the saved Broken Gate run records a lost ferry, show an accessible harbor memorial derived from that save. Reflect the saved passenger-group outcome without inventing names or changing the Belltops state. Hide the memorial when no valid Broken Gate save exists or the ferry survived; keep every region's save isolated and add no duplicate campaign flag.

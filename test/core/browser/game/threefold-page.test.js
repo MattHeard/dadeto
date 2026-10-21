@@ -70,6 +70,7 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
     expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
     expect(THREEFOLD_HTML).toContain('id="campaign-clock-text"');
+    expect(THREEFOLD_HTML).toContain('id="campaign-iri-fate-text"');
     expect(THREEFOLD_HTML).toContain(
       '<details id="episode-epilogue" class="witness-ledger" hidden>'
     );
@@ -544,6 +545,7 @@ describe('THREEFOLD campaign places page', () => {
       campaignPlaces,
       campaignPlacesText,
       campaignClockText,
+      campaignIriFateText,
     } = createLedgerDocument();
     startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
     const page = mockStartMosslightPage.mock.calls[0][0];
@@ -567,6 +569,71 @@ describe('THREEFOLD campaign places page', () => {
     expect(campaignPlacesText.textContent).toBe(
       'Broken Gate (current) · Silt Margin (saved)'
     );
+    expect(campaignIriFateText.hidden).toBe(true);
+
+    for (const [outcome, expected] of [
+      ['alive', 'Iri is alive at the pressure regulator.'],
+      ['escaped', 'Iri escaped the pressure regulator.'],
+      ['dead', 'Iri died at the pressure regulator.'],
+    ]) {
+      page.drawFrame(
+        {},
+        {
+          threefold: {
+            campaignPlaces: [
+              { id: 'broken-gate', label: 'Broken Gate', active: true },
+            ],
+            campaignClock: { elapsedGameSeconds: 0 },
+            campaignIriFate: {
+              outcome,
+              milestoneId: 'regulator-encounter',
+              elapsedGameSeconds: 0,
+            },
+          },
+        }
+      );
+      expect(campaignPlaces.hidden).toBe(false);
+      expect(campaignIriFateText.hidden).toBe(false);
+      expect(campaignIriFateText.textContent).toBe(expected);
+    }
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: 0 },
+          campaignIriFate: {
+            outcome: 'dead',
+            milestoneId: 'regulator-failure',
+            elapsedGameSeconds: 0,
+          },
+        },
+      }
+    );
+    expect(campaignIriFateText.textContent).toBe(
+      'Iri died at the pressure regulator.'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+          campaignClock: { elapsedGameSeconds: 0 },
+          campaignIriFate: {
+            outcome: 'unknown',
+            milestoneId: 'invalid-record',
+            elapsedGameSeconds: 0,
+          },
+        },
+      }
+    );
+    expect(campaignIriFateText.hidden).toBe(true);
 
     page.drawFrame(
       {},
@@ -593,6 +660,7 @@ describe('THREEFOLD campaign places page', () => {
       }
     );
     expect(campaignPlaces.hidden).toBe(true);
+    expect(campaignIriFateText.hidden).toBe(true);
   });
 });
 
@@ -1084,6 +1152,7 @@ function createLedgerDocument() {
   };
   const campaignPlacesText = { textContent: '' };
   const campaignClockText = { textContent: '' };
+  const campaignIriFateText = { hidden: true, textContent: '' };
   const campaignPlaces = {
     hidden: true,
     summary: { textContent: 'Old campaign places' },
@@ -1183,6 +1252,7 @@ function createLedgerDocument() {
     campaignPlaces,
     campaignPlacesText,
     campaignClockText,
+    campaignIriFateText,
     testimonyList,
     responsibility,
     iriRepairLog,
@@ -1211,6 +1281,7 @@ function createLedgerDocument() {
         if (selector === '#campaign-places') return campaignPlaces;
         if (selector === '#campaign-places-text') return campaignPlacesText;
         if (selector === '#campaign-clock-text') return campaignClockText;
+        if (selector === '#campaign-iri-fate-text') return campaignIriFateText;
         if (selector === '#testimony-accounts') return testimonyList;
         if (selector === '#testimony-responsibility') return responsibility;
         if (selector === '#iri-repair-log') return iriRepairLog;
