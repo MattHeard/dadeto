@@ -9,6 +9,7 @@ import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/gam
 import { createThreefoldWeftwaysScene } from '../../../../src/core/browser/game/threefold/weftways.js';
 import { createThreefoldGrainlandsScene } from '../../../../src/core/browser/game/threefold/grainlands.js';
 import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
+import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
 import { createThreefoldSimulationSaveStore } from '../../../../src/core/browser/game/threefold/save.js';
 
 describe('THREEFOLD handheld runtime', () => {
@@ -46,6 +47,35 @@ describe('THREEFOLD handheld runtime', () => {
       text: 'The ferry engineer remained aboard when the ferry went down; no ferry engineer is available to advise the harbor crew.',
     });
     expect(harbor.getState().episode.ferry).toBe('afloat');
+  });
+
+  test('indexes saved regions without merging their simulation state', () => {
+    const storage = createStorageAdapter();
+    createThreefoldSimulationSaveStore(storage).save(
+      createThreefoldSimulation(
+        { urgentAtMinutes: 4, surgeAtMinutes: 9, aftermathAtMinutes: 15 },
+        createBrokenGateScene()
+      )
+    );
+    const silt = createThreefoldSimulation(
+      { urgentAtMinutes: 4, surgeAtMinutes: 9, aftermathAtMinutes: 15 },
+      createThreefoldSiltMarginScene()
+    );
+    createThreefoldSimulationSaveStore(storage, 'silt-margin').save(silt);
+
+    const runtime = createThreefoldRuntime({
+      scene: createThreefoldBelltopsScene(),
+      storage,
+    });
+
+    const places = [
+      { id: 'broken-gate', label: 'Broken Gate', active: false },
+      { id: 'silt-margin', label: 'Silt Margin', active: false },
+      { id: 'belltops', label: 'Belltops', active: true },
+    ];
+    expect(runtime.getSnapshot().campaign.places).toEqual(places);
+    expect(runtime.frame().threefold.campaignPlaces).toEqual(places);
+    expect(runtime.getState().scene.id).toBe('belltops');
   });
 
   test('does not carry an unsaved or surviving ferry into the harbor', () => {

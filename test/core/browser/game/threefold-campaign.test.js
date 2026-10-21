@@ -1,6 +1,37 @@
-import { getThreefoldHarborCampaignContent } from '../../../../src/core/browser/game/threefold/campaign.js';
+import {
+  getThreefoldCampaignPlaces,
+  getThreefoldHarborCampaignContent,
+} from '../../../../src/core/browser/game/threefold/campaign.js';
 
 describe('THREEFOLD campaign continuity', () => {
+  test('indexes the active and valid saved regions in authored order', () => {
+    expect(
+      getThreefoldCampaignPlaces(
+        {
+          'silt-margin': { scene: { id: 'silt-margin' } },
+          weftways: { scene: { id: 'grainlands' } },
+          belltops: null,
+        },
+        'belltops'
+      )
+    ).toEqual([
+      { id: 'silt-margin', label: 'Silt Margin', active: false },
+      { id: 'belltops', label: 'Belltops', active: true },
+    ]);
+  });
+
+  test('does not infer visits from unknown or mismatched scene records', () => {
+    expect(
+      getThreefoldCampaignPlaces(
+        {
+          weftways: { scene: { id: 'grainlands' } },
+          custom: { scene: { id: 'custom' } },
+        },
+        'unlisted'
+      )
+    ).toEqual([]);
+  });
+
   test.each([
     [
       'evacuated',

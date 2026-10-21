@@ -63,6 +63,8 @@ When the optional watchkeeper lead is recorded and Mara files the report at the 
 
 The Tidal Archive coil register, Neme's Silt Margin translation, and Pell's Weftways relay record are independent evidence routes. Each remains discoverable without filing the Broken Gate report or revealing Iri's optional confession, and each keeps its own route save. This provides the alternate-investigation foundation when Iri's account is unavailable. The explicit regulator encounter and Iri outcomes (alive, escaped, or dead) are not yet represented in the current campaign state; once introduced, cover those states against each surviving evidence route.
 
+The accessible campaign places index derives the current and previously saved regions from validated scene saves. It provides a read-only campaign overview while leaving route state isolated and undiscovered character outcomes private. This index is navigation/progress continuity only; the broader shared campaign state and explicit Iri fate remain future work.
+
 ## Campaign continuity: Harrowfen ferry memorial
 
 When Belltops opens and the saved Broken Gate run records a lost ferry, show an accessible harbor memorial derived from that save. Reflect the saved passenger-group outcome without inventing names or changing the Belltops state. Hide the memorial when no valid Broken Gate save exists or the ferry survived; keep every region's save isolated and add no duplicate campaign flag.

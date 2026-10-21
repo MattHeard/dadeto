@@ -7,6 +7,10 @@
 3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, `/threefold/?scene=crownback-reach` for the +3 Crownback encounter, or `/threefold/?scene=shoals` for the offshore +4 intervention.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
+## Saved-region campaign index
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaign.js src/core/browser/game/threefold/runtime.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-campaign.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-page.test.js`. Save separate runs in two regions, then open a third region. Verify the accessible campaign places disclosure lists the active region and only valid saved regions in authored order, and that `getSnapshot().campaign.places` returns the same data. Corrupt or mismatched route saves must be omitted. The index must not merge saves or disclose outcomes that the player has not learned. Require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
+
 ## Persistent Damage Across Chunk Loads
 
 Run `npm run check:impact:run -- --files test/core/browser/game/threefold-spatial.test.js` to verify the unloaded-chunk persistence boundary. Grow through geometry while its chunk is loaded, serialize and restore the scale state, then project a separately loaded chunk and reload the original chunk. The separate chunk stays intact, damaged geometry remains omitted at the growth and finer views, and projection leaves both source geometry and restored state unchanged.

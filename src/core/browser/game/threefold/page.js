@@ -285,6 +285,10 @@ export function startThreefoldPage(options) {
         options.documentObj,
         frame.threefold?.witnessLedger || []
       );
+      renderThreefoldCampaignPlaces(
+        options.documentObj,
+        frame.threefold?.campaignPlaces || []
+      );
       renderThreefoldTestimony(
         options.documentObj,
         frame.threefold?.testimony || null
@@ -601,6 +605,27 @@ function renderThreefoldDisclosurePanel(
   if (summary && summary.textContent !== record.title)
     summary.textContent = record.title;
   if (text.textContent !== record.text) text.textContent = record.text;
+}
+
+/**
+ * Show a compact index of the current and saved regions.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {Array<{id: string, label: string, active: boolean}>} places Current and saved authored regions.
+ * @returns {void}
+ */
+function renderThreefoldCampaignPlaces(documentObj, places) {
+  const panel = documentObj?.querySelector?.('#campaign-places');
+  const text = documentObj?.querySelector?.('#campaign-places-text');
+  if (!panel || !text) return;
+  panel.hidden = places.length < 2;
+  if (places.length < 2) return;
+  const summary = panel.querySelector?.('summary');
+  if (summary && summary.textContent !== 'Places in this campaign')
+    summary.textContent = 'Places in this campaign';
+  const content = places
+    .map(place => `${place.label} (${place.active ? 'current' : 'saved'})`)
+    .join(' · ');
+  if (text.textContent !== content) text.textContent = content;
 }
 
 /**

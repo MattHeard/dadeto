@@ -531,6 +531,62 @@ describe('THREEFOLD page adapter', () => {
   });
 });
 
+describe('THREEFOLD campaign places page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows multiple regions and hides the index for one current region', () => {
+    const { documentObj, campaignPlaces, campaignPlacesText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+            { id: 'silt-margin', label: 'Silt Margin', active: false },
+          ],
+        },
+      }
+    );
+
+    expect(campaignPlaces.hidden).toBe(false);
+    expect(campaignPlaces.summary.textContent).toBe('Places in this campaign');
+    expect(campaignPlacesText.textContent).toBe(
+      'Broken Gate (current) · Silt Margin (saved)'
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+            { id: 'silt-margin', label: 'Silt Margin', active: false },
+          ],
+        },
+      }
+    );
+
+    page.drawFrame(
+      {},
+      {
+        threefold: {
+          campaignPlaces: [
+            { id: 'broken-gate', label: 'Broken Gate', active: true },
+          ],
+        },
+      }
+    );
+    expect(campaignPlaces.hidden).toBe(true);
+  });
+});
+
 describe('THREEFOLD Silt Margin evidence page', () => {
   beforeEach(() => {
     mockStartMosslightPage.mockClear();
@@ -1017,6 +1073,13 @@ function createLedgerDocument() {
       this.children.push(node);
     },
   };
+  const campaignPlacesText = { textContent: '' };
+  const campaignPlaces = {
+    hidden: true,
+    summary: { textContent: 'Old campaign places' },
+    querySelector: selector =>
+      selector === 'summary' ? campaignPlaces.summary : null,
+  };
   const testimonyList = {
     children: [],
     replaceChildren() {
@@ -1107,6 +1170,8 @@ function createLedgerDocument() {
   };
   return {
     list,
+    campaignPlaces,
+    campaignPlacesText,
     testimonyList,
     responsibility,
     iriRepairLog,
@@ -1132,6 +1197,8 @@ function createLedgerDocument() {
     documentObj: {
       querySelector: selector => {
         if (selector === '#witness-ledger-entries') return list;
+        if (selector === '#campaign-places') return campaignPlaces;
+        if (selector === '#campaign-places-text') return campaignPlacesText;
         if (selector === '#testimony-accounts') return testimonyList;
         if (selector === '#testimony-responsibility') return responsibility;
         if (selector === '#iri-repair-log') return iriRepairLog;

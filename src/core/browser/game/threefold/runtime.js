@@ -18,7 +18,11 @@ import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import { THREEFOLD_BELLTOPS_SCENE_ID } from './belltops.js';
-import { getThreefoldHarborCampaignContent } from './campaign.js';
+import {
+  getThreefoldCampaignPlaces,
+  getThreefoldHarborCampaignContent,
+  THREEFOLD_CAMPAIGN_SCENE_IDS,
+} from './campaign.js';
 
 const CRISIS_THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -50,6 +54,14 @@ export function createThreefoldRuntime(options = {}) {
   const harborCampaign = getThreefoldHarborCampaignContent(
     brokenGateCampaignState
   );
+  const savedCampaignRuns = Object.fromEntries(
+    THREEFOLD_CAMPAIGN_SCENE_IDS.filter(
+      sceneId => sceneId !== (scene?.id || 'broken-gate')
+    ).map(sceneId => [
+      sceneId,
+      createThreefoldSimulationSaveStore(storage, sceneId).load(),
+    ])
+  );
   const loadInitialState = () => {
     const restored = save.load?.();
     return restored?.scene.id === (scene?.id || 'broken-gate')
@@ -62,18 +74,27 @@ export function createThreefoldRuntime(options = {}) {
   let tick = 0;
   let previousActions = new Set();
 
+  const campaignPlaces = () =>
+    getThreefoldCampaignPlaces(
+      { ...savedCampaignRuns, [state.scene.id]: state },
+      state.scene.id
+    );
+
   const frame = () => {
     const rendered = renderThreefoldFrame(state);
-    return harborCampaign
-      ? {
-          ...rendered,
-          threefold: { ...rendered.threefold, ...harborCampaign },
-        }
-      : rendered;
+    return {
+      ...rendered,
+      threefold: {
+        ...rendered.threefold,
+        ...(harborCampaign || {}),
+        campaignPlaces: campaignPlaces(),
+      },
+    };
   };
   const snapshot = () => ({
     ...state,
     tick,
+    campaign: { places: campaignPlaces() },
     world: {
       map: {
         name:

@@ -4,6 +4,8 @@
 
 Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), visit Hearthgaps, Weftways, and Grainlands, then continue to the Silt Margin, Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
 
+After you have a saved run in more than one region, the accessible “Places in this campaign” panel lists the current region and the other regions with valid saves. It is derived from the separate region saves; it does not combine them or reveal undiscovered outcomes.
+
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
 ## Input
