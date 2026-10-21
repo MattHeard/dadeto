@@ -8,6 +8,7 @@ import { createThreefoldSiltMarginScene } from './silt-margin.js';
 import { createThreefoldBelltopsScene } from './belltops.js';
 import { createThreefoldCrownbackReachScene } from './crownback-reach.js';
 import { createThreefoldWakeformShoalsScene } from './wakeform-shoals.js';
+import { createThreefoldHearthgapsScene } from './hearthgaps.js';
 import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
@@ -57,6 +58,29 @@ const SILT_MARGIN_PAGE_COPY = {
   href: '/threefold/?scene=lantern-ward',
   ariaLabel:
     'Guide the guardian, open the fine valve, or send the Choir signal',
+};
+const HEARTHGAPS_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'Hearthgaps'],
+    ['#chapter-tag', 'SMALL WORLD · HEARTHGAPS'],
+    ['#chapter-eyebrow', 'THE LATCHFOLK CULVERTS'],
+    ['#chapter-heading', 'Choose whose homes the runoff reaches.'],
+    [
+      '#chapter-description',
+      'At scale −1 (60.96 cm), Brin can divert the culvert to protect the ' +
+        'Latchfolk homes and flood the downstream settlement, or open the ' +
+        'shared bypass and let the water reach Brin’s homes instead. Move to ' +
+        'either control before pressing E; the choice and flood damage persist.',
+    ],
+    ['#scene-link', 'Return to the Tidal Archive'],
+    [
+      '#game-footer',
+      'Movement and runoff choices advance 15 seconds of explicit game time.',
+    ],
+  ]),
+  href: '/threefold/?scene=sluice',
+  ariaLabel: 'Choose the Brin diversion or shared runoff bypass',
+  interactionLabel: 'CHOOSE RUNOFF',
 };
 /** @type {Array<[string, string]>} */
 const HIGH_WORLD_CONTROL_UPDATES = [
@@ -166,6 +190,8 @@ export function startThreefoldPage(options) {
     configureSluicePage(options.documentObj);
   else if (scene?.id === 'silt-margin')
     configureSiltMarginPage(options.documentObj);
+  else if (scene?.id === 'hearthgaps')
+    configureHighWorldPage(options.documentObj, HEARTHGAPS_PAGE_COPY);
   else if (scene?.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID)
     configureHighWorldPage(options.documentObj, LANTERN_WARD_PAGE_COPY);
   else if (scene?.id === 'belltops')
@@ -208,7 +234,7 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
@@ -216,6 +242,7 @@ function sceneFromLocation(windowObj) {
   const sceneId = new URLSearchParams(search).get('scene');
   if (sceneId === 'sluice') return createThreefoldSluiceScene();
   if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
+  if (sceneId === 'hearthgaps') return createThreefoldHearthgapsScene();
   if (sceneId === 'lantern-ward')
     return lanternWard.createThreefoldLanternWardScene();
   if (sceneId === 'belltops') return createThreefoldBelltopsScene();
@@ -283,6 +310,8 @@ function configureAlternateScenePage(documentObj, copy) {
   if (witnessLedger) witnessLedger.hidden = true;
   const testimony = documentObj?.querySelector?.('#testimony');
   if (testimony) testimony.hidden = true;
+  const hearthgapsEntry = documentObj?.querySelector?.('#hearthgaps-entry');
+  if (hearthgapsEntry) hearthgapsEntry.hidden = true;
 }
 
 /**

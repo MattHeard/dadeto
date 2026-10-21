@@ -85,6 +85,12 @@ The dew channel blocks the walkable route. Mara can stay at scale −4, reach th
 
 The Silt Margin saves its branch, conserved water state, and elapsed seconds in schema v2 under a key separate from both the Broken Gate and Tidal Archive. Schema-v1 saves migrate, and export/import uses the same scene-specific codec.
 
+## Hearthgaps
+
+From the Broken Gate page, open [/threefold/?scene=hearthgaps](/threefold/?scene=hearthgaps). Mara starts among the culverts at scale −1 (60.96 cm). Move within reach of Brin's runoff gate and press E to divert the flow: Brin's homes stay dry and the downstream homes flood. Move to the far control and press E to open the shared bypass instead: downstream homes stay dry and Brin's homes flood. Only the first reachable choice takes effect; the flood damage is visible and stays with this route's save. Growing through a home still damages that structure under the ordinary scale rules.
+
+The route uses the same 160 × 144 Mosslight renderer and eight-pixel grid. Movement and the choice advance 15 seconds of game time; X waits the requested duration, and browser time does not advance the simulation. The branch, physical home damage, and elapsed seconds roundtrip in schema v1 under a storage key isolated from Broken Gate and the other routes. Hearthgaps actions do not advance Broken Gate's crisis or episode outcomes.
+
 ## Lantern Ward
 
 Continue from the Silt Margin to open [/threefold/?scene=lantern-ward](/threefold/?scene=lantern-ward). Mara starts at scale +3 with +4 unlocked. The 160 × 144 Mosslight screen previews both canal homes and the glassworks, as well as Mira and Tov, before A grows. A remains growth and commits the displayed building damage and resident losses; B shrinks to +2. The district has its own elapsed game time and does not advance Broken Gate's crisis or episode outcomes.

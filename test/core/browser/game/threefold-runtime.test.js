@@ -5,8 +5,24 @@ import {
 } from '../../../../src/core/browser/game/threefold/simulation.js';
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
+import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/game/threefold/hearthgaps.js';
 
 describe('THREEFOLD handheld runtime', () => {
+  test('keeps Hearthgaps snapshot time on its isolated region clock', () => {
+    const runtime = createThreefoldRuntime({
+      scene: createThreefoldHearthgapsScene(),
+      storage: new Map(),
+    });
+
+    expect(runtime.getSnapshot().world).toMatchObject({
+      map: { name: 'HEARTHGAPS' },
+      time: 0,
+    });
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 2 });
+    expect(runtime.getSnapshot().world.time).toBe(2 / 60);
+    expect(runtime.getState().crisis.elapsedMinutes).toBe(0);
+  });
+
   test('maps A to fight and X to bypass when the rat is in reach', () => {
     const runtime = createThreefoldRuntime(new Map());
     runtime.start();

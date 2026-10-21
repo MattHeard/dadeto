@@ -15,6 +15,7 @@ import * as belltops from './belltops.js';
 import * as crownbackReach from './crownback-reach.js';
 import * as lanternWard from './lantern-ward.js';
 import * as wakeformShoals from './wakeform-shoals.js';
+import * as hearthgaps from './hearthgaps.js';
 import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
@@ -64,12 +65,13 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /** @typedef {{scene: ReturnType<typeof createBrokenGateScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>}} BrokenGateSimulationState */
 /** @typedef {{scene: ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, sluicePuzzle: ReturnType<typeof createThreefoldSluicePuzzle>, elapsedGameSeconds: number}} SluiceSimulationState */
 /** @typedef {{scene: ReturnType<typeof createThreefoldSiltMarginScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, siltMargin: ReturnType<typeof createThreefoldSiltMarginState>, elapsedGameSeconds: number}} SiltMarginSimulationState */
+/** @typedef {{scene: ReturnType<typeof hearthgaps.createThreefoldHearthgapsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, hearthgaps: ReturnType<typeof hearthgaps.createThreefoldHearthgapsState>, elapsedGameSeconds: number}} HearthgapsSimulationState */
 /** @typedef {{scene: ReturnType<typeof lanternWard.createThreefoldLanternWardScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} LanternWardSimulationState */
 /** @typedef {{scene: ReturnType<typeof belltops.createThreefoldBelltopsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} BelltopsSimulationState */
 /** @typedef {{scene: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, crownbackReach: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachState>, elapsedGameSeconds: number}} CrownbackReachSimulationState */
 /** @typedef {{scene: ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, wakeformShoals: ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsState>, elapsedGameSeconds: number}} WakeformShoalsSimulationState */
 /** @typedef {LanternWardSimulationState|BelltopsSimulationState|CrownbackReachSimulationState|WakeformShoalsSimulationState} HighWorldSimulationState */
-/** @typedef {BrokenGateSimulationState|SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} ThreefoldSimulationState */
+/** @typedef {BrokenGateSimulationState|SluiceSimulationState|SiltMarginSimulationState|HearthgapsSimulationState|HighWorldSimulationState} ThreefoldSimulationState */
 /** @typedef {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} ThreefoldCrisisThresholds */
 /** @typedef {{type: string, direction?: string, elapsedGameMinutes?: number, preActionFrame?: Record<string, any>}} ThreefoldWorldAction */
 
@@ -119,12 +121,12 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /**
  * @overload
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>|ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof hearthgaps.createThreefoldHearthgapsScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>|ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial state for either authored scene.
  */
 /**
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>|ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof hearthgaps.createThreefoldHearthgapsScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>|ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial player, world, crisis, episode, and encounter state.
  */
 export function createThreefoldSimulation(
@@ -139,6 +141,7 @@ export function createThreefoldSimulation(
       includeTestimony:
         scene.id !== THREEFOLD_SLUICE_SCENE_ID &&
         scene.id !== THREEFOLD_SILT_MARGIN_SCENE_ID &&
+        scene.id !== hearthgaps.THREEFOLD_HEARTHGAPS_SCENE_ID &&
         !isThreefoldHighWorldSceneId(scene.id),
     }),
     encounter: createThreefoldEncounter(),
@@ -154,6 +157,13 @@ export function createThreefoldSimulation(
     return /** @type {SiltMarginSimulationState} */ ({
       ...state,
       siltMargin: createThreefoldSiltMarginState(),
+      elapsedGameSeconds: 0,
+    });
+  }
+  if (scene.id === hearthgaps.THREEFOLD_HEARTHGAPS_SCENE_ID) {
+    return /** @type {HearthgapsSimulationState} */ ({
+      ...state,
+      hearthgaps: hearthgaps.createThreefoldHearthgapsState(),
       elapsedGameSeconds: 0,
     });
   }
@@ -267,6 +277,8 @@ function stepThreefoldAction(state, action) {
   if (action.type === 'menu' || action.type === 'pause') return state;
   if (isHighWorldSimulationState(state))
     return stepHighWorldScene(state, action);
+  if (isHearthgapsSimulationState(state))
+    return stepHearthgapsScene(state, action);
   if (isSiltMarginSimulationState(state))
     return stepSiltMarginScene(state, action);
   if (isSluiceSimulationState(state)) return stepSluiceScene(state, action);
@@ -582,6 +594,47 @@ function stepSiltMarginScene(state, action) {
 }
 
 /**
+ * Apply a reachable, one-time runoff choice and preserve its flood damage.
+ * @param {HearthgapsSimulationState} state Current Hearthgaps settlement.
+ * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
+ * @returns {HearthgapsSimulationState} Updated settlement state.
+ */
+function stepHearthgapsScene(state, action) {
+  return /** @type {HearthgapsSimulationState} */ (
+    commitSmallWorldSceneAction(state, action, () => {
+      if (
+        action.type !== 'interact' ||
+        state.hearthgaps.runoffChoice !== 'undecided'
+      )
+        return {};
+      if (
+        isThreefoldInteractableInReach(
+          state,
+          hearthgaps.THREEFOLD_HEARTHGAPS_BRIN_GATE_ID
+        )
+      )
+        return {
+          hearthgaps: hearthgaps.normalizeThreefoldHearthgapsState({
+            runoffChoice: 'brin-diversion',
+          }),
+        };
+      if (
+        isThreefoldInteractableInReach(
+          state,
+          hearthgaps.THREEFOLD_HEARTHGAPS_SHARED_BYPASS_ID
+        )
+      )
+        return {
+          hearthgaps: hearthgaps.normalizeThreefoldHearthgapsState({
+            runoffChoice: 'shared-bypass',
+          }),
+        };
+      return {};
+    })
+  );
+}
+
+/**
  * Apply high-world movement and scale changes without invoking Broken Gate
  * episode or crisis consequences. Resident fates are recorded from the same
  * overlap preview used by the handheld warning.
@@ -652,10 +705,10 @@ function stepHighWorldScene(state, action) {
 
 /**
  * Resolve and commit one small-world action with scene-specific state changes.
- * @param {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} state Current region.
+ * @param {SluiceSimulationState|SiltMarginSimulationState|HearthgapsSimulationState|HighWorldSimulationState} state Current region.
  * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
  * @param {(prepared: {durationSeconds: number, player: ReturnType<typeof import('./spatial.js').createScaleState>, geometryIds: string[], creatureIds: string[]}) => Record<string, any>} updateScene Region-specific consequences.
- * @returns {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} Updated scene or the original for unsupported actions.
+ * @returns {SluiceSimulationState|SiltMarginSimulationState|HearthgapsSimulationState|HighWorldSimulationState} Updated scene or the original for unsupported actions.
  */
 function commitSmallWorldSceneAction(state, action, updateScene) {
   const durationSeconds = smallWorldActionDurationSeconds(action);
@@ -676,7 +729,7 @@ function commitSmallWorldSceneAction(state, action, updateScene) {
 
 /**
  * Apply shared movement and scale changes for a small-world scene.
- * @param {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} state Current scene.
+ * @param {SluiceSimulationState|SiltMarginSimulationState|HearthgapsSimulationState|HighWorldSimulationState} state Current scene.
  * @param {{type: string, direction?: string}} action Player command.
  * @returns {ReturnType<typeof import('./spatial.js').createScaleState>} Updated player.
  */
@@ -737,11 +790,11 @@ function recoverSmallWorldAnchor(player, elapsedGameSeconds) {
 
 /**
  * Commit a small-world action with shared Anchor recovery and elapsed seconds.
- * @param {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} state Prior scene state.
+ * @param {SluiceSimulationState|SiltMarginSimulationState|HearthgapsSimulationState|HighWorldSimulationState} state Prior scene state.
  * @param {ReturnType<typeof import('./spatial.js').createScaleState>} player Action result.
  * @param {number} durationSeconds Explicit game-time cost.
  * @param {Record<string, any>} sceneChanges Scene-specific state changes.
- * @returns {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} Updated scene state.
+ * @returns {SluiceSimulationState|SiltMarginSimulationState|HearthgapsSimulationState|HighWorldSimulationState} Updated scene state.
  */
 function commitSmallWorldAction(state, player, durationSeconds, sceneChanges) {
   return {
@@ -844,6 +897,15 @@ export function isSluiceSimulationState(state) {
  */
 export function isSiltMarginSimulationState(state) {
   return state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID;
+}
+
+/**
+ * Narrow a simulation by its authored Hearthgaps region discriminator.
+ * @param {ThreefoldSimulationState} state Current simulation.
+ * @returns {state is HearthgapsSimulationState} Whether the state owns runoff and flood outcomes.
+ */
+export function isHearthgapsSimulationState(state) {
+  return state.scene.id === hearthgaps.THREEFOLD_HEARTHGAPS_SCENE_ID;
 }
 
 /**

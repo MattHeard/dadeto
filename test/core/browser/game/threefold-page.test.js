@@ -60,6 +60,7 @@ describe('THREEFOLD page adapter', () => {
       'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
     );
     expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
+    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
   });
 
   test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
@@ -461,6 +462,10 @@ describe('THREEFOLD page adapter', () => {
     expect(elements.get('#testimony').hidden).toBe(true);
   });
 
+  test('selects the Hearthgaps route and labels its reachable runoff choice', () => {
+    assertHearthgapsRoute();
+  });
+
   test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
     startThreefoldPage({
       documentObj: { querySelector: () => null },
@@ -485,6 +490,56 @@ describe('THREEFOLD page adapter', () => {
     ).toBe('small-world-sluice');
   });
 });
+
+/** Verify the route query, page copy, action label, and authored spawn together. */
+function assertHearthgapsRoute() {
+  const selectors = [
+    '#chapter-subtitle',
+    '#chapter-tag',
+    '#chapter-eyebrow',
+    '#chapter-heading',
+    '#chapter-description',
+    '#interact-label',
+    '#a-control-label',
+    '#b-control-label',
+    '#e-control-label',
+    '#scene-link',
+    '#game-footer',
+    '#interact-control',
+    '#witness-ledger',
+    '#testimony',
+    '#hearthgaps-entry',
+  ];
+  const elements = new Map(
+    selectors.map(selector => [selector, { setAttribute: jest.fn() }])
+  );
+  const documentObj = { querySelector: selector => elements.get(selector) };
+  const windowObj = {
+    location: { search: '?scene=hearthgaps' },
+    localStorage: {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    },
+  };
+  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const state = page.createRuntime({ env: new Map() }).getState();
+
+  expect(state.scene.id).toBe('hearthgaps');
+  expect(state.player.scale).toBe(-1);
+  expect(elements.get('#chapter-subtitle').textContent).toBe('Hearthgaps');
+  expect(elements.get('#chapter-description').textContent).toContain(
+    'downstream settlement'
+  );
+  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=sluice');
+  expect(elements.get('#e-control-label').textContent).toBe('CHOOSE RUNOFF');
+  expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
+    'aria-label',
+    'Choose the Brin diversion or shared runoff bypass'
+  );
+  expect(elements.get('#hearthgaps-entry').hidden).toBe(true);
+}
 
 /**
  * Create the minimum DOM surface used by the text-only ledger and testimony renderers.

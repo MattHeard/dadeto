@@ -16,6 +16,10 @@ import {
   THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID,
   THREEFOLD_SILT_MARGIN_SIGNAL_ID,
 } from './silt-margin.js';
+import {
+  THREEFOLD_HEARTHGAPS_BRIN_HOME_ID,
+  THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
+} from './hearthgaps.js';
 import { getThreefoldSiltMarginWaterStatus } from './silt-margin-water.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
@@ -23,6 +27,7 @@ import { presentThreefoldTestimony } from './testimony.js';
 import {
   isSluiceSimulationState,
   isSiltMarginSimulationState,
+  isHearthgapsSimulationState,
   isHighWorldSimulationState,
   previewThreefoldGrowthEffects,
 } from './simulation.js';
@@ -55,6 +60,8 @@ export function renderThreefoldFrame(state) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
   if (isSiltMarginSimulationState(state))
     return renderThreefoldSiltMarginFrame(state);
+  if (isHearthgapsSimulationState(state))
+    return renderThreefoldHearthgapsFrame(state);
   const isHighWorld = isHighWorldSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
   const gateOutcome = isHighWorld
@@ -378,6 +385,143 @@ function renderThreefoldSiltMarginFrame(state) {
     signalId: THREEFOLD_SILT_MARGIN_SIGNAL_ID,
     witnessLedger: [],
   });
+}
+
+/**
+ * Render the Latchfolk runoff choice through Mosslight's shared handheld frame.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'hearthgaps'}}>} state Current Hearthgaps simulation.
+ * @returns {Record<string, any>} Snapped pixel frame and route metadata.
+ */
+function renderThreefoldHearthgapsFrame(state) {
+  const { runoffChoice, floodedHomeIds } = state.hearthgaps;
+  const heightMeters = heightAtScale(state.player.scale);
+  const growth = previewThreefoldGrowthEffects(state);
+  const brinFlooded = floodedHomeIds.includes(
+    THREEFOLD_HEARTHGAPS_BRIN_HOME_ID
+  );
+  const downstreamFlooded = floodedHomeIds.includes(
+    THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID
+  );
+  const brinDamaged = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_HEARTHGAPS_BRIN_HOME_ID
+  );
+  const downstreamDamaged = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID
+  );
+  const flowRight = runoffChoice === 'brin-diversion';
+  const flowLeft = runoffChoice === 'shared-bypass';
+  const status =
+    runoffChoice === 'brin-diversion'
+      ? "Brin's homes stay dry; downstream homes flood."
+      : runoffChoice === 'shared-bypass'
+        ? "Brin's homes flood; downstream homes stay dry."
+        : 'Choose where to send the culvert runoff.';
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 1.2) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.4 - state.player.position.y) / 0.4) * 72
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'HEARTHGAPS',
+      state.elapsedGameSeconds,
+      { x: 7, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'Hearthgaps';
+  frame.toast = status;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'HEARTHGAPS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    createThreefoldRectShape([24, 68, 112, 8], '#526e4b'),
+    createThreefoldRectShape([40, 60, 80, 8], '#526e4b'),
+    ...[48, 64, 80, 96].map(x =>
+      createThreefoldRectShape([x, 68, 8, 8], '#25a9b8')
+    ),
+    ...(flowRight
+      ? [112, 120].map(x => createThreefoldRectShape([x, 68, 8, 8], '#25a9b8'))
+      : []),
+    ...(flowLeft
+      ? [32, 40].map(x => createThreefoldRectShape([x, 68, 8, 8], '#25a9b8'))
+      : []),
+    ...hearthgapsHomeShapes(
+      { x: 16, y: 52 },
+      brinFlooded,
+      brinDamaged,
+      growth.geometryIds.includes(THREEFOLD_HEARTHGAPS_BRIN_HOME_ID)
+    ),
+    ...hearthgapsHomeShapes(
+      { x: 128, y: 52 },
+      downstreamFlooded,
+      downstreamDamaged,
+      growth.geometryIds.includes(THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID)
+    ),
+    createThreefoldRectShape([24, 76, 8, 8], '#d28b69'),
+    createThreefoldRectShape([24, 68, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([32, 76, 8, 8], '#b46b55'),
+    createThreefoldRectShape([16, 84, 24, 8], '#182f36'),
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      runoffChoice === 'brin-diversion'
+        ? 'BRIN SAFE · DOWNSTREAM FLOODS'
+        : runoffChoice === 'shared-bypass'
+          ? 'BRIN FLOODS · DOWNSTREAM SAFE'
+          : 'CHOOSE WHICH HOMES FLOOD'
+    ),
+    captionShape({ x: 8, y: 136 }, 'MOVE · E CHOOSE · A GROW · B SHRINK'),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters,
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    runoffChoice,
+    floodedHomeIds: [...floodedHomeIds],
+    growthPreviewGeometryIds: growth.geometryIds,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Draw one intact, flooded, damaged, or growth-threatened Latchfolk home.
+ * @param {{x: number, y: number}} origin Home's grid-aligned canvas origin.
+ * @param {boolean} flooded Whether runoff has submerged the home.
+ * @param {boolean} damaged Whether committed growth damaged its geometry.
+ * @param {boolean} threatened Whether the next scale rung overlaps it.
+ * @returns {ThreefoldSpriteShape[]} Grid-aligned home and flood shapes.
+ */
+function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
+  const wall = damaged ? '#526e4b' : threatened ? '#e16b5a' : '#bfd77c';
+  const roof = damaged ? '#526e4b' : threatened ? '#e16b5a' : '#d28b69';
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 24, 8], roof),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], roof),
+    createThreefoldRectShape([origin.x + 8, origin.y + 8, 8, 16], wall),
+    createThreefoldRectShape([origin.x, origin.y + 24, 24, 8], '#182f36'),
+    ...(flooded
+      ? [
+          createThreefoldRectShape(
+            [origin.x - 8, origin.y + 16, 40, 8],
+            '#25a9b8'
+          ),
+        ]
+      : []),
+  ];
 }
 
 /**

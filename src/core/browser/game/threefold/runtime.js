@@ -5,6 +5,7 @@ import {
 } from './save.js';
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
 import { THREEFOLD_SILT_MARGIN_SCENE_ID } from './silt-margin.js';
+import { THREEFOLD_HEARTHGAPS_SCENE_ID } from './hearthgaps.js';
 import {
   createThreefoldSimulation,
   isHighWorldSimulationState,
@@ -64,9 +65,11 @@ export function createThreefoldRuntime(options = {}) {
             ? 'THE TIDAL ARCHIVE'
             : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
               ? 'THE SILT MARGIN'
-              : isHighWorldSimulationState(state)
-                ? state.scene.displayName.replace(/^The /, '').toUpperCase()
-                : 'THE BROKEN GATE',
+              : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
+                ? 'HEARTHGAPS'
+                : isHighWorldSimulationState(state)
+                  ? state.scene.displayName.replace(/^The /, '').toUpperCase()
+                  : 'THE BROKEN GATE',
       },
       day: 1,
       time:
@@ -74,9 +77,11 @@ export function createThreefoldRuntime(options = {}) {
           ? state.elapsedGameSeconds / 3600
           : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
             ? state.elapsedGameSeconds / 3600
-            : isHighWorldSimulationState(state)
+            : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
               ? state.elapsedGameSeconds / 3600
-              : state.crisis.elapsedMinutes / 60,
+              : isHighWorldSimulationState(state)
+                ? state.elapsedGameSeconds / 3600
+                : state.crisis.elapsedMinutes / 60,
     },
   });
 
