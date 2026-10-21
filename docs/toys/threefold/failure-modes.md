@@ -29,6 +29,7 @@
 - Grid presentation regression: any rendered THREEFOLD canvas shape has a non-eight-pixel origin or size, CSS control placement drifts from the eight-pixel page grid, scale changes disappear after display quantization, or rendering changes physical simulation state.
 - Witness-ledger regression: the recorded pre-action preview differs from the visible frame, an event claims an unselected operation or unsupported motive, observation or repair loses its breach link, legacy saves fail to default to an empty ledger, or accessible output scores a choice.
 - Ferry-search regression: the wreck search appears before aftermath, out of reach, for an afloat ferry, after closure, or in another scene; it duplicates the observation, contradicts saved passenger outcomes, changes a death/rescue result, disappears after import, or becomes required for report/departure.
+- Latchfolk-aid regression: shelter aid appears before aftermath, out of reach, for lost residents, when the homes stayed dry, after closure, or in another scene; it duplicates the ledger record, misstates flooded/receded housing, changes any saved fate, disappears after import, or becomes required for report/departure.
 - Testimony regression: the dock worker and watchkeeper accounts lose their speaker/source attribution, conflict is collapsed into a factual event or player intention, imported save text replaces an authored statement, sluice saves acquire Broken Gate testimony, or the unresolved warning-relay responsibility is assigned a verdict without evidence.
 
 ## Detection Signals

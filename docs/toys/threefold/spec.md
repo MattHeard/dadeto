@@ -46,6 +46,10 @@ Compose pure simulation state with the existing Mosslight handheld renderer, bro
 
 After the crisis reaches aftermath and before the episode closes, Mara may interact in reach with the surviving Latchfolk watchkeeper. The watchkeeper can share one optional, uncertain lead about a faint relay call asking for Iri. Record the conversation as a witness-ledger observation so it survives save/export/import; do not add a separate clue flag. The lead does not establish who sent the call or what Iri knew, and it does not gate either report or road-departure closure. The interaction is unavailable before aftermath, out of reach, when the watchkeeper is lost or unwarned, and after closure. The episode still ends if the player never finds this lead.
 
+## Optional aid for displaced Latchfolk
+
+If the forced-open gate floods the lower homes and the warned Latchfolk survive, Mara may help the watchkeeper arrange temporary shelter during aftermath. Record this as one optional witness-ledger observation, with no new saved flag. Its accessible journal text must distinguish homes that remain flooded from homes that drained after a late gate repair, while acknowledging damage remains. Do not change resident, passenger, gate, or channel outcomes. Keep the action out of reach, before aftermath, when residents are lost, when a pre-surge repair kept homes dry, after closure, and in other scenes. Repeats must not duplicate the record, and report/departure must remain available without it.
+
 ## Dependencies
 
 - Internal dependencies: THREEFOLD simulation, crisis clock, scene, renderer and save codec; Mosslight page presenter, pixel renderer and input adapters.

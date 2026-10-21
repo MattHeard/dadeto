@@ -2,6 +2,7 @@ import { createRectShapeFromBounds } from '../../canvasShapes.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import {
+  canHelpThreefoldDisplacedLatchfolk,
   canHearThreefoldLatchfolkLead,
   canSearchThreefoldFerryWreck,
   THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
@@ -227,6 +228,12 @@ export function renderThreefoldFrame(state) {
       ? {
           title: 'Ferry wreck search',
           text: getFerryWreckSearchText(state.episode),
+        }
+      : null,
+    latchfolkAid: hasLatchfolkDisplacementAid(state)
+      ? {
+          title: 'Help for displaced Latchfolk',
+          text: getLatchfolkDisplacementAidText(state),
         }
       : null,
     witnessLedger: (state.episode.witnessLedger || []).map(
@@ -1198,17 +1205,46 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
   const prompt = signalStationDestroyed
     ? 'SIGNAL STATION LOST · DEPART UPLAND TO CLOSE'
     : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
-  const aftermathAction = canHearThreefoldLatchfolkLead(state)
-    ? ' · E SPEAK WITH THE WATCHKEEPER'
-    : canSearchThreefoldFerryWreck(state)
-      ? ' · E SEARCH FERRY WRECK'
-      : '';
-  const aftermathRecord = hasLatchfolkIriLead(state)
-    ? ' · WATCHKEEPER ACCOUNT IN JOURNAL'
-    : hasFerryWreckSearch(state)
-      ? ' · FERRY SEARCH IN JOURNAL'
-      : '';
+  const aftermathAction = canHelpThreefoldDisplacedLatchfolk(state)
+    ? ' · E HELP LATCHFOLK'
+    : canHearThreefoldLatchfolkLead(state)
+      ? ' · E SPEAK WITH THE WATCHKEEPER'
+      : canSearchThreefoldFerryWreck(state)
+        ? ' · E SEARCH FERRY WRECK'
+        : '';
+  const aftermathRecord = hasLatchfolkDisplacementAid(state)
+    ? ' · LATCHFOLK AID IN JOURNAL'
+    : hasLatchfolkIriLead(state)
+      ? ' · WATCHKEEPER ACCOUNT IN JOURNAL'
+      : hasFerryWreckSearch(state)
+        ? ' · FERRY SEARCH IN JOURNAL'
+        : '';
   return `${message} · ${prompt}${aftermathAction}${aftermathRecord}`;
+}
+
+/**
+ * Determine whether the optional displaced-resident aid was recorded.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the aid observation is saved.
+ */
+function hasLatchfolkDisplacementAid(state) {
+  return (state.episode.witnessLedger || []).some(
+    entry => entry.action === 'latchfolk-displacement-aid'
+  );
+}
+
+/**
+ * Describe the optional aid and current lower-home water condition.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {string} Factual record of the help and remaining damage.
+ */
+function getLatchfolkDisplacementAidText(state) {
+  const homes = getThreefoldGateOutcome(state).drainageState;
+  const homeCondition =
+    homes === 'receded'
+      ? 'Water has receded, but their homes remain damaged.'
+      : 'Floodwater remains in their homes.';
+  return `Mara and the watchkeeper help the displaced Latchfolk arrange temporary shelter. ${homeCondition}`;
 }
 
 /**

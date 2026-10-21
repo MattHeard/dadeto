@@ -2,6 +2,7 @@ import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import {
   advanceThreefoldEpisode,
   attemptThreefoldGateRepair,
+  canHelpThreefoldDisplacedLatchfolk,
   canHearThreefoldLatchfolkLead,
   canSearchThreefoldFerryWreck,
   attemptThreefoldLatchfolkWarning,
@@ -431,8 +432,12 @@ function stepThreefoldAction(state, action) {
       episode === state.episode &&
       player === state.player &&
       canSearchThreefoldFerryWreck(state);
+    const helpedDisplacedLatchfolk =
+      episode === state.episode &&
+      player === state.player &&
+      canHelpThreefoldDisplacedLatchfolk(state);
     const witnessEntry =
-      heardLatchfolkLead || searchedFerryWreck
+      heardLatchfolkLead || searchedFerryWreck || helpedDisplacedLatchfolk
         ? createWitnessEntry(state, state, action)
         : null;
     const actionEpisode = witnessEntry
@@ -499,6 +504,8 @@ function createWitnessEntry(before, after, action) {
     action.type === 'interact' && canHearThreefoldLatchfolkLead(before);
   const ferryWreckSearch =
     action.type === 'interact' && canSearchThreefoldFerryWreck(before);
+  const latchfolkDisplacementAid =
+    action.type === 'interact' && canHelpThreefoldDisplacedLatchfolk(before);
   const breach = [...ledger]
     .reverse()
     .find(
@@ -520,6 +527,11 @@ function createWitnessEntry(before, after, action) {
     intention = 'Repair the relief gate at its locking pawl.';
     intendedOutcome = 'Restore the relief gate mechanism.';
     relatedEventId = breach?.id ?? null;
+  } else if (latchfolkDisplacementAid) {
+    type = 'observation';
+    intention = 'Help the displaced Latchfolk arrange temporary shelter.';
+    intendedOutcome =
+      'Support the safe residents after the lower homes flood without restoring damaged homes.';
   } else if (latchfolkLead) {
     type = 'observation';
     intention = 'Ask the surviving watchkeeper about a faint relay call.';
@@ -546,11 +558,13 @@ function createWitnessEntry(before, after, action) {
     id: `witness-${ledger.length + 1}`,
     type,
     atGameMinute: after.crisis.elapsedMinutes,
-    action: latchfolkLead
-      ? 'latchfolk-witness-lead'
-      : ferryWreckSearch
-        ? 'ferry-wreck-search'
-        : action.type,
+    action: latchfolkDisplacementAid
+      ? 'latchfolk-displacement-aid'
+      : latchfolkLead
+        ? 'latchfolk-witness-lead'
+        : ferryWreckSearch
+          ? 'ferry-wreck-search'
+          : action.type,
     intention,
     intendedOutcome,
     knowledge: {

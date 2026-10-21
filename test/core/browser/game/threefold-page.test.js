@@ -77,6 +77,8 @@ describe('THREEFOLD page adapter', () => {
     expect(THREEFOLD_HTML).toContain(
       '<details id="iri-repair-log" class="witness-ledger" hidden>'
     );
+    expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
+    expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
     expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
     expect(THREEFOLD_HTML).toContain(
       '<details id="episode-epilogue" class="witness-ledger" hidden>'
@@ -666,6 +668,34 @@ describe('THREEFOLD ferry search page', () => {
   });
 });
 
+describe('THREEFOLD displaced Latchfolk aid page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows the saved aid as an accessible disclosure', () => {
+    const { documentObj, latchfolkAid, latchfolkAidText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Help for displaced Latchfolk',
+      text: 'Mara and the watchkeeper help arrange temporary shelter.',
+    };
+
+    page.drawFrame({}, { threefold: { latchfolkAid: record } });
+
+    expect(latchfolkAid.hidden).toBe(false);
+    expect(latchfolkAid.summary.textContent).toBe(record.title);
+    expect(latchfolkAidText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { latchfolkAid: null } });
+
+    expect(latchfolkAid.hidden).toBe(true);
+  });
+});
+
 /** Verify the route query, page copy, action label, and authored spawn together. */
 function assertHearthgapsRoute() {
   const selectors = [
@@ -875,6 +905,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? ferryWreckSearch.summary : null,
   };
+  const latchfolkAidText = { textContent: '' };
+  const latchfolkAid = {
+    hidden: true,
+    summary: { textContent: 'Old Latchfolk aid' },
+    querySelector: selector =>
+      selector === 'summary' ? latchfolkAid.summary : null,
+  };
   const episodeEpilogueList = {
     children: [],
     replaceChildren() {
@@ -900,6 +937,8 @@ function createLedgerDocument() {
     iriWitnessLeadText,
     ferryWreckSearch,
     ferryWreckSearchText,
+    latchfolkAid,
+    latchfolkAidText,
     episodeEpilogue,
     episodeEpilogueList,
     documentObj: {
@@ -914,6 +953,9 @@ function createLedgerDocument() {
         if (selector === '#ferry-wreck-search') return ferryWreckSearch;
         if (selector === '#ferry-wreck-search-text')
           return ferryWreckSearchText;
+        if (selector === '#latchfolk-displacement-aid') return latchfolkAid;
+        if (selector === '#latchfolk-displacement-aid-text')
+          return latchfolkAidText;
         if (selector === '#episode-epilogue') return episodeEpilogue;
         if (selector === '#episode-epilogue-outcomes')
           return episodeEpilogueList;

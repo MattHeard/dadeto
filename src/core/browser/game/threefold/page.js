@@ -296,6 +296,12 @@ export function startThreefoldPage(options) {
         '#ferry-wreck-search-text',
         frame.threefold?.ferryWreckSearch || null
       );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#latchfolk-displacement-aid',
+        '#latchfolk-displacement-aid-text',
+        frame.threefold?.latchfolkAid || null
+      );
       renderThreefoldEpisodeEpilogue(
         options.documentObj,
         frame.threefold?.episodeEpilogue || null

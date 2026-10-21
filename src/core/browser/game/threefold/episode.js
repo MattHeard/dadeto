@@ -96,14 +96,53 @@ export function canHearThreefoldLatchfolkLead(state) {
  */
 export function canSearchThreefoldFerryWreck(state) {
   return (
-    state.scene.id === 'broken-gate' &&
-    state.crisis.stage === 'aftermath' &&
+    canInteractInThreefoldAftermath(state, MOORING_ID) &&
     state.episode.ferry === 'lost' &&
-    state.episode.closedBy === undefined &&
     !state.episode.witnessLedger?.some(
       entry => entry.action === 'ferry-wreck-search'
+    )
+  );
+}
+
+/**
+ * Check whether Mara can help Latchfolk displaced by the lower-channel flood.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the optional aftermath aid interaction is available.
+ */
+export function canHelpThreefoldDisplacedLatchfolk(state) {
+  const { episode, player } = state;
+  const gateWasForcedOpen = THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
+    player.destroyedGeometryIds.includes(id)
+  );
+  const homesWereFlooded =
+    episode.gateRepaired === true
+      ? episode.gateRepairedBeforeSurge !== true
+      : gateWasForcedOpen;
+  return (
+    canInteractInThreefoldAftermath(
+      state,
+      THREEFOLD_LATCHFOLK_INTERACTABLE_ID
     ) &&
-    isThreefoldInteractableInReach(state, MOORING_ID)
+    episode.latchfolk === 'safe' &&
+    homesWereFlooded &&
+    !episode.witnessLedger?.some(
+      entry => entry.action === 'latchfolk-displacement-aid'
+    )
+  );
+}
+
+/**
+ * Check whether an in-range Broken Gate aftermath interaction is still open.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @param {string} interactableId Target interaction identifier.
+ * @returns {boolean} Whether the target can be used during the open aftermath.
+ */
+function canInteractInThreefoldAftermath(state, interactableId) {
+  return (
+    state.scene.id === 'broken-gate' &&
+    state.crisis.stage === 'aftermath' &&
+    state.episode.closedBy === undefined &&
+    isThreefoldInteractableInReach(state, interactableId)
   );
 }
 

@@ -580,7 +580,6 @@ function createSafeWatchkeeperAftermath() {
     elapsedGameMinutes: 15 - state.crisis.elapsedMinutes,
   });
 }
-
 /**
  * Rescue the requested passenger groups and advance the scene into aftermath.
  * @param {number} rescuedGroups Number of passenger groups saved before surge.
