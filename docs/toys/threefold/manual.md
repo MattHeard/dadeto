@@ -73,6 +73,8 @@ Growing through the relief gate or its counterweight commits that geometry as ru
 
 Both repairs use the locking pawl beside the gate at scale −2. A successful repair persists through save/export/import. Repairing after losses does not reverse ferry, passenger, or resident outcomes.
 
+After aftermath, Mara can ask the surviving watchkeeper about a faint relay call asking for Iri. If she records that optional lead and then files a report through the intact signal station, an additional collapsible record presents Iri's first-person confession: Iri saw downstream relay messages thinning, suspected settlements were at risk, and left that uncertainty out of the handover while keeping the bypass open to hold Harrowfen's pressure line. The confession survives save/import, does not appear without the lead or after road departure, and does not name the final sender or what others knew.
+
 ## Tidal Archive
 
 The Tidal Archive is a separate route that uses the shared Mosslight 160 × 144 handheld renderer. Arrows move through the small-world scene; A grows, B shrinks, E operates the nearby service valve or reads the far-bank coil register, X waits 15 in-game minutes, and Y saves. The valve only turns when Mara is within reach at scale −2. Movement, scale changes, and interactions advance 15 seconds of game time; a wait advances its requested duration. Water does not use the browser clock.

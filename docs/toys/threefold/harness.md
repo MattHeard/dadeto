@@ -90,6 +90,10 @@ Run `npm run check:impact:run -- --files src/core/browser/game/threefold/high-wo
 - The integration and existing Broken Gate suites pass; the Broken Gate opening view, crisis, flooding, and save behavior remain unchanged.
 - Build artifacts are written under `public/`; full check evidence is written under `.tmp/` and coverage reports under `reports/coverage/`.
 
+## Iri's Recorded Confession
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/page.js src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-iri-confession-page.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-latchfolk-aid.test.js`. Record the watchkeeper relay lead during aftermath, verify it does not reveal the confession before report, then file at the intact station and confirm Iri's first-person account appears accessibly and survives save/export/import. Verify no lead and destroyed-station road departure keep it hidden. The page test also checks alternate-scene hiding and a missing disclosure node. Require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
+
 ## Troubleshooting Hooks
 
 - Verbose mode command: `npm run check`.

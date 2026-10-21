@@ -216,6 +216,19 @@ export function renderThreefoldFrame(state) {
               'the wider consequences.',
           }
         : null,
+    iriRecordedConfession:
+      state.episode.closedBy === 'reported' && hasLatchfolkIriLead(state)
+        ? {
+            title: "Iri's recorded confession",
+            text:
+              'Iri writes: I saw downstream relay messages thinning after I ' +
+              'opened the emergency bypass. I could not tell which settlements ' +
+              'had missed warnings, but I suspected they were in danger. I kept ' +
+              'the bypass open to hold Harrowfen’s pressure line and left my ' +
+              'uncertainty out of the handover. The note does not identify the ' +
+              'final sender or what anyone else knew.',
+          }
+        : null,
     iriWitnessLead: hasLatchfolkIriLead(state)
       ? {
           title: "The Watchkeeper's relay account",

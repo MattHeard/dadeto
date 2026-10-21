@@ -650,6 +650,7 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
         'which warnings reached each settlement or what Iri understood about ' +
         'the wider consequences.',
     });
+    expect(frame.threefold.iriRecordedConfession).toBeNull();
     expect(frame.threefold.episodeEpilogue).toEqual({
       title: 'Report filed',
       paragraphs: [

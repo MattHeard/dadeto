@@ -168,6 +168,64 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
       renderThreefoldFrame(departed).threefold.latchfolkAid
     ).not.toBeNull();
   });
+
+  test('reveals Iri’s recorded confession only after the watchkeeper lead and report', () => {
+    let state = createFloodedSafeLatchfolkAftermath();
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(renderThreefoldFrame(state).threefold.iriWitnessLead).not.toBeNull();
+    expect(
+      renderThreefoldFrame(state).threefold.iriRecordedConfession
+    ).toBeNull();
+
+    const console = state.scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const atConsole = {
+      ...state,
+      player: createScaleState(console.position, {
+        destroyedGeometryIds: state.player.destroyedGeometryIds,
+      }),
+    };
+    const reported = stepThreefoldSimulation(atConsole, { type: 'interact' });
+    const confession =
+      renderThreefoldFrame(reported).threefold.iriRecordedConfession;
+
+    expect(reported.episode.closedBy).toBe('reported');
+    expect(confession.title).toBe("Iri's recorded confession");
+    expect(confession.text).toContain(
+      'I saw downstream relay messages thinning'
+    );
+    expect(confession.text).toContain(
+      'left my uncertainty out of the handover'
+    );
+    expect(confession.text).toContain('does not identify the final sender');
+    expect(
+      renderThreefoldFrame(
+        restoreThreefoldSimulation(serializeThreefoldSimulation(reported))
+      ).threefold.iriRecordedConfession
+    ).toEqual(confession);
+
+    const road = state.scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const atDestroyedStationRoad = {
+      ...state,
+      player: createScaleState(road.position, {
+        destroyedGeometryIds: [
+          ...state.player.destroyedGeometryIds,
+          'signal-station',
+        ],
+      }),
+    };
+    const departed = stepThreefoldSimulation(atDestroyedStationRoad, {
+      type: 'interact',
+    });
+    expect(departed.episode.closedBy).toBe('departed');
+    expect(renderThreefoldFrame(departed).threefold.iriRecordedConfession).toBe(
+      null
+    );
+  });
 });
 
 /**

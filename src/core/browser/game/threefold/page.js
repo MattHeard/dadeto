@@ -297,6 +297,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#iri-recorded-confession',
+        '#iri-recorded-confession-text',
+        frame.threefold?.iriRecordedConfession || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#iri-witness-lead',
         '#iri-witness-lead-text',
         frame.threefold?.iriWitnessLead || null
@@ -453,6 +459,10 @@ function configureAlternateScenePage(documentObj, copy) {
   if (testimony) testimony.hidden = true;
   const iriRepairLog = documentObj?.querySelector?.('#iri-repair-log');
   if (iriRepairLog) iriRepairLog.hidden = true;
+  const iriRecordedConfession = documentObj?.querySelector?.(
+    '#iri-recorded-confession'
+  );
+  if (iriRecordedConfession) iriRecordedConfession.hidden = true;
   const weftwaysRelayRecord = documentObj?.querySelector?.(
     '#weftways-relay-record'
   );
