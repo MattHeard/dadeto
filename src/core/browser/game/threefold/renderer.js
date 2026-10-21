@@ -1,7 +1,10 @@
 import { createRectShapeFromBounds } from '../../canvasShapes.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
-import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
+import {
+  canHearThreefoldLatchfolkLead,
+  THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
+} from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import {
   isThreefoldCrownbackTharnInReach,
@@ -211,6 +214,14 @@ export function renderThreefoldFrame(state) {
               'the wider consequences.',
           }
         : null,
+    iriWitnessLead: hasLatchfolkIriLead(state)
+      ? {
+          title: "The Watchkeeper's relay account",
+          text:
+            'After the surge, the watchkeeper remembers a faint relay call asking for Iri. ' +
+            'They cannot say who sent it or whether Iri heard.',
+        }
+      : null,
     witnessLedger: (state.episode.witnessLedger || []).map(
       presentThreefoldWitnessEntry
     ),
@@ -1180,7 +1191,24 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
   const prompt = signalStationDestroyed
     ? 'SIGNAL STATION LOST · DEPART UPLAND TO CLOSE'
     : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
-  return `${message} · ${prompt}`;
+  const witnessPrompt = canHearThreefoldLatchfolkLead(state)
+    ? ' · E SPEAK WITH THE WATCHKEEPER'
+    : '';
+  const witnessRecord = hasLatchfolkIriLead(state)
+    ? ' · WATCHKEEPER ACCOUNT IN JOURNAL'
+    : '';
+  return `${message} · ${prompt}${witnessPrompt}${witnessRecord}`;
+}
+
+/**
+ * Determine whether the optional witness-supplied Iri lead was recorded.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the saved witness ledger contains the lead.
+ */
+function hasLatchfolkIriLead(state) {
+  return (state.episode.witnessLedger || []).some(
+    entry => entry.action === 'latchfolk-witness-lead'
+  );
 }
 
 /**

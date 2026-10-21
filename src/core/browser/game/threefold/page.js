@@ -278,9 +278,17 @@ export function startThreefoldPage(options) {
         options.documentObj,
         frame.threefold?.testimony || null
       );
-      renderThreefoldIriRepairLog(
+      renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#iri-repair-log',
+        '#iri-repair-log-text',
         frame.threefold?.iriRepairLog || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#iri-witness-lead',
+        '#iri-witness-lead-text',
+        frame.threefold?.iriWitnessLead || null
       );
       renderThreefoldEpisodeEpilogue(
         options.documentObj,
@@ -433,14 +441,21 @@ function renderThreefoldTestimony(documentObj, testimony) {
 }
 
 /**
- * Reveal the optional recovered log only after a report closes the episode.
+ * Render one accessible disclosure from the current simulation frame.
  * @param {any} documentObj Standalone page document adapter.
- * @param {{title: string, text: string}|null} record Authored report attachment.
+ * @param {string} panelSelector Disclosure identifier.
+ * @param {string} textSelector Text identifier.
+ * @param {{title: string, text: string}|null} record Saved player-facing record.
  * @returns {void}
  */
-function renderThreefoldIriRepairLog(documentObj, record) {
-  const panel = documentObj?.querySelector?.('#iri-repair-log');
-  const text = documentObj?.querySelector?.('#iri-repair-log-text');
+function renderThreefoldDisclosurePanel(
+  documentObj,
+  panelSelector,
+  textSelector,
+  record
+) {
+  const panel = documentObj?.querySelector?.(panelSelector);
+  const text = documentObj?.querySelector?.(textSelector);
   if (!panel || !text) return;
   panel.hidden = record === null;
   if (!record) return;

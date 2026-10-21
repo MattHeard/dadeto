@@ -72,6 +72,24 @@ export function attemptThreefoldLatchfolkWarning(state) {
 }
 
 /**
+ * Check whether Mara can hear the surviving watchkeeper's optional relay lead.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the post-storm witness interaction is available.
+ */
+export function canHearThreefoldLatchfolkLead(state) {
+  return (
+    state.scene.id === 'broken-gate' &&
+    state.crisis.stage === 'aftermath' &&
+    state.episode.latchfolk === 'safe' &&
+    state.episode.closedBy === undefined &&
+    !state.episode.witnessLedger?.some(
+      entry => entry.action === 'latchfolk-witness-lead'
+    ) &&
+    isThreefoldInteractableInReach(state, THREEFOLD_LATCHFOLK_INTERACTABLE_ID)
+  );
+}
+
+/**
  * Withdraw from the gatehouse when Mara reaches the upland road.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when withdrawal is unavailable.

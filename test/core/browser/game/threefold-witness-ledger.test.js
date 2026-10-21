@@ -1,9 +1,11 @@
+import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import {
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/save.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
+import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
 import {
   createThreefoldSimulation,
@@ -144,6 +146,128 @@ describe('THREEFOLD witness ledger', () => {
       'witness-2',
       'witness-3',
     ]);
+  });
+
+  test('lets a surviving watchkeeper share a one-time Iri lead before closure', () => {
+    const aftermath = createSafeWatchkeeperAftermath();
+    const prompt = renderThreefoldFrame(aftermath);
+
+    expect(prompt.toast).toContain('E SPEAK WITH THE WATCHKEEPER');
+    expect(prompt.threefold.iriWitnessLead).toBeNull();
+
+    const heard = stepThreefoldSimulation(aftermath, { type: 'interact' });
+    expect(heard.episode.witnessLedger.at(-1)).toMatchObject({
+      type: 'observation',
+      action: 'latchfolk-witness-lead',
+      intention: 'Ask the surviving watchkeeper about a faint relay call.',
+      consequence: {
+        crisisStage: 'aftermath',
+        latchfolk: 'safe',
+      },
+      relatedEventId: null,
+    });
+    expect(renderThreefoldFrame(heard)).toMatchObject({
+      toast: expect.stringContaining('WATCHKEEPER ACCOUNT IN JOURNAL'),
+      threefold: {
+        iriWitnessLead: {
+          title: "The Watchkeeper's relay account",
+          text: expect.stringContaining('cannot say who sent it'),
+        },
+      },
+    });
+
+    const repeated = stepThreefoldSimulation(heard, { type: 'interact' });
+    expect(repeated.episode.witnessLedger).toEqual(heard.episode.witnessLedger);
+    expect(
+      restoreThreefoldSimulation(serializeThreefoldSimulation(heard))
+    ).toEqual(heard);
+    expect(
+      renderThreefoldFrame(
+        restoreThreefoldSimulation(serializeThreefoldSimulation(heard))
+      ).threefold.iriWitnessLead
+    ).toEqual(renderThreefoldFrame(heard).threefold.iriWitnessLead);
+  });
+
+  test('keeps the watchkeeper lead optional and gated by survival, aftermath, and reach', () => {
+    const aftermath = createSafeWatchkeeperAftermath();
+    const outOfReach = {
+      ...aftermath,
+      player: createScaleState({ x: 2, y: 2 }),
+    };
+    const beforeAftermath = {
+      ...aftermath,
+      crisis: { ...aftermath.crisis, elapsedMinutes: 9, stage: 'surge' },
+    };
+    const lostWatchkeeper = {
+      ...aftermath,
+      episode: { ...aftermath.episode, latchfolk: 'lost' },
+    };
+    const unwarnedWatchkeeper = {
+      ...aftermath,
+      episode: { ...aftermath.episode, latchfolk: 'unwarned' },
+    };
+    const closedEpisode = {
+      ...aftermath,
+      episode: { ...aftermath.episode, closedBy: 'reported' },
+    };
+    const sluice = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+
+    for (const candidate of [
+      outOfReach,
+      beforeAftermath,
+      lostWatchkeeper,
+      unwarnedWatchkeeper,
+      closedEpisode,
+    ]) {
+      const result = stepThreefoldSimulation(candidate, { type: 'interact' });
+      expect(result.episode.witnessLedger || []).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ action: 'latchfolk-witness-lead' }),
+        ])
+      );
+      expect(renderThreefoldFrame(result).threefold.iriWitnessLead).toBeNull();
+    }
+    expect(() =>
+      stepThreefoldSimulation(sluice, { type: 'interact' })
+    ).not.toThrow();
+  });
+
+  test('keeps report and destroyed-station departure available after the optional lead', () => {
+    const heard = stepThreefoldSimulation(createSafeWatchkeeperAftermath(), {
+      type: 'interact',
+    });
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const road = scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const reported = stepThreefoldSimulation(
+      { ...heard, player: createScaleState(console.position) },
+      { type: 'interact' }
+    );
+    const departed = stepThreefoldSimulation(
+      {
+        ...heard,
+        player: createScaleState(road.position, {
+          destroyedGeometryIds: ['signal-station'],
+        }),
+      },
+      { type: 'interact' }
+    );
+
+    expect(reported.episode.closedBy).toBe('reported');
+    expect(departed.episode.closedBy).toBe('departed');
+    expect(
+      renderThreefoldFrame(reported).threefold.iriWitnessLead
+    ).not.toBeNull();
+    expect(
+      renderThreefoldFrame(departed).threefold.iriWitnessLead
+    ).not.toBeNull();
   });
 
   test('keeps a legacy repair unlinked when no breach entry was saved', () => {
@@ -300,4 +424,29 @@ function moveToLockingPawl(start) {
       stepWithFrame(state, action, renderThreefoldFrame(state)),
     start
   );
+}
+
+/**
+ * Warn the Latchfolk and let their surviving watchkeeper remain until aftermath.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} In-range aftermath state.
+ */
+function createSafeWatchkeeperAftermath() {
+  const scene = createBrokenGateScene();
+  const watchkeeper = scene.interactables.find(
+    item => item.id === 'latchfolk-watchkeeper'
+  );
+  let state = createThreefoldSimulation(THRESHOLDS, scene);
+  state = {
+    ...state,
+    player: createScaleState(watchkeeper.position),
+  };
+  state = stepThreefoldSimulation(state, { type: 'interact' });
+  state = stepThreefoldSimulation(state, {
+    type: 'wait',
+    elapsedGameMinutes: 9 - state.crisis.elapsedMinutes,
+  });
+  return stepThreefoldSimulation(state, {
+    type: 'wait',
+    elapsedGameMinutes: 15 - state.crisis.elapsedMinutes,
+  });
 }

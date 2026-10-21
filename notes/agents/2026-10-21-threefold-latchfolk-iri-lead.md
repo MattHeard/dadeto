@@ -1,0 +1,7 @@
+# THREEFOLD optional Latchfolk Iri lead
+
+- Unexpected hurdle: a successful post-storm conversation did not change the simulation because the crisis clock is already capped at aftermath.
+- Diagnosis: the first focused test showed the interaction returned the same state, so the general witness recorder had no event to persist. The terminal crisis clock intentionally does not advance after its endpoint.
+- Chosen fix: append the one-time conversation as an observation in the existing witness ledger before applying the no-op terminal tick. The generic recorder checks the next event ID to avoid appending the same observation twice. The rendered lead derives from that persisted entry, so no separate save field or schema bump is needed.
+- Next-time guidance: for aftermath interactions, verify whether the terminal reducer changes any state before relying on its ordinary action path to persist a response. Reuse the ledger for factual, optional witness accounts and keep report/departure closure independent.
+- Evidence: `npm run check:impact:run -- --files src/core/browser/game/threefold/episode.js src/core/browser/game/threefold/simulation.js src/core/browser/game/threefold/renderer.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-witness-ledger.test.js test/core/browser/game/threefold-page.test.js` passed 23 related suites / 281 tests, with 100% changed-core statements/branches, ESLint, core-parse, and zero clones.

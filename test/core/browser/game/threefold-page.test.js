@@ -609,6 +609,35 @@ describe('THREEFOLD closure epilogue page', () => {
   });
 });
 
+describe('THREEFOLD witness lead page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows the watchkeeper relay lead only after the frame records it', () => {
+    const { documentObj, iriWitnessLead, iriWitnessLeadText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: "The Watchkeeper's relay account",
+      text: 'The caller asked for Iri, but the source remains unknown.',
+    };
+
+    page.drawFrame({}, { threefold: { iriWitnessLead: record } });
+    page.drawFrame({}, { threefold: { iriWitnessLead: record } });
+
+    expect(iriWitnessLead.hidden).toBe(false);
+    expect(iriWitnessLead.summary.textContent).toBe(record.title);
+    expect(iriWitnessLeadText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { iriWitnessLead: null } });
+
+    expect(iriWitnessLead.hidden).toBe(true);
+  });
+});
+
 /** Verify the route query, page copy, action label, and authored spawn together. */
 function assertHearthgapsRoute() {
   const selectors = [
@@ -804,6 +833,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? iriRepairLog.summary : null,
   };
+  const iriWitnessLeadText = { textContent: '' };
+  const iriWitnessLead = {
+    hidden: true,
+    summary: { textContent: 'Old watchkeeper account' },
+    querySelector: selector =>
+      selector === 'summary' ? iriWitnessLead.summary : null,
+  };
   const episodeEpilogueList = {
     children: [],
     replaceChildren() {
@@ -825,6 +861,8 @@ function createLedgerDocument() {
     responsibility,
     iriRepairLog,
     iriRepairLogText,
+    iriWitnessLead,
+    iriWitnessLeadText,
     episodeEpilogue,
     episodeEpilogueList,
     documentObj: {
@@ -834,6 +872,8 @@ function createLedgerDocument() {
         if (selector === '#testimony-responsibility') return responsibility;
         if (selector === '#iri-repair-log') return iriRepairLog;
         if (selector === '#iri-repair-log-text') return iriRepairLogText;
+        if (selector === '#iri-witness-lead') return iriWitnessLead;
+        if (selector === '#iri-witness-lead-text') return iriWitnessLeadText;
         if (selector === '#episode-epilogue') return episodeEpilogue;
         if (selector === '#episode-epilogue-outcomes')
           return episodeEpilogueList;

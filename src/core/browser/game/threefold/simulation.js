@@ -2,6 +2,7 @@ import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import {
   advanceThreefoldEpisode,
   attemptThreefoldGateRepair,
+  canHearThreefoldLatchfolkLead,
   attemptThreefoldLatchfolkWarning,
   attemptThreefoldPassengerRescue,
   attemptThreefoldReport,
@@ -421,14 +422,26 @@ function stepThreefoldAction(state, action) {
       episode = attemptThreefoldGateRepair(state);
       if (episode !== state.episode) player = restoreGateGeometry(state.player);
     }
+    const heardLatchfolkLead =
+      episode === state.episode &&
+      player === state.player &&
+      canHearThreefoldLatchfolkLead(state);
+    const leadEntry = heardLatchfolkLead
+      ? createWitnessEntry(state, state, action)
+      : null;
+    const actionEpisode = leadEntry
+      ? appendThreefoldWitnessEntry(state.episode, leadEntry)
+      : episode;
     const actionState =
-      episode === state.episode && player === state.player
+      actionEpisode === state.episode && player === state.player
         ? state
-        : { ...state, player, episode };
+        : { ...state, player, episode: actionEpisode };
     const timedState = applyTimedAction(
       actionState,
       player,
-      episode === state.episode ? 'failed-action' : 'interaction'
+      episode === state.episode && !heardLatchfolkLead
+        ? 'failed-action'
+        : 'interaction'
     );
     return episode.withdrawn === true
       ? settleWithdrawalStorm(timedState)
@@ -447,6 +460,9 @@ function stepThreefoldAction(state, action) {
  */
 function recordGateWitnessEvent(before, after, action) {
   if (before.scene.id !== 'broken-gate') return after;
+  const nextEntryId = `witness-${(before.episode.witnessLedger || []).length + 1}`;
+  if (after.episode.witnessLedger?.some(entry => entry.id === nextEntryId))
+    return after;
   const entry = createWitnessEntry(before, after, action);
   if (!entry) return after;
   return {
@@ -473,6 +489,8 @@ function createWitnessEntry(before, after, action) {
     .sort();
   const repairedGate =
     before.episode.gateRepaired !== true && after.episode.gateRepaired === true;
+  const latchfolkLead =
+    action.type === 'interact' && canHearThreefoldLatchfolkLead(before);
   const breach = [...ledger]
     .reverse()
     .find(
@@ -494,6 +512,10 @@ function createWitnessEntry(before, after, action) {
     intention = 'Repair the relief gate at its locking pawl.';
     intendedOutcome = 'Restore the relief gate mechanism.';
     relatedEventId = breach?.id ?? null;
+  } else if (latchfolkLead) {
+    type = 'observation';
+    intention = 'Ask the surviving watchkeeper about a faint relay call.';
+    intendedOutcome = 'Hear an optional lead about a signal asking for Iri.';
   } else if (breach && hasVisibleGateOutcomeChanged(before, after)) {
     type = 'observation';
     intention = describeChosenAction(action);
@@ -511,7 +533,7 @@ function createWitnessEntry(before, after, action) {
     id: `witness-${ledger.length + 1}`,
     type,
     atGameMinute: after.crisis.elapsedMinutes,
-    action: action.type,
+    action: latchfolkLead ? 'latchfolk-witness-lead' : action.type,
     intention,
     intendedOutcome,
     knowledge: {
