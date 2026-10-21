@@ -103,7 +103,10 @@ const WEFTWAYS_PAGE_COPY = {
         'crossing is set, reach Pell to inspect the optional caravan relay ' +
         'ledger; it records the lost messages without assigning blame. Then ' +
         'visit the marked caravan circle to share it, the knot cache to keep it ' +
-        'private, or the brazier to destroy it.',
+        'private, the brazier to destroy it, or the marked repair table to ' +
+        'offer replacement relay tokens and route repair. Pell accepts after ' +
+        'the bypass or defers terms until root-channel damage is assessed ' +
+        'after the quay spill.',
     ],
     ['#scene-link', 'Continue into the Grainlands'],
     [
@@ -113,8 +116,8 @@ const WEFTWAYS_PAGE_COPY = {
   ]),
   href: '/threefold/?scene=grainlands',
   ariaLabel:
-    'Choose a water route, inspect Pell’s relay ledger, then share it at the caravan circle, keep it private at the knot cache, or destroy it at the brazier',
-  interactionLabel: 'CHOOSE · READ · SHARE · PRIVATE · DESTROY',
+    'Choose a water route, inspect Pell’s relay ledger, then share it at the caravan circle, negotiate repairs at the marked table, keep it private at the knot cache, or destroy it at the brazier',
+  interactionLabel: 'CHOOSE · READ · SHARE · REPAIR · PRIVATE · DESTROY',
 };
 const GRAINLANDS_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
@@ -336,6 +339,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#weftways-relay-restitution',
+        '#weftways-relay-restitution-text',
+        frame.threefold?.threadboundRelayRestitution || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#tidal-archive-quieting-trace',
         '#tidal-archive-quieting-trace-text',
         frame.threefold?.archiveQuietingTrace || null
@@ -454,6 +463,10 @@ function configureAlternateScenePage(documentObj, copy) {
     '#weftways-relay-destruction'
   );
   if (weftwaysRelayDestruction) weftwaysRelayDestruction.hidden = true;
+  const weftwaysRelayRestitution = documentObj?.querySelector?.(
+    '#weftways-relay-restitution'
+  );
+  if (weftwaysRelayRestitution) weftwaysRelayRestitution.hidden = true;
   const siltMarginQuietingEvidence = documentObj?.querySelector?.(
     '#silt-margin-quieting-evidence'
   );

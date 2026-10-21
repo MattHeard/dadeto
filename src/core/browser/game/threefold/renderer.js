@@ -601,6 +601,7 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordShared,
     relayRecordConcealed,
     relayRecordDestroyed,
+    relayRestitutionNegotiated,
   } = state.weftways;
   const rootFlooded = floodedGeometryIds.includes(
     weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
@@ -618,11 +619,15 @@ function renderThreefoldWeftwaysFrame(state) {
       ? 'Mara keeps Pell’s record private.'
       : relayRecordDestroyed
         ? 'Mara destroyed the record; responsibility remains unresolved.'
-        : flowChoice === 'pell-bypass'
-          ? 'Pell trusts Mara; roots hold, quay floods.'
-          : flowChoice === 'quay-spill'
-            ? 'Pell is wary; quay stays dry, root crossing floods.'
-            : 'Pell knows a bypass through the deep roots.';
+        : relayRestitutionNegotiated
+          ? flowChoice === 'pell-bypass'
+            ? 'Pell accepts Mara’s offer to carry relay tokens and help restore the route.'
+            : 'Pell defers terms until root-channel damage is assessed.'
+          : flowChoice === 'pell-bypass'
+            ? 'Pell trusts Mara; roots hold, quay floods.'
+            : flowChoice === 'quay-spill'
+              ? 'Pell is wary; quay stays dry, root crossing floods.'
+              : 'Pell knows a bypass through the deep roots.';
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 2.4) * 144
   );
@@ -694,6 +699,10 @@ function renderThreefoldWeftwaysFrame(state) {
           : '#e9d88d'
     ),
     createThreefoldRectShape(
+      [64, 64, 8, 8],
+      relayRestitutionNegotiated ? '#bfd77c' : '#d28b69'
+    ),
+    createThreefoldRectShape(
       [112, 40, 8, 8],
       relayRecordConcealed ? '#bfd77c' : '#8aa27b'
     ),
@@ -718,9 +727,13 @@ function renderThreefoldWeftwaysFrame(state) {
             ? 'MARA KEPT THE RECORD PRIVATE'
             : relayRecordDestroyed
               ? 'LEDGER DESTROYED · FACTS UNRESOLVED'
-              : relayRecordRead
-                ? 'E SHARE · KEEP · DESTROY'
-                : 'REACH PELL · E READ RELAY LOG'
+              : relayRestitutionNegotiated
+                ? flowChoice === 'pell-bypass'
+                  ? 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR'
+                  : 'PELL DEFERS · ROOT DAMAGE TO ASSESS'
+                : relayRecordRead
+                  ? 'E SHARE · REPAIR · KEEP · DESTROY'
+                  : 'REACH PELL · E READ RELAY LOG'
     ),
   ];
   return finishSmallWorldFrame(frame, {
@@ -735,6 +748,7 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordShared,
     relayRecordConcealed,
     relayRecordDestroyed,
+    relayRestitutionNegotiated,
     threadboundRelayRecord:
       relayRecordRead && !relayRecordDestroyed
         ? {
@@ -772,6 +786,22 @@ function renderThreefoldWeftwaysFrame(state) {
             'Mara chose not to share Pell’s relay ledger with the caravan and ' +
             'kept the record for herself. It still cannot identify the final ' +
             'sender, establish what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayRestitution: relayRestitutionNegotiated
+      ? {
+          title: 'Threadbound relay restitution',
+          text:
+            flowChoice === 'pell-bypass'
+              ? 'Mara offered to carry replacement relay tokens to downstream ' +
+                'settlements and help restore their route. Pell accepts the ' +
+                'plan. The agreement does not identify the final sender, ' +
+                'establish what Iri knew, or assign responsibility.'
+              : 'Mara offered to carry replacement relay tokens to downstream ' +
+                'settlements and help restore their route. Pell defers final ' +
+                'terms until the root-channel damage is assessed. The offer ' +
+                'does not identify the final sender, establish what Iri knew, ' +
+                'or assign responsibility.',
         }
       : null,
     packBeetleIds: state.scene.creatures.map(({ id }) => id),

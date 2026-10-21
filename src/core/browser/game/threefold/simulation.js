@@ -848,6 +848,7 @@ function stepWeftwaysScene(state, action) {
         !route.relayRecordShared &&
         !route.relayRecordConcealed &&
         !route.relayRecordDestroyed &&
+        !route.relayRestitutionNegotiated &&
         isThreefoldInteractableInReach(
           state,
           weftways.THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID
@@ -864,6 +865,7 @@ function stepWeftwaysScene(state, action) {
         !route.relayRecordShared &&
         !route.relayRecordConcealed &&
         !route.relayRecordDestroyed &&
+        !route.relayRestitutionNegotiated &&
         isThreefoldInteractableInReach(
           state,
           weftways.THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID
@@ -880,6 +882,7 @@ function stepWeftwaysScene(state, action) {
         !route.relayRecordShared &&
         !route.relayRecordConcealed &&
         !route.relayRecordDestroyed &&
+        !route.relayRestitutionNegotiated &&
         isThreefoldInteractableInReach(
           state,
           weftways.THREEFOLD_WEFTWAYS_BRAZIER_ID
@@ -889,6 +892,23 @@ function stepWeftwaysScene(state, action) {
           weftways: weftways.normalizeThreefoldWeftwaysState({
             ...route,
             relayRecordDestroyed: true,
+          }),
+        };
+      if (
+        route.relayRecordRead &&
+        !route.relayRecordShared &&
+        !route.relayRecordConcealed &&
+        !route.relayRecordDestroyed &&
+        !route.relayRestitutionNegotiated &&
+        isThreefoldInteractableInReach(
+          state,
+          weftways.THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID
+        )
+      )
+        return {
+          weftways: weftways.normalizeThreefoldWeftwaysState({
+            ...route,
+            relayRestitutionNegotiated: true,
           }),
         };
       return {};

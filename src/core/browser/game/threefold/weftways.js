@@ -11,6 +11,8 @@ export const THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID = 'weftways-caravan-circle';
 export const THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID =
   'weftways-private-knot-cache';
 export const THREEFOLD_WEFTWAYS_BRAZIER_ID = 'weftways-ledger-brazier';
+export const THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID =
+  'weftways-relay-restitution-table';
 
 const SCENE_BOUNDS = { min: { x: 0, y: 0 }, max: { x: 2.4, y: 0.8 } };
 const ROOT_CROSSING_BOUNDS = {
@@ -53,6 +55,14 @@ const THREADBOUND_BRAZIER = {
     max: { x: 0.2, y: 0.44, z: 0.16 },
   },
 };
+const THREADBOUND_RESTITUTION_TABLE = {
+  id: THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID,
+  position: { x: 0.9, y: 0.36 },
+  bounds: {
+    min: { x: 0.86, y: 0.32, z: 0 },
+    max: { x: 0.94, y: 0.4, z: 0.16 },
+  },
+};
 const PACK_BEETLES = [
   createPackBeetle('weftways-pack-beetle-1', { x: 0.45, y: 0.16 }),
   createPackBeetle('weftways-pack-beetle-2', { x: 1.1, y: 0.16 }),
@@ -81,6 +91,7 @@ export function createThreefoldWeftwaysScene() {
       copyThreadboundInteractable(THREADBOUND_CARAVAN_CIRCLE),
       copyThreadboundInteractable(THREADBOUND_PRIVATE_CACHE),
       copyThreadboundInteractable(THREADBOUND_BRAZIER),
+      copyThreadboundInteractable(THREADBOUND_RESTITUTION_TABLE),
       createFlowControl(THREEFOLD_WEFTWAYS_PELL_BYPASS_ID, 0.2),
       createFlowControl(THREEFOLD_WEFTWAYS_QUAY_SPILL_ID, 2.2),
     ],
@@ -90,23 +101,16 @@ export function createThreefoldWeftwaysScene() {
 
 /**
  * Create the unresolved flow choice for the Threadbound crossing.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean, relayRecordDestroyed: boolean}} Initial route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean, relayRecordDestroyed: boolean, relayRestitutionNegotiated: boolean}} Initial route state.
  */
 export function createThreefoldWeftwaysState() {
-  return {
-    flowChoice: 'undecided',
-    floodedGeometryIds: [],
-    relayRecordRead: false,
-    relayRecordShared: false,
-    relayRecordConcealed: false,
-    relayRecordDestroyed: false,
-  };
+  return normalizeThreefoldWeftwaysState({ flowChoice: 'undecided' });
 }
 
 /**
  * Rebuild only the flood footprint implied by a saved choice.
  * @param {unknown} candidate Saved flow choice.
- * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean, relayRecordDestroyed: boolean}} Canonical route state.
+ * @returns {{flowChoice: 'undecided'|'pell-bypass'|'quay-spill', floodedGeometryIds: string[], relayRecordRead: boolean, relayRecordShared: boolean, relayRecordConcealed: boolean, relayRecordDestroyed: boolean, relayRestitutionNegotiated: boolean}} Canonical route state.
  */
 export function normalizeThreefoldWeftwaysState(candidate) {
   if (!candidate || typeof candidate !== 'object')
@@ -139,6 +143,12 @@ export function normalizeThreefoldWeftwaysState(candidate) {
       : state.relayRecordDestroyed;
   if (typeof relayRecordDestroyed !== 'boolean')
     throw new RangeError('Weftways relay destruction state is invalid.');
+  const relayRestitutionNegotiated =
+    state.relayRestitutionNegotiated === undefined
+      ? false
+      : state.relayRestitutionNegotiated;
+  if (typeof relayRestitutionNegotiated !== 'boolean')
+    throw new RangeError('Weftways restitution negotiation state is invalid.');
   if (choice === 'undecided' && relayRecordRead)
     throw new RangeError('Weftways relay record requires a flow choice.');
   if (relayRecordShared && !relayRecordRead)
@@ -147,10 +157,13 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     throw new RangeError('Weftways privacy choice requires the record.');
   if (relayRecordDestroyed && !relayRecordRead)
     throw new RangeError('Weftways destruction choice requires the record.');
+  if (relayRestitutionNegotiated && !relayRecordRead)
+    throw new RangeError('Weftways restitution requires the record.');
   if (
     Number(relayRecordShared) +
       Number(relayRecordConcealed) +
-      Number(relayRecordDestroyed) >
+      Number(relayRecordDestroyed) +
+      Number(relayRestitutionNegotiated) >
     1
   )
     throw new RangeError('Weftways relay choices conflict.');
@@ -173,6 +186,7 @@ export function normalizeThreefoldWeftwaysState(candidate) {
     relayRecordShared,
     relayRecordConcealed,
     relayRecordDestroyed,
+    relayRestitutionNegotiated,
   };
 }
 
@@ -213,8 +227,8 @@ function createPackBeetle(id, position) {
 
 /**
  * Copy one authored Threadbound character or choice target for this scene.
- * @param {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE|typeof THREADBOUND_BRAZIER} interactable Authored route actor or target.
- * @returns {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE|typeof THREADBOUND_BRAZIER} Independently mutable scene object.
+ * @param {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE|typeof THREADBOUND_BRAZIER|typeof THREADBOUND_RESTITUTION_TABLE} interactable Authored route actor or target.
+ * @returns {typeof THREADBOUND_PELL|typeof THREADBOUND_CARAVAN_CIRCLE|typeof THREADBOUND_PRIVATE_CACHE|typeof THREADBOUND_BRAZIER|typeof THREADBOUND_RESTITUTION_TABLE} Independently mutable scene object.
  */
 function copyThreadboundInteractable(interactable) {
   return {

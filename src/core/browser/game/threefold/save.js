@@ -75,7 +75,8 @@ const SILT_MARGIN_SIMULATION_SCHEMA_VERSION = 2;
 const HEARTHGAPS_SIMULATION_SCHEMA_VERSION = 1;
 const LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION = 1;
 const PREVIOUS_WEFTWAYS_SIMULATION_SCHEMA_VERSION = 2;
-const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 3;
+const THIRD_WEFTWAYS_SIMULATION_SCHEMA_VERSION = 3;
+const WEFTWAYS_SIMULATION_SCHEMA_VERSION = 4;
 const GRAINLANDS_SIMULATION_SCHEMA_VERSION = 1;
 const SIMULATION_SAVE_KEY = 'dadeto.threefold.simulation-save.v1';
 const SLUICE_SIMULATION_SAVE_KEY =
@@ -249,6 +250,7 @@ export function restoreThreefoldSimulation(serialized) {
       ![
         LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION,
         PREVIOUS_WEFTWAYS_SIMULATION_SCHEMA_VERSION,
+        THIRD_WEFTWAYS_SIMULATION_SCHEMA_VERSION,
         WEFTWAYS_SIMULATION_SCHEMA_VERSION,
       ].includes(envelope.schemaVersion)
     )
@@ -413,15 +415,18 @@ function normalizeArchiveTraceHeard(heard) {
  * @returns {Record<string, any>} State with version-specific response defaults.
  */
 function migrateWeftwaysRelayResponse(state, schemaVersion) {
-  if (schemaVersion === LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION)
-    return {
-      ...state,
-      relayRecordConcealed: false,
-      relayRecordDestroyed: false,
-    };
-  if (schemaVersion === PREVIOUS_WEFTWAYS_SIMULATION_SCHEMA_VERSION)
-    return { ...state, relayRecordDestroyed: false };
-  return state;
+  return {
+    ...state,
+    ...(schemaVersion === LEGACY_WEFTWAYS_SIMULATION_SCHEMA_VERSION
+      ? { relayRecordConcealed: false }
+      : {}),
+    ...(schemaVersion < THIRD_WEFTWAYS_SIMULATION_SCHEMA_VERSION
+      ? { relayRecordDestroyed: false }
+      : {}),
+    ...(schemaVersion < WEFTWAYS_SIMULATION_SCHEMA_VERSION
+      ? { relayRestitutionNegotiated: false }
+      : {}),
+  };
 }
 
 /**

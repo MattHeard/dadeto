@@ -9,6 +9,7 @@ import {
   THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
   THREEFOLD_WEFTWAYS_PRIVATE_CACHE_ID,
   THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
+  THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID,
   THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID,
 } from '../../../../src/core/browser/game/threefold/weftways.js';
 import {
@@ -111,6 +112,13 @@ const approachPrivateCache = state =>
 const approachBrazier = state =>
   approachInteractable(state, THREEFOLD_WEFTWAYS_BRAZIER_ID);
 
+/**
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Current crossing.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Updated crossing.
+ */
+const approachRestitutionTable = state =>
+  approachInteractable(state, THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID);
+
 describe('THREEFOLD Weftways caravan bypass', () => {
   test('authors the s = −2 Threadbound crossing and its oversized pack beetles', () => {
     const scene = createThreefoldWeftwaysScene();
@@ -132,6 +140,9 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     expect(scene.interactables.map(({ id }) => id)).toContain(
       THREEFOLD_WEFTWAYS_BRAZIER_ID
     );
+    expect(scene.interactables.map(({ id }) => id)).toContain(
+      THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID
+    );
     expect(beetles).toHaveLength(2);
     expect(beetles.every(({ growthRule }) => growthRule === 'overlap')).toBe(
       true
@@ -146,6 +157,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       relayRecordShared: false,
       relayRecordConcealed: false,
       relayRecordDestroyed: false,
+      relayRestitutionNegotiated: false,
       threadboundRelayRecord: null,
       threadboundRelayDisclosure: null,
       threadboundRelayConcealment: null,
@@ -176,6 +188,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       relayRecordShared: false,
       relayRecordConcealed: false,
       relayRecordDestroyed: false,
+      relayRestitutionNegotiated: false,
     });
     expect(scene.spawn).not.toBe(createThreefoldWeftwaysScene().spawn);
 
@@ -250,6 +263,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
         relayRecordShared: false,
         relayRecordConcealed: false,
         relayRecordDestroyed: false,
+        relayRestitutionNegotiated: false,
       });
       expect(state.elapsedGameSeconds).toBe(previousTime + 15);
       expect(state.crisis).toEqual(createWeftwaysRun().crisis);
@@ -325,7 +339,9 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       expect(record.text).toContain('what Iri knew');
       expect(record.text).toContain('who was responsible');
       expect(
-        frame.shapes.some(({ text }) => text === 'E SHARE · KEEP · DESTROY')
+        frame.shapes.some(
+          ({ text }) => text === 'E SHARE · REPAIR · KEEP · DESTROY'
+        )
       ).toBe(true);
 
       state = approachCaravanCircle(state);
@@ -496,6 +512,7 @@ describe('THREEFOLD Threadbound ledger destruction', () => {
       relayRecordShared: false,
       relayRecordConcealed: false,
       relayRecordDestroyed: true,
+      relayRestitutionNegotiated: false,
     });
     expect(state.crisis).toEqual(crisis);
     expect(state.episode).toEqual(episode);
@@ -525,7 +542,7 @@ describe('THREEFOLD Threadbound ledger destruction', () => {
     ).toBe(true);
 
     const serialized = serializeThreefoldSimulation(state);
-    expect(JSON.parse(serialized).schemaVersion).toBe(3);
+    expect(JSON.parse(serialized).schemaVersion).toBe(4);
     const restored = restoreThreefoldSimulation(serialized);
     expect(restored.weftways).toEqual(state.weftways);
     expect(
@@ -536,6 +553,154 @@ describe('THREEFOLD Threadbound ledger destruction', () => {
     ).toEqual(state.weftways);
     expect(
       stepThreefoldSimulation(approachPell(restored), { type: 'interact' })
+        .weftways
+    ).toEqual(state.weftways);
+  });
+});
+
+/**
+ * @param {{state: any, testCase: any, committedChoice: string, floodedGeometryIds: string[], crisis: any, episode: any}} context Negotiated outcome and unchanged crossing facts.
+ * @returns {{restitution: any}} Rendered response.
+ */
+function assertNegotiatedRestitutionOutcome(context) {
+  const {
+    state,
+    testCase,
+    committedChoice,
+    floodedGeometryIds,
+    crisis,
+    episode,
+  } = context;
+  const frame = renderThreefoldFrame(state);
+  const restitution = frame.threefold.threadboundRelayRestitution;
+  expect(state.weftways).toMatchObject({
+    flowChoice: committedChoice,
+    floodedGeometryIds,
+    relayRecordRead: true,
+    relayRecordShared: false,
+    relayRecordConcealed: false,
+    relayRecordDestroyed: false,
+    relayRestitutionNegotiated: true,
+  });
+  expect(state.crisis).toEqual(crisis);
+  expect(state.episode).toEqual(episode);
+  expect(restitution.title).toBe('Threadbound relay restitution');
+  expect(restitution.text).toContain(
+    'carry replacement relay tokens to downstream settlements'
+  );
+  expect(restitution.text).toContain(testCase.response);
+  expect(restitution.text).toContain('final sender');
+  expect(restitution.text).toContain('what Iri knew');
+  expect(restitution.text).toContain('assign responsibility');
+  expect(frame.toast).toBe(testCase.toast);
+  expect(frame.shapes.some(({ text }) => text === testCase.caption)).toBe(true);
+  expect(frame.shapes).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ x: 64, y: 64, fill: '#bfd77c' }),
+    ])
+  );
+  expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
+    true
+  );
+  return { restitution };
+}
+
+/**
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Saved route.
+ * @param {any} restitution Expected accessible outcome.
+ * @returns {ReturnType<typeof restoreThreefoldSimulation>} Restored route.
+ */
+function assertRestitutionSaveRoundTrip(state, restitution) {
+  const serialized = serializeThreefoldSimulation(state);
+  expect(JSON.parse(serialized).schemaVersion).toBe(4);
+  const restored = restoreThreefoldSimulation(serialized);
+  expect(restored.weftways).toEqual(state.weftways);
+  expect(
+    renderThreefoldFrame(restored).threefold.threadboundRelayRestitution
+  ).toEqual(restitution);
+  return restored;
+}
+
+describe('THREEFOLD Threadbound restitution negotiation', () => {
+  test.each([
+    {
+      choice: 'pell-bypass',
+      target: THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
+      direction: 'left',
+      response: 'Pell accepts the plan.',
+      toast:
+        'Pell accepts Mara’s offer to carry relay tokens and help restore the route.',
+      caption: 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR',
+    },
+    {
+      choice: 'quay-spill',
+      target: THREEFOLD_WEFTWAYS_QUAY_SPILL_ID,
+      direction: 'right',
+      response: 'Pell defers final terms',
+      toast: 'Pell defers terms until root-channel damage is assessed.',
+      caption: 'PELL DEFERS · ROOT DAMAGE TO ASSESS',
+    },
+  ])('negotiates a one-time repair offer after $choice', testCase => {
+    let state = stepThreefoldSimulation(
+      approachFlowControl(
+        createWeftwaysRun(),
+        testCase.target,
+        testCase.direction
+      ),
+      { type: 'interact' }
+    );
+    const committedChoice = state.weftways.flowChoice;
+    const floodedGeometryIds = [...state.weftways.floodedGeometryIds];
+
+    state = approachRestitutionTable(state);
+    expect(
+      isThreefoldInteractableInReach(
+        state,
+        THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID
+      )
+    ).toBe(true);
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.weftways.relayRestitutionNegotiated).toBe(false);
+
+    state = stepThreefoldSimulation(approachPell(state), { type: 'interact' });
+    expect(state.weftways.relayRecordRead).toBe(true);
+    expect(
+      isThreefoldInteractableInReach(
+        state,
+        THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID
+      )
+    ).toBe(false);
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    expect(state.weftways.relayRestitutionNegotiated).toBe(false);
+
+    state = approachRestitutionTable(state);
+    const crisis = state.crisis;
+    const episode = state.episode;
+    state = stepThreefoldSimulation(state, { type: 'interact' });
+    const { restitution } = assertNegotiatedRestitutionOutcome({
+      state,
+      testCase,
+      committedChoice,
+      floodedGeometryIds,
+      crisis,
+      episode,
+    });
+    const restored = assertRestitutionSaveRoundTrip(state, restitution);
+    expect(
+      stepThreefoldSimulation(restored, { type: 'interact' }).weftways
+    ).toEqual(state.weftways);
+    expect(
+      stepThreefoldSimulation(approachCaravanCircle(state), {
+        type: 'interact',
+      }).weftways
+    ).toEqual(state.weftways);
+    expect(
+      stepThreefoldSimulation(approachPrivateCache(state), {
+        type: 'interact',
+      }).weftways
+    ).toEqual(state.weftways);
+    expect(
+      stepThreefoldSimulation(approachBrazier(state), { type: 'interact' })
         .weftways
     ).toEqual(state.weftways);
   });
@@ -590,7 +755,7 @@ describe('THREEFOLD Weftways persistence and validation', () => {
     const envelope = JSON.parse(serialized);
     const restored = restoreThreefoldSimulation(serialized);
 
-    expect(envelope.schemaVersion).toBe(3);
+    expect(envelope.schemaVersion).toBe(4);
     expect(envelope.sceneId).toBe('weftways');
     expect(restored).toEqual(state);
     expect(renderThreefoldFrame(restored).toast).toBe(
@@ -631,7 +796,61 @@ describe('THREEFOLD Weftways persistence and validation', () => {
     ]);
     expect(routeStore.load()).toEqual(state);
     expect(defaultStore.load().scene.id).toBe('broken-gate');
+  });
 
+  test('migrates legacy relay responses and defaults restitution to false', () => {
+    const state = stepThreefoldSimulation(
+      approachFlowControl(
+        createWeftwaysRun(),
+        THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
+        'left'
+      ),
+      { type: 'interact' }
+    );
+    const serialized = serializeThreefoldSimulation(state);
+    const legacyRoute = JSON.parse(serialized);
+    legacyRoute.schemaVersion = 1;
+    legacyRoute.state.weftways.relayRecordRead = true;
+    legacyRoute.state.weftways.relayRecordShared = true;
+    delete legacyRoute.state.weftways.relayRecordConcealed;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(legacyRoute)).weftways
+    ).toMatchObject({
+      relayRecordRead: true,
+      relayRecordShared: true,
+      relayRecordConcealed: false,
+      relayRecordDestroyed: false,
+      relayRestitutionNegotiated: false,
+    });
+    const previousRoute = JSON.parse(serialized);
+    previousRoute.schemaVersion = 2;
+    previousRoute.state.weftways.relayRecordRead = true;
+    previousRoute.state.weftways.relayRecordConcealed = true;
+    delete previousRoute.state.weftways.relayRecordDestroyed;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(previousRoute)).weftways
+    ).toMatchObject({
+      relayRecordConcealed: true,
+      relayRecordDestroyed: false,
+      relayRestitutionNegotiated: false,
+    });
+    const thirdRoute = JSON.parse(serialized);
+    thirdRoute.schemaVersion = 3;
+    thirdRoute.state.weftways.relayRecordRead = true;
+    thirdRoute.state.weftways.relayRecordDestroyed = true;
+    delete thirdRoute.state.weftways.relayRestitutionNegotiated;
+    expect(
+      restoreThreefoldSimulation(JSON.stringify(thirdRoute)).weftways
+    ).toMatchObject({
+      relayRecordRead: true,
+      relayRecordDestroyed: true,
+      relayRestitutionNegotiated: false,
+    });
+  });
+
+  test('rejects unsupported and inconsistent Weftways route state', () => {
+    const state = createWeftwaysRun();
+    const envelope = JSON.parse(serializeThreefoldSimulation(state));
     expect(() => normalizeThreefoldWeftwaysState(null)).toThrow(
       'Weftways state is invalid.'
     );
@@ -646,33 +865,9 @@ describe('THREEFOLD Weftways persistence and validation', () => {
     ).toThrow('Weftways flood footprint is inconsistent.');
     expect(
       restoreThreefoldSimulation(
-        JSON.stringify({ ...envelope, schemaVersion: 4 })
+        JSON.stringify({ ...envelope, schemaVersion: 5 })
       )
     ).toBeNull();
-    const legacyRoute = JSON.parse(serialized);
-    legacyRoute.schemaVersion = 1;
-    legacyRoute.state.weftways.relayRecordRead = true;
-    legacyRoute.state.weftways.relayRecordShared = false;
-    delete legacyRoute.state.weftways.relayRecordConcealed;
-    expect(
-      restoreThreefoldSimulation(JSON.stringify(legacyRoute)).weftways
-    ).toMatchObject({
-      relayRecordRead: true,
-      relayRecordShared: false,
-      relayRecordConcealed: false,
-      relayRecordDestroyed: false,
-    });
-    const previousRoute = JSON.parse(serialized);
-    previousRoute.schemaVersion = 2;
-    previousRoute.state.weftways.relayRecordRead = true;
-    previousRoute.state.weftways.relayRecordConcealed = true;
-    delete previousRoute.state.weftways.relayRecordDestroyed;
-    expect(
-      restoreThreefoldSimulation(JSON.stringify(previousRoute)).weftways
-    ).toMatchObject({
-      relayRecordConcealed: true,
-      relayRecordDestroyed: false,
-    });
     expect(
       normalizeThreefoldWeftwaysState({ flowChoice: 'pell-bypass' })
     ).toMatchObject({
@@ -680,6 +875,7 @@ describe('THREEFOLD Weftways persistence and validation', () => {
       relayRecordShared: false,
       relayRecordConcealed: false,
       relayRecordDestroyed: false,
+      relayRestitutionNegotiated: false,
     });
     expect(() =>
       normalizeThreefoldWeftwaysState({
@@ -702,15 +898,15 @@ describe('THREEFOLD Weftways persistence and validation', () => {
     expect(() =>
       normalizeThreefoldWeftwaysState({
         flowChoice: 'pell-bypass',
-        relayRecordShared: 'yes',
-      })
-    ).toThrow('Weftways relay disclosure state is invalid.');
-    expect(() =>
-      normalizeThreefoldWeftwaysState({
-        flowChoice: 'pell-bypass',
         relayRecordShared: true,
       })
     ).toThrow('Weftways relay disclosure requires the record.');
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRecordShared: 'yes',
+      })
+    ).toThrow('Weftways relay disclosure state is invalid.');
   });
 
   test('rejects invalid and conflicting private relay decisions', () => {
@@ -755,6 +951,29 @@ describe('THREEFOLD Weftways persistence and validation', () => {
         relayRecordRead: true,
         relayRecordDestroyed: true,
         relayRecordConcealed: true,
+      })
+    ).toThrow('Weftways relay choices conflict.');
+  });
+
+  test('rejects invalid, pre-discovery, and conflicting restitution choices', () => {
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRestitutionNegotiated: 'yes',
+      })
+    ).toThrow('Weftways restitution negotiation state is invalid.');
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRestitutionNegotiated: true,
+      })
+    ).toThrow('Weftways restitution requires the record.');
+    expect(() =>
+      normalizeThreefoldWeftwaysState({
+        flowChoice: 'pell-bypass',
+        relayRecordRead: true,
+        relayRestitutionNegotiated: true,
+        relayRecordDestroyed: true,
       })
     ).toThrow('Weftways relay choices conflict.');
   });

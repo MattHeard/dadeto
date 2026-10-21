@@ -211,4 +211,45 @@ describe('THREEFOLD Weftways page record', () => {
     expect(summary.textContent).toBe(outcome.title);
     expect(text.textContent).toBe(outcome.text);
   });
+
+  test('shows the negotiated restitution outcome accessibly', () => {
+    const summary = { textContent: '' };
+    const text = { textContent: '' };
+    const restitutionPanel = {
+      hidden: true,
+      querySelector: selector => (selector === 'summary' ? summary : null),
+    };
+    const documentObj = {
+      querySelector: selector =>
+        selector === '#weftways-relay-restitution'
+          ? restitutionPanel
+          : selector === '#weftways-relay-restitution-text'
+            ? text
+            : null,
+    };
+    const windowObj = {
+      location: { search: '?scene=weftways' },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    };
+    const outcome = {
+      title: 'Threadbound relay restitution',
+      text: 'Mara offers replacement tokens; Pell accepts while responsibility remains unresolved.',
+    };
+
+    expect(THREEFOLD_HTML).toContain('id="weftways-relay-restitution"');
+    expect(THREEFOLD_HTML).toContain('id="weftways-relay-restitution-text"');
+    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    page.drawFrame({}, { threefold: { threadboundRelayRestitution: outcome } });
+
+    expect(restitutionPanel.hidden).toBe(false);
+    expect(summary.textContent).toBe(outcome.title);
+    expect(text.textContent).toBe(outcome.text);
+    page.drawFrame({}, { threefold: { threadboundRelayRestitution: null } });
+    expect(restitutionPanel.hidden).toBe(true);
+  });
 });
