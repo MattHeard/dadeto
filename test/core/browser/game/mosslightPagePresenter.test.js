@@ -3,7 +3,10 @@ import { CONTENT } from '../../../../src/core/browser/game/mosslight-valley/cont
 import { createSimulation } from '../../../../src/core/browser/game/mosslight-valley/simulation.js';
 import { startBattle } from '../../../../src/core/browser/game/mosslight-valley/combat.js';
 import { serializeSave } from '../../../../src/core/browser/game/mosslight-valley/save.js';
-import { startMosslightPage } from '../../../../src/core/browser/game/mosslight-valley/pagePresenter.js';
+import {
+  createMosslightPageEnvironment,
+  startMosslightPage,
+} from '../../../../src/core/browser/game/mosslight-valley/pagePresenter.js';
 
 class FakeTarget {
   listeners = {};
@@ -413,3 +416,103 @@ test('page audio reacts to a quest reveal and a battle turn', () => {
   expect(battlePage.audioFrequencies).toContain(180);
   stopBattlePage();
 });
+
+test('shares file controls across named save formats with accessible success and failure feedback', async () => {
+  const page = pageOptions();
+  const exportButton = new FakeElement();
+  const importButton = new FakeElement();
+  const input = new FakeElement();
+  page.selectors['#export-campaign'] = exportButton;
+  page.selectors['#import-campaign-button'] = importButton;
+  page.selectors['#import-campaign'] = input;
+  page.options.saveTransfers = [
+    {
+      exportSelector: '#export-campaign',
+      importSelector: '#import-campaign-button',
+      inputSelector: '#import-campaign',
+      exportMethod: 'exportSave',
+      importMethod: 'importSave',
+      filename: 'campaign.json',
+      successText: 'Campaign restored.',
+      errorText: 'Campaign was kept.',
+    },
+  ];
+  const dispose = startMosslightPage(page.options);
+  exportButton.click();
+  expect(page.didDownload()).toBe(true);
+  importButton.click();
+  input.files = [];
+  await input.emit('change');
+  input.files = [{ text: async () => '{' }];
+  await input.emit('change');
+  expect(page.selectors['#game-status'].textContent).toBe('Campaign was kept.');
+  page.selectors['#save-game'].click();
+  const value = JSON.parse(page.storage.get('permanentData'))[
+    'mosslight-valley-saves-v2'
+  ].slots['0'];
+  input.files = [{ text: async () => value }];
+  await input.emit('change');
+  expect(page.selectors['#game-status'].textContent).toBe('Campaign restored.');
+  expect(input.value).toBe('');
+  page.windowObj.Blob = class {
+    constructor() {
+      throw new Error('download unavailable');
+    }
+  };
+  exportButton.click();
+  expect(page.selectors['#game-status'].textContent).toBe(
+    'That backup could not be created.'
+  );
+  dispose();
+});
+
+test('groups browser adapters without ambient globals', () => {
+  const options = {
+    documentObj: {},
+    windowObj: {},
+    navigatorObj: {},
+    requestFrame: jest.fn(),
+    cancelFrame: jest.fn(),
+  };
+  expect(createMosslightPageEnvironment(options)).toEqual({
+    browser: {
+      documentObj: options.documentObj,
+      windowObj: options.windowObj,
+      navigatorObj: options.navigatorObj,
+    },
+    animation: {
+      requestFrame: options.requestFrame,
+      cancelFrame: options.cancelFrame,
+    },
+  });
+});
+
+test.each([false, true])(
+  'save feedback respects reported unsaved progress (%s)',
+  dirty => {
+    const page = pageOptions();
+    const runtime = {
+      start: jest.fn(),
+      getSlot: () => 0,
+      frame: () => ({}),
+      save: jest.fn(),
+      getPersistenceStatus: () => ({ dirty }),
+      getSnapshot: () => ({
+        world: { map: { name: 'Test' }, day: 1, time: 0 },
+      }),
+      isRunning: () => true,
+      pause: jest.fn(),
+    };
+    page.options.createRuntime = () => runtime;
+    page.options.drawFrame = () => {};
+    page.options.registerTools = () => () => {};
+    const dispose = startMosslightPage(page.options);
+    page.selectors['#save-game'].click();
+    expect(page.selectors['#game-status'].textContent).toBe(
+      dirty
+        ? 'Progress is only in this open page. Back up before leaving.'
+        : 'Saved on this device.'
+    );
+    dispose();
+  }
+);

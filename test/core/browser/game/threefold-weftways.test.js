@@ -1035,10 +1035,7 @@ describe('THREEFOLD Weftways persistence and validation', () => {
     expect(
       defaultStore.save(createThreefoldSimulation(CRISIS_THRESHOLDS))
     ).toBe(true);
-    expect([...records.keys()]).toEqual([
-      'dadeto.threefold.simulation-save.v1.weftways',
-      'dadeto.threefold.simulation-save.v1',
-    ]);
+    expect([...records.keys()]).toEqual(['dadeto.threefold.campaign.v1']);
     expect(routeStore.load()).toEqual(state);
     expect(defaultStore.load().scene.id).toBe('broken-gate');
   });

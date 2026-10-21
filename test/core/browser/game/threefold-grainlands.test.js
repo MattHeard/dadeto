@@ -211,10 +211,7 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(
       defaultStore.save(createThreefoldSimulation(CRISIS_THRESHOLDS))
     ).toBe(true);
-    expect([...records.keys()]).toEqual([
-      'dadeto.threefold.simulation-save.v1.grainlands',
-      'dadeto.threefold.simulation-save.v1',
-    ]);
+    expect([...records.keys()]).toEqual(['dadeto.threefold.campaign.v1']);
     expect(grainlandsStore.load()).toEqual(broken);
 
     const unsupported = JSON.parse(serialized);
