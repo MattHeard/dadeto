@@ -72,8 +72,8 @@ describe('THREEFOLD Crownback Reach page', () => {
       '49.38 metres'
     );
     expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Return to the Belltops',
-      href: '/threefold/?scene=belltops',
+      textContent: 'Continue to the Shoals',
+      href: '/threefold/?scene=shoals',
     });
     expect(nodes.get('#interact-label').textContent).toContain(
       'E · MEET THARN'

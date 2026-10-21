@@ -8,6 +8,10 @@ import {
   THREEFOLD_CROWNBACK_REACH_SCENE_ID,
 } from './crownback-reach.js';
 import {
+  isThreefoldWakeformInReach,
+  THREEFOLD_WAKEFORM_SHOALS_SCENE_ID,
+} from './wakeform-shoals.js';
+import {
   THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
   THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID,
   THREEFOLD_SILT_MARGIN_SIGNAL_ID,
@@ -194,6 +198,10 @@ export function renderThreefoldFrame(state) {
     crownbackReach:
       state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID
         ? /** @type {Record<string, any>} */ (state).crownbackReach
+        : null,
+    wakeformShoals:
+      state.scene.id === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID
+        ? /** @type {Record<string, any>} */ (state).wakeformShoals
         : null,
   };
   return alignThreefoldFrame(frame);
@@ -978,6 +986,20 @@ function getHighWorldToast(state) {
       return isThreefoldCrownbackTharnInReach(/** @type {any} */ (state))
         ? 'ELDER THARN IN REACH · E MEET'
         : 'FIND ELDER THARN · E TO MEET';
+  }
+  if (state.scene.id === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID) {
+    const shoalsState = /** @type {Record<string, any>} */ (state)
+      .wakeformShoals;
+    const wakeformLost = lostResidents.includes('WAKEFORM');
+    if (shoalsState?.outerDefenseBreached === true)
+      return wakeformLost
+        ? 'OUTER WALL BROKEN · WAKEFORM LOST · FLOW DIVERTED'
+        : 'OUTER WALL BROKEN · FLOW DIVERTED SEAWARD';
+    if (shoalsState?.wakeformDiverted === true)
+      return 'WAKEFORM GUIDED NORTH · CURRENT DIVERTED';
+    return isThreefoldWakeformInReach(/** @type {any} */ (state))
+      ? 'WAKEFORM IN REACH · E DIVERT'
+      : 'FIND WAKEFORM · E TO DIVERT';
   }
   if (lostResidents.length > 0 || damagedStructures.length > 0)
     return `${region} GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;

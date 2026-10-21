@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), continue to the Silt Margin, then reach the Lantern Ward, Belltops, and Crownback Reach.
+Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), continue to the Silt Margin, then reach the Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
 
 Before the first timed action, a dock worker warns, “The tide is climbing. That gate will not hold,” then says they shouted the failing-gate warning toward the lower path. The opening goal is to investigate the failing gate and decide how to respond; the game does not prescribe a solution.
 
@@ -102,3 +102,9 @@ Belltops exports preserve its damaged harbor structures and resident fates under
 Continue from Belltops to open [/threefold/?scene=crownback-reach](/threefold/?scene=crownback-reach). Mara starts at +3, 49.38 metres tall. Elder Tharn stands 44 metres high and the calf is 18 metres tall. Move closer to Tharn and press E once to record their meeting; an out-of-reach or repeated interaction has no effect. The touch interaction button uses the same action. A remains growth and previews the living-root arch, floodwall, and Crownbacks in the +4 footprint; B shrinks to +2.
 
 The route uses the shared 160 × 144 Mosslight renderer, high-world reducer, and local game clock. Meeting state, damaged structures, and growth fates persist in the Crownback Reach save, isolated from Belltops and Broken Gate.
+
+## The Shoals
+
+Continue from Crownback Reach to open [/threefold/?scene=shoals](/threefold/?scene=shoals). Mara starts at +3, 49.38 metres tall, with +4 unlocked at 148.13 metres. The 132-metre Wakeform contests an outer tide wall. Move within reach and press E to guide it toward the north channel; the Wakeform leaves the shoals and the visible flow changes. A previews the wall and the Wakeform if Mara's +4 body will contain it. Growing through the wall opens the seaward current and can kill the Wakeform when it lies inside the physical growth footprint. B steps down to +2.
+
+The shoals use the shared 160 × 144 Mosslight renderer and local game clock. The guided Wakeform, breached wall, current outcome, and growth fate persist in a save separate from Crownback Reach, Belltops, and Broken Gate.

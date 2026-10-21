@@ -5,10 +5,10 @@ const SCENE_BOUNDS = { min: { x: -24, y: -18 }, max: { x: 24, y: 18 } };
 /** @typedef {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} ThreefoldHighWorldVolumeBounds */
 /** @typedef {{id: string, displayName: string, bounds: ThreefoldHighWorldVolumeBounds}} ThreefoldHighWorldStructure */
 /** @typedef {{id: string, displayName: string, growthRule: 'overlap', position: {x: number, y: number}, bounds: ThreefoldHighWorldVolumeBounds}} ThreefoldHighWorldResident */
-/** @typedef {{id: 'lantern-ward'|'belltops'|'crownback-reach', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: ThreefoldHighWorldStructure[], decorations: [], interactables: [], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldScene */
-/** @typedef {{displayName: string, scale: number, minimumUnlockedScale: number, maximumUnlockedScale: number, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}, geometry: ThreefoldHighWorldStructure[], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldSceneDefinition */
+/** @typedef {{id: 'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals', displayName: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: ThreefoldHighWorldStructure[], decorations: [], interactables: [], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldScene */
+/** @typedef {{displayName: string, scale: number, minimumUnlockedScale: number, maximumUnlockedScale: number, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}, spawnPosition?: {x: number, y: number}, geometry: ThreefoldHighWorldStructure[], creatures: ThreefoldHighWorldResident[]}} ThreefoldHighWorldSceneDefinition */
 
-/** @type {Record<'lantern-ward'|'belltops'|'crownback-reach', ThreefoldHighWorldSceneDefinition>} */
+/** @type {Record<'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals', ThreefoldHighWorldSceneDefinition>} */
 const SCENE_DEFINITIONS = {
   'lantern-ward': {
     displayName: 'The Lantern Ward',
@@ -131,11 +131,21 @@ const SCENE_DEFINITIONS = {
       ),
     ],
   },
+  'wakeform-shoals': {
+    displayName: 'The Shoals',
+    scale: 3,
+    minimumUnlockedScale: 3,
+    maximumUnlockedScale: 4,
+    spawnPosition: { x: -30, y: 0 },
+    bounds: { min: { x: -96, y: -64 }, max: { x: 96, y: 64 } },
+    geometry: [createShoalsTidewall()],
+    creatures: [createShoalsWakeform()],
+  },
 };
 
 /**
  * Create an isolated high-world city region from its authored scene data.
- * @param {'lantern-ward'|'belltops'|'crownback-reach'} sceneId Authored region identifier.
+ * @param {'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals'} sceneId Authored region identifier.
  * @returns {ThreefoldHighWorldScene} Fresh city geometry and population state.
  */
 export function createThreefoldHighWorldScene(sceneId) {
@@ -145,16 +155,13 @@ export function createThreefoldHighWorldScene(sceneId) {
     id: sceneId,
     displayName: definition.displayName,
     bounds: copyBounds(bounds),
-    spawn: createScaleState(
-      { x: 0, y: 0 },
-      {
-        scale: definition.scale,
-        anchor: 8,
-        maximumAnchor: 8,
-        minimumUnlockedScale: definition.minimumUnlockedScale,
-        maximumUnlockedScale: definition.maximumUnlockedScale,
-      }
-    ),
+    spawn: createScaleState(definition.spawnPosition || { x: 0, y: 0 }, {
+      scale: definition.scale,
+      anchor: 8,
+      maximumAnchor: 8,
+      minimumUnlockedScale: definition.minimumUnlockedScale,
+      maximumUnlockedScale: definition.maximumUnlockedScale,
+    }),
     baseBodyWidthMeters: 0.4,
     areas: [{ id: sceneId, bounds: copyBounds(bounds) }],
     geometry: definition.geometry.map(copyStructure),
@@ -167,7 +174,7 @@ export function createThreefoldHighWorldScene(sceneId) {
 /**
  * Check whether a saved scene identifier belongs to an authored high-world region.
  * @param {string} sceneId Candidate scene identifier.
- * @returns {sceneId is 'lantern-ward'|'belltops'|'crownback-reach'} Whether the scene can be reconstructed here.
+ * @returns {sceneId is 'lantern-ward'|'belltops'|'crownback-reach'|'wakeform-shoals'} Whether the scene can be reconstructed here.
  */
 export function isThreefoldHighWorldSceneId(sceneId) {
   return Object.hasOwn(SCENE_DEFINITIONS, sceneId);
@@ -226,6 +233,31 @@ function createHighWorldStructure(id, displayName, bounds) {
  */
 function createHighWorldResident(id, displayName, position, bounds) {
   return { id, displayName, growthRule: 'overlap', position, bounds };
+}
+
+/**
+ * Build the outer wall whose breach redirects the shoals current.
+ * @returns {ThreefoldHighWorldStructure} Shoals defense geometry.
+ */
+function createShoalsTidewall() {
+  return createHighWorldStructure(
+    'shoals-outer-tidewall',
+    'OUTER TIDE WALL',
+    createVolumeBounds({ x: -22, y: 8, z: 0 }, { x: -12, y: 16, z: 96 })
+  );
+}
+
+/**
+ * Build the 132-metre leviathan contesting the seaward diversion.
+ * @returns {ThreefoldHighWorldResident} Authored Wakeform.
+ */
+function createShoalsWakeform() {
+  return createHighWorldResident(
+    'shoals-wakeform',
+    'WAKEFORM',
+    { x: 0, y: 0 },
+    createVolumeBounds({ x: -12, y: -9, z: 0 }, { x: 12, y: 9, z: 132 })
+  );
 }
 
 /**

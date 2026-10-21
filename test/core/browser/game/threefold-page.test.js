@@ -343,8 +343,8 @@ describe('THREEFOLD page adapter', () => {
     expect(belltopsRuntime.getSnapshot().world.map.name).toBe('BELLTOPS');
     expect(nodes.get('#chapter-description').textContent).toContain('Orla');
     expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Return to the Lantern Ward',
-      href: '/threefold/?scene=lantern-ward',
+      textContent: 'Continue to Crownback Reach',
+      href: '/threefold/?scene=crownback-reach',
     });
     expect(nodes.get('#interact-control').hidden).toBe(true);
   });

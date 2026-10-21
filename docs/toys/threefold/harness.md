@@ -4,7 +4,7 @@
 
 1. Install prerequisites: `npm install`.
 2. Build the standalone page and copied game modules: `npm run build`.
-3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, or `/threefold/?scene=crownback-reach` for the +3 Crownback encounter.
+3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, `/threefold/?scene=belltops` for the +2 harbor district, `/threefold/?scene=crownback-reach` for the +3 Crownback encounter, or `/threefold/?scene=shoals` for the offshore +4 intervention.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
 ## Small-World Hydraulic Model
@@ -28,6 +28,10 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-lantern-war
 ## Crownback Reach Encounter
 
 Run `npm run check:impact:run -- --files src/core/browser/game/threefold/high-world-scenes.js src/core/browser/game/threefold/crownback-reach.js src/core/browser/game/threefold/simulation.js src/core/browser/game/threefold/page.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-crownback-reach.test.js test/core/browser/game/threefold-crownback-page.test.js test/core/browser/game/threefold-page.test.js`. The route starts at +3 (49.38 m), with Tharn at 44 m and the calf at 18 m. A movement action brings Mara into the 20%-of-height conversation radius; E meets Tharn and advances local time once. Out-of-range and repeated E actions are inert. The +4 preview names structures and Crownbacks without mutation; growth commits the same fates. Verify all canvas shapes remain on the eight-pixel Mosslight grid and meeting/fate state roundtrips under the isolated `crownback-reach` save key.
+
+## Offshore Wakeform Shoals
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/high-world-scenes.js src/core/browser/game/threefold/wakeform-shoals.js src/core/browser/game/threefold/simulation.js src/core/browser/game/threefold/page.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-wakeform-shoals.test.js test/core/browser/game/threefold-wakeform-shoals-page.test.js test/core/browser/game/threefold-page.test.js`. The route starts at +3 with +4 unlocked. The 132-metre Wakeform can be guided north with an in-range E action; otherwise growing through the outer tide wall changes the current seaward and kills the Wakeform only when the new body volume contains it. Check read-only preview, out-of-range/repeated interaction, deterministic damage and fates, eight-pixel output, export/import, and independent `wakeform-shoals` save storage.
 
 ## Expected Observable Outputs
 

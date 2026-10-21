@@ -8,6 +8,11 @@ import {
   normalizeThreefoldCrownbackReachState,
   THREEFOLD_CROWNBACK_REACH_SCENE_ID,
 } from './crownback-reach.js';
+import {
+  createThreefoldWakeformShoalsScene,
+  normalizeThreefoldWakeformShoalsState,
+  THREEFOLD_WAKEFORM_SHOALS_SCENE_ID,
+} from './wakeform-shoals.js';
 import { createThreefoldLanternWardScene } from './lantern-ward.js';
 import {
   createThreefoldSluiceScene,
@@ -119,6 +124,10 @@ export function serializeThreefoldSimulation(simulation) {
   if (simulation.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID)
     state.crownbackReach = normalizeThreefoldCrownbackReachState(
       /** @type {Record<string, any>} */ (simulation).crownbackReach
+    );
+  if (simulation.scene.id === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID)
+    state.wakeformShoals = normalizeThreefoldWakeformShoalsState(
+      /** @type {Record<string, any>} */ (simulation).wakeformShoals
     );
   const elapsedGameSeconds = getSimulationElapsedGameSeconds(simulation);
   if (elapsedGameSeconds !== null)
@@ -236,6 +245,19 @@ export function restoreThreefoldSimulation(serialized) {
         scene: createBrokenGateScene(),
       };
     if (isHighWorldScene) {
+      if (envelope.sceneId === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID) {
+        const wakeformShoals = normalizeThreefoldWakeformShoalsState(
+          state.wakeformShoals
+        );
+        return restoreTimedScene(
+          restoredState,
+          state,
+          createThreefoldWakeformShoalsScene({
+            wakeformDiverted: wakeformShoals.wakeformDiverted,
+          }),
+          { wakeformShoals }
+        );
+      }
       const highWorldScene =
         envelope.sceneId === 'belltops'
           ? createThreefoldBelltopsScene()
@@ -272,7 +294,7 @@ export function restoreThreefoldSimulation(serialized) {
  * Rebuild one independently timed scene after validating its saved state.
  * @param {Record<string, any>} restoredState Shared player, episode, and encounter state.
  * @param {Record<string, any>} state Serialized scene state.
- * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldCrownbackReachScene>} scene Authored scene reconstruction.
+ * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>} scene Authored scene reconstruction.
  * @param {Record<string, any>} [sceneState] Validated scene-specific puzzle state.
  * @returns {ReturnType<typeof createThreefoldSimulation>} Complete restored scene.
  */

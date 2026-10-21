@@ -14,6 +14,7 @@ import { createBrokenGateScene } from './gatehouse.js';
 import * as belltops from './belltops.js';
 import * as crownbackReach from './crownback-reach.js';
 import * as lanternWard from './lantern-ward.js';
+import * as wakeformShoals from './wakeform-shoals.js';
 import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
@@ -66,7 +67,8 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /** @typedef {{scene: ReturnType<typeof lanternWard.createThreefoldLanternWardScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} LanternWardSimulationState */
 /** @typedef {{scene: ReturnType<typeof belltops.createThreefoldBelltopsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} BelltopsSimulationState */
 /** @typedef {{scene: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, crownbackReach: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachState>, elapsedGameSeconds: number}} CrownbackReachSimulationState */
-/** @typedef {LanternWardSimulationState|BelltopsSimulationState|CrownbackReachSimulationState} HighWorldSimulationState */
+/** @typedef {{scene: ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, wakeformShoals: ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsState>, elapsedGameSeconds: number}} WakeformShoalsSimulationState */
+/** @typedef {LanternWardSimulationState|BelltopsSimulationState|CrownbackReachSimulationState|WakeformShoalsSimulationState} HighWorldSimulationState */
 /** @typedef {BrokenGateSimulationState|SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} ThreefoldSimulationState */
 /** @typedef {{urgentAtMinutes: number, surgeAtMinutes: number, aftermathAtMinutes: number}} ThreefoldCrisisThresholds */
 /** @typedef {{type: string, direction?: string, elapsedGameMinutes?: number, preActionFrame?: Record<string, any>}} ThreefoldWorldAction */
@@ -111,12 +113,18 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /**
  * @overload
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} scene Authored offshore shoals route.
+ * @returns {WakeformShoalsSimulationState} Initial Wakeform shoals simulation state.
+ */
+/**
+ * @overload
+ * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>|ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial state for either authored scene.
  */
 /**
  * @param {ThreefoldCrisisThresholds} thresholds Authored crisis-stage boundaries in game minutes.
- * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>} [scene] Canonical scene.
+ * @param {ReturnType<typeof createBrokenGateScene>|ReturnType<typeof import('./sluice-scene.js').createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof belltops.createThreefoldBelltopsScene>|ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>|ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>} [scene] Canonical scene.
  * @returns {ThreefoldSimulationState} Initial player, world, crisis, episode, and encounter state.
  */
 export function createThreefoldSimulation(
@@ -155,6 +163,11 @@ export function createThreefoldSimulation(
       return /** @type {CrownbackReachSimulationState} */ ({
         ...highWorldState,
         crownbackReach: crownbackReach.createThreefoldCrownbackReachState(),
+      });
+    if (scene.id === wakeformShoals.THREEFOLD_WAKEFORM_SHOALS_SCENE_ID)
+      return /** @type {WakeformShoalsSimulationState} */ ({
+        ...highWorldState,
+        wakeformShoals: wakeformShoals.createThreefoldWakeformShoalsState(),
       });
     return /** @type {HighWorldSimulationState} */ ({
       ...highWorldState,
@@ -578,26 +591,62 @@ function stepSiltMarginScene(state, action) {
  */
 function stepHighWorldScene(state, action) {
   if (action.type === 'interact') {
-    if (
-      state.scene.id !== crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID ||
-      /** @type {CrownbackReachSimulationState} */ (state).crownbackReach
-        ?.tharnMet === true ||
-      !crownbackReach.isThreefoldCrownbackTharnInReach(state)
-    )
-      return state;
-    return /** @type {CrownbackReachSimulationState} */ ({
-      ...state,
-      crownbackReach: { tharnMet: true },
-      elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
-    });
+    if (state.scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID) {
+      if (
+        /** @type {CrownbackReachSimulationState} */ (state).crownbackReach
+          ?.tharnMet === true ||
+        !crownbackReach.isThreefoldCrownbackTharnInReach(state)
+      )
+        return state;
+      return /** @type {CrownbackReachSimulationState} */ ({
+        ...state,
+        crownbackReach: { tharnMet: true },
+        elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
+      });
+    }
+    if (state.scene.id === wakeformShoals.THREEFOLD_WAKEFORM_SHOALS_SCENE_ID) {
+      const shoalsState = /** @type {WakeformShoalsSimulationState} */ (state)
+        .wakeformShoals;
+      if (
+        shoalsState.wakeformDiverted ||
+        !wakeformShoals.isThreefoldWakeformInReach(state)
+      )
+        return state;
+      return /** @type {WakeformShoalsSimulationState} */ ({
+        ...state,
+        scene: wakeformShoals.createThreefoldWakeformShoalsScene({
+          wakeformDiverted: true,
+        }),
+        wakeformShoals: { ...shoalsState, wakeformDiverted: true },
+        elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
+      });
+    }
+    return state;
   }
   return /** @type {HighWorldSimulationState} */ (
-    commitSmallWorldSceneAction(state, action, ({ creatureIds }) => ({
-      encounter:
-        creatureIds.length > 0
-          ? recordThreefoldGrowthDeaths(state.encounter, creatureIds)
-          : state.encounter,
-    }))
+    commitSmallWorldSceneAction(
+      state,
+      action,
+      ({ creatureIds, geometryIds }) => {
+        const changes = /** @type {Record<string, any>} */ ({
+          encounter:
+            creatureIds.length > 0
+              ? recordThreefoldGrowthDeaths(state.encounter, creatureIds)
+              : state.encounter,
+        });
+        if (
+          state.scene.id ===
+            wakeformShoals.THREEFOLD_WAKEFORM_SHOALS_SCENE_ID &&
+          geometryIds.includes(wakeformShoals.THREEFOLD_SHOALS_TIDEWALL_ID)
+        )
+          changes.wakeformShoals = {
+            .../** @type {WakeformShoalsSimulationState} */ (state)
+              .wakeformShoals,
+            outerDefenseBreached: true,
+          };
+        return changes;
+      }
+    )
   );
 }
 
@@ -605,18 +654,23 @@ function stepHighWorldScene(state, action) {
  * Resolve and commit one small-world action with scene-specific state changes.
  * @param {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} state Current region.
  * @param {{type: string, direction?: string, elapsedGameMinutes?: number}} action Player command.
- * @param {(prepared: {durationSeconds: number, player: ReturnType<typeof import('./spatial.js').createScaleState>, creatureIds: string[]}) => Record<string, any>} updateScene Region-specific consequences.
+ * @param {(prepared: {durationSeconds: number, player: ReturnType<typeof import('./spatial.js').createScaleState>, geometryIds: string[], creatureIds: string[]}) => Record<string, any>} updateScene Region-specific consequences.
  * @returns {SluiceSimulationState|SiltMarginSimulationState|HighWorldSimulationState} Updated scene or the original for unsupported actions.
  */
 function commitSmallWorldSceneAction(state, action, updateScene) {
   const durationSeconds = smallWorldActionDurationSeconds(action);
   if (durationSeconds === null) return state;
   const player = applySmallWorldPhysicalAction(state, action);
-  const creatureIds =
+  const growth =
     action.type === 'grow' && player !== state.player
-      ? previewThreefoldGrowthEffects(state).creatureIds
-      : [];
-  const sceneChanges = updateScene({ durationSeconds, player, creatureIds });
+      ? previewThreefoldGrowthEffects(state)
+      : { geometryIds: [], creatureIds: [] };
+  const sceneChanges = updateScene({
+    durationSeconds,
+    player,
+    geometryIds: growth.geometryIds,
+    creatureIds: growth.creatureIds,
+  });
   return commitSmallWorldAction(state, player, durationSeconds, sceneChanges);
 }
 
@@ -819,7 +873,8 @@ export function isHighWorldSimulationState(state) {
   return (
     isLanternWardSimulationState(state) ||
     isBelltopsSimulationState(state) ||
-    state.scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID
+    state.scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID ||
+    state.scene.id === wakeformShoals.THREEFOLD_WAKEFORM_SHOALS_SCENE_ID
   );
 }
 
