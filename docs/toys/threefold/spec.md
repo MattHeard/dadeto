@@ -62,6 +62,8 @@ When the optional watchkeeper lead is recorded and Mara files the report at the 
 
 When Belltops opens and the saved Broken Gate run records a lost ferry, show an accessible harbor memorial derived from that save. Reflect the saved passenger-group outcome without inventing names or changing the Belltops state. Hide the memorial when no valid Broken Gate save exists or the ferry survived; keep every region's save isolated and add no duplicate campaign flag.
 
+When Belltops opens after the ferry loss, Orla's accessible harbor response reflects the saved passenger-group outcome. Full evacuation earns her trust in Mara's account, a partial rescue leaves her trust provisional, and both groups lost shakes her confidence in Mara's harbor judgment. Do not add a trust score or duplicate state; keep unknown warnings unresolved, and hide the response when the source save is missing, invalid, or records an afloat ferry.
+
 ## Optional aid for displaced Latchfolk
 
 If the forced-open gate floods the lower homes and the warned Latchfolk survive, Mara may help the watchkeeper arrange temporary shelter during aftermath. Record this as one optional witness-ledger observation, with no new saved flag. Its accessible journal text must distinguish homes that remain flooded from homes that drained after a late gate repair, while acknowledging damage remains. Do not change resident, passenger, gate, or channel outcomes. Keep the action out of reach, before aftermath, when residents are lost, when a pre-surge repair kept homes dry, after closure, and in other scenes. Repeats must not duplicate the record, and report/departure must remain available without it.

@@ -137,6 +137,8 @@ Belltops exports preserve its damaged harbor structures and resident fates under
 
 If the saved Broken Gate run records the ferry lost, the harbor bell's accessible memorial carries the ferry and passenger-group outcome into Belltops. It does not name passengers, change Orla's route, or merge the region saves.
 
+Orla's accessible harbor response also changes with that saved outcome: she trusts Mara's rescue account after both groups reach shore, keeps trust provisional after a partial rescue, and asks for a full account when both groups are lost. The text leaves unknown warnings unresolved and adds no relationship score or save field.
+
 ## Crownback Reach
 
 Continue from Belltops to open [/threefold/?scene=crownback-reach](/threefold/?scene=crownback-reach). Mara starts at +3, 49.38 metres tall. Elder Tharn stands 44 metres high and the calf is 18 metres tall. Move closer to Tharn and press E once to record their meeting; an out-of-reach or repeated interaction has no effect. The touch interaction button uses the same action. A remains growth and previews the living-root arch, floodwall, and Crownbacks in the +4 footprint; B shrinks to +2.

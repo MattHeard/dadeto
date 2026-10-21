@@ -309,6 +309,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#belltops-watch-response',
+        '#belltops-watch-response-text',
+        frame.threefold?.orlaHarborResponse || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#iri-witness-lead',
         '#iri-witness-lead-text',
         frame.threefold?.iriWitnessLead || null

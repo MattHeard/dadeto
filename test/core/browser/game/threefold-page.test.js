@@ -704,6 +704,26 @@ describe('THREEFOLD closure epilogue page', () => {
     page.drawFrame({}, { threefold: { harborMemorial: null } });
     expect(harborMemorial.hidden).toBe(true);
   });
+
+  test("shows Orla's outcome-specific response in an accessible page record", () => {
+    const { documentObj, orlaHarborResponse, orlaHarborResponseText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: "Orla's harbor response",
+      text: 'Orla keeps her trust provisional after the partial ferry loss.',
+    };
+
+    page.drawFrame({}, { threefold: { orlaHarborResponse: record } });
+
+    expect(orlaHarborResponse.hidden).toBe(false);
+    expect(orlaHarborResponse.summary.textContent).toBe(record.title);
+    expect(orlaHarborResponseText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { orlaHarborResponse: null } });
+    expect(orlaHarborResponse.hidden).toBe(true);
+  });
 });
 
 describe('THREEFOLD witness lead page', () => {
@@ -1008,6 +1028,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? harborMemorial.summary : null,
   };
+  const orlaHarborResponseText = { textContent: '' };
+  const orlaHarborResponse = {
+    hidden: true,
+    summary: { textContent: 'Old harbor response' },
+    querySelector: selector =>
+      selector === 'summary' ? orlaHarborResponse.summary : null,
+  };
   const ferryWreckSearchText = { textContent: '' };
   const ferryWreckSearch = {
     hidden: true,
@@ -1061,6 +1088,8 @@ function createLedgerDocument() {
     iriWitnessLeadText,
     harborMemorial,
     harborMemorialText,
+    orlaHarborResponse,
+    orlaHarborResponseText,
     ferryWreckSearch,
     ferryWreckSearchText,
     latchfolkAid,
@@ -1082,6 +1111,9 @@ function createLedgerDocument() {
         if (selector === '#iri-witness-lead-text') return iriWitnessLeadText;
         if (selector === '#harbor-memorial') return harborMemorial;
         if (selector === '#harbor-memorial-text') return harborMemorialText;
+        if (selector === '#belltops-watch-response') return orlaHarborResponse;
+        if (selector === '#belltops-watch-response-text')
+          return orlaHarborResponseText;
         if (selector === '#ferry-wreck-search') return ferryWreckSearch;
         if (selector === '#ferry-wreck-search-text')
           return ferryWreckSearchText;

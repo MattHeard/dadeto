@@ -37,6 +37,10 @@ describe('THREEFOLD handheld runtime', () => {
       title: 'Harrowfen ferry memorial',
       text: 'The Belltops harbor bell marks the Harrowfen ferry, lost in the Broken Gate surge. Both passenger groups were lost with the ferry. No passenger names are listed.',
     });
+    expect(harbor.frame().threefold.orlaHarborResponse).toEqual({
+      title: "Orla's harbor response",
+      text: "Orla's trust in Mara's harbor judgment is shaken after both passenger groups were lost with the ferry. She asks for a full account; the record does not establish which warnings reached the ferry.",
+    });
     expect(harbor.getState().episode.ferry).toBe('afloat');
   });
 
@@ -48,6 +52,9 @@ describe('THREEFOLD handheld runtime', () => {
     });
     expect(
       harborWithoutSource.frame().threefold.harborMemorial
+    ).toBeUndefined();
+    expect(
+      harborWithoutSource.frame().threefold.orlaHarborResponse
     ).toBeUndefined();
 
     createThreefoldSimulationSaveStore(storage).save(
@@ -63,12 +70,16 @@ describe('THREEFOLD handheld runtime', () => {
     expect(
       harborWithFerryAfloat.frame().threefold.harborMemorial
     ).toBeUndefined();
+    expect(
+      harborWithFerryAfloat.frame().threefold.orlaHarborResponse
+    ).toBeUndefined();
 
     const otherRegion = createThreefoldRuntime({
       scene: createThreefoldGrainlandsScene(),
       storage,
     });
     expect(otherRegion.frame().threefold.harborMemorial).toBeUndefined();
+    expect(otherRegion.frame().threefold.orlaHarborResponse).toBeUndefined();
   });
 
   test('does not memorialize an invalid Broken Gate save', () => {
@@ -81,6 +92,7 @@ describe('THREEFOLD handheld runtime', () => {
     });
 
     expect(harbor.frame().threefold.harborMemorial).toBeUndefined();
+    expect(harbor.frame().threefold.orlaHarborResponse).toBeUndefined();
   });
 
   test('keeps Hearthgaps snapshot time on its isolated region clock', () => {
