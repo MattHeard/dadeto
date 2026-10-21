@@ -628,6 +628,18 @@ function renderThreefoldWeftwaysFrame(state) {
             : flowChoice === 'quay-spill'
               ? 'Pell is wary; quay stays dry, root crossing floods.'
               : 'Pell knows a bypass through the deep roots.';
+  const threadboundIndependentPublication =
+    flowChoice === 'quay-spill'
+      ? {
+          title: 'Pell’s independent relay notice',
+          text:
+            'After the root crossing flooded, Pell posted a notice from the ' +
+            'caravan’s own relay notes to help the downstream crews restore ' +
+            'their route. The notes say relay tokens stopped arriving after ' +
+            'the emergency pressure-regulator bypass. They do not identify ' +
+            'the final sender, establish what Iri knew, or assign responsibility.',
+        }
+      : null;
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 2.4) * 144
   );
@@ -702,6 +714,12 @@ function renderThreefoldWeftwaysFrame(state) {
       [64, 64, 8, 8],
       relayRestitutionNegotiated ? '#bfd77c' : '#d28b69'
     ),
+    ...(threadboundIndependentPublication
+      ? [
+          createThreefoldRectShape([40, 48, 24, 8], '#d28b69'),
+          createThreefoldRectShape([48, 48, 8, 8], '#bfd77c'),
+        ]
+      : []),
     createThreefoldRectShape(
       [112, 40, 8, 8],
       relayRecordConcealed ? '#bfd77c' : '#8aa27b'
@@ -749,6 +767,7 @@ function renderThreefoldWeftwaysFrame(state) {
     relayRecordConcealed,
     relayRecordDestroyed,
     relayRestitutionNegotiated,
+    threadboundIndependentPublication,
     threadboundRelayRecord:
       relayRecordRead && !relayRecordDestroyed
         ? {

@@ -252,4 +252,54 @@ describe('THREEFOLD Weftways page record', () => {
     page.drawFrame({}, { threefold: { threadboundRelayRestitution: null } });
     expect(restitutionPanel.hidden).toBe(true);
   });
+
+  test('shows Pell’s independent relay notice accessibly after the quay spill', () => {
+    const summary = { textContent: '' };
+    const text = { textContent: '' };
+    const publicationPanel = {
+      hidden: true,
+      querySelector: selector => (selector === 'summary' ? summary : null),
+    };
+    const documentObj = {
+      querySelector: selector =>
+        selector === '#weftways-independent-publication'
+          ? publicationPanel
+          : selector === '#weftways-independent-publication-text'
+            ? text
+            : null,
+    };
+    const windowObj = {
+      location: { search: '?scene=weftways' },
+      localStorage: {
+        getItem: () => null,
+        setItem: () => {},
+        removeItem: () => {},
+      },
+    };
+    const publication = {
+      title: 'Pell’s independent relay notice',
+      text: 'Pell publishes his caravan relay notes after the root crossing floods.',
+    };
+
+    expect(THREEFOLD_HTML).toContain('id="weftways-independent-publication"');
+    expect(THREEFOLD_HTML).toContain(
+      'id="weftways-independent-publication-text"'
+    );
+    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    expect(publicationPanel.hidden).toBe(true);
+    page.drawFrame(
+      {},
+      { threefold: { threadboundIndependentPublication: publication } }
+    );
+
+    expect(publicationPanel.hidden).toBe(false);
+    expect(summary.textContent).toBe(publication.title);
+    expect(text.textContent).toBe(publication.text);
+    page.drawFrame(
+      {},
+      { threefold: { threadboundIndependentPublication: null } }
+    );
+    expect(publicationPanel.hidden).toBe(true);
+  });
 });

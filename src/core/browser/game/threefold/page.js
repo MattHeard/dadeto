@@ -345,6 +345,12 @@ export function startThreefoldPage(options) {
       );
       renderThreefoldDisclosurePanel(
         options.documentObj,
+        '#weftways-independent-publication',
+        '#weftways-independent-publication-text',
+        frame.threefold?.threadboundIndependentPublication || null
+      );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
         '#tidal-archive-quieting-trace',
         '#tidal-archive-quieting-trace-text',
         frame.threefold?.archiveQuietingTrace || null
@@ -467,6 +473,11 @@ function configureAlternateScenePage(documentObj, copy) {
     '#weftways-relay-restitution'
   );
   if (weftwaysRelayRestitution) weftwaysRelayRestitution.hidden = true;
+  const weftwaysIndependentPublication = documentObj?.querySelector?.(
+    '#weftways-independent-publication'
+  );
+  if (weftwaysIndependentPublication)
+    weftwaysIndependentPublication.hidden = true;
   const siltMarginQuietingEvidence = documentObj?.querySelector?.(
     '#silt-margin-quieting-evidence'
   );

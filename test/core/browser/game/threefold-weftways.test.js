@@ -299,6 +299,65 @@ describe('THREEFOLD Weftways caravan bypass', () => {
   });
 
   test.each([
+    { flowChoice: 'undecided', response: {} },
+    {
+      flowChoice: 'pell-bypass',
+      response: { relayRecordRead: true, relayRecordShared: true },
+    },
+    { flowChoice: 'quay-spill', response: {} },
+    {
+      flowChoice: 'quay-spill',
+      response: { relayRecordRead: true, relayRecordShared: true },
+    },
+    {
+      flowChoice: 'quay-spill',
+      response: { relayRecordRead: true, relayRecordConcealed: true },
+    },
+    {
+      flowChoice: 'quay-spill',
+      response: { relayRecordRead: true, relayRecordDestroyed: true },
+    },
+    {
+      flowChoice: 'quay-spill',
+      response: { relayRecordRead: true, relayRestitutionNegotiated: true },
+    },
+  ])(
+    'derives independent publication from $flowChoice regardless of Mara’s response',
+    testCase => {
+      const state = createWeftwaysRun();
+      state.weftways = normalizeThreefoldWeftwaysState({
+        flowChoice: testCase.flowChoice,
+        ...testCase.response,
+      });
+      const frame = renderThreefoldFrame(state);
+      const publication = frame.threefold.threadboundIndependentPublication;
+
+      if (testCase.flowChoice === 'quay-spill') {
+        expect(publication.title).toBe('Pell’s independent relay notice');
+        expect(publication.text).toContain('root crossing flooded');
+        expect(publication.text).toContain('relay tokens stopped arriving');
+        expect(publication.text).toContain('what Iri knew');
+        expect(publication.text).toContain('assign responsibility');
+        expect(frame.shapes).toContainEqual(
+          expect.objectContaining({ x: 48, y: 48, fill: '#bfd77c' })
+        );
+        const restored = restoreThreefoldSimulation(
+          serializeThreefoldSimulation(state)
+        );
+        expect(
+          renderThreefoldFrame(restored).threefold
+            .threadboundIndependentPublication
+        ).toEqual(publication);
+      } else {
+        expect(publication).toBeNull();
+      }
+      expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
+        true
+      );
+    }
+  );
+
+  test.each([
     {
       choice: 'pell-bypass',
       target: THREEFOLD_WEFTWAYS_PELL_BYPASS_ID,
