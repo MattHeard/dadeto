@@ -15,7 +15,7 @@ import { presentThreefoldTestimony } from './testimony.js';
 import {
   isSluiceSimulationState,
   isSiltMarginSimulationState,
-  isLanternWardSimulationState,
+  isHighWorldSimulationState,
   previewThreefoldGrowthEffects,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
@@ -47,9 +47,9 @@ export function renderThreefoldFrame(state) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
   if (isSiltMarginSimulationState(state))
     return renderThreefoldSiltMarginFrame(state);
-  const isLanternWard = isLanternWardSimulationState(state);
+  const isHighWorld = isHighWorldSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
-  const gateOutcome = isLanternWard
+  const gateOutcome = isHighWorld
     ? {
         gateState: null,
         drainageState: /** @type {'dry'|'at-risk'|'flooded'|'receded'} */ (
@@ -68,7 +68,7 @@ export function renderThreefoldFrame(state) {
   const frame = createThreefoldFramePayload({
     world,
     dialogue:
-      !isLanternWard && state.crisis.elapsedMinutes === 0
+      !isHighWorld && state.crisis.elapsedMinutes === 0
         ? {
             actorId: 'dock-worker',
             lines: [
@@ -85,12 +85,12 @@ export function renderThreefoldFrame(state) {
       : isGatehouseRatInReach(state)
         ? 'fight'
         : 'grow',
-    toast: isLanternWard
-      ? getLanternWardToast(state)
+    toast: isHighWorld
+      ? getHighWorldToast(state)
       : getThreefoldToast(state, gateOutcome.drainageState),
     presentation: {
       palette: PALETTE,
-      status: isLanternWard
+      status: isHighWorld
         ? `SCALE ${formatScale(state.player.scale)} · ${heightMeters.toFixed(2)} M TALL`
         : `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
     },
@@ -114,10 +114,10 @@ export function renderThreefoldFrame(state) {
       }));
     },
   });
-  frame.quest = isLanternWard ? 'The Lantern Ward' : 'The Broken Gate';
+  frame.quest = isHighWorld ? state.scene.displayName : 'The Broken Gate';
   const tideProgress =
     state.crisis.elapsedMinutes / state.crisis.thresholds.aftermathAtMinutes;
-  if (!isLanternWard)
+  if (!isHighWorld)
     frame.shapes.push(
       { type: 'rect', x: 104, y: 4, width: 52, height: 12, fill: PALETTE[0] },
       {
@@ -159,7 +159,7 @@ export function renderThreefoldFrame(state) {
     heightMeters,
     anchor: state.player.anchor,
     maximumAnchor: state.player.maximumAnchor,
-    ...(isLanternWard
+    ...(isHighWorld
       ? { elapsedGameSeconds: state.elapsedGameSeconds }
       : {
           crisisStage: state.crisis.stage,
@@ -181,7 +181,7 @@ export function renderThreefoldFrame(state) {
     witnessLedger: (state.episode.witnessLedger || []).map(
       presentThreefoldWitnessEntry
     ),
-    testimony: isLanternWard ? null : presentThreefoldTestimony(),
+    testimony: isHighWorld ? null : presentThreefoldTestimony(),
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
     growthPreviewCreatureIds: creatureIds,
@@ -720,7 +720,7 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
-  const drainageState = isLanternWardSimulationState(state)
+  const drainageState = isHighWorldSimulationState(state)
     ? 'dry'
     : getThreefoldGateOutcome(state).drainageState;
   const { geometry } = projectGeometryForScale(player, scene.geometry);
@@ -752,8 +752,8 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     mapId: scene.id,
     location: scene.id,
     map: {
-      name: isLanternWardSimulationState(state)
-        ? 'LANTERN WARD'
+      name: isHighWorldSimulationState(state)
+        ? state.scene.displayName.replace(/^The /, '').toUpperCase()
         : 'BROKEN GATE',
       width: mapWidth,
       height: mapHeight,
@@ -805,7 +805,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
       y: VIEW_ORIGIN.y + player.position.y / heightMeters,
       facing: 'down',
     },
-    time: isLanternWardSimulationState(state)
+    time: isHighWorldSimulationState(state)
       ? state.elapsedGameSeconds / 3600
       : crisis.elapsedMinutes / 60,
     day: 1,
@@ -943,11 +943,14 @@ function getCreatureGrowthPreviewLabel(creatureIds, creatures) {
 }
 
 /**
- * Describe the Lantern Ward's current preview or persisted consequences.
+ * Describe the high-world scene's preview or persisted consequences.
  * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current district state.
  * @returns {string} Compact city-scale status without Broken Gate language.
  */
-function getLanternWardToast(state) {
+function getHighWorldToast(state) {
+  const displayName = /** @type {{displayName: string}} */ (state.scene)
+    .displayName;
+  const region = displayName.replace(/^The /, '').toUpperCase();
   const residents = new Map(
     state.scene.creatures.map(creature => [
       creature.id,
@@ -961,11 +964,11 @@ function getLanternWardToast(state) {
     .filter(object => state.player.destroyedGeometryIds.includes(object.id))
     .map(object => /** @type {{displayName?: string}} */ (object).displayName);
   if (lostResidents.length > 0 || damagedStructures.length > 0)
-    return `WARD GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;
+    return `${region} GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;
   const growth = previewThreefoldGrowthEffects(state);
   if (growth.geometryIds.length > 0 || growth.creatureIds.length > 0)
-    return 'A GROW · THE WARD AND ITS RESIDENTS ARE AT RISK';
-  return 'LANTERN WARD · A GROW · B SHRINK';
+    return `A GROW · ${region} AND ITS RESIDENTS ARE AT RISK`;
+  return `${region} · A GROW · B SHRINK`;
 }
 
 /**

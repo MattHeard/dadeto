@@ -304,7 +304,7 @@ describe('THREEFOLD page adapter', () => {
 
     expect(runtime.getState().scene.id).toBe('lantern-ward');
     expect(runtime.getState().player.scale).toBe(3);
-    expect(runtime.getSnapshot().world.map.name).toBe('THE LANTERN WARD');
+    expect(runtime.getSnapshot().world.map.name).toBe('LANTERN WARD');
     expect(nodes.get('#chapter-heading').textContent).toContain(
       'At +3, one more rung'
     );
@@ -312,8 +312,8 @@ describe('THREEFOLD page adapter', () => {
       'Mira and Tov'
     );
     expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Return to the Silt Margin',
-      href: '/threefold/?scene=silt-margin',
+      textContent: 'Continue to the Belltops',
+      href: '/threefold/?scene=belltops',
     });
     expect(nodes.get('#a-control-label').textContent).toBe('GROW');
     expect(nodes.get('#b-control-label').textContent).toBe('SHRINK');
@@ -329,6 +329,24 @@ describe('THREEFOLD page adapter', () => {
         navigatorObj: {},
       })
     ).not.toThrow();
+
+    startThreefoldPage({
+      documentObj,
+      windowObj: { location: { search: '?scene=belltops' } },
+      navigatorObj: {},
+    });
+    const belltopsPage = mockStartMosslightPage.mock.calls.at(-1)[0];
+    const belltopsRuntime = belltopsPage.createRuntime({});
+
+    expect(belltopsRuntime.getState().scene.id).toBe('belltops');
+    expect(belltopsRuntime.getState().player.scale).toBe(2);
+    expect(belltopsRuntime.getSnapshot().world.map.name).toBe('BELLTOPS');
+    expect(nodes.get('#chapter-description').textContent).toContain('Orla');
+    expect(nodes.get('#scene-link')).toMatchObject({
+      textContent: 'Return to the Lantern Ward',
+      href: '/threefold/?scene=lantern-ward',
+    });
+    expect(nodes.get('#interact-control').hidden).toBe(true);
   });
 
   test('tolerates a document without the witness ledger list', () => {

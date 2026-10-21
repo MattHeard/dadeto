@@ -1,7 +1,9 @@
 import { parseJsonOrNull } from '../../validation.js';
 import { advanceCrisisClock, createCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
-import * as lanternWard from './lantern-ward.js';
+import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
+import { createThreefoldBelltopsScene } from './belltops.js';
+import { createThreefoldLanternWardScene } from './lantern-ward.js';
 import {
   createThreefoldSluiceScene,
   THREEFOLD_SLUICE_SCENE_ID,
@@ -13,7 +15,7 @@ import {
 } from './silt-margin.js';
 import {
   createThreefoldSimulation,
-  isLanternWardSimulationState,
+  isHighWorldSimulationState,
   isSiltMarginSimulationState,
   isSluiceSimulationState,
 } from './simulation.js';
@@ -46,8 +48,6 @@ const SLUICE_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.small-world-sluice';
 const SILT_MARGIN_SIMULATION_SAVE_KEY =
   'dadeto.threefold.simulation-save.v1.silt-margin';
-const LANTERN_WARD_SIMULATION_SAVE_KEY =
-  'dadeto.threefold.simulation-save.v1.lantern-ward';
 
 /**
  * Serialize scale progress and irreversible geometry damage for export.
@@ -99,7 +99,7 @@ export function serializeThreefoldSimulation(simulation) {
       includeTestimony:
         !isSluiceSimulationState(simulation) &&
         !isSiltMarginSimulationState(simulation) &&
-        simulation.scene.id !== lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID,
+        !isHighWorldSimulationState(simulation),
     }),
     encounter: normalizeThreefoldEncounter(simulation.encounter),
   });
@@ -138,12 +138,11 @@ export function restoreThreefoldSimulation(serialized) {
     const isSluiceScene = envelope.sceneId === THREEFOLD_SLUICE_SCENE_ID;
     const isSiltMarginScene =
       envelope.sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID;
-    const isLanternWardScene =
-      envelope.sceneId === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID;
+    const isHighWorldScene = isThreefoldHighWorldSceneId(envelope.sceneId);
     if (
       !isSluiceScene &&
       !isSiltMarginScene &&
-      !isLanternWardScene &&
+      !isHighWorldScene &&
       envelope.sceneId !== 'broken-gate'
     )
       throw new RangeError('Unknown scene.');
@@ -161,17 +160,17 @@ export function restoreThreefoldSimulation(serialized) {
     )
       throw new RangeError('Silt Margin save version is unsupported.');
     if (
-      isLanternWardScene &&
+      isHighWorldScene &&
       envelope.schemaVersion !== SIMULATION_SCHEMA_VERSION
     )
-      throw new RangeError('Lantern Ward save version is unsupported.');
+      throw new RangeError('High-world save version is unsupported.');
     const legacyV1 =
       !isSiltMarginScene &&
-      !isLanternWardScene &&
+      !isHighWorldScene &&
       envelope.schemaVersion === LEGACY_SIMULATION_SCHEMA_VERSION;
     const legacyV2 =
       !isSiltMarginScene &&
-      !isLanternWardScene &&
+      !isHighWorldScene &&
       envelope.schemaVersion === PREVIOUS_SIMULATION_SCHEMA_VERSION;
     const state = envelope.state ?? envelope;
     if (!legacyV1 && !Object.hasOwn(state, 'encounter'))
@@ -181,11 +180,11 @@ export function restoreThreefoldSimulation(serialized) {
       state.episode ??
         createThreefoldEpisodeState({
           includeTestimony:
-            !isSluiceScene && !isSiltMarginScene && !isLanternWardScene,
+            !isSluiceScene && !isSiltMarginScene && !isHighWorldScene,
         }),
       {
         includeTestimony:
-          !isSluiceScene && !isSiltMarginScene && !isLanternWardScene,
+          !isSluiceScene && !isSiltMarginScene && !isHighWorldScene,
       }
     );
     const player = normalizeScaleState(state.player);
@@ -222,36 +221,52 @@ export function restoreThreefoldSimulation(serialized) {
           ? migrateLegacyThreefoldEncounter(state.encounter)
           : normalizeThreefoldEncounter(state.encounter),
     };
-    if (!isSluiceScene && !isSiltMarginScene && !isLanternWardScene)
+    if (!isSluiceScene && !isSiltMarginScene && !isHighWorldScene)
       return {
         ...restoredState,
         scene: createBrokenGateScene(),
       };
-    const elapsedState = {
-      elapsedGameSeconds: normalizeElapsedGameSeconds(state.elapsedGameSeconds),
-    };
-    if (isLanternWardScene)
-      return {
-        ...restoredState,
-        scene: lanternWard.createThreefoldLanternWardScene(),
-        ...elapsedState,
-      };
+    if (isHighWorldScene)
+      return restoreTimedScene(
+        restoredState,
+        state,
+        envelope.sceneId === 'belltops'
+          ? createThreefoldBelltopsScene()
+          : createThreefoldLanternWardScene()
+      );
     if (isSiltMarginScene)
-      return {
-        ...restoredState,
-        scene: createThreefoldSiltMarginScene(),
-        siltMargin: normalizeThreefoldSiltMarginState(state.siltMargin),
-        ...elapsedState,
-      };
-    return {
-      ...restoredState,
-      scene: createThreefoldSluiceScene(),
-      sluicePuzzle: normalizeThreefoldSluicePuzzle(state.sluicePuzzle),
-      ...elapsedState,
-    };
+      return restoreTimedScene(
+        restoredState,
+        state,
+        createThreefoldSiltMarginScene(),
+        { siltMargin: normalizeThreefoldSiltMarginState(state.siltMargin) }
+      );
+    return restoreTimedScene(
+      restoredState,
+      state,
+      createThreefoldSluiceScene(),
+      { sluicePuzzle: normalizeThreefoldSluicePuzzle(state.sluicePuzzle) }
+    );
   } catch {
     return null;
   }
+}
+
+/**
+ * Rebuild one independently timed scene after validating its saved state.
+ * @param {Record<string, any>} restoredState Shared player, episode, and encounter state.
+ * @param {Record<string, any>} state Serialized scene state.
+ * @param {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldLanternWardScene>} scene Authored scene reconstruction.
+ * @param {Record<string, any>} [sceneState] Validated scene-specific puzzle state.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Complete restored scene.
+ */
+function restoreTimedScene(restoredState, state, scene, sceneState = {}) {
+  return /** @type {ReturnType<typeof createThreefoldSimulation>} */ ({
+    ...restoredState,
+    ...sceneState,
+    scene,
+    elapsedGameSeconds: normalizeElapsedGameSeconds(state.elapsedGameSeconds),
+  });
 }
 
 /**
@@ -266,13 +281,7 @@ export function createThreefoldSimulationSaveStore(
 ) {
   return createSaveStore(
     storage,
-    sceneId === THREEFOLD_SLUICE_SCENE_ID
-      ? SLUICE_SIMULATION_SAVE_KEY
-      : sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID
-        ? SILT_MARGIN_SIMULATION_SAVE_KEY
-        : sceneId === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID
-          ? LANTERN_WARD_SIMULATION_SAVE_KEY
-          : SIMULATION_SAVE_KEY,
+    getThreefoldSimulationSaveKey(sceneId),
     serializeThreefoldSimulation,
     restoreThreefoldSimulation
   );
@@ -421,9 +430,23 @@ function getSimulationElapsedGameSeconds(simulation) {
   if (isSluiceSimulationState(simulation)) return simulation.elapsedGameSeconds;
   if (isSiltMarginSimulationState(simulation))
     return simulation.elapsedGameSeconds;
-  if (isLanternWardSimulationState(simulation))
+  if (isHighWorldSimulationState(simulation))
     return simulation.elapsedGameSeconds;
   return null;
+}
+
+/**
+ * Keep every authored route's complete-run save in its own storage entry.
+ * @param {string} sceneId Authored scene identifier.
+ * @returns {string} Storage key for the selected route.
+ */
+function getThreefoldSimulationSaveKey(sceneId) {
+  if (sceneId === THREEFOLD_SLUICE_SCENE_ID) return SLUICE_SIMULATION_SAVE_KEY;
+  if (sceneId === THREEFOLD_SILT_MARGIN_SCENE_ID)
+    return SILT_MARGIN_SIMULATION_SAVE_KEY;
+  if (isThreefoldHighWorldSceneId(sceneId))
+    return `${SIMULATION_SAVE_KEY}.${sceneId}`;
+  return SIMULATION_SAVE_KEY;
 }
 
 /**

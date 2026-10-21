@@ -5,9 +5,9 @@ import {
 } from './save.js';
 import { THREEFOLD_SLUICE_SCENE_ID } from './sluice-scene.js';
 import { THREEFOLD_SILT_MARGIN_SCENE_ID } from './silt-margin.js';
-import { THREEFOLD_LANTERN_WARD_SCENE_ID } from './lantern-ward.js';
 import {
   createThreefoldSimulation,
+  isHighWorldSimulationState,
   previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
 } from './simulation.js';
@@ -64,8 +64,8 @@ export function createThreefoldRuntime(options = {}) {
             ? 'THE TIDAL ARCHIVE'
             : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
               ? 'THE SILT MARGIN'
-              : state.scene.id === THREEFOLD_LANTERN_WARD_SCENE_ID
-                ? 'THE LANTERN WARD'
+              : isHighWorldSimulationState(state)
+                ? state.scene.displayName.replace(/^The /, '').toUpperCase()
                 : 'THE BROKEN GATE',
       },
       day: 1,
@@ -74,7 +74,7 @@ export function createThreefoldRuntime(options = {}) {
           ? state.elapsedGameSeconds / 3600
           : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
             ? state.elapsedGameSeconds / 3600
-            : state.scene.id === THREEFOLD_LANTERN_WARD_SCENE_ID
+            : isHighWorldSimulationState(state)
               ? state.elapsedGameSeconds / 3600
               : state.crisis.elapsedMinutes / 60,
     },

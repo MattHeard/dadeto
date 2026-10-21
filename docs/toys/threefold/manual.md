@@ -90,3 +90,9 @@ The Silt Margin saves its branch, conserved water state, and elapsed seconds in 
 Continue from the Silt Margin to open [/threefold/?scene=lantern-ward](/threefold/?scene=lantern-ward). Mara starts at scale +3 with +4 unlocked. The 160 × 144 Mosslight screen previews both canal homes and the glassworks, as well as Mira and Tov, before A grows. A remains growth and commits the displayed building damage and resident losses; B shrinks to +2. The district has its own elapsed game time and does not advance Broken Gate's crisis or episode outcomes.
 
 The Lantern Ward export includes the district's destroyed buildings and resident fates. Its browser save key is separate from Broken Gate, the Tidal Archive, and the Silt Margin. Importing a district save restores the authored Lantern Ward route and rejects unsupported schema versions.
+
+## Belltops
+
+Continue from the Lantern Ward to open [/threefold/?scene=belltops](/threefold/?scene=belltops). Mara starts at scale +2, 16.46 m tall, with +3 unlocked. The Mosslight screen previews the watchtower and harbor crane in Mara's next growth footprint, along with Orla and the stormbird. A remains growth and commits the displayed structural damage and resident fates; B steps down to +1. Belltops uses the shared high-world reducer and local game clock without advancing Broken Gate's episode.
+
+Belltops exports preserve its damaged harbor structures and resident fates under a save key separate from Lantern Ward, Silt Margin, Tidal Archive, and Broken Gate.

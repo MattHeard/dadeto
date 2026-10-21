@@ -5,6 +5,7 @@ import {
 import { createThreefoldRuntime } from './runtime.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { createThreefoldSiltMarginScene } from './silt-margin.js';
+import { createThreefoldBelltopsScene } from './belltops.js';
 import * as lanternWard from './lantern-ward.js';
 import { drawGameFrame } from '../mosslight-valley/renderer.js';
 
@@ -55,6 +56,13 @@ const SILT_MARGIN_PAGE_COPY = {
   ariaLabel:
     'Guide the guardian, open the fine valve, or send the Choir signal',
 };
+/** @type {Array<[string, string]>} */
+const HIGH_WORLD_CONTROL_UPDATES = [
+  ['#interact-label', 'A · GROW · B · SHRINK'],
+  ['#a-control-label', 'GROW'],
+  ['#b-control-label', 'SHRINK'],
+  ['#e-control-label', 'NO DISTRICT ACTION'],
+];
 const LANTERN_WARD_PAGE_COPY = {
   updates: /** @type {Array<[string, string]>} */ ([
     ['#chapter-subtitle', 'The Lantern Ward'],
@@ -67,17 +75,35 @@ const LANTERN_WARD_PAGE_COPY = {
         'footprint. Mira and Tov live there. A shows the buildings and people ' +
         'at risk while keeping growth available; B lets Mara step down to +2.',
     ],
-    ['#interact-label', 'A · GROW · B · SHRINK'],
-    ['#a-control-label', 'GROW'],
-    ['#b-control-label', 'SHRINK'],
-    ['#e-control-label', 'NO DISTRICT ACTION'],
-    ['#scene-link', 'Return to the Silt Margin'],
+    ['#scene-link', 'Continue to the Belltops'],
     [
       '#game-footer',
       'City geometry and resident fates persist in the Lantern Ward save.',
     ],
   ]),
-  href: '/threefold/?scene=silt-margin',
+  href: '/threefold/?scene=belltops',
+  ariaLabel: 'No district interaction is available',
+};
+const BELLTOPS_PAGE_COPY = {
+  updates: /** @type {Array<[string, string]>} */ ([
+    ['#chapter-subtitle', 'The Belltops'],
+    ['#chapter-tag', 'HIGH WORLD · THE BELLTOPS'],
+    ['#chapter-eyebrow', 'A HARBOR ABOVE THE QUAY'],
+    ['#chapter-heading', 'At +2, the harbor machinery is Mara’s path.'],
+    [
+      '#chapter-description',
+      'The watchtower and harbor crane stand within Mara’s next growth ' +
+        'footprint. Orla keeps the tower watch, while stormbirds ride the ' +
+        'roofline. A shows the structures and residents at risk; B lets Mara ' +
+        'step down to +1.',
+    ],
+    ['#scene-link', 'Return to the Lantern Ward'],
+    [
+      '#game-footer',
+      'Harbor geometry and resident fates persist in the Belltops save.',
+    ],
+  ]),
+  href: '/threefold/?scene=lantern-ward',
   ariaLabel: 'No district interaction is available',
 };
 
@@ -93,7 +119,9 @@ export function startThreefoldPage(options) {
   else if (scene?.id === 'silt-margin')
     configureSiltMarginPage(options.documentObj);
   else if (scene?.id === lanternWard.THREEFOLD_LANTERN_WARD_SCENE_ID)
-    configureLanternWardPage(options.documentObj);
+    configureHighWorldPage(options.documentObj, LANTERN_WARD_PAGE_COPY);
+  else if (scene?.id === 'belltops')
+    configureHighWorldPage(options.documentObj, BELLTOPS_PAGE_COPY);
   let storage = options.storage;
   if (!storage) {
     try {
@@ -128,7 +156,7 @@ export function startThreefoldPage(options) {
 /**
  * Select the optional small-world region from the standalone route query.
  * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|undefined} Authored scene for its route, otherwise the runtime default.
  */
 function sceneFromLocation(windowObj) {
   const search = windowObj?.location?.search;
@@ -138,6 +166,7 @@ function sceneFromLocation(windowObj) {
   if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
   if (sceneId === 'lantern-ward')
     return lanternWard.createThreefoldLanternWardScene();
+  if (sceneId === 'belltops') return createThreefoldBelltopsScene();
   return undefined;
 }
 
@@ -160,12 +189,16 @@ function configureSiltMarginPage(documentObj) {
 }
 
 /**
- * Replace the default Broken Gate copy with the Lantern Ward district description.
+ * Replace default Broken Gate copy and controls for an authored high-world route.
  * @param {any} documentObj Injected browser document.
+ * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string}} copy Route-specific copy and next location.
  * @returns {void}
  */
-function configureLanternWardPage(documentObj) {
-  configureAlternateScenePage(documentObj, LANTERN_WARD_PAGE_COPY);
+function configureHighWorldPage(documentObj, copy) {
+  configureAlternateScenePage(documentObj, {
+    ...copy,
+    updates: [...copy.updates, ...HIGH_WORLD_CONTROL_UPDATES],
+  });
   const interactControl = documentObj?.querySelector?.('#interact-control');
   if (interactControl) interactControl.hidden = true;
 }

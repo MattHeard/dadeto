@@ -4,7 +4,7 @@
 
 1. Install prerequisites: `npm install`.
 2. Build the standalone page and copied game modules: `npm run build`.
-3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, or `/threefold/?scene=lantern-ward` for the city-scale district.
+3. Serve the generated static site with `npm run start`, then open `/threefold/` for Broken Gate, `/threefold/?scene=sluice` for the Tidal Archive, `/threefold/?scene=silt-margin` for Silt Margin, `/threefold/?scene=lantern-ward` for Lantern Ward, or `/threefold/?scene=belltops` for the +2 harbor district.
 4. Run `npm run test:impact` for change-selected Jest suites without coverage instrumentation. The rat encounter, rescue and Latchfolk branches exercise simulation, save migration, renderer, runtime, page and shared Mosslight input tests.
 
 ## Small-World Hydraulic Model
@@ -22,6 +22,8 @@ Run `npm run test:impact -- --files test/core/browser/game/threefold-sluice-inte
 Run `npm run test:impact -- --files test/core/browser/game/threefold-silt-margin.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-runtime.test.js` to cover the route, scale, grid, both crossing routes, explicit-time hydraulic transfer, threshold collision, branch migration, and isolated save key. Guidance must happen in reach before the Choir signal can be sent. The valve works only at scale −4, volume stays conserved, and the water crossing cannot be bypassed through the sides. Growth while Mara intersects the root arch and guardian previews and persists their break/death and the disrupted signal. Schema-v1 Silt saves migrate to v2; unsupported versions and inconsistent branches are rejected.
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-lantern-ward.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-runtime.test.js` to verify the +3 district preview, still-available growth, exact building and resident consequences, independent elapsed time, Mosslight grid, and save-key/export isolation. District actions must not advance Broken Gate episode, crisis, testimony, or witness state.
+
+Run `npm run test:impact -- --files test/core/browser/game/threefold-lantern-ward.test.js test/core/browser/game/threefold-page.test.js test/core/browser/game/threefold-save.test.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-runtime.test.js` to verify both authored high-world routes. Lantern Ward starts at +3; Belltops starts at +2. Each previews its own +1 growth footprint, renders named buildings and residents on the eight-pixel Mosslight grid, commits matching deterministic fates, and roundtrips to a separate save key. Neither route advances Broken Gate crisis, testimony, or witness state.
 
 ## Expected Observable Outputs
 

@@ -3,6 +3,10 @@ import {
   THREEFOLD_LANTERN_WARD_SCENE_ID,
 } from '../../../../src/core/browser/game/threefold/lantern-ward.js';
 import {
+  createThreefoldBelltopsScene,
+  THREEFOLD_BELLTOPS_SCENE_ID,
+} from '../../../../src/core/browser/game/threefold/belltops.js';
+import {
   createThreefoldSimulation,
   previewThreefoldGrowthEffects,
   stepThreefoldSimulation,
@@ -119,6 +123,50 @@ describe('THREEFOLD Lantern Ward district', () => {
     expect(waited.elapsedGameSeconds).toBe(1215);
   });
 
+  test('Belltops previews its +2 to +3 harbor footprint and commits named fates', () => {
+    const scene = createThreefoldBelltopsScene();
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const unchanged = structuredClone(initial);
+    const growth = previewThreefoldGrowthEffects(initial);
+    const frame = renderThreefoldFrame(initial);
+    const labels = frame.shapes
+      .filter(shape => shape.type === 'text')
+      .map(shape => shape.text);
+
+    expect(scene.id).toBe(THREEFOLD_BELLTOPS_SCENE_ID);
+    expect(initial.player).toMatchObject({
+      scale: 2,
+      minimumUnlockedScale: 1,
+      maximumUnlockedScale: 3,
+    });
+    expect(growth).toEqual({
+      geometryIds: ['belltops-harbor-crane', 'belltops-watchtower'],
+      occupantIds: [],
+      creatureIds: ['belltops-sentry-orla', 'belltops-stormbird'],
+    });
+    expect(initial).toEqual(unchanged);
+    expect(frame.world.map.name).toBe('BELLTOPS');
+    expect(frame.quest).toBe('The Belltops');
+    expect(frame.toast).toContain('BELLTOPS AND ITS RESIDENTS ARE AT RISK');
+    expect(labels).toContain('A BREAKS HARBOR CRANE + WATCHTOWER');
+    expect(labels).toContain('A KILLS ORLA + STORMBIRD');
+
+    const grown = stepThreefoldSimulation(initial, { type: 'grow' });
+
+    expect(grown.player.scale).toBe(3);
+    expect(grown.player.destroyedGeometryIds).toEqual([
+      'belltops-harbor-crane',
+      'belltops-watchtower',
+    ]);
+    expect(grown.encounter.growthDeaths).toEqual([
+      { creatureId: 'belltops-sentry-orla', cause: 'growth' },
+      { creatureId: 'belltops-stormbird', cause: 'growth' },
+    ]);
+    expect(grown.crisis).toEqual(initial.crisis);
+    expect(grown.episode).toEqual(initial.episode);
+    expect(grown.elapsedGameSeconds).toBe(15);
+  });
+
   test('the runtime A input remains growth in the district', () => {
     const runtime = createThreefoldRuntime({
       scene: createThreefoldLanternWardScene(),
@@ -165,25 +213,42 @@ describe('THREEFOLD Lantern Ward district', () => {
       storage,
       THREEFOLD_LANTERN_WARD_SCENE_ID
     );
+    const belltopsStore = createThreefoldSimulationSaveStore(
+      storage,
+      THREEFOLD_BELLTOPS_SCENE_ID
+    );
     const gateStore = createThreefoldSimulationSaveStore(storage);
     const initialWard = createThreefoldSimulation(
       THRESHOLDS,
       createThreefoldLanternWardScene()
     );
     const grownWard = stepThreefoldSimulation(initialWard, { type: 'grow' });
+    const initialBelltops = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldBelltopsScene()
+    );
+    const grownBelltops = stepThreefoldSimulation(initialBelltops, {
+      type: 'grow',
+    });
     const gate = createThreefoldSimulation(THRESHOLDS);
 
     expect(wardStore.save(grownWard)).toBe(true);
+    expect(belltopsStore.save(grownBelltops)).toBe(true);
     expect(gateStore.save(gate)).toBe(true);
     expect([...values.keys()].sort()).toEqual([
       'dadeto.threefold.simulation-save.v1',
+      'dadeto.threefold.simulation-save.v1.belltops',
       'dadeto.threefold.simulation-save.v1.lantern-ward',
     ]);
     expect(wardStore.load()).toEqual(grownWard);
+    expect(belltopsStore.load()).toEqual(grownBelltops);
     expect(gateStore.load()).toEqual(gate);
     expect(
       restoreThreefoldSimulation(serializeThreefoldSimulation(grownWard))
     ).toEqual(grownWard);
+    expect(
+      restoreThreefoldSimulation(serializeThreefoldSimulation(grownBelltops))
+    ).toEqual(grownBelltops);
 
     const unsupported = JSON.parse(serializeThreefoldSimulation(grownWard));
     unsupported.schemaVersion -= 1;
