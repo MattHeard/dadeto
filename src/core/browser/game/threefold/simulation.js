@@ -3,6 +3,7 @@ import {
   advanceThreefoldEpisode,
   attemptThreefoldGateRepair,
   canHearThreefoldLatchfolkLead,
+  canSearchThreefoldFerryWreck,
   attemptThreefoldLatchfolkWarning,
   attemptThreefoldPassengerRescue,
   attemptThreefoldReport,
@@ -426,11 +427,16 @@ function stepThreefoldAction(state, action) {
       episode === state.episode &&
       player === state.player &&
       canHearThreefoldLatchfolkLead(state);
-    const leadEntry = heardLatchfolkLead
-      ? createWitnessEntry(state, state, action)
-      : null;
-    const actionEpisode = leadEntry
-      ? appendThreefoldWitnessEntry(state.episode, leadEntry)
+    const searchedFerryWreck =
+      episode === state.episode &&
+      player === state.player &&
+      canSearchThreefoldFerryWreck(state);
+    const witnessEntry =
+      heardLatchfolkLead || searchedFerryWreck
+        ? createWitnessEntry(state, state, action)
+        : null;
+    const actionEpisode = witnessEntry
+      ? appendThreefoldWitnessEntry(state.episode, witnessEntry)
       : episode;
     const actionState =
       actionEpisode === state.episode && player === state.player
@@ -439,7 +445,7 @@ function stepThreefoldAction(state, action) {
     const timedState = applyTimedAction(
       actionState,
       player,
-      episode === state.episode && !heardLatchfolkLead
+      episode === state.episode && !witnessEntry
         ? 'failed-action'
         : 'interaction'
     );
@@ -491,6 +497,8 @@ function createWitnessEntry(before, after, action) {
     before.episode.gateRepaired !== true && after.episode.gateRepaired === true;
   const latchfolkLead =
     action.type === 'interact' && canHearThreefoldLatchfolkLead(before);
+  const ferryWreckSearch =
+    action.type === 'interact' && canSearchThreefoldFerryWreck(before);
   const breach = [...ledger]
     .reverse()
     .find(
@@ -516,6 +524,11 @@ function createWitnessEntry(before, after, action) {
     type = 'observation';
     intention = 'Ask the surviving watchkeeper about a faint relay call.';
     intendedOutcome = 'Hear an optional lead about a signal asking for Iri.';
+  } else if (ferryWreckSearch) {
+    type = 'observation';
+    intention = 'Search the lost ferry wreck for its passengers.';
+    intendedOutcome =
+      'Confirm the passenger groups recorded as safe or lost without changing their outcomes.';
   } else if (breach && hasVisibleGateOutcomeChanged(before, after)) {
     type = 'observation';
     intention = describeChosenAction(action);
@@ -533,7 +546,11 @@ function createWitnessEntry(before, after, action) {
     id: `witness-${ledger.length + 1}`,
     type,
     atGameMinute: after.crisis.elapsedMinutes,
-    action: latchfolkLead ? 'latchfolk-witness-lead' : action.type,
+    action: latchfolkLead
+      ? 'latchfolk-witness-lead'
+      : ferryWreckSearch
+        ? 'ferry-wreck-search'
+        : action.type,
     intention,
     intendedOutcome,
     knowledge: {

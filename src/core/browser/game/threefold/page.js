@@ -290,6 +290,12 @@ export function startThreefoldPage(options) {
         '#iri-witness-lead-text',
         frame.threefold?.iriWitnessLead || null
       );
+      renderThreefoldDisclosurePanel(
+        options.documentObj,
+        '#ferry-wreck-search',
+        '#ferry-wreck-search-text',
+        frame.threefold?.ferryWreckSearch || null
+      );
       renderThreefoldEpisodeEpilogue(
         options.documentObj,
         frame.threefold?.episodeEpilogue || null

@@ -638,6 +638,34 @@ describe('THREEFOLD witness lead page', () => {
   });
 });
 
+describe('THREEFOLD ferry search page', () => {
+  beforeEach(() => {
+    mockStartMosslightPage.mockClear();
+    mockDrawGameFrame.mockClear();
+  });
+
+  test('shows the saved wreck search as an accessible disclosure', () => {
+    const { documentObj, ferryWreckSearch, ferryWreckSearchText } =
+      createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const record = {
+      title: 'Ferry wreck search',
+      text: 'One passenger group reached shore; the other was lost.',
+    };
+
+    page.drawFrame({}, { threefold: { ferryWreckSearch: record } });
+
+    expect(ferryWreckSearch.hidden).toBe(false);
+    expect(ferryWreckSearch.summary.textContent).toBe(record.title);
+    expect(ferryWreckSearchText.textContent).toBe(record.text);
+
+    page.drawFrame({}, { threefold: { ferryWreckSearch: null } });
+
+    expect(ferryWreckSearch.hidden).toBe(true);
+  });
+});
+
 /** Verify the route query, page copy, action label, and authored spawn together. */
 function assertHearthgapsRoute() {
   const selectors = [
@@ -840,6 +868,13 @@ function createLedgerDocument() {
     querySelector: selector =>
       selector === 'summary' ? iriWitnessLead.summary : null,
   };
+  const ferryWreckSearchText = { textContent: '' };
+  const ferryWreckSearch = {
+    hidden: true,
+    summary: { textContent: 'Old ferry search' },
+    querySelector: selector =>
+      selector === 'summary' ? ferryWreckSearch.summary : null,
+  };
   const episodeEpilogueList = {
     children: [],
     replaceChildren() {
@@ -863,6 +898,8 @@ function createLedgerDocument() {
     iriRepairLogText,
     iriWitnessLead,
     iriWitnessLeadText,
+    ferryWreckSearch,
+    ferryWreckSearchText,
     episodeEpilogue,
     episodeEpilogueList,
     documentObj: {
@@ -874,6 +911,9 @@ function createLedgerDocument() {
         if (selector === '#iri-repair-log-text') return iriRepairLogText;
         if (selector === '#iri-witness-lead') return iriWitnessLead;
         if (selector === '#iri-witness-lead-text') return iriWitnessLeadText;
+        if (selector === '#ferry-wreck-search') return ferryWreckSearch;
+        if (selector === '#ferry-wreck-search-text')
+          return ferryWreckSearchText;
         if (selector === '#episode-epilogue') return episodeEpilogue;
         if (selector === '#episode-epilogue-outcomes')
           return episodeEpilogueList;

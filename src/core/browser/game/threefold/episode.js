@@ -90,6 +90,24 @@ export function canHearThreefoldLatchfolkLead(state) {
 }
 
 /**
+ * Check whether Mara can search the lost ferry for its passengers.
+ * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the post-surge wreck search is available.
+ */
+export function canSearchThreefoldFerryWreck(state) {
+  return (
+    state.scene.id === 'broken-gate' &&
+    state.crisis.stage === 'aftermath' &&
+    state.episode.ferry === 'lost' &&
+    state.episode.closedBy === undefined &&
+    !state.episode.witnessLedger?.some(
+      entry => entry.action === 'ferry-wreck-search'
+    ) &&
+    isThreefoldInteractableInReach(state, MOORING_ID)
+  );
+}
+
+/**
  * Withdraw from the gatehouse when Mara reaches the upland road.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @returns {ReturnType<typeof createThreefoldEpisodeState>} Updated episode state or the original value when withdrawal is unavailable.

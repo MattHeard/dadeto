@@ -3,6 +3,7 @@ import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
 import {
   canHearThreefoldLatchfolkLead,
+  canSearchThreefoldFerryWreck,
   THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
 } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
@@ -220,6 +221,12 @@ export function renderThreefoldFrame(state) {
           text:
             'After the surge, the watchkeeper remembers a faint relay call asking for Iri. ' +
             'They cannot say who sent it or whether Iri heard.',
+        }
+      : null,
+    ferryWreckSearch: hasFerryWreckSearch(state)
+      ? {
+          title: 'Ferry wreck search',
+          text: getFerryWreckSearchText(state.episode),
         }
       : null,
     witnessLedger: (state.episode.witnessLedger || []).map(
@@ -1191,13 +1198,41 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
   const prompt = signalStationDestroyed
     ? 'SIGNAL STATION LOST · DEPART UPLAND TO CLOSE'
     : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
-  const witnessPrompt = canHearThreefoldLatchfolkLead(state)
+  const aftermathAction = canHearThreefoldLatchfolkLead(state)
     ? ' · E SPEAK WITH THE WATCHKEEPER'
-    : '';
-  const witnessRecord = hasLatchfolkIriLead(state)
+    : canSearchThreefoldFerryWreck(state)
+      ? ' · E SEARCH FERRY WRECK'
+      : '';
+  const aftermathRecord = hasLatchfolkIriLead(state)
     ? ' · WATCHKEEPER ACCOUNT IN JOURNAL'
-    : '';
-  return `${message} · ${prompt}${witnessPrompt}${witnessRecord}`;
+    : hasFerryWreckSearch(state)
+      ? ' · FERRY SEARCH IN JOURNAL'
+      : '';
+  return `${message} · ${prompt}${aftermathAction}${aftermathRecord}`;
+}
+
+/**
+ * Determine whether the ferry wreck search was recorded in the witness ledger.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the search observation is saved.
+ */
+function hasFerryWreckSearch(state) {
+  return (state.episode.witnessLedger || []).some(
+    entry => entry.action === 'ferry-wreck-search'
+  );
+}
+
+/**
+ * Describe the passenger outcome confirmed by the post-surge search.
+ * @param {ReturnType<typeof import('./episode.js').createThreefoldEpisodeState>} episode Saved episode outcome.
+ * @returns {string} Factual search account without changing the passenger outcome.
+ */
+function getFerryWreckSearchText(episode) {
+  if (episode.passengers === 'evacuated')
+    return 'Both passenger groups reached shore before the ferry was lost. The wreck holds no remaining passengers.';
+  if (episode.passengers === 'partial')
+    return 'One passenger group reached shore; the other was aboard when the ferry was lost. No further survivors are found in the wreck.';
+  return 'Both passenger groups were still aboard when the ferry was lost. No survivors are found in the wreck.';
 }
 
 /**

@@ -270,6 +270,136 @@ describe('THREEFOLD witness ledger', () => {
     ).not.toBeNull();
   });
 
+  test.each([
+    [0, 'lost', 'Both passenger groups were still aboard'],
+    [1, 'partial', 'One passenger group reached shore'],
+    [2, 'evacuated', 'Both passenger groups reached shore'],
+  ])(
+    'lets Mara search the lost ferry after the surge with %i rescued groups',
+    (rescuedGroups, passengerOutcome, accountStart) => {
+      const aftermath = createFerryWreckAftermath(rescuedGroups);
+      expect(aftermath.episode.passengers).toBe(passengerOutcome);
+      expect(renderThreefoldFrame(aftermath).toast).toContain(
+        'E SEARCH FERRY WRECK'
+      );
+
+      const searched = stepThreefoldSimulation(aftermath, {
+        type: 'interact',
+      });
+      const entry = searched.episode.witnessLedger.at(-1);
+      expect(entry).toMatchObject({
+        type: 'observation',
+        action: 'ferry-wreck-search',
+        intention: 'Search the lost ferry wreck for its passengers.',
+        consequence: {
+          crisisStage: 'aftermath',
+          passengers: passengerOutcome,
+          ferry: 'lost',
+        },
+        relatedEventId: null,
+      });
+      expect(renderThreefoldFrame(searched)).toMatchObject({
+        toast: expect.stringContaining('FERRY SEARCH IN JOURNAL'),
+        threefold: {
+          ferryWreckSearch: {
+            title: 'Ferry wreck search',
+            text: expect.stringContaining(accountStart),
+          },
+        },
+      });
+      expect(searched.episode.passengers).toBe(passengerOutcome);
+      expect(searched.episode.ferry).toBe('lost');
+      expect(
+        stepThreefoldSimulation(searched, { type: 'interact' }).episode
+          .witnessLedger
+      ).toEqual(searched.episode.witnessLedger);
+      expect(
+        restoreThreefoldSimulation(serializeThreefoldSimulation(searched))
+      ).toEqual(searched);
+    }
+  );
+
+  test('keeps the wreck search optional and gated by loss, aftermath, reach, and closure', () => {
+    const aftermath = createFerryWreckAftermath(0);
+    const beforeAftermath = {
+      ...aftermath,
+      crisis: {
+        ...aftermath.crisis,
+        elapsedMinutes: 9,
+        stage: 'surge',
+      },
+    };
+    const ferryAfloat = {
+      ...aftermath,
+      episode: { ...aftermath.episode, ferry: 'afloat' },
+    };
+    const outOfReach = {
+      ...aftermath,
+      player: createScaleState({ x: 2, y: 2 }),
+    };
+    const closed = {
+      ...aftermath,
+      episode: { ...aftermath.episode, closedBy: 'departed' },
+    };
+    const alternateScene = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+
+    for (const candidate of [
+      beforeAftermath,
+      ferryAfloat,
+      outOfReach,
+      closed,
+      alternateScene,
+    ]) {
+      const result = stepThreefoldSimulation(candidate, { type: 'interact' });
+      expect(result.episode.witnessLedger || []).not.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ action: 'ferry-wreck-search' }),
+        ])
+      );
+      expect(
+        renderThreefoldFrame(result).threefold.ferryWreckSearch
+      ).toBeFalsy();
+    }
+  });
+
+  test('keeps report and destroyed-station departure available after a wreck search', () => {
+    const searched = stepThreefoldSimulation(createFerryWreckAftermath(1), {
+      type: 'interact',
+    });
+    const scene = createBrokenGateScene();
+    const console = scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const road = scene.interactables.find(
+      item => item.id === 'upland-road-exit'
+    );
+    const reported = stepThreefoldSimulation(
+      { ...searched, player: createScaleState(console.position) },
+      { type: 'interact' }
+    );
+    const departed = stepThreefoldSimulation(
+      {
+        ...searched,
+        player: createScaleState(road.position, {
+          destroyedGeometryIds: ['signal-station'],
+        }),
+      },
+      { type: 'interact' }
+    );
+
+    expect(reported.episode.closedBy).toBe('reported');
+    expect(departed.episode.closedBy).toBe('departed');
+    expect(renderThreefoldFrame(reported).threefold.ferryWreckSearch).not.toBe(
+      null
+    );
+    expect(renderThreefoldFrame(departed).threefold.ferryWreckSearch).not.toBe(
+      null
+    );
+  });
+
   test('keeps a legacy repair unlinked when no breach entry was saved', () => {
     let { state } = forceReliefGateOpen();
     state = { ...state, episode: { ...state.episode, witnessLedger: [] } };
@@ -445,6 +575,26 @@ function createSafeWatchkeeperAftermath() {
     type: 'wait',
     elapsedGameMinutes: 9 - state.crisis.elapsedMinutes,
   });
+  return stepThreefoldSimulation(state, {
+    type: 'wait',
+    elapsedGameMinutes: 15 - state.crisis.elapsedMinutes,
+  });
+}
+
+/**
+ * Rescue the requested passenger groups and advance the scene into aftermath.
+ * @param {number} rescuedGroups Number of passenger groups saved before surge.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} At-reach aftermath state.
+ */
+function createFerryWreckAftermath(rescuedGroups) {
+  const scene = createBrokenGateScene();
+  const mooring = scene.interactables.find(
+    item => item.id === 'ferry-mooring-line'
+  );
+  let state = createThreefoldSimulation(THRESHOLDS, scene);
+  state = { ...state, player: createScaleState(mooring.position) };
+  for (let group = 0; group < rescuedGroups; group += 1)
+    state = stepThreefoldSimulation(state, { type: 'interact' });
   return stepThreefoldSimulation(state, {
     type: 'wait',
     elapsedGameMinutes: 15 - state.crisis.elapsedMinutes,
