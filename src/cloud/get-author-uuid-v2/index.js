@@ -10,9 +10,9 @@ import {
   createEffectStartupBoundary,
 } from '../allow-effects.js';
 import { createGetAuthorUuidV2EffectAdapters } from './effect-adapters.js';
+import { createGetAuthorUuidV2BillingRuntime } from './billing-runtime.js';
 import { initializeFirebaseApp } from './startup-effect-adapter.js';
 import { createGetAuthorUuidV2ExpressHandle } from './get-author-uuid-v2-core.js';
-
 const db = createEffectStartupBoundary(allowEffects => {
   const manager = createFirebaseAppManager(permission =>
     initializeFirebaseApp(permission, initializeApp)
@@ -24,12 +24,23 @@ const db = createEffectStartupBoundary(allowEffects => {
   });
 });
 const auth = getAdminAuth();
+const effectAdapters = createGetAuthorUuidV2EffectAdapters({ db });
+const billing = createGetAuthorUuidV2BillingRuntime(
+  db,
+  process.env,
+  effectAdapters.resolveBillingIdentity
+);
 const handleRequest = createGetAuthorUuidV2ExpressHandle({
   db,
   auth,
   randomUUID,
   allowedOrigins: getAllowedOrigins(process.env),
-  ...createGetAuthorUuidV2EffectAdapters(),
+  billing,
+  getAuthorDocument: effectAdapters.getAuthorDocument,
+  setAuthorDocument: effectAdapters.setAuthorDocument,
+  sendJsonResponse: effectAdapters.sendJsonResponse,
+  setResponseHeader: effectAdapters.setResponseHeader,
+  sendEmptyResponse: effectAdapters.sendEmptyResponse,
 });
 const handle = createEffectHttpBoundary((allowEffects, req, res) =>
   handleRequest(allowEffects, req, res)

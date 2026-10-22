@@ -167,6 +167,12 @@ variable "billing_enabled" {
   default     = false
 }
 
+variable "get_author_uuid_v2_billing_enabled" {
+  description = "Whether get-author-uuid-v2 charges the configured operation price"
+  type        = bool
+  default     = false
+}
+
 variable "enable_runner_commitment_projection" {
   description = "Whether object-minute rental search reads from the backfilled runner commitment projection"
   type        = bool

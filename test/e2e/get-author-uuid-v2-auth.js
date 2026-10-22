@@ -1,4 +1,5 @@
 import { GoogleAuth } from 'google-auth-library';
+import { GCP_TEST_AUTHOR_UUID_UID } from '../../src/core/cloud/get-author-uuid-v2/gcp-test-billing-seed-core.js';
 
 const CUSTOM_TOKEN_AUDIENCE =
   'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit';
@@ -7,7 +8,7 @@ const IAM_SCOPE = 'https://www.googleapis.com/auth/iam';
 const CUSTOM_TOKEN_ENDPOINT =
   'https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken';
 
-export const GET_AUTHOR_UUID_V2_TEST_UID = 'dadeto-gcp-test-get-author-uuid-v2';
+export const GET_AUTHOR_UUID_V2_TEST_UID = GCP_TEST_AUTHOR_UUID_UID;
 
 /**
  * Check that a parsed Firebase response is a record.

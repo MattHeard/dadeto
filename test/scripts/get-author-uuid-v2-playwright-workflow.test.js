@@ -3,14 +3,23 @@ import { describe, expect, it } from '@jest/globals';
 
 describe('get-author-uuid-v2 temporary Playwright coverage', () => {
   it('passes temporary function and tenant configuration into the Playwright job', async () => {
-    const [terraform, workflow, playwrightConfig, testFile] = await Promise.all(
-      [
-        readFile('infra/playwright.tf', 'utf8'),
-        readFile('.github/workflows/gcp-test.yml', 'utf8'),
-        readFile('test/e2e/cloud.config.ts', 'utf8'),
-        readFile('test/e2e/get-author-uuid-v2.spec.ts', 'utf8'),
-      ]
-    );
+    const [
+      terraform,
+      functionTerraform,
+      variables,
+      workflow,
+      fixture,
+      playwrightConfig,
+      testFile,
+    ] = await Promise.all([
+      readFile('infra/playwright.tf', 'utf8'),
+      readFile('infra/functions-v2.tf', 'utf8'),
+      readFile('infra/variables.tf', 'utf8'),
+      readFile('.github/workflows/gcp-test.yml', 'utf8'),
+      readFile('scripts/gcp-test-fixture.js', 'utf8'),
+      readFile('test/e2e/cloud.config.ts', 'utf8'),
+      readFile('test/e2e/get-author-uuid-v2.spec.ts', 'utf8'),
+    ]);
 
     expect(terraform).toContain('name  = "GET_AUTHOR_UUID_V2_URL"');
     expect(terraform).toContain(
@@ -27,8 +36,42 @@ describe('get-author-uuid-v2 temporary Playwright coverage', () => {
     expect(workflow).toContain(
       'echo "TF_VAR_database_id=$ENVIRONMENT" >> "$GITHUB_ENV"'
     );
+    expect(variables).toMatch(
+      /variable "get_author_uuid_v2_billing_enabled"\s*\{[^}]*default\s*=\s*false/s
+    );
+    const authorFunction = functionTerraform
+      .split(
+        'resource "google_cloudfunctions2_function" "get_author_uuid_v2"'
+      )[1]
+      ?.split(
+        'resource "google_cloud_run_service_iam_member" "get_author_uuid_v2_public"'
+      )[0];
+    const creditFunction = functionTerraform
+      .split(
+        'resource "google_cloudfunctions2_function" "get_api_key_credit_v2"'
+      )[1]
+      ?.split(
+        'resource "google_cloud_run_service_iam_member" "get_api_key_credit_v2_public"'
+      )[0];
+    expect(authorFunction).toContain(
+      'var.billing_enabled || var.get_author_uuid_v2_billing_enabled'
+    );
+    expect(creditFunction).not.toContain('get_author_uuid_v2_billing_enabled');
+    expect(workflow).toContain(
+      'echo "TF_VAR_get_author_uuid_v2_billing_enabled=true" >> "$GITHUB_ENV"'
+    );
+    expect(workflow).toContain(
+      'GET_AUTHOR_UUID_V2_BILLING_ENABLED="$TF_VAR_get_author_uuid_v2_billing_enabled"'
+    );
+    expect(fixture).toContain(
+      "process.env.GET_AUTHOR_UUID_V2_BILLING_ENABLED === 'true'"
+    );
+    expect(
+      fixture.indexOf('createGcpTestAuthorUuidBillingSeed(billingSeedInput)')
+    ).toBeLessThan(fixture.indexOf('await seedFirestore(db)'));
     expect(playwrightConfig).toContain('**/get-author-uuid-v2.spec.ts');
     expect(testFile).toContain("mode: 'cors'");
+    expect(testFile).toContain("'Idempotency-Key': 'gcp-test-author-uuid-v2'");
     expect(testFile).toContain('uuidStable:');
     expect(testFile).toContain('missingTokenStatus: missing.status');
     expect(testFile).toContain('invalidTokenStatus: invalid.status');

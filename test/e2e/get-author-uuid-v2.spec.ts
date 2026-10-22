@@ -44,13 +44,19 @@ test('get-author-uuid-v2 passes browser CORS and tenant authentication checks', 
         const first = await fetch(functionUrl, {
           method: 'GET',
           mode: 'cors',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': 'gcp-test-author-uuid-v2',
+          },
         });
         const firstBody = first.ok ? await first.json() : null;
         const repeated = await fetch(functionUrl, {
           method: 'GET',
           mode: 'cors',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Idempotency-Key': 'gcp-test-author-uuid-v2',
+          },
         });
         const repeatedBody = repeated.ok ? await repeated.json() : null;
         const missing = await fetch(functionUrl, { method: 'GET', mode: 'cors' });

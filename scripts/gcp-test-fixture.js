@@ -2,6 +2,10 @@
 import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../src/core/commonCore.js';
+import {
+  createGcpTestAuthorUuidBillingSeed,
+  seedGcpTestAuthorUuidBillingCredit,
+} from '../src/core/cloud/get-author-uuid-v2/gcp-test-billing-seed-core.js';
 import { createRenderContents } from '../src/core/cloud/render-contents/render-contents-core.js';
 import { createRenderVariant } from '../src/core/cloud/render-variant/render-variant-core.js';
 import { bindEffectBoundary } from '../src/browser/allow-effects.js';
@@ -209,6 +213,39 @@ async function seedFirestore(db) {
 }
 
 /**
+ * Seed the one-credit billable author UUID fixture in this temporary database.
+ * @param {import('firebase-admin/firestore').Firestore} db Temporary Firestore database.
+ * @param {{environment: string, databaseId: string, workflowRunId: string, createdAt: Date}} input Temporary environment identity.
+ * @returns {Promise<void>} Resolves after the idempotent billing seed completes.
+ */
+async function seedBillableAuthorUuidFixture(db, input) {
+  await bindEffectBoundary(allowEffects =>
+    seedGcpTestAuthorUuidBillingCredit(
+      allowEffects,
+      input,
+      {
+        runTransaction: (permission, handler) => {
+          void permission;
+          return db.runTransaction(handler);
+        },
+        getDocument: (permission, transaction, path) => {
+          void permission;
+          const typedTransaction = /** @type {{get: (reference: unknown) => Promise<{exists: boolean, data: () => Record<string, unknown>|undefined}>}} */ (transaction);
+          return typedTransaction.get(db.doc(path)).then(snapshot =>
+            snapshot.exists ? snapshot.data() ?? null : null
+          );
+        },
+        createDocument: (permission, transaction, path, data) => {
+          void permission;
+          const typedTransaction = /** @type {{create: (reference: unknown, data: Record<string, unknown>) => unknown}} */ (transaction);
+          return typedTransaction.create(db.doc(path), data);
+        },
+      }
+    )
+  );
+}
+
+/**
  * Delete every document in the database before seeding.
  * @param {import('firebase-admin/firestore').Firestore} db Firestore database.
  * @returns {Promise<void>} Resolves after all known documents are deleted.
@@ -382,6 +419,17 @@ async function main() {
   const projectId = requireEnv('PROJECT_ID');
   const databaseId = requireEnv('DATABASE_ID');
   const environment = requireEnv('ENVIRONMENT');
+  const billingSeedInput =
+    process.env.GET_AUTHOR_UUID_V2_BILLING_ENABLED === 'true'
+      ? {
+          environment,
+          databaseId,
+          workflowRunId: process.env.GITHUB_RUN_ID ?? 'local-gcp-test',
+          createdAt: new Date(),
+        }
+      : null;
+  if (billingSeedInput)
+    createGcpTestAuthorUuidBillingSeed(billingSeedInput);
   const staticBucket = requireEnv('TEST_STATIC_BUCKET');
   const staticObjectPrefix = requireEnv('STATIC_OBJECT_PREFIX');
   const webAppConfig = parseJsonEnv('FIREBASE_WEB_APP_CONFIG_JSON');
@@ -399,6 +447,8 @@ async function main() {
   const idToken = await exchangeCustomToken(apiKey, customToken);
 
   await seedFirestore(db);
+  if (billingSeedInput)
+    await seedBillableAuthorUuidFixture(db, billingSeedInput);
 
   await retryTransientSeedStep(() =>
     renderSeededContents({
