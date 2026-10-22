@@ -1,4 +1,5 @@
 import { isThreefoldInteractableInReach } from './scene-utils.js';
+import { resolveHierarchyActionTarget } from './logical-grid.js';
 import {
   EPISODE_CLOSURES,
   FERRY_OUTCOMES,
@@ -10,6 +11,21 @@ import { createThreefoldTestimony } from './testimony.js';
 export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
 /** The smallest scale at which the signal-station console is exposed. */
 export const THREEFOLD_SIGNAL_STATION_DETAIL_SCALE = -2;
+/** Authored render and interaction hierarchy for the signal-station console. */
+export const THREEFOLD_SIGNAL_STATION_HIERARCHY = Object.freeze([
+  Object.freeze({
+    id: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
+    hierarchy: Object.freeze({
+      expandAtScale: THREEFOLD_SIGNAL_STATION_DETAIL_SCALE,
+    }),
+  }),
+  Object.freeze({
+    id: 'signal-station-console',
+    hierarchy: Object.freeze({
+      parentId: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
+    }),
+  }),
+]);
 /** Stable identifier for the authored Latchfolk watchkeeper interactable. */
 export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
 export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
@@ -168,7 +184,14 @@ export function attemptThreefoldReport(state) {
   const { episode, crisis, player } = state;
   if (
     crisis.stage !== 'aftermath' ||
-    player.scale > THREEFOLD_SIGNAL_STATION_DETAIL_SCALE ||
+    !resolveHierarchyActionTarget(
+      THREEFOLD_SIGNAL_STATION_HIERARCHY.map(({ id, hierarchy }) => ({
+        id,
+        ...hierarchy,
+      })),
+      player.scale,
+      'signal-station-console'
+    ) ||
     player.destroyedGeometryIds.includes(
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ) ||
