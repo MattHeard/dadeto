@@ -567,7 +567,7 @@ function createSluiceGridLayout(state) {
     { id: scene.id, bounds: scene.bounds },
     player.scale
   ).cellBounds;
-  const layout = resolveSceneLayout(
+  const layout = packSceneLayout(
     facets.map(entity => ({
       id: entity.id,
       bounds: entity.bounds,

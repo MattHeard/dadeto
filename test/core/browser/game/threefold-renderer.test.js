@@ -248,20 +248,11 @@ describe('THREEFOLD canvas grid', () => {
         height: scale === -2 ? 22 : 7,
       });
       expect(layout.overflow).toEqual([]);
+      expect(layout.conflicts).toEqual([]);
+      expect(
+        layout.entities.every(({ placement }) => placement === 'placed')
+      ).toBe(true);
       expect([...entities.keys()].sort()).toEqual([...projectedIds].sort());
-      expect(layout.conflicts.map(({ entityIds }) => entityIds)).toEqual(
-        scale === -2
-          ? [
-              ['mara', 'sluice-service-valve'],
-              ['sluice-lower-vessel', 'sluice-transfer-pipe'],
-            ]
-          : [
-              ['mara', 'sluice-service-valve'],
-              ['mara', 'sluice-transfer-pipe'],
-              ['sluice-lower-vessel', 'sluice-transfer-pipe'],
-              ['sluice-service-valve', 'sluice-transfer-pipe'],
-            ]
-      );
       expect(gridShapes.map(shape => shape.geometryId)).toEqual(
         expect.arrayContaining(projectedIds)
       );
@@ -285,6 +276,7 @@ describe('THREEFOLD canvas grid', () => {
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
       );
+      expectSluiceLayoutStableUnderPermutation(state, layout);
     }
 
     const outside = createThreefoldSimulation(
@@ -337,6 +329,26 @@ describe('THREEFOLD canvas grid', () => {
       renderThreefoldFrame(flowing).threefold.logicalGridLayout
     );
   });
+
+  /**
+   * @param {ReturnType<typeof createThreefoldSimulation>} state Archive state.
+   * @param {ReturnType<typeof renderThreefoldFrame>['threefold']['logicalGridLayout']} layout Expected layout.
+   * @returns {void} Verifies input-order independence.
+   */
+  function expectSluiceLayoutStableUnderPermutation(state, layout) {
+    const permuted = {
+      ...state,
+      scene: {
+        ...state.scene,
+        geometry: [...state.scene.geometry].reverse(),
+        decorations: [...state.scene.decorations].reverse(),
+        interactables: [...state.scene.interactables].reverse(),
+      },
+    };
+    expect(renderThreefoldFrame(permuted).threefold.logicalGridLayout).toEqual(
+      layout
+    );
+  }
 
   test('renders baseline structures from scale-local logical cells without mutating geometry', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
