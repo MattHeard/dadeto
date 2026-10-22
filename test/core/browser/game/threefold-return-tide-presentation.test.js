@@ -2,7 +2,10 @@ import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/gam
 import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
 import { createThreefoldSimulation } from '../../../../src/core/browser/game/threefold/simulation.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
-import { createThreefoldReturnTide } from '../../../../src/core/browser/game/threefold/return-tide.js';
+import {
+  createThreefoldReturnTide,
+  getThreefoldReturnTideObligations,
+} from '../../../../src/core/browser/game/threefold/return-tide.js';
 import {
   presentThreefoldReturnTide,
   renderThreefoldReturnTide,
@@ -141,12 +144,55 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
         'sera: the earlier growth death remains; the tide did not restore this person.',
         'orla: survived and writes from an upland refuge; their old home or post remains lost.',
         'tharn: survived here. Prior choices and debts remain.',
-        expect.stringContaining(
-          'assembly: maintain a staffed tide-control shift'
-        ),
+        'Assembly: keep daily hand-operated tide-control shifts staffed at the Quay.',
+        'Low Quay: survey shelter above the flood line before displaced residents choose whether to return.',
+        'Hospital approach: keep care uphill until the route can be restored.',
+        'City pumps: replace the ruined pumps and drain retained water before reopening the lower works.',
+        'Silt Choir: document surviving branches and route around the permanently severed paths.',
+        'Deep roots: establish an alternate crossing before the caravan route is restored.',
+        'Hearthgaps: secure upland shelter; draining the sacrifice channel cannot restore these homes.',
+        'Nursery Clades: move the remaining young and rebuild chambers above the flood line.',
+        'Living breakwater: protect surviving shoots; the lost deep-root reaches cannot regrow.',
         expect.stringContaining('Mara: Foldglass is bound to the regulator'),
         'The distributed response still sacrificed homes and Foldglass freedom; this is no cost-free ending.',
       ])
+    );
+  });
+
+  test('names signed shift duties and reveals each repair obligation only after its place is surveyed', () => {
+    const tide = {
+      ...createThreefoldReturnTide(),
+      agreements: [
+        'assembly',
+        'latchfolk',
+        'threadbound',
+        'nursery',
+        'choir',
+        'crownback',
+        'unknown',
+      ],
+      damageIds: ['hearthgaps-homes', 'quay-low-district', 'unknown'],
+    };
+    expect(getThreefoldReturnTideObligations(tide)).toEqual([
+      'Assembly: keep daily hand-operated tide-control shifts staffed at the Quay.',
+      'Latchfolk: keep daily tide-control shifts staffed from the lower service paths.',
+      'Threadbound: keep daily tide-control shifts staffed and the caravan relay in service.',
+      'Nursery Clades: keep daily tide-control shifts staffed while protecting the remaining young.',
+      'Silt Choir: keep daily tide-control shifts staffed and map the surviving root branches.',
+      'Crownbacks: keep daily tide-control shifts staffed and the coastal migration corridor clear.',
+    ]);
+
+    tide.observedSceneIds = ['hearthgaps'];
+    expect(getThreefoldReturnTideObligations(tide)).toContain(
+      'Hearthgaps: secure upland shelter; draining the sacrifice channel cannot restore these homes.'
+    );
+    expect(getThreefoldReturnTideObligations(tide)).not.toContain(
+      'Low Quay: survey shelter above the flood line before displaced residents choose whether to return.'
+    );
+
+    tide.observedSceneIds.push('lantern-ward');
+    expect(getThreefoldReturnTideObligations(tide)).toContain(
+      'Low Quay: survey shelter above the flood line before displaced residents choose whether to return.'
     );
   });
 

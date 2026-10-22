@@ -183,7 +183,7 @@ describe('THREEFOLD systemic Return Tide', () => {
     expect(result.deathIds).toEqual([]);
     expect(getThreefoldReturnTideObligations(result)).toEqual(
       expect.arrayContaining([
-        expect.stringContaining('assembly:'),
+        'Assembly: keep daily hand-operated tide-control shifts staffed at the Quay.',
         expect.stringContaining('Mara: Foldglass'),
       ])
     );

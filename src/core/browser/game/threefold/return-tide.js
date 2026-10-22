@@ -62,6 +62,56 @@ const CHAMBERS = [
   },
   { id: 'offshore-outlet', floorElevationMeters: -4, areaSquareMeters: 100000 },
 ];
+/** @type {Record<string, string>} */
+const AGREEMENT_OBLIGATIONS = {
+  assembly:
+    'Assembly: keep daily hand-operated tide-control shifts staffed at the Quay.',
+  latchfolk:
+    'Latchfolk: keep daily tide-control shifts staffed from the lower service paths.',
+  threadbound:
+    'Threadbound: keep daily tide-control shifts staffed and the caravan relay in service.',
+  nursery:
+    'Nursery Clades: keep daily tide-control shifts staffed while protecting the remaining young.',
+  choir:
+    'Silt Choir: keep daily tide-control shifts staffed and map the surviving root branches.',
+  crownback:
+    'Crownbacks: keep daily tide-control shifts staffed and the coastal migration corridor clear.',
+};
+/** @type {Record<string, {scenes: string[], text: string}>} */
+const DAMAGE_OBLIGATIONS = {
+  'quay-low-district': {
+    scenes: ['belltops', 'lantern-ward'],
+    text: 'Low Quay: survey shelter above the flood line before displaced residents choose whether to return.',
+  },
+  'quay-hospital': {
+    scenes: ['belltops'],
+    text: 'Hospital approach: keep care uphill until the route can be restored.',
+  },
+  'quay-pumps': {
+    scenes: ['belltops'],
+    text: 'City pumps: replace the ruined pumps and drain retained water before reopening the lower works.',
+  },
+  'choir-branches': {
+    scenes: ['silt-margin'],
+    text: 'Silt Choir: document surviving branches and route around the permanently severed paths.',
+  },
+  'root-crossings': {
+    scenes: ['weftways', 'silt-margin'],
+    text: 'Deep roots: establish an alternate crossing before the caravan route is restored.',
+  },
+  'hearthgaps-homes': {
+    scenes: ['hearthgaps'],
+    text: 'Hearthgaps: secure upland shelter; draining the sacrifice channel cannot restore these homes.',
+  },
+  'nursery-chambers': {
+    scenes: ['grainlands'],
+    text: 'Nursery Clades: move the remaining young and rebuild chambers above the flood line.',
+  },
+  'living-breakwater': {
+    scenes: ['crownback-reach', 'wakeform-shoals'],
+    text: 'Living breakwater: protect surviving shoots; the lost deep-root reaches cannot regrow.',
+  },
+};
 
 /** @typedef {'assembly'|'latchfolk'|'threadbound'|'nursery'|'choir'|'crownback'} ReturnTideFaction */
 /** @typedef {{sealClosed:boolean,spillwayOpen:boolean,humanManifold:boolean,rootManifold:boolean,coastManifold:boolean,foldglassBound:boolean}} ReturnTideControls */
@@ -258,15 +308,24 @@ export function getThreefoldReturnTidePhase(state) {
 }
 
 /**
- * Report explicit long-term labor and Foldglass costs of surviving agreements.
+ * Report known, concrete repair and labor duties without an alignment grade.
  * @param {ThreefoldReturnTide} state Committed controls and agreements.
- * @returns {string[]} Concrete obligations without an alignment grade.
+ * @returns {string[]} Current duties for signed factions and surveyed losses.
  */
 export function getThreefoldReturnTideObligations(state) {
-  const obligations = state.agreements.map(
-    faction =>
-      `${faction}: maintain a staffed tide-control shift; replace damaged shelter and tools.`
+  const obligations = state.agreements.flatMap(faction =>
+    AGREEMENT_OBLIGATIONS[faction] ? [AGREEMENT_OBLIGATIONS[faction]] : []
   );
+  for (const id of state.damageIds) {
+    const obligation = DAMAGE_OBLIGATIONS[id];
+    if (
+      obligation &&
+      obligation.scenes.some(sceneId =>
+        state.observedSceneIds.includes(sceneId)
+      )
+    )
+      obligations.push(obligation.text);
+  }
   if (state.controls.foldglassBound)
     obligations.push(
       'Mara: Foldglass is bound to the regulator; after leaving scale +4, that band cannot be entered again.'
