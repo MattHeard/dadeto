@@ -66,6 +66,136 @@ describe('THREEFOLD canvas grid', () => {
     expect(sluice.sluicePuzzle).toEqual(fluidBeforeRender);
   });
 
+  test('renders Tidal Archive structures and Mara from its finite logical-cell layout', () => {
+    const base = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+    const authoredBefore = JSON.stringify({
+      geometry: base.scene.geometry,
+      decorations: base.scene.decorations,
+      interactables: base.scene.interactables,
+      puzzle: base.sluicePuzzle,
+    });
+
+    for (const scale of [-2, -1]) {
+      const state = {
+        ...base,
+        player: { ...base.player, scale },
+      };
+      const frame = renderThreefoldFrame(state);
+      const layout = frame.threefold.logicalGridLayout;
+      const entities = new Map(
+        layout.entities.map(entity => [entity.id, entity])
+      );
+      const projectedIds = [
+        ...base.scene.geometry,
+        ...base.scene.decorations,
+        ...base.scene.interactables,
+        { id: 'mara' },
+      ].map(({ id }) => id);
+      const gridShapes = frame.shapes.filter(shape =>
+        projectedIds.includes(shape.geometryId)
+      );
+
+      expect(layout.scale).toBe(scale);
+      expect(layout.viewport).toMatchObject({
+        x: 0,
+        y: 0,
+        width: scale === -2 ? 30 : 10,
+        height: scale === -2 ? 22 : 7,
+      });
+      expect(layout.overflow).toEqual([]);
+      expect([...entities.keys()].sort()).toEqual([...projectedIds].sort());
+      expect(layout.conflicts.map(({ entityIds }) => entityIds)).toEqual(
+        scale === -2
+          ? [
+              ['mara', 'sluice-service-valve'],
+              ['sluice-lower-vessel', 'sluice-transfer-pipe'],
+            ]
+          : [
+              ['mara', 'sluice-service-valve'],
+              ['mara', 'sluice-transfer-pipe'],
+              ['sluice-lower-vessel', 'sluice-transfer-pipe'],
+              ['sluice-service-valve', 'sluice-transfer-pipe'],
+            ]
+      );
+      expect(gridShapes.map(shape => shape.geometryId)).toEqual(
+        expect.arrayContaining(projectedIds)
+      );
+      for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
+        expect(shape.width % 8).toBe(0);
+        expect(shape.height % 8).toBe(0);
+      }
+      for (const shape of gridShapes) {
+        expect(shape.logicalCellBounds).toEqual(
+          entities.get(shape.geometryId).cellBounds
+        );
+        expect(shape.x % 8).toBe(0);
+        expect(shape.y % 8).toBe(0);
+      }
+      for (const fluid of frame.shapes.filter(shape => shape.fluidChamberId)) {
+        expect(fluid.surfaceMeters).toBeGreaterThanOrEqual(0);
+        expect(fluid.logicalContainerBounds).toEqual(
+          entities.get(fluid.fluidChamberId).cellBounds
+        );
+      }
+      expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
+        layout
+      );
+    }
+
+    const outside = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+    outside.scene.decorations[0].bounds.max.x = 20;
+    const outsideBefore = JSON.stringify(outside.scene.decorations);
+    const outsideFrame = renderThreefoldFrame(outside);
+    expect(outsideFrame.threefold.logicalGridLayout.overflow).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ entityId: 'sluice-upper-vessel' }),
+      ])
+    );
+    expect(JSON.stringify(outside.scene.decorations)).toBe(outsideBefore);
+    expect(
+      JSON.stringify({
+        geometry: base.scene.geometry,
+        decorations: base.scene.decorations,
+        interactables: base.scene.interactables,
+        puzzle: base.sluicePuzzle,
+      })
+    ).toBe(authoredBefore);
+
+    const missingValveScene = createThreefoldSluiceScene();
+    missingValveScene.interactables = missingValveScene.interactables.filter(
+      ({ id }) => id !== 'sluice-service-valve'
+    );
+    expect(() =>
+      renderThreefoldFrame(
+        createThreefoldSimulation(THRESHOLDS, missingValveScene)
+      )
+    ).toThrow('Tidal Archive render entity is missing: sluice-service-valve');
+
+    let flowing = stepThreefoldSimulation(base, { type: 'interact' });
+    flowing = stepThreefoldSimulation(flowing, {
+      type: 'wait',
+      elapsedGameMinutes: 15,
+    });
+    const flowingFrame = renderThreefoldFrame(flowing);
+    const lowerWater = flowingFrame.shapes.find(
+      shape => shape.fluidChamberId === 'sluice-lower-vessel'
+    );
+    expect(lowerWater.surfaceMeters).toBeGreaterThan(
+      renderThreefoldFrame(base).shapes.find(
+        shape => shape.fluidChamberId === 'sluice-lower-vessel'
+      ).surfaceMeters
+    );
+    expect(flowingFrame.threefold.logicalGridLayout).toEqual(
+      renderThreefoldFrame(flowing).threefold.logicalGridLayout
+    );
+  });
+
   test('renders baseline structures from scale-local logical cells without mutating geometry', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
     const before = JSON.stringify({

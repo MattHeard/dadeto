@@ -1,0 +1,8 @@
+# THREEFOLD Tidal Archive logical-grid renderer
+
+- Unexpected hurdle: the initial fast check caught a JSDoc TypeScript mismatch between the resolver's base entity array and the renderer's extended entities carrying logical-kind metadata.
+- Diagnosis: intersecting two object types with different `entities` arrays retained both array types, so `Map` inferred the unextended resolver entity. The initial focused evaluator also exposed the repository's zero-warning Prettier policy and a shape helper tuple requirement.
+- Fix: use `Omit<Layout, 'entities'>` when extending the layout result, type the authored facets and output explicitly, and keep renderer metadata on the local `ThreefoldSpriteShape` typedef. Add the missing source-ID error path to tests.
+- Durable behavior: the Archive's authored objects and Mara use the finite `resolveSceneLayout` projection at scales −2 and −1. The renderer exposes cell bounds and overlap/overflow diagnostics; fluid surfaces still use solver elevations and are quantized only at the shared canvas boundary.
+- Next-time guidance: when refining resolver output, replace the property with `Omit` before adding its new type instead of intersecting incompatible array properties. Re-run `npm run tsdoc:check` before the full check to catch inference drift quickly.
+- Validation so far: renderer and hydraulic suites passed 41 tests; changed-core evaluator passed 27 suites / 343 tests with all four renderer metrics at 100%, ESLint, core-parse, and zero clones; `npm run check`, `npm run build`, and 79 manuals passed. Exact-head GitHub Full Check/Terraform and merge evidence are pending.

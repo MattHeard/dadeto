@@ -53,7 +53,7 @@ const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 const createThreefoldRectShape =
@@ -321,6 +321,10 @@ function renderThreefoldSluiceFrame(state) {
     state.sluicePuzzle,
     state.player.scale
   );
+  const logicalGridLayout = createSluiceGridLayout(state);
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
+  );
   const frame = createThreefoldFramePayload({
     world: createSmallWorldFrameWorld(
       state.scene.id,
@@ -339,7 +343,7 @@ function renderThreefoldSluiceFrame(state) {
   });
   frame.quest = 'The Tidal Archive';
   frame.toast = `${sluiceToast(water)} · WATER FOLLOWS SIM TIME`;
-  frame.shapes = sluiceShapes(state, water);
+  frame.shapes = sluiceShapes(state, water, logicalEntities, logicalGridLayout);
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
     heightMeters,
@@ -352,6 +356,7 @@ function renderThreefoldSluiceFrame(state) {
     lowerBasinRaised: water.lowerBasinRaised,
     crossingAvailable: water.crossingAvailable,
     archiveTraceHeard: state.archiveTraceHeard,
+    logicalGridLayout,
     archiveQuietingTrace: state.archiveTraceHeard
       ? {
           title: 'Tidal Archive coil register',
@@ -516,6 +521,194 @@ function renderThreefoldSiltMarginFrame(state) {
     witnessLedger: [],
     logicalGridLayout,
   });
+}
+
+/**
+ * Resolve the Tidal Archive's authored objects and Mara on one finite cell grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'small-world-sluice'}}>} state Current Archive simulation.
+ * @returns {Omit<ReturnType<typeof resolveSceneLayout>, 'entities'> & {viewport: ReturnType<typeof projectEntity>['cellBounds'], entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Projected Archive objects and layout diagnostics.
+ */
+function createSluiceGridLayout(state) {
+  const { scene, player } = state;
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  /** @type {Array<{id: string, kind: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} */
+  const facets = [
+    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+    ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
+    {
+      id: 'mara',
+      kind: 'actor',
+      bounds: {
+        min: {
+          x: player.position.x - halfBodyWidth,
+          y: player.position.y - halfBodyWidth,
+          z: 0,
+        },
+        max: {
+          x: player.position.x + halfBodyWidth,
+          y: player.position.y + halfBodyWidth,
+          z: heightAtScale(player.scale),
+        },
+      },
+    },
+  ];
+  const viewport = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
+    player.scale
+  ).cellBounds;
+  const layout = resolveSceneLayout(
+    facets.map(entity => ({
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId: entity.overlapGroupId,
+      hierarchy: entity.hierarchy,
+    })),
+    player.scale,
+    viewport
+  );
+  const kindsById = new Map(facets.map(({ id, kind }) => [id, kind]));
+  return {
+    ...layout,
+    viewport,
+    entities: layout.entities.map(entity => ({
+      ...entity,
+      logicalGridKinds: [/** @type {string} */ (kindsById.get(entity.id))],
+    })),
+  };
+}
+
+/**
+ * Convert a resolved Archive cell rectangle to the fixed Mosslight playfield.
+ * @param {ReturnType<typeof createSluiceGridLayout>['entities'][number]} entity Projected Archive entity.
+ * @param {ReturnType<typeof createSluiceGridLayout>} layout Resolved finite Archive map.
+ * @returns {{x:number,y:number,width:number,height:number}} Canvas-aligned object bounds.
+ */
+function sluiceEntityScreenRect(entity, layout) {
+  const bounds = entity.cellBounds;
+  const viewport = layout.viewport;
+  return {
+    x: snapCanvasCoordinate(
+      8 + ((bounds.x - viewport.x) / viewport.width) * 144
+    ),
+    y: snapCanvasCoordinate(
+      100 - ((bounds.y + bounds.height - viewport.y) / viewport.height) * 72
+    ),
+    width: Math.max(
+      GRID_PIXELS,
+      snapCanvasDimension((bounds.width / viewport.width) * 144)
+    ),
+    height: Math.max(
+      GRID_PIXELS,
+      snapCanvasDimension((bounds.height / viewport.height) * 72)
+    ),
+  };
+}
+
+/**
+ * Draw a resolved entity rectangle while retaining its logical-cell evidence.
+ * @param {ReturnType<typeof createSluiceGridLayout>['entities'][number]} entity Projected Archive entity.
+ * @param {ReturnType<typeof createSluiceGridLayout>} layout Resolved finite Archive map.
+ * @param {string} fill Display color.
+ * @returns {ThreefoldSpriteShape} Cell-derived Mosslight rectangle.
+ */
+function createSluiceGridEntityShape(entity, layout, fill) {
+  const rectangle = sluiceEntityScreenRect(entity, layout);
+  return sluiceGridRect(
+    entity,
+    [rectangle.x, rectangle.y, rectangle.width, rectangle.height],
+    fill
+  );
+}
+
+/**
+ * Attach canonical source identity and cell bounds to a rendered Archive part.
+ * @param {ReturnType<typeof createSluiceGridLayout>['entities'][number]} entity Projected source entity.
+ * @param {[number, number, number, number]} rectangle Screen rectangle.
+ * @param {string} fill Display color.
+ * @returns {ThreefoldSpriteShape} Grid-sourced Archive shape.
+ */
+function sluiceGridRect(entity, rectangle, fill) {
+  return {
+    ...createThreefoldRectShape(rectangle, fill),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+    logicalGridKinds: entity.logicalGridKinds,
+  };
+}
+
+/**
+ * Draw continuous simulated water within a cell-projected chamber.
+ * @param {ReturnType<typeof createSluiceGridLayout>['entities'][number]} chamber Projected chamber entity.
+ * @param {[number, number, number, number]} rectangle Water surface screen rectangle.
+ * @param {string} fill Water color.
+ * @param {number} surfaceMeters Exact solver surface elevation.
+ * @returns {ThreefoldSpriteShape} Fluid tied to its resolved chamber.
+ */
+function sluiceFluidRect(chamber, rectangle, fill, surfaceMeters) {
+  return {
+    ...createThreefoldRectShape(rectangle, fill),
+    fluidChamberId: chamber.id,
+    logicalContainerBounds: chamber.cellBounds,
+    surfaceMeters,
+  };
+}
+
+/**
+ * Draw the authored vessel outline using only its resolved cell rectangle.
+ * @param {ReturnType<typeof createSluiceGridLayout>['entities'][number]} entity Projected vessel.
+ * @param {{x:number,y:number,width:number,height:number}} rectangle Vessel screen bounds.
+ * @returns {ThreefoldSpriteShape[]} Cell-derived vessel walls and floor.
+ */
+function sluiceVesselShapes(entity, rectangle) {
+  const wallWidth = GRID_PIXELS;
+  const wallHeight = Math.max(GRID_PIXELS, rectangle.height - GRID_PIXELS);
+  return [
+    sluiceGridRect(
+      entity,
+      [rectangle.x, rectangle.y, wallWidth, wallHeight],
+      PALETTE[1]
+    ),
+    sluiceGridRect(
+      entity,
+      [
+        rectangle.x + rectangle.width - wallWidth,
+        rectangle.y,
+        wallWidth,
+        wallHeight,
+      ],
+      PALETTE[1]
+    ),
+    sluiceGridRect(
+      entity,
+      [
+        rectangle.x,
+        rectangle.y + rectangle.height - GRID_PIXELS,
+        rectangle.width,
+        GRID_PIXELS,
+      ],
+      PALETTE[1]
+    ),
+  ];
+}
+
+/**
+ * Convert a continuous solver water surface to its in-vessel screen height.
+ * @param {number} availablePixels Interior vessel height.
+ * @param {number} surfaceMeters Current solver surface elevation.
+ * @param {number} floorMeters Chamber floor elevation.
+ * @returns {number} Canvas-grid-aligned fluid fill height.
+ */
+function sluiceWaterHeight(availablePixels, surfaceMeters, floorMeters) {
+  const fraction = Math.max(
+    0,
+    Math.min(1, (surfaceMeters - floorMeters) / 1.5)
+  );
+  return Math.min(
+    availablePixels,
+    snapCanvasDimension(availablePixels * fraction)
+  );
 }
 
 /**
@@ -1356,64 +1549,114 @@ function createThreefoldFramePayload(options) {
 }
 
 /**
+ * Require one authored logical identity from the Archive's resolved layout.
+ * @param {Map<string, ReturnType<typeof createSluiceGridLayout>['entities'][number]>} entities Projected scene records.
+ * @param {string} id Stable authored identity.
+ * @returns {ReturnType<typeof createSluiceGridLayout>['entities'][number]} Resolved identity.
+ */
+function requireSluiceEntity(entities, id) {
+  const entity = entities.get(id);
+  if (!entity)
+    throw new RangeError(`Tidal Archive render entity is missing: ${id}`);
+  return entity;
+}
+
+/**
  * Draw the authored chamber cutaway and current physical water levels.
  * @param {Record<string, any>} state Current sluice simulation.
  * @param {ReturnType<typeof getThreefoldSluicePuzzleStatus>} water Current puzzle readout.
+ * @param {Map<string, ReturnType<typeof createSluiceGridLayout>['entities'][number]>} entities Projected Archive identities.
+ * @param {ReturnType<typeof createSluiceGridLayout>} layout Resolved finite scene layout.
  * @returns {ThreefoldSpriteShape[]} Shapes for Mosslight's pixel canvas.
  */
-function sluiceShapes(state, water) {
-  const baseY = 94;
-  const pixelsPerMeter = 60;
-  const upperFloorY = baseY - 0.5 * pixelsPerMeter;
-  const upperSurfaceY =
-    baseY - water.upperWaterSurfaceElevationMeters * pixelsPerMeter;
-  const lowerSurfaceY =
-    baseY - water.lowerWaterSurfaceElevationMeters * pixelsPerMeter;
-  const playerX = 8 + (state.player.position.x / 6) * 144;
-  const playerY = 30 + ((4.5 - state.player.position.y) / 4.5) * 64;
-  const waterColor = '#25a9b8';
+function sluiceShapes(state, water, entities, layout) {
+  const upperEntity = requireSluiceEntity(entities, 'sluice-upper-vessel');
+  const lowerEntity = requireSluiceEntity(entities, 'sluice-lower-vessel');
+  const valveEntity = requireSluiceEntity(entities, 'sluice-service-valve');
+  const traceEntity = requireSluiceEntity(
+    entities,
+    'sluice-archive-coil-trace'
+  );
+  const barrierEntity = requireSluiceEntity(
+    entities,
+    'sluice-crossing-barrier'
+  );
+  const pipeEntity = requireSluiceEntity(entities, 'sluice-transfer-pipe');
+  const maraEntity = requireSluiceEntity(entities, 'mara');
+  const upper = sluiceEntityScreenRect(upperEntity, layout);
+  const lower = sluiceEntityScreenRect(lowerEntity, layout);
+  const upperFloorY = upper.y + upper.height - GRID_PIXELS;
+  const lowerFloorY = lower.y + lower.height - GRID_PIXELS;
+  const upperWaterHeight = sluiceWaterHeight(
+    upper.height - GRID_PIXELS,
+    water.upperWaterSurfaceElevationMeters,
+    0.5
+  );
+  const lowerWaterHeight = sluiceWaterHeight(
+    lower.height - GRID_PIXELS,
+    water.lowerWaterSurfaceElevationMeters,
+    0
+  );
+  const valve = createSluiceGridEntityShape(
+    valveEntity,
+    layout,
+    water.portOpen ? '#25a9b8' : '#e16b5a'
+  );
+  const trace = createSluiceGridEntityShape(
+    traceEntity,
+    layout,
+    state.archiveTraceHeard ? '#e9d88d' : '#789378'
+  );
+  const barrier = createSluiceGridEntityShape(
+    barrierEntity,
+    layout,
+    water.crossingAvailable ? '#25a9b8' : '#e16b5a'
+  );
+  const pipe = createSluiceGridEntityShape(pipeEntity, layout, PALETTE[1]);
+  const mara = createSluiceGridEntityShape(maraEntity, layout, '#e9d88d');
   return [
     createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
     captionShape({ x: 7, y: 12 }, 'THE TIDAL ARCHIVE', true),
     createThreefoldRectShape([4, 20, 152, 92], '#102823'),
-    captionShape({ x: 11, y: 30 }, 'UPPER'),
-    captionShape({ x: 92, y: 50 }, 'LOWER'),
-    ...[14, 62].map(x =>
-      createThreefoldRectShape([x, 36, 5, upperFloorY - 36], PALETTE[1])
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    sluiceFluidRect(
+      upperEntity,
+      [
+        upper.x + GRID_PIXELS,
+        upperFloorY - upperWaterHeight,
+        upper.width - 2 * GRID_PIXELS,
+        upperWaterHeight,
+      ],
+      '#25a9b8',
+      water.upperWaterSurfaceElevationMeters
     ),
-    createThreefoldRectShape([19, upperFloorY, 43, 4], PALETTE[1]),
-    createThreefoldRectShape(
-      [19, upperSurfaceY, 43, upperFloorY - upperSurfaceY],
-      waterColor
+    sluiceFluidRect(
+      lowerEntity,
+      [
+        lower.x + GRID_PIXELS,
+        lowerFloorY - lowerWaterHeight,
+        lower.width - 2 * GRID_PIXELS,
+        lowerWaterHeight,
+      ],
+      '#25a9b8',
+      water.lowerWaterSurfaceElevationMeters
     ),
-    ...[90, 138].map(x =>
-      createThreefoldRectShape([x, 56, 5, baseY - 56], PALETTE[1])
-    ),
-    createThreefoldRectShape([95, baseY, 43, 4], PALETTE[1]),
-    createThreefoldRectShape(
-      [95, lowerSurfaceY, 43, baseY - lowerSurfaceY],
-      waterColor
-    ),
-    createThreefoldRectShape([67, 83, 23, 4], PALETTE[1]),
-    createThreefoldRectShape(
-      [76, 79, 5, 12],
-      water.portOpen ? waterColor : '#e16b5a'
-    ),
-    createThreefoldRectShape(
-      [149, 54, 3, 43],
-      water.crossingAvailable ? waterColor : '#e16b5a'
-    ),
-    createThreefoldRectShape(
-      [140, 64, 5, 5],
-      state.archiveTraceHeard ? '#e9d88d' : '#789378'
-    ),
-    captionShape({ x: 132, y: 58 }, 'LOG'),
-    createThreefoldRectShape([playerX, playerY, 4, 4], '#e9d88d'),
-    captionShape({ x: 69, y: 102 }, water.portOpen ? 'OPEN' : 'VALVE'),
+    ...sluiceVesselShapes(upperEntity, upper),
+    ...sluiceVesselShapes(lowerEntity, lower),
+    pipe,
+    valve,
+    barrier,
+    trace,
     captionShape(
-      { x: 116, y: 106 },
-      water.crossingAvailable ? 'CROSS' : 'SEALED'
+      { x: upper.x + GRID_PIXELS, y: upper.y - GRID_PIXELS },
+      'UPPER'
     ),
+    captionShape(
+      { x: lower.x + GRID_PIXELS, y: lower.y - GRID_PIXELS },
+      'LOWER'
+    ),
+    captionShape({ x: trace.x - 8, y: trace.y - GRID_PIXELS }, 'LOG'),
+    mara,
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
     captionShape(
       { x: 8, y: 126 },
