@@ -1,3 +1,6 @@
+import { advanceThreefoldIriArrival } from './iri-arrival.js';
+import { presentThreefoldIriArrival } from './iri-arrival-content.js';
+import { getThreefoldCampaignPressureInputs } from './campaign-pressure.js';
 import { projectThreefoldCampaignState } from './campaign-projection.js';
 import {
   createThreefoldCampaignStorage,
@@ -17,10 +20,7 @@ import {
   createThreefoldPressureNetwork,
   describeThreefoldPressureNetwork,
 } from './pressure-network.js';
-import {
-  THREEFOLD_GRAINLANDS_HATCH_ID,
-  THREEFOLD_GRAINLANDS_NURSERY_ID,
-} from './grainlands.js';
+import { THREEFOLD_GRAINLANDS_HATCH_ID } from './grainlands.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
 import {
   createThreefoldPressureNetworkSaveStore,
@@ -42,18 +42,20 @@ import {
   getThreefoldWorldActionDurationSeconds,
   stepThreefoldSimulation,
 } from './simulation.js';
+import { createThreefoldCampaignClock } from './campaign-clock.js';
 import {
-  advanceThreefoldCampaignClock,
-  createThreefoldCampaignClock,
-} from './campaign-clock.js';
-import {
+  getKnownThreefoldIriFate,
+  observeThreefoldIriFate,
   createThreefoldCampaignOutcomes,
   recordThreefoldIriFate,
 } from './campaign-outcomes.js';
 import { renderThreefoldFrame } from './renderer.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
-import { THREEFOLD_BELLTOPS_SCENE_ID } from './belltops.js';
+import {
+  THREEFOLD_BELLTOPS_SCENE_ID,
+  isThreefoldBelltopsRegulatorInReach,
+} from './belltops.js';
 import {
   getThreefoldCampaignPlaces,
   getThreefoldCampaignPressureState,
@@ -183,7 +185,11 @@ export function createThreefoldRuntime(options = {}) {
       state.scene.id
     );
   const quayContent = () =>
-    getThreefoldQuayContent(state, pressureNetwork, campaignOutcomes.iriFate);
+    presentThreefoldIriArrival(
+      campaignOutcomes,
+      getThreefoldQuayContent(state, pressureNetwork, campaignOutcomes.iriFate)
+    );
+  const knownIriFate = () => getKnownThreefoldIriFate(campaignOutcomes);
   const campaignPressure = () => {
     const sites = getThreefoldCampaignPressureState({
       ...savedCampaignRuns,
@@ -219,9 +225,7 @@ export function createThreefoldRuntime(options = {}) {
         campaignPlaces: campaignPlaces(),
         campaignPressure: campaignPressure(),
         campaignClock: { ...campaignClock },
-        campaignIriFate: campaignOutcomes.iriFate
-          ? { ...campaignOutcomes.iriFate }
-          : null,
+        campaignIriFate: knownIriFate() ? { ...knownIriFate() } : null,
       },
     };
   };
@@ -238,9 +242,7 @@ export function createThreefoldRuntime(options = {}) {
           volumesCubicMeters: [...pressureNetwork.volumesCubicMeters],
         },
         clock: { ...campaignClock },
-        iriFate: campaignOutcomes.iriFate
-          ? { ...campaignOutcomes.iriFate }
-          : null,
+        iriFate: knownIriFate() ? { ...knownIriFate() } : null,
       },
       world: {
         map: {
@@ -352,8 +354,32 @@ export function createThreefoldRuntime(options = {}) {
       state,
       action
     );
+    const arrival =
+      elapsedGameSeconds === null
+        ? null
+        : advanceThreefoldIriArrival(
+            {
+              clock: campaignClock,
+              outcomes: campaignOutcomes,
+              network: pressureNetwork,
+            },
+            { ...savedCampaignRuns, [state.scene.id]: state },
+            elapsedGameSeconds
+          );
+    if (arrival) {
+      campaignClock = arrival.clock;
+      campaignOutcomes = arrival.outcomes;
+      pressureNetwork = arrival.network;
+      projectCampaignState();
+    }
+    const readArrival =
+      action.type === 'interact' &&
+      campaignOutcomes.iriKnowledge !== undefined &&
+      isThreefoldBelltopsRegulatorInReach(state);
+    if (readArrival)
+      campaignOutcomes = observeThreefoldIriFate(campaignOutcomes);
     const quayAction =
-      action.type === 'interact'
+      action.type === 'interact' && !readArrival
         ? applyThreefoldQuayInteraction(
             state,
             pressureNetwork,
@@ -362,13 +388,6 @@ export function createThreefoldRuntime(options = {}) {
         : null;
     const hadIriGrowthDeath = hasThreefoldQuayIriDeath(state);
     state = stepThreefoldSimulation(state, action);
-    if (elapsedGameSeconds !== null) {
-      campaignClock = advanceThreefoldCampaignClock(
-        campaignClock,
-        elapsedGameSeconds
-      );
-      campaignClockSave.save(campaignClock);
-    }
     const hasIriGrowthDeath = hasThreefoldQuayIriDeath(state);
     if (quayAction?.outcome) {
       recordIriFate(quayAction.outcome, quayAction.milestoneId);
@@ -382,7 +401,7 @@ export function createThreefoldRuntime(options = {}) {
     if (elapsedGameSeconds !== null)
       synchronizePressureNetwork(
         action,
-        elapsedGameSeconds,
+        arrival?.remainingSeconds || 0,
         quayAction?.network || pressureNetwork
       );
     return state;
@@ -423,33 +442,13 @@ export function createThreefoldRuntime(options = {}) {
         ...savedCampaignRuns,
         [state.scene.id]: state,
       });
-    const facts = getThreefoldCampaignPressureState(runs);
-    const nursery = runs.grainlands;
-    const quay = runs.belltops;
     const nextPressureNetwork = advanceThreefoldPressureNetwork(
       base,
       {
-        craneDestroyed:
-          quay?.player.destroyedGeometryIds.includes('belltops-harbor-crane') ||
-          false,
-        regulatorFailed: facts.some(
-          site => site.id === 'belltops-quay' && site.state === 'damaged'
-        ),
-        nurseryDamaged:
-          nursery?.player.destroyedGeometryIds.includes(
-            THREEFOLD_GRAINLANDS_NURSERY_ID
-          ) || false,
+        ...getThreefoldCampaignPressureInputs(runs),
         closeHatch:
           action.type === 'interact' &&
           isThreefoldInteractableInReach(state, THREEFOLD_GRAINLANDS_HATCH_ID),
-        coordinatedBypass:
-          facts.some(
-            site =>
-              site.id === 'hearthgaps-runoff' && site.state === 'shared-bypass'
-          ) &&
-          facts.some(
-            site => site.id === 'silt-margin-choir' && site.state === 'sent'
-          ),
       },
       durationSeconds
     );
@@ -547,7 +546,11 @@ export function createThreefoldRuntime(options = {}) {
       return serializeThreefoldRuntimeCampaign(
         storage.readCampaign().records,
         state,
-        snapshot().campaign
+        {
+          clock: campaignClock,
+          network: pressureNetwork,
+          outcomes: campaignOutcomes,
+        }
       );
     },
     importCampaign(/** @type {unknown} */ serialized) {

@@ -2,6 +2,9 @@
 
 ## Machine-Checkable Criteria
 
+- [x] Cross the action-driven surge/aftermath with prior-action facts to obtain abandoned, relief/governor-escaped, crew-evacuated and unchecked-surge death arrivals; consume finite machinery, respect actual gate repairs and never backdate or resurrect a terminal outcome.
+- [x] Keep current occurrence and last observed knowledge separate in schema v3, preserve old schemas, read a reachable panel record on one new press, retain original cause/time across full backup/reset/reload, and leave all three independent Quieting evidence routes playable after an actual timed death.
+
 - [x] Focused runtime Jest suite passes for movement, scale controls, deliberate wait, save/reload, reset, and invalid imports.
 - [x] The small-world hydraulic primitive transfers water down the surface-height gradient through an open port, preserves total volume, stops at the port sill or equalization, remains inert when closed/equal/dry, and uses SI physical inputs without rendered scale in the solver API.
 - [x] `npm run build` exits 0 and produces `public/threefold/index.html`, `public/threefold/game.js`, and `public/core/browser/game/threefold/runtime.js`.
@@ -164,3 +167,8 @@ Pass only when every machine-checkable criterion is verified, the user can reach
 - 2026-10-21: Guardian import regressions reproduced the unresolved PR review in both supported Silt save versions (2 expected failures before the fix). Cross-record normalization now rejects a living guardian with its growth death and a killed guardian without its own death entry, while genuine current/legacy outcomes remain readable. Related validation passed 34 suites / 453 tests with all four `save.js` coverage metrics at 100%. Final `npm run check` passed all 10 gates (987 suites / 6,958 fallback tests), zero clones and zero audit vulnerabilities. Build and `git diff --check` passed. Bead `dadeto-h604` retains exact commands and artifacts; full Actions verification remains pending after push.
 
 - 2026-10-21: The Quay now offers a finite crane-governor handoff and explicit nonlethal Iri release, with visible permanent crane cost and controlled/unregulated feeder behavior. Departed actors and lost machinery stay unavailable across regional reload/reset/import. Related validation passed 35 suites / 469 tests at 100% statements, branches, functions, and lines for all six changed core files. A repeated presentation query found by the initial clone gate was extracted without scanner exceptions. Final `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates (988 suites / 6,974 fallback tests), zero clones and audit vulnerabilities. Build and 79 manuals passed; full Actions verification is pending on the rescue follow-up. Parent PR #2748 is merged at `d394911ae4`; the overall Rank 1 specification remains partial.
+
+
+## Arrival milestone evidence — 2026-10-21
+
+Bead `dadeto-bgpg` owns the causal matrix and runtime discovery slice. Focused related Jest passed 37 suites / 521 tests with 100% statements, branches, functions and lines for campaign-outcomes, campaign-pressure, iri-arrival, iri-arrival-content, runtime, save, page and campaign-backup. Report: `reports/coverage/iri-arrival/coverage-final.json`; evaluator log recorded on the Bead. Final aggregate, build/manuals, publication and asynchronous Full Check are recorded separately. This does not complete the remaining Return Tide interventions/epilogues.

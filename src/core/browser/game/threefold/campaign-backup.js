@@ -94,7 +94,7 @@ export function restoreThreefoldCampaignBackup(serialized) {
  * Include the active region and unsaved local progress in a portable backup.
  * @param {Record<string, string|null>} records Persisted or retained records.
  * @param {Parameters<typeof serializeThreefoldSimulation>[0]} state Active region.
- * @param {{clock: Parameters<typeof clockCodec.serializeThreefoldCampaignClock>[0], iriFate: Parameters<typeof outcomesCodec.serializeThreefoldCampaignOutcomes>[0]['iriFate'], network: Parameters<typeof pressureCodec.serializeThreefoldPressureNetwork>[0]}} campaign Current shared runtime state.
+ * @param {{clock: Parameters<typeof clockCodec.serializeThreefoldCampaignClock>[0], outcomes: Parameters<typeof outcomesCodec.serializeThreefoldCampaignOutcomes>[0], network: Parameters<typeof pressureCodec.serializeThreefoldPressureNetwork>[0]}} campaign Current shared runtime state.
  * @returns {string} Complete validated campaign backup.
  */
 export function serializeThreefoldRuntimeCampaign(records, state, campaign) {
@@ -105,9 +105,7 @@ export function serializeThreefoldRuntimeCampaign(records, state, campaign) {
     [THREEFOLD_SHARED_SAVE_KEYS.clock]:
       clockCodec.serializeThreefoldCampaignClock(campaign.clock),
     [THREEFOLD_SHARED_SAVE_KEYS.outcomes]:
-      outcomesCodec.serializeThreefoldCampaignOutcomes({
-        iriFate: campaign.iriFate,
-      }),
+      outcomesCodec.serializeThreefoldCampaignOutcomes(campaign.outcomes),
     [THREEFOLD_SHARED_SAVE_KEYS.pressure]:
       pressureCodec.serializeThreefoldPressureNetwork(campaign.network),
   });

@@ -17,7 +17,7 @@ Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaig
 
 ## Campaign-level Iri fate record
 
-Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaign-outcomes.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/runtime.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-campaign-outcomes.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-page.test.js`. Before recording a state, confirm the campaign snapshot and accessible status reveal no outcome. Exercise trapped, rescued, escaped, dead, evacuated, and abandoned records at nondecreasing campaign milestones; verify Iri cannot return to the regulator after leaving, death is terminal, and route saves remain independent across reload, scene change, and a single-route reset. Verify every accessible label and migration of schema-v1 `alive` to `trapped`. The dedicated campaign key must reject malformed or unsupported envelopes and never enter any region export. Route actions beyond the first Belltops contact and growth-death milestones remain future work. Require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/campaign-outcomes.js src/core/browser/game/threefold/save.js src/core/browser/game/threefold/runtime.js src/core/browser/game/threefold/page.js test/core/browser/game/threefold-campaign-outcomes.test.js test/core/browser/game/threefold-runtime.test.js test/core/browser/game/threefold-page.test.js`. Before recording a state, confirm the campaign snapshot and accessible status reveal no outcome. Exercise trapped, rescued, escaped, dead, evacuated, and abandoned records at nondecreasing campaign milestones; verify Iri cannot return to the regulator after leaving, death is terminal, and route saves remain independent across reload, scene change, and a single-route reset. Verify every accessible label and migration of schema-v1 `alive` to `trapped`. The dedicated campaign key must reject malformed or unsupported envelopes and never enter any region export. The arrival timeline below covers the later physical outcomes. Require 100% statements and branches for every changed core file, clean ESLint/core-parse, and zero clones.
 
 ## Belltops Quay regulator contact
 
@@ -128,7 +128,7 @@ Using the same saved ferry-loss outcomes, verify the engineer in the first passe
 
 ## Alternate Quieting evidence
 
-Without filing the Broken Gate report or revealing Iri's optional confession, discover the Tidal Archive coil-register trace, Neme's Silt Margin translation, and Pell's Weftways relay record using each route's own prerequisites. Verify each record survives its route save/export/import and does not claim a final sender, Iri's knowledge, or responsibility. Do not infer Iri's fate from these records; route actions that establish the campaign-level regulator outcome remain future work.
+Without filing the Broken Gate report or revealing Iri's optional confession, discover the Tidal Archive coil-register trace, Neme's Silt Margin translation, and Pell's Weftways relay record using each route's own prerequisites. Verify each record survives its route save/export/import and does not claim a final sender, Iri's knowledge, or responsibility. Do not infer Iri's fate from these records; the arrival timeline below covers actual offscreen death with all three evidence routes still playable.
 
 ## Weftways negotiator loss
 
@@ -148,3 +148,10 @@ Run the related THREEFOLD Jest suites with coverage over the changed core files,
 ## Nonlethal Quay handoff
 
 Include `threefold-quay-regulator.test.js` in related THREEFOLD coverage. Play both inspect/release and inspect/recover/fit/release through the actual runtime, including hardware edge-triggered E. Verify the nearest physical target, visible crane cost, preserved standing geometry, controlled versus unregulated feed, late repair without erased damage, component loss, migration from pressure v1, no duplicate parts after regional reset, and no growth collision with departed Iri. Confirm prior nursery mitigation still works and every HUD/cost marker is snapped to the shared grid. The separate campaign-backup/stale-page follow-up remains required before overall acceptance.
+
+
+## Action-driven Iri arrivals and observed knowledge
+
+Run `node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage --collectCoverageFrom='src/core/browser/game/threefold/{campaign-outcomes,campaign-pressure,iri-arrival,iri-arrival-content,runtime,save,page,campaign-backup}.js' --coverageDirectory=reports/coverage/iri-arrival --testPathPatterns=threefold`, then the required fast `npm run check`, build and manuals check. Use a repo-local TMPDIR if the host's temporary tmpfs is full. Record authoritative Full Check in Actions separately.
+
+Pin 539/540/900-second boundaries, including an interaction completing at the surge and a long wait crossing both milestones. Exercise prior engineer survival, lost/available/installed crane governor, coordinated relief, forced gate and actual repairs. Confirm physical departures occur without disclosure, old observed facts remain last-known rather than silently current, panel E reveals only the saved cause/time, held input does not chain discovery into rescue, and terminal outcomes survive reload/reset/import. Persist a hidden actual death through a full campaign backup and still discover Archive, Silt Margin and Weftways evidence using their own prerequisites. Check five-litre conservation and phase-specific remaining flow. Never change the scanner, timeout or coverage thresholds to fit this scenario.
