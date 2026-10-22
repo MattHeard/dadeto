@@ -81,8 +81,10 @@ function expectHearthgapsCellContainment(frame, sourceIds) {
       Math.min(144 / layout.viewport.width, 72 / layout.viewport.height) / 8
     ) * 8
   );
-  const originX = 8 + (144 - pitch * layout.viewport.width) / 2;
-  const originY = 28 + (72 - pitch * layout.viewport.height) / 2;
+  const originX =
+    Math.round((8 + (144 - pitch * layout.viewport.width) / 2) / 8) * 8;
+  const originY =
+    Math.round((28 + (72 - pitch * layout.viewport.height) / 2) / 8) * 8;
   const screenBounds = ({ cellBounds }) => ({
     x: originX + (cellBounds.x - layout.viewport.x) * pitch,
     y:
@@ -561,6 +563,10 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
       const { logicalGridLayout: layout } = frame.threefold;
       expect(layout.scale).toBe(scale);
       expect(layout.overflow).toEqual([]);
+      expect(layout.conflicts).toEqual([]);
+      expect(
+        layout.entities.every(({ placement }) => placement === 'placed')
+      ).toBe(true);
       expect(layout.entities.map(({ id }) => id).sort()).toEqual(
         [...sourceIds].sort()
       );
@@ -574,6 +580,42 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
       }
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
+      );
+
+      const reorderedState = {
+        ...state,
+        scene: {
+          ...state.scene,
+          geometry: [...state.scene.geometry].reverse(),
+          decorations: [...state.scene.decorations].reverse(),
+          interactables: [...state.scene.interactables].reverse(),
+          creatures: [...state.scene.creatures].reverse(),
+        },
+      };
+      expect(
+        renderThreefoldFrame(reorderedState).threefold.logicalGridLayout
+      ).toEqual(layout);
+
+      const cellsById = new Map(
+        layout.entities.map(entity => [entity.id, entity.cellBounds])
+      );
+      const culvert = cellsById.get('hearthgaps-culvert');
+      for (const controlId of [
+        'hearthgaps-brin-runoff-gate',
+        'hearthgaps-shared-bypass',
+      ])
+        expect(cellsById.get(controlId).y).toBe(culvert.y);
+      expect(cellsById.get('mara').y).toBe(culvert.y);
+      expect(layout.intentionalOverlaps).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            groupId: 'hearthgaps-runoff-flow',
+            entityIds: expect.arrayContaining([
+              'hearthgaps-brin-runoff-gate',
+              'hearthgaps-culvert',
+            ]),
+          }),
+        ])
       );
     }
 

@@ -1377,61 +1377,93 @@ function hearthgapsHomeShapes(entity, layout, status) {
  */
 function createHearthgapsGridLayout(state) {
   const { scene, player } = state;
+  const runoffFlowIds = new Set([
+    'hearthgaps-culvert',
+    'hearthgaps-brin-runoff-gate',
+    'hearthgaps-shared-bypass',
+    'mara',
+  ]);
+  const runoffFlowGroupId = 'hearthgaps-runoff-flow';
   const creatures =
     /** @type {Array<Pick<ThreefoldGridRenderEntity, 'id'|'bounds'>>} */ (
       scene.creatures
     );
   const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
-  const facets = /** @type {HearthgapsGridFacet[]} */ ([
-    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
-    ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
-    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
-    ...creatures.map(entity => ({ ...entity, kind: 'creature' })),
-    {
-      id: 'mara',
-      kind: 'actor',
-      bounds: {
-        min: {
-          x: player.position.x - halfBodyWidth,
-          y: player.position.y - halfBodyWidth,
-          z: 0,
-        },
-        max: {
-          x: player.position.x + halfBodyWidth,
-          y: player.position.y + halfBodyWidth,
-          z: heightAtScale(player.scale),
+  const facets = /** @type {HearthgapsGridFacet[]} */ (
+    [
+      ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+      ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+      ...scene.interactables.map(entity => ({
+        ...entity,
+        kind: 'interactable',
+      })),
+      ...creatures.map(entity => ({ ...entity, kind: 'creature' })),
+      {
+        id: 'mara',
+        kind: 'actor',
+        bounds: {
+          min: {
+            x: player.position.x - halfBodyWidth,
+            y: player.position.y - halfBodyWidth,
+            z: 0,
+          },
+          max: {
+            x: player.position.x + halfBodyWidth,
+            y: player.position.y + halfBodyWidth,
+            z: heightAtScale(player.scale),
+          },
         },
       },
-    },
-  ]);
+    ].map(entity =>
+      runoffFlowIds.has(entity.id)
+        ? { ...entity, overlapGroupId: runoffFlowGroupId }
+        : entity
+    )
+  );
   const sceneCells = projectEntity(
     { id: scene.id, bounds: scene.bounds },
     player.scale
   ).cellBounds;
   const viewport = {
     ...sceneCells,
-    width: sceneCells.width + 1,
-    height: sceneCells.height + 1,
+    width: Math.max(sceneCells.width + 1, 4),
+    height: Math.max(sceneCells.height + 1, 3),
   };
-  const layout = resolveSceneLayout(
-    facets.map(entity => ({
-      id: entity.id,
-      bounds: entity.bounds,
-      parentId: entity.parentId,
-      overlapGroupId: entity.overlapGroupId,
-      hierarchy: entity.hierarchy,
-    })),
+  const entities = facets.map(entity => ({
+    id: entity.id,
+    bounds: entity.bounds,
+    parentId: entity.parentId,
+    overlapGroupId: entity.overlapGroupId,
+    hierarchy: entity.hierarchy,
+  }));
+  const resolved = resolveSceneLayout(entities, player.scale, viewport);
+  const offViewportIds = new Set(
+    resolved.overflow.map(({ entityId }) => entityId)
+  );
+  const packed = packSceneLayout(
+    entities.filter(entity => !offViewportIds.has(entity.id)),
     player.scale,
     viewport
   );
   const kindsById = new Map(facets.map(({ id, kind }) => [id, kind]));
   return {
-    ...layout,
+    ...resolved,
+    ...packed,
     viewport,
-    entities: layout.entities.map(entity => ({
-      ...entity,
-      logicalGridKinds: [/** @type {string} */ (kindsById.get(entity.id))],
-    })),
+    entities: [
+      ...packed.entities,
+      ...resolved.entities.filter(entity => offViewportIds.has(entity.id)),
+    ]
+      .map(entity => ({
+        ...entity,
+        logicalGridKinds: [/** @type {string} */ (kindsById.get(entity.id))],
+      }))
+      .sort((first, second) => first.id.localeCompare(second.id)),
+    overflow: [...packed.overflow, ...resolved.overflow],
+    hierarchy: resolved.hierarchy,
+    containments: resolved.containments,
+    intentionalOverlaps: packed.intentionalOverlaps,
+    relationshipIssues: resolved.relationshipIssues,
   };
 }
 
@@ -1746,7 +1778,7 @@ function renderThreefoldWeftwaysFrame(state) {
     createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
     captionShape({ x: 8, y: 12 }, 'WEFTWAYS', true),
     createThreefoldRectShape([4, 20, 152, 92], '#102823'),
-    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    createThreefoldRectShape([8, 32, 144, 72], '#315744'),
     ...state.scene.geometry.flatMap(({ id }) =>
       sourceShape(
         id,
