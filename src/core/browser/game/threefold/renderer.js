@@ -54,6 +54,8 @@ const GRID_PIXELS = 8;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldSpriteShape */
+/** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
+/** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -141,13 +143,27 @@ export function renderThreefoldFrame(
       /** @type {Parameters<typeof spriteShapes>[2]} */ tick
     ) => {
       const worldActor =
-        /** @type {typeof actor & {id: string, growthPreview?: boolean, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
+        /** @type {typeof actor & {id: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
           actor
         );
       const bounds = worldActor.bounds;
       if (typeof worldActor.id === 'string' && bounds)
         return worldActor.id === 'gatehouse-rat'
-          ? ratSprite({ ...worldActor, bounds }, camera, heightMeters)
+          ? ratSprite(
+              {
+                ...worldActor,
+                bounds,
+                logicalGridKind: /** @type {ThreefoldGridRenderKind} */ (
+                  worldActor.logicalGridKind
+                ),
+                logicalCellBounds:
+                  /** @type {{x: number, y: number, width: number, height: number}} */ (
+                    worldActor.logicalCellBounds
+                  ),
+              },
+              camera,
+              heightMeters
+            )
           : geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
       return spriteShapes(actor, camera, tick).map(shape => ({
         ...shape,
@@ -1572,7 +1588,6 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     ? 'dry'
     : getThreefoldGateOutcome(state).drainageState;
   const { geometry } = projectGeometryForScale(player, scene.geometry);
-  const gridProjection = projectRenderGeometryToGrid(player.scale, geometry);
   const growthDeathIds = new Set(
     (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
   );
@@ -1587,6 +1602,31 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
       ...creature,
       growthPreview: growthPreviewIds.has(creature.id),
     }));
+  const interactableObjects = scene.interactables
+    .filter(
+      ({ id }) =>
+        id !== 'signal-station-console' ||
+        !player.destroyedGeometryIds.includes(
+          THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+        )
+    )
+    .map(object => ({
+      ...object,
+      logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('interactable'),
+      growthPreview: growthPreviewIds.has(object.id),
+    }));
+  const gridProjection = projectRenderEntitiesToGrid(player.scale, [
+    ...geometry.map(object => ({
+      ...object,
+      logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('structure'),
+      growthPreview: growthPreviewIds.has(object.id),
+    })),
+    ...interactableObjects,
+    ...creatureObjects.map(object => ({
+      ...object,
+      logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('creature'),
+    })),
+  ]);
   const mapWidth = Math.max(
     14,
     Math.ceil((scene.bounds.max.x - scene.bounds.min.x) / heightMeters) +
@@ -1610,19 +1650,9 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
       exits: [],
       palette: 'shore',
       objects: [
-        ...scene.interactables
-          .filter(
-            ({ id }) =>
-              id !== 'signal-station-console' ||
-              !player.destroyedGeometryIds.includes(
-                THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
-              )
-          )
-          .map(({ id, bounds }) => ({
-            id,
-            bounds,
-            growthPreview: growthPreviewIds.has(id),
-          })),
+        ...gridProjection.entities.filter(
+          ({ logicalGridKind }) => logicalGridKind === 'interactable'
+        ),
         ...(drainageState === 'flooded'
           ? [
               {
@@ -1634,11 +1664,12 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
               },
             ]
           : []),
-        ...creatureObjects,
-        ...gridProjection.geometry.map(object => ({
-          ...object,
-          growthPreview: growthPreviewIds.has(object.id),
-        })),
+        ...gridProjection.entities.filter(
+          ({ logicalGridKind }) => logicalGridKind === 'creature'
+        ),
+        ...gridProjection.entities.filter(
+          ({ logicalGridKind }) => logicalGridKind === 'structure'
+        ),
       ].map(object => ({
         ...object,
         x:
@@ -1665,14 +1696,17 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
 }
 
 /**
- * Project surviving physical structures onto scale-local integer cells for the renderer.
+ * Project static authored scene objects onto scale-local integer cells for rendering.
  * @param {number} scale Current THREEFOLD scale.
- * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Surviving canonical structure geometry.
- * @returns {{geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, logicalCellBounds: {x: number, y: number, width: number, height: number}}>, layout: ReturnType<typeof layoutScene>}} Grid-projected render geometry and diagnostics.
+ * @param {ThreefoldGridRenderEntity[]} entities Static structures, interactables and creatures.
+ * @returns {{entities: ThreefoldGridRenderEntity[], layout: ReturnType<typeof layoutScene>}} Grid-projected render entities and diagnostics.
  */
-function projectRenderGeometryToGrid(scale, geometry) {
+function projectRenderEntitiesToGrid(scale, entities) {
+  const sortedEntities = [...entities].sort((left, right) =>
+    left.id.localeCompare(right.id)
+  );
   const layout = layoutScene(
-    geometry.map(({ id, bounds }) => ({ id, bounds })),
+    sortedEntities.map(({ id, bounds }) => ({ id, bounds })),
     scale
   );
   const projectedById = new Map(
@@ -1680,8 +1714,14 @@ function projectRenderGeometryToGrid(scale, geometry) {
   );
   const cellSizeMeters = heightAtScale(scale);
   return {
-    layout,
-    geometry: geometry.map(object => {
+    layout: {
+      ...layout,
+      entities: layout.entities.map((entity, index) => ({
+        ...entity,
+        logicalGridKind: sortedEntities[index].logicalGridKind,
+      })),
+    },
+    entities: entities.map(object => {
       const logicalCellBounds =
         /** @type {{x: number, y: number, width: number, height: number}} */ (
           projectedById.get(object.id)
@@ -1709,7 +1749,7 @@ function projectRenderGeometryToGrid(scale, geometry) {
 
 /**
  * Paint one physical geometry footprint at the current world scale.
- * @param {{id: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Projected world object.
+ * @param {{id: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Projected world object.
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} heightMeters Mara's current physical height.
  * @returns {Array<{type: string, geometryId: string, x: number, y: number, width: number, height: number, fill: string, growthPreview: boolean}>} Pixelated structure shape.
@@ -1721,6 +1761,9 @@ function geometrySprite(actor, camera, heightMeters) {
     {
       type: 'rect',
       geometryId: actor.id,
+      ...(actor.logicalGridKind === undefined
+        ? {}
+        : { logicalGridKind: actor.logicalGridKind }),
       ...(actor.logicalCellBounds === undefined
         ? {}
         : { logicalCellBounds: actor.logicalCellBounds }),
@@ -1746,7 +1789,7 @@ function geometrySprite(actor, camera, heightMeters) {
 
 /**
  * Paint the authored rat as a tiny pixel silhouette inside its physical bounds.
- * @param {{bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, id: string, growthPreview?: boolean}} actor Rat footprint.
+ * @param {{bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, id: string, growthPreview?: boolean, logicalGridKind: ThreefoldGridRenderKind, logicalCellBounds: {x: number, y: number, width: number, height: number}}} actor Rat footprint from the static scene layout.
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} heightMeters Mara's current physical height.
  * @returns {Array<ThreefoldSpriteShape>} Pixel shapes tagged with the rat identity.
@@ -1757,6 +1800,8 @@ function ratSprite(actor, camera, heightMeters) {
   return RAT_SILHOUETTE.map(([left, top, width, height, fill], index) => ({
     type: 'rect',
     geometryId: actor.id,
+    logicalGridKind: actor.logicalGridKind,
+    logicalCellBounds: actor.logicalCellBounds,
     x: footprint.x + footprint.width * left,
     y: footprint.y + footprint.height * top,
     width: Math.max(1, footprint.width * width),
