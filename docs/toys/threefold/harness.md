@@ -29,7 +29,7 @@ Run `npm run check:impact:run -- --files test/core/browser/game/threefold-spatia
 
 ## Specialized logical-grid renderers
 
-Run `npm run check:impact:run -- --files src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js`. For Silt Margin, the Tidal Archive, and Hearthgaps, verify the supported scales render each authored entity from its resolved cell bounds, repeated renders are deterministic, finite viewport overflow is reported and omitted, and source geometry and hydraulic outcomes remain unchanged. Hearthgaps must keep runoff tiles inside the logical culvert and preserve both Brin-diversion and shared-bypass flood visibility. Require 100% statements, branches, functions, and lines for the changed renderer, clean ESLint/core-parse, and zero clones.
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js test/core/browser/game/threefold-grainlands.test.js`. For Silt Margin, the Tidal Archive, Hearthgaps, and Grainlands, verify the supported scales render authored entities from resolved cell bounds, repeated renders are deterministic, finite viewport overflow is reported and omitted, and source geometry and hydraulic outcomes remain unchanged. Hearthgaps must keep runoff tiles inside the logical culvert and preserve both runoff choices; Grainlands must cover every supported scale (−4 through +4), camera follow/clamping, one merged Iru identity, and nursery water contained by projected cells. Require 100% statements, branches, functions, and lines for the changed renderer, clean ESLint/core-parse, and zero clones.
 
 ## Small-World Hydraulic Model
 

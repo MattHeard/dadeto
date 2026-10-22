@@ -58,6 +58,7 @@ const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
+/** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'parentId'|'overlapGroupId'|'hierarchy'> & {bounds:{min:{x:number,y:number,z:number},max:{x:number,y:number,z:number}},kind:string}} GrainlandsGridFacet */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -811,6 +812,24 @@ function sameSiltMarginBounds(first, second) {
 }
 
 /**
+ * Compare Grainlands facets while allowing floating-point reconstruction noise.
+ * @param {GrainlandsGridFacet['bounds']} first First authored bounds.
+ * @param {GrainlandsGridFacet['bounds']} second Reconstructed duplicate bounds.
+ * @returns {boolean} Whether both facets represent the same physical bounds.
+ */
+function sameGrainlandsBounds(first, second) {
+  const differences = [
+    Math.abs(first.min.x - second.min.x),
+    Math.abs(first.min.y - second.min.y),
+    Math.abs(first.min.z - second.min.z),
+    Math.abs(first.max.x - second.max.x),
+    Math.abs(first.max.y - second.max.y),
+    Math.abs(first.max.z - second.max.z),
+  ];
+  return Math.max(...differences) <= Number.EPSILON;
+}
+
+/**
  * Create a static Silt Margin sprite whose screen rectangle comes from its logical cells.
  * @param {ReturnType<typeof resolveSceneLayout>['entities'][number] | undefined} entity Projected entity.
  * @param {number} scale Current scale.
@@ -1042,6 +1061,176 @@ function renderThreefoldHearthgapsFrame(state) {
 }
 
 /**
+ * Resolve Grainlands entities and Mara into a camera-sized logical-cell view.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'grainlands'}}>} state Current Grainlands simulation.
+ * @returns {Omit<ReturnType<typeof resolveSceneLayout>, 'entities'> & {viewport: ReturnType<typeof projectEntity>['cellBounds'], entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Finite camera layout.
+ */
+function createGrainlandsGridLayout(state) {
+  const { scene, player } = state;
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  const authoredFacets = /** @type {GrainlandsGridFacet[]} */ ([
+    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+    .../** @type {Array<{id:string,bounds:GrainlandsGridFacet['bounds']}>} */ (
+      scene.decorations
+    ).map(entity => ({ ...entity, kind: 'decoration' })),
+    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
+    ...scene.creatures.map(entity => ({ ...entity, kind: 'creature' })),
+    {
+      id: 'mara',
+      kind: 'actor',
+      bounds: {
+        min: {
+          x: player.position.x - halfBodyWidth,
+          y: player.position.y - halfBodyWidth,
+          z: 0,
+        },
+        max: {
+          x: player.position.x + halfBodyWidth,
+          y: player.position.y + halfBodyWidth,
+          z: heightAtScale(player.scale),
+        },
+      },
+    },
+  ]);
+  const sceneCells = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
+    player.scale
+  ).cellBounds;
+  const maraCells = projectEntity(
+    authoredFacets[authoredFacets.length - 1],
+    player.scale
+  ).cellBounds;
+  const viewport = {
+    x: grainlandsViewportAxisOrigin(
+      { start: sceneCells.x, size: sceneCells.width },
+      { start: maraCells.x, size: maraCells.width },
+      18
+    ),
+    y: grainlandsViewportAxisOrigin(
+      { start: sceneCells.y, size: sceneCells.height },
+      { start: maraCells.y, size: maraCells.height },
+      8
+    ),
+    width: 18,
+    height: 8,
+  };
+  const facetsById = new Map();
+  for (const facet of authoredFacets) {
+    const existing = facetsById.get(facet.id);
+    if (!existing) {
+      facetsById.set(facet.id, { ...facet, kinds: [facet.kind] });
+      continue;
+    }
+    if (!sameGrainlandsBounds(existing.bounds, facet.bounds))
+      throw new RangeError(`Conflicting Grainlands geometry for ${facet.id}.`);
+    existing.kinds.push(facet.kind);
+  }
+  const facets = [...facetsById.values()];
+  const layout = resolveSceneLayout(
+    facets.map(entity => ({
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId: entity.overlapGroupId,
+      hierarchy: entity.hierarchy,
+    })),
+    player.scale,
+    viewport
+  );
+  return {
+    ...layout,
+    viewport,
+    entities: layout.entities.map(entity => ({
+      ...entity,
+      logicalGridKinds: [...facetsById.get(entity.id).kinds].sort(),
+    })),
+  };
+}
+
+/**
+ * Center a camera on an entity while keeping it inside the authored scene.
+ * @param {{start:number,size:number}} sceneBounds Scene cells on one axis.
+ * @param {{start:number,size:number}} actorBounds Actor cells on that axis.
+ * @param {number} viewportSize Finite camera cell count on that axis.
+ * @returns {number} Camera origin for the selected axis.
+ */
+function grainlandsViewportAxisOrigin(sceneBounds, actorBounds, viewportSize) {
+  if (sceneBounds.size <= viewportSize)
+    return (
+      sceneBounds.start - Math.floor((viewportSize - sceneBounds.size) / 2)
+    );
+  const desired = Math.floor(
+    actorBounds.start + actorBounds.size / 2 - viewportSize / 2
+  );
+  return Math.max(
+    sceneBounds.start,
+    Math.min(sceneBounds.start + sceneBounds.size - viewportSize, desired)
+  );
+}
+
+/**
+ * Convert a placed Grainlands identity into a screen rectangle.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected identity.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>} layout Finite camera view.
+ * @returns {{x:number,y:number,width:number,height:number}|null} Screen bounds, omitted off-camera.
+ */
+function grainlandsEntityRect(entity, layout) {
+  if (entity.placement === 'overflow') return null;
+  return logicalGridEntityRect(entity, layout);
+}
+
+/**
+ * Render a single cell-sized actor marker inside its projected footprint.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected actor.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>} layout Finite camera view.
+ * @param {string} fill Actor color.
+ * @returns {ThreefoldSpriteShape|null} Cell-derived actor sprite.
+ */
+function grainlandsActorShape(entity, layout, fill) {
+  const rect = grainlandsEntityRect(entity, layout);
+  if (!rect) return null;
+  return {
+    ...createThreefoldRectShape(
+      [
+        rect.x +
+          Math.floor((rect.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+            GRID_PIXELS,
+        rect.y +
+          Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+            GRID_PIXELS,
+        GRID_PIXELS,
+        GRID_PIXELS,
+      ],
+      fill
+    ),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+    logicalGridKinds: entity.logicalGridKinds,
+  };
+}
+
+/**
+ * Render one Grainlands source rectangle from resolved logical cells.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected source identity.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>} layout Finite camera view.
+ * @param {string} fill Source state color.
+ * @returns {ThreefoldSpriteShape|null} Cell-derived source shape.
+ */
+function grainlandsEntityShape(entity, layout, fill) {
+  const rect = grainlandsEntityRect(entity, layout);
+  if (!rect) return null;
+  return {
+    ...createThreefoldRectShape(
+      [rect.x, rect.y, rect.width, rect.height],
+      fill
+    ),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+    logicalGridKinds: entity.logicalGridKinds,
+  };
+}
+
+/**
  * Draw one intact, flooded, damaged, or growth-threatened Latchfolk home.
  * @param {ReturnType<typeof resolveSceneLayout>['entities'][number]} entity Home's logical identity.
  * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite map layout.
@@ -1202,6 +1391,21 @@ function createHearthgapsGridLayout(state) {
  * @returns {{x:number,y:number,width:number,height:number}} Canvas rectangle derived from its cell bounds.
  */
 function hearthgapsEntityRect(entity, layout) {
+  return logicalGridEntityRect(
+    /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+      entity
+    ),
+    layout
+  );
+}
+
+/**
+ * Map one logical cell rectangle into the shared 144 by 72 Mosslight field.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number] | ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected scene identity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout> | ReturnType<typeof createGrainlandsGridLayout>} layout Finite logical view.
+ * @returns {{x:number,y:number,width:number,height:number}} Screen rectangle.
+ */
+function logicalGridEntityRect(entity, layout) {
   const bounds = entity.cellBounds;
   const pitch = Math.max(
     GRID_PIXELS,
@@ -1600,10 +1804,11 @@ function renderThreefoldWeftwaysFrame(state) {
  */
 function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
   const nurseryDepth = getThreefoldNurseryWaterDepthMeters(pressureNetwork);
-  const waterHeight = snapCanvasCoordinate(
-    Math.min(32, (nurseryDepth / 0.04) * 32)
-  );
   const growth = previewThreefoldGrowthEffects(state);
+  const logicalGridLayout = createGrainlandsGridLayout(state);
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
+  );
   const spiderFate = state.grainlands.spiderFate;
   const bridgeOutcome = state.grainlands.bridgeOutcome;
   const bridgeThreatened = growth.geometryIds.includes(
@@ -1616,12 +1821,21 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
         ? '#e16b5a'
         : '#bfd77c';
   const status = describeGrainlandsIru(state);
-  const playerX = snapCanvasCoordinate(
-    8 + (state.player.position.x / 0.8) * 144
+  const nurseryEntity =
+    /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+      logicalEntities.get(grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID)
+    );
+  const spiderEntity = logicalEntities.get(
+    grainlands.THREEFOLD_GRAINLANDS_SPIDER_ID
   );
-  const playerY = snapCanvasCoordinate(
-    28 + ((0.4 - state.player.position.y) / 0.4) * 72
-  );
+  const maraEntity = logicalEntities.get('mara');
+  const nurseryRect = grainlandsEntityRect(nurseryEntity, logicalGridLayout);
+  const waterHeight = nurseryRect
+    ? Math.min(
+        nurseryRect.height,
+        snapCanvasDimension((nurseryDepth / 0.04) * nurseryRect.height)
+      )
+    : 0;
   const frame = createThreefoldFramePayload({
     world: createSmallWorldFrameWorld(
       state.scene.id,
@@ -1645,41 +1859,105 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
     captionShape({ x: 8, y: 12 }, 'GRAINLANDS', true),
     createThreefoldRectShape([4, 20, 152, 92], '#102823'),
     createThreefoldRectShape([8, 28, 144, 72], '#315744'),
-    ...[16, 40, 88, 136].map(x =>
-      createThreefoldRectShape([x, 36, 8, 8], '#526e4b')
-    ),
-    createThreefoldRectShape([32, 68, 24, 8], '#526e4b'),
-    createThreefoldRectShape([40, 60, 8, 16], '#526e4b'),
-    createThreefoldRectShape([48, 64, 24, 8], bridgeColor),
-    ...(bridgeOutcome === 'broken'
-      ? [createThreefoldRectShape([56, 72, 8, 8], '#182f36')]
-      : []),
-    ...(pressureNetwork.nurseryDamaged
-      ? [createThreefoldRectShape([112, 64, 32, 8], '#b46b55')]
-      : grainlandsNurseryShapes({ x: 112, y: 52 })),
-    ...(waterHeight > 0
+    ...state.scene.geometry.flatMap(({ id }) => {
+      const entity =
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        );
+      const fill =
+        id === grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID
+          ? bridgeColor
+          : id === grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID &&
+              pressureNetwork.nurseryDamaged
+            ? '#b46b55'
+            : '#526e4b';
+      const shape = grainlandsEntityShape(entity, logicalGridLayout, fill);
+      if (!shape) return [];
+      if (
+        id !== grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID ||
+        bridgeOutcome !== 'broken'
+      )
+        return [shape];
+      const rect =
+        /** @type {{x:number,y:number,width:number,height:number}} */ (
+          grainlandsEntityRect(entity, logicalGridLayout)
+        );
+      return [
+        shape,
+        createThreefoldRectShape(
+          [
+            rect.x +
+              Math.floor((rect.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+                GRID_PIXELS,
+            rect.y +
+              Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+                GRID_PIXELS,
+            GRID_PIXELS,
+            GRID_PIXELS,
+          ],
+          '#182f36'
+        ),
+      ];
+    }),
+    ...state.scene.decorations.flatMap(({ id }) => {
+      const entity =
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        );
+      const shape = grainlandsEntityShape(entity, logicalGridLayout, '#526e4b');
+      return shape ? [shape] : [];
+    }),
+    ...(waterHeight > 0 && nurseryRect
       ? [
-          createThreefoldRectShape(
-            [104, 80 - waterHeight, 40, waterHeight],
-            '#1b8a83'
-          ),
+          {
+            ...createThreefoldRectShape(
+              [
+                nurseryRect.x,
+                nurseryRect.y + nurseryRect.height - waterHeight,
+                nurseryRect.width,
+                waterHeight,
+              ],
+              '#1b8a83'
+            ),
+            logicalContainerBounds: nurseryEntity.cellBounds,
+            surfaceMeters: nurseryDepth,
+          },
         ]
       : []),
-    createThreefoldRectShape(
-      [104, 32, 8, 8],
-      pressureNetwork.nurseryDamaged
-        ? '#b46b55'
-        : pressureNetwork.hatchClosed
-          ? '#e9d88d'
-          : '#526e4b'
-    ),
-    ...(spiderFate === 'baited-away'
+    ...state.scene.interactables.flatMap(({ id }) => {
+      const entity =
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        );
+      const fill =
+        id === grainlands.THREEFOLD_GRAINLANDS_HATCH_ID
+          ? pressureNetwork.nurseryDamaged
+            ? '#b46b55'
+            : pressureNetwork.hatchClosed
+              ? '#e9d88d'
+              : '#526e4b'
+          : id === grainlands.THREEFOLD_GRAINLANDS_IRU_ID
+            ? '#d28b69'
+            : '#bfd77c';
+      const shape = grainlandsActorShape(entity, logicalGridLayout, fill);
+      return shape ? [shape] : [];
+    }),
+    ...(spiderFate === 'baited-away' || !spiderEntity
       ? []
-      : grainlandsSpiderShapes({ x: 64, y: 56 }, spiderFate === 'overpowered')),
-    createThreefoldRectShape([32, 76, 8, 8], '#b46b55'),
-    createThreefoldRectShape([32, 68, 8, 8], '#e9d88d'),
-    createThreefoldRectShape([40, 76, 8, 8], '#d28b69'),
-    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+      : grainlandsSpiderShapes(
+          spiderEntity,
+          logicalGridLayout,
+          spiderFate === 'overpowered'
+        )),
+    ...[
+      grainlandsActorShape(
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          maraEntity
+        ),
+        logicalGridLayout,
+        PALETTE[3]
+      ),
+    ].filter(Boolean),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
     captionShape(
       { x: 8, y: 126 },
@@ -1707,39 +1985,55 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
     growthPreviewGeometryIds: growth.geometryIds,
     growthPreviewCreatureIds: growth.creatureIds,
     witnessLedger: [],
+    logicalGridLayout,
   });
 }
 
 /**
- * Draw Nursery Clades shelters and the eggs they protect.
- * @param {{x: number, y: number}} origin Grid-aligned shelter origin.
- * @returns {ThreefoldSpriteShape[]} Clade shelter and egg silhouettes.
- */
-function grainlandsNurseryShapes(origin) {
-  return [
-    createThreefoldRectShape([origin.x, origin.y, 24, 8], '#bfd77c'),
-    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], '#d28b69'),
-    createThreefoldRectShape([origin.x + 8, origin.y + 8, 8, 16], '#526e4b'),
-    createThreefoldRectShape([origin.x, origin.y + 24, 24, 8], '#182f36'),
-    createThreefoldRectShape([origin.x + 8, origin.y + 16, 8, 8], '#e9d88d'),
-    createThreefoldRectShape([origin.x + 16, origin.y + 16, 8, 8], '#e9d88d'),
-  ];
-}
-
-/**
- * Draw a large predator, or the remains left by growth.
- * @param {{x: number, y: number}} origin Grid-aligned spider position.
+ * Draw a scale-dependent spider sprite inside its projected physical bounds.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected spider identity.
+ * @param {ReturnType<typeof createGrainlandsGridLayout>} layout Finite camera view.
  * @param {boolean} overpowered Whether growth defeated the spider.
  * @returns {ThreefoldSpriteShape[]} Spider body and legs.
  */
-function grainlandsSpiderShapes(origin, overpowered) {
+function grainlandsSpiderShapes(entity, layout, overpowered) {
+  const rect = grainlandsEntityRect(entity, layout);
+  if (!rect) return [];
   const bodyColor = overpowered ? '#526e4b' : '#d28b69';
+  const bodyWidth = Math.min(16, rect.width);
+  const bodyX =
+    rect.x +
+    Math.floor((rect.width - bodyWidth) / (2 * GRID_PIXELS)) * GRID_PIXELS;
+  const bodyY =
+    rect.y +
+    Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) * GRID_PIXELS;
+  const shape = (
+    /** @type {[number, number, number, number]} */ bounds,
+    /** @type {string} */ fill
+  ) => ({
+    ...createThreefoldRectShape(bounds, fill),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+  });
   return [
-    createThreefoldRectShape([origin.x, origin.y, 16, 8], bodyColor),
-    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], '#b46b55'),
-    createThreefoldRectShape([origin.x - 8, origin.y - 8, 8, 8], '#182f36'),
-    createThreefoldRectShape([origin.x - 8, origin.y + 8, 8, 8], '#182f36'),
-    createThreefoldRectShape([origin.x + 16, origin.y + 8, 8, 8], '#182f36'),
+    shape([bodyX, bodyY, bodyWidth, GRID_PIXELS], bodyColor),
+    ...(rect.width >= 24 && rect.height >= 16
+      ? [
+          shape(
+            [rect.x, bodyY + GRID_PIXELS, GRID_PIXELS, GRID_PIXELS],
+            '#182f36'
+          ),
+          shape(
+            [
+              rect.x + rect.width - GRID_PIXELS,
+              bodyY + GRID_PIXELS,
+              GRID_PIXELS,
+              GRID_PIXELS,
+            ],
+            '#182f36'
+          ),
+        ]
+      : []),
   ];
 }
 
