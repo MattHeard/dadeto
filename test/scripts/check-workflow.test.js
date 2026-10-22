@@ -29,5 +29,6 @@ describe('full-check workflow', () => {
     expect(workflow).toContain('actions/upload-artifact@v6');
     expect(workflow).toContain('reports/check-full.log');
     expect(workflow).toContain('reports/coverage/');
+    expect(workflow).toContain('reports/threefold-mobile.png');
   });
 });
