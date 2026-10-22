@@ -563,6 +563,10 @@ describe('THREEFOLD Silt Margin logical-grid renderer', () => {
         [...entities.keys()].sort()
       );
       expect(layout.overflow).toEqual([]);
+      expect(layout.conflicts).toEqual([]);
+      expect(
+        layout.entities.every(({ placement }) => placement === 'placed')
+      ).toBe(true);
       expect(entities.get('silt-margin-guardian')).toMatchObject({
         logicalGridKinds: ['creature', 'interactable'],
       });
@@ -612,6 +616,19 @@ describe('THREEFOLD Silt Margin logical-grid renderer', () => {
           item => item.geometryId === undefined && item.fill === '#25a9b8'
         )
       ).toMatchObject({ x: 88, y: 72, width: 24, height: 16 });
+      const permuted = {
+        ...state,
+        scene: {
+          ...state.scene,
+          geometry: [...state.scene.geometry].reverse(),
+          decorations: [...state.scene.decorations].reverse(),
+          interactables: [...state.scene.interactables].reverse(),
+          creatures: [...state.scene.creatures].reverse(),
+        },
+      };
+      expect(
+        renderThreefoldFrame(permuted).threefold.logicalGridLayout
+      ).toEqual(layout);
     }
   );
 
