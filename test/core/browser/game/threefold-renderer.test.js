@@ -89,7 +89,18 @@ describe('THREEFOLD canvas grid', () => {
       expect(layout.entities.map(entity => entity.logicalGridKind)).toEqual(
         expect.arrayContaining(['structure', 'interactable', 'creature'])
       );
-      expect(layout.conflicts.length).toBeGreaterThan(0);
+      const intentionalPairs = layout.intentionalOverlaps.map(
+        ({ entityIds }) => entityIds
+      );
+      expect(intentionalPairs).toContainEqual([
+        'signal-station',
+        'signal-station-console',
+      ]);
+      expect(layout.conflicts.length).toBe(scale === 0 ? 3 : 0);
+      if (scale === 0)
+        expect(
+          layout.conflicts.map(({ entityIds }) => entityIds)
+        ).toContainEqual(['gatehouse-rat', 'gatehouse-west-wall']);
       for (const conflict of layout.conflicts)
         for (const id of conflict.entityIds)
           expect(byId.get(id).placement).toBe('unresolved');
@@ -131,6 +142,41 @@ describe('THREEFOLD canvas grid', () => {
         creatures: base.scene.creatures,
       })
     ).toBe(before);
+  });
+
+  test('groups authored gate and signal assemblies without hiding unrelated coarse-scale conflicts', () => {
+    const base = createThreefoldSimulation(THRESHOLDS);
+    const frame = renderThreefoldFrame({
+      ...base,
+      player: { ...base.player, scale: 1 },
+    });
+    const { intentionalOverlaps, conflicts } =
+      frame.threefold.logicalGridLayout;
+    const intentionalPairs = intentionalOverlaps.map(
+      ({ entityIds }) => entityIds
+    );
+    const unresolvedPairs = conflicts.map(({ entityIds }) => entityIds);
+
+    expect(intentionalPairs).toContainEqual([
+      'gate-counterweight',
+      'relief-gate',
+    ]);
+    expect(intentionalPairs).toContainEqual([
+      'relief-gate',
+      'relief-gate-locking-pawl',
+    ]);
+    expect(intentionalPairs).toContainEqual([
+      'signal-station',
+      'signal-station-console',
+    ]);
+    expect(unresolvedPairs).toContainEqual([
+      'drainage-weir',
+      'ferry-mooring-line',
+    ]);
+    expect(unresolvedPairs).not.toContainEqual([
+      'relief-gate',
+      'gate-counterweight',
+    ]);
   });
 });
 

@@ -55,7 +55,7 @@ const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
-/** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
+/** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, overlapGroupId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -1706,7 +1706,11 @@ function projectRenderEntitiesToGrid(scale, entities) {
     left.id.localeCompare(right.id)
   );
   const layout = layoutScene(
-    sortedEntities.map(({ id, bounds }) => ({ id, bounds })),
+    sortedEntities.map(({ id, bounds, overlapGroupId }) => ({
+      id,
+      bounds,
+      ...(overlapGroupId === undefined ? {} : { overlapGroupId }),
+    })),
     scale
   );
   const projectedById = new Map(

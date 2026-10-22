@@ -274,8 +274,8 @@ export function viewAtScale(position, scale) {
  * Project canonical geometry into a scale view, omitting committed rubble.
  * Geometry remains in physical metres so every scale reads the same world.
  * @param {ReturnType<typeof createScaleState>} state Current scale and damage state.
- * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Canonical geometry for the loaded region or chunk.
- * @returns {{view: ReturnType<typeof viewAtScale>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>}} Scale view and surviving canonical geometry.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>} geometry Canonical geometry for the loaded region or chunk.
+ * @returns {{view: ReturnType<typeof viewAtScale>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>}} Scale view and surviving canonical geometry with authored grid relationships.
  */
 export function projectGeometryForScale(state, geometry) {
   assertScaleState(state);
@@ -288,6 +288,9 @@ export function projectGeometryForScale(state, geometry) {
       .sort((first, second) => (first.id < second.id ? -1 : 1))
       .map(object => ({
         id: object.id,
+        ...(object.overlapGroupId === undefined
+          ? {}
+          : { overlapGroupId: object.overlapGroupId }),
         bounds: {
           min: { ...object.bounds.min },
           max: { ...object.bounds.max },
@@ -353,8 +356,8 @@ function assertWorldBounds(bounds) {
 
 /**
  * Validate canonical geometry bounds and unique identifiers.
- * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Candidate geometry.
- * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Validated geometry.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>} geometry Candidate geometry.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>} Validated geometry.
  */
 function validateGeometry(geometry) {
   if (!Array.isArray(geometry))
