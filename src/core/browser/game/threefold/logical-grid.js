@@ -128,6 +128,25 @@ export function exposeHierarchy(entities, scale) {
 }
 
 /**
+ * Resolve one exposed hierarchy target into the identities a scale-specific
+ * group action may affect. Hidden targets are unavailable at that scale.
+ * @param {ThreefoldHierarchyEntity[]} entities Authored identities and parent links.
+ * @param {number} scale Current player interaction scale.
+ * @param {string} targetId Identity selected by the current-scale interaction.
+ * @returns {{targetId: string, affectedEntityIds: string[]}|null} Stable target and authored descendants, or null when hidden.
+ */
+export function resolveHierarchyActionTarget(entities, scale, targetId) {
+  if (typeof targetId !== 'string' || targetId.length === 0) return null;
+  const exposure = exposeHierarchy(entities, scale);
+  if (!exposure.visibleEntityIds.includes(targetId)) return null;
+  const proxy = exposure.proxies.find(entity => entity.id === targetId);
+  return {
+    targetId,
+    affectedEntityIds: [targetId, ...(proxy?.childIds ?? [])].sort(compareIds),
+  };
+}
+
+/**
  * Resolve one immutable scene into visible hierarchy identities and integer-cell
  * geometry. Semantic hierarchy stays separate from geometric containment.
  * @param {ThreefoldGridEntity[]} entities Canonical scene entities.
