@@ -405,7 +405,7 @@ export function packSceneLayout(entities, scale, viewport) {
   ]);
   const entries = initial.entities.map(entity => ({
     ...entity,
-    source: sourceById.get(entity.id),
+    source: /** @type {ThreefoldGridEntity} */ (sourceById.get(entity.id)),
   }));
   const ordered = [
     ...entries.filter(entity => relationshipIds.has(entity.id)),
@@ -416,11 +416,12 @@ export function packSceneLayout(entities, scale, viewport) {
   const overflowIds = new Set();
 
   for (const entity of ordered) {
-    const candidate = relationshipIds.has(entity.id)
-      ? containsCellBounds(viewport, entity.cellBounds)
-        ? entity.cellBounds
-        : null
-      : findPackedPosition(entity, placed, viewport);
+    const /** @type {ThreefoldCellBounds|null} */ candidate =
+        relationshipIds.has(entity.id)
+          ? containsCellBounds(viewport, entity.cellBounds)
+            ? entity.cellBounds
+            : null
+          : findPackedPosition(entity, placed, viewport);
     if (candidate === null) {
       overflowIds.add(entity.id);
       positions.set(entity.id, entity.cellBounds);
