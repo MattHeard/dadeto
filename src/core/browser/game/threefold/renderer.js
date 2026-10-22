@@ -2936,7 +2936,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     [
       ...geometry.map(object => ({
         ...object,
-        ...(stationHierarchy.has(object.id)
+        ...(object.hierarchy === undefined && stationHierarchy.has(object.id)
           ? { hierarchy: stationHierarchy.get(object.id) }
           : {}),
         logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('structure'),
