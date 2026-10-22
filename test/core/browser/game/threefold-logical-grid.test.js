@@ -436,6 +436,56 @@ describe('THREEFOLD resolved scene layout', () => {
     ]);
   });
 
+  test('collapses a three-by-three crate pile into one stable coarse target', () => {
+    const cratePile = [
+      cell('crate-pile', 0, 0, 1, 1, {
+        hierarchy: { expandAtScale: -1 },
+      }),
+      ...Array.from({ length: 9 }, (_, index) =>
+        cell(
+          `crate-${index + 1}`,
+          (index % 3) / 3,
+          Math.floor(index / 3) / 3,
+          1 / 3,
+          1 / 3,
+          { hierarchy: { parentId: 'crate-pile' } }
+        )
+      ),
+    ];
+    const before = JSON.stringify(cratePile);
+    const coarse = resolveSceneLayout(cratePile, 0);
+    const fine = resolveSceneLayout(cratePile, -1);
+
+    expect(coarse.entities.map(entity => entity.id)).toEqual(['crate-pile']);
+    expect(coarse.entities[0].cellBounds).toEqual({
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+    });
+    expect(coarse.hierarchy.hiddenEntities).toHaveLength(9);
+    expect(
+      coarse.hierarchy.hiddenEntities.every(
+        entity => entity.proxyId === 'crate-pile'
+      )
+    ).toBe(true);
+
+    expect(fine.entities.map(entity => entity.id)).toEqual(
+      Array.from({ length: 9 }, (_, index) => `crate-${index + 1}`)
+    );
+    expect(fine.entities.map(({ cellBounds }) => cellBounds)).toEqual(
+      Array.from({ length: 9 }, (_, index) => ({
+        x: index % 3,
+        y: Math.floor(index / 3),
+        width: 1,
+        height: 1,
+      }))
+    );
+    expect(fine.conflicts).toEqual([]);
+    expect(resolveSceneLayout([...cratePile].reverse(), -1)).toEqual(fine);
+    expect(JSON.stringify(cratePile)).toBe(before);
+  });
+
   test('preserves packing conflicts and finite viewport overflow', () => {
     const result = resolveSceneLayout(
       [
