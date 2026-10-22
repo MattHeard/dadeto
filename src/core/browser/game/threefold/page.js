@@ -282,6 +282,10 @@ export function startThreefoldPage(options) {
       /** @type {Record<string, any>} */ frame
     ) => {
       (options.drawFrame || drawGameFrame)(context, frame);
+      renderThreefoldLogicalGridWarning(
+        options.documentObj,
+        frame.threefold?.logicalGridLayout
+      );
       const persistence = options.documentObj.querySelector(
         '#campaign-persistence'
       );
@@ -765,6 +769,23 @@ function renderThreefoldWitnessLedger(documentObj, entries) {
   entries.forEach(entry =>
     list.appendChild(createWitnessListItem(documentObj, entry))
   );
+}
+
+/**
+ * Expose unresolved display-cell overlaps without changing the simulated world.
+ * @param {any} documentObj Standalone page document adapter.
+ * @param {{conflicts: Array<unknown>} | undefined} logicalGridLayout Current projected layout.
+ * @returns {void}
+ */
+function renderThreefoldLogicalGridWarning(documentObj, logicalGridLayout) {
+  const warning = documentObj.querySelector('#logical-grid-warning');
+  if (!warning) return;
+  const conflictCount = logicalGridLayout?.conflicts.length || 0;
+  warning.hidden = conflictCount === 0;
+  warning.textContent =
+    conflictCount === 0
+      ? ''
+      : `At this scale, ${conflictCount} pairs of objects share display cells. Their physical positions and collisions are unchanged.`;
 }
 
 /**

@@ -179,6 +179,14 @@ body {
   color: var(--muted);
 }
 
+.logical-grid-warning {
+  margin: 0;
+  padding: 8px;
+  border-left: 4px solid #e9d88d;
+  background: #102823;
+  color: var(--ink);
+}
+
 .witness-ledger summary {
   color: var(--moss);
   cursor: pointer;
