@@ -7,6 +7,7 @@ import {
   INITIAL_MAX_ANCHOR,
   MAX_SCALE,
   MIN_SCALE,
+  moveAtScale,
   previewGrowthDamageIds,
   projectGeometryForScale,
   recoverAnchor,
@@ -23,6 +24,42 @@ describe('THREEFOLD scale-space', () => {
         heightAtScale(scale) * 3,
         12
       );
+  });
+
+  test('moves one ninth of a logical cell per input at every scale', () => {
+    const directions = [
+      ['up', 0, -1],
+      ['down', 0, 1],
+      ['left', -1, 0],
+      ['right', 1, 0],
+    ];
+    const scene = {
+      baseBodyWidthMeters: 0.1,
+      bounds: {
+        min: { x: -1000, y: -1000 },
+        max: { x: 1000, y: 1000 },
+      },
+    };
+
+    for (let scale = MIN_SCALE; scale <= MAX_SCALE; scale += 1) {
+      const cellSize = heightAtScale(scale);
+      for (const [direction, dx, dy] of directions) {
+        const initial = createScaleState({ x: -400.25, y: -400.25 }, { scale });
+        const moved = Array.from({ length: 9 }).reduce(
+          state => moveAtScale(state, direction, [], scene),
+          initial
+        );
+
+        expect(moved.position.x).toBeCloseTo(
+          initial.position.x + dx * cellSize,
+          10
+        );
+        expect(moved.position.y).toBeCloseTo(
+          initial.position.y + dy * cellSize,
+          10
+        );
+      }
+    }
   });
 
   test('shows a 3 by 3 finer region without changing canonical position', () => {
