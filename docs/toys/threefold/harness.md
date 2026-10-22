@@ -27,6 +27,10 @@ Run `npm run check:impact:run -- --files src/core/browser/game/threefold/belltop
 
 Run `npm run check:impact:run -- --files test/core/browser/game/threefold-spatial.test.js` to verify the unloaded-chunk persistence boundary. Grow through geometry while its chunk is loaded, serialize and restore the scale state, then project a separately loaded chunk and reload the original chunk. The separate chunk stays intact, damaged geometry remains omitted at the growth and finer views, and projection leaves both source geometry and restored state unchanged.
 
+## Specialized logical-grid renderers
+
+Run `npm run check:impact:run -- --files src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js`. For Silt Margin, the Tidal Archive, and Hearthgaps, verify the supported scales render each authored entity from its resolved cell bounds, repeated renders are deterministic, finite viewport overflow is reported and omitted, and source geometry and hydraulic outcomes remain unchanged. Hearthgaps must keep runoff tiles inside the logical culvert and preserve both Brin-diversion and shared-bypass flood visibility. Require 100% statements, branches, functions, and lines for the changed renderer, clean ESLint/core-parse, and zero clones.
+
 ## Small-World Hydraulic Model
 
 Run `npm run test:impact -- --files test/core/browser/game/threefold-water.test.js` to exercise the water-transfer primitive. An open port moves water down the physical surface-height gradient, conserves cubic-metre volume, and stops at the port sill or hydrostatic equalization. Closed ports, equal surfaces, zero-duration steps, and dry sources leave both chambers unchanged. The solver drives the Tidal Archive puzzle; Broken Gate floodwater remains a visual consequence only.

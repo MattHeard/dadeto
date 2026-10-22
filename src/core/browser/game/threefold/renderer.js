@@ -28,6 +28,7 @@ import {
 } from './silt-margin.js';
 import {
   THREEFOLD_HEARTHGAPS_BRIN_HOME_ID,
+  THREEFOLD_HEARTHGAPS_BRIN_GATE_ID,
   THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
 } from './hearthgaps.js';
 import * as weftways from './weftways.js';
@@ -56,6 +57,7 @@ const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
+/** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -847,6 +849,13 @@ function renderThreefoldHearthgapsFrame(state) {
   const { runoffChoice, floodedHomeIds } = state.hearthgaps;
   const heightMeters = heightAtScale(state.player.scale);
   const growth = previewThreefoldGrowthEffects(state);
+  const logicalGridLayout = createHearthgapsGridLayout(state);
+  const logicalCreatures = logicalGridLayout.entities.filter(entity =>
+    entity.logicalGridKinds.includes('creature')
+  );
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
+  );
   const brinFlooded = floodedHomeIds.includes(
     THREEFOLD_HEARTHGAPS_BRIN_HOME_ID
   );
@@ -867,12 +876,40 @@ function renderThreefoldHearthgapsFrame(state) {
       : runoffChoice === 'shared-bypass'
         ? "Brin's homes flood; downstream homes stay dry."
         : 'Choose where to send the culvert runoff.';
-  const playerX = snapCanvasCoordinate(
-    8 + (state.player.position.x / 1.2) * 144
-  );
-  const playerY = snapCanvasCoordinate(
-    28 + ((0.4 - state.player.position.y) / 0.4) * 72
-  );
+  const culvertEntity =
+    /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+      logicalEntities.get('hearthgaps-culvert')
+    );
+  const culvert =
+    culvertEntity?.placement === 'overflow'
+      ? null
+      : hearthgapsEntityRect(culvertEntity, logicalGridLayout);
+  const maraEntity =
+    /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+      logicalEntities.get('mara')
+    );
+  const mara =
+    maraEntity?.placement === 'overflow'
+      ? null
+      : hearthgapsEntityRect(maraEntity, logicalGridLayout);
+  const waterCount = !culvert
+    ? 0
+    : flowRight
+      ? Math.max(1, Math.floor(culvert.width / GRID_PIXELS) - 1)
+      : flowLeft
+        ? 2
+        : Math.min(4, Math.max(1, Math.floor(culvert.width / GRID_PIXELS) - 1));
+  const waterStart = !culvert
+    ? 0
+    : flowLeft
+      ? culvert.x + GRID_PIXELS
+      : flowRight
+        ? culvert.x + culvert.width - waterCount * GRID_PIXELS
+        : culvert.x +
+          Math.floor(
+            (culvert.width / 2 - (waterCount * GRID_PIXELS) / 2) / GRID_PIXELS
+          ) *
+            GRID_PIXELS;
   const frame = createThreefoldFramePayload({
     world: createSmallWorldFrameWorld(
       state.scene.id,
@@ -896,34 +933,89 @@ function renderThreefoldHearthgapsFrame(state) {
     captionShape({ x: 8, y: 12 }, 'HEARTHGAPS', true),
     createThreefoldRectShape([4, 20, 152, 92], '#102823'),
     createThreefoldRectShape([8, 28, 144, 72], '#315744'),
-    createThreefoldRectShape([24, 68, 112, 8], '#526e4b'),
-    createThreefoldRectShape([40, 60, 80, 8], '#526e4b'),
-    ...[48, 64, 80, 96].map(x =>
-      createThreefoldRectShape([x, 68, 8, 8], '#25a9b8')
-    ),
-    ...(flowRight
-      ? [112, 120].map(x => createThreefoldRectShape([x, 68, 8, 8], '#25a9b8'))
-      : []),
-    ...(flowLeft
-      ? [32, 40].map(x => createThreefoldRectShape([x, 68, 8, 8], '#25a9b8'))
+    ...(culvert
+      ? [
+          hearthgapsEntityShape(culvertEntity, logicalGridLayout, '#526e4b'),
+          ...Array.from({ length: waterCount }, (_, index) =>
+            createThreefoldRectShape(
+              [
+                waterStart + index * GRID_PIXELS,
+                culvert.y +
+                  Math.floor(culvert.height / (2 * GRID_PIXELS)) * GRID_PIXELS,
+                GRID_PIXELS,
+                GRID_PIXELS,
+              ],
+              '#25a9b8'
+            )
+          ),
+        ]
       : []),
     ...hearthgapsHomeShapes(
-      { x: 16, y: 52 },
-      brinFlooded,
-      brinDamaged,
-      growth.geometryIds.includes(THREEFOLD_HEARTHGAPS_BRIN_HOME_ID)
+      /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+        logicalEntities.get(THREEFOLD_HEARTHGAPS_BRIN_HOME_ID)
+      ),
+      logicalGridLayout,
+      {
+        flooded: brinFlooded,
+        damaged: brinDamaged,
+        threatened: growth.geometryIds.includes(
+          THREEFOLD_HEARTHGAPS_BRIN_HOME_ID
+        ),
+      }
     ),
     ...hearthgapsHomeShapes(
-      { x: 128, y: 52 },
-      downstreamFlooded,
-      downstreamDamaged,
-      growth.geometryIds.includes(THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID)
+      /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+        logicalEntities.get(THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID)
+      ),
+      logicalGridLayout,
+      {
+        flooded: downstreamFlooded,
+        damaged: downstreamDamaged,
+        threatened: growth.geometryIds.includes(
+          THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID
+        ),
+      }
     ),
-    createThreefoldRectShape([24, 76, 8, 8], '#d28b69'),
-    createThreefoldRectShape([24, 68, 8, 8], '#e9d88d'),
-    createThreefoldRectShape([32, 76, 8, 8], '#b46b55'),
-    createThreefoldRectShape([16, 84, 24, 8], '#182f36'),
-    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    ...state.scene.interactables.flatMap(({ id }) => {
+      const shape = hearthgapsControlShape(
+        /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        ),
+        logicalGridLayout
+      );
+      return shape ? [shape] : [];
+    }),
+    ...logicalCreatures.flatMap(creature => {
+      const shape = hearthgapsActorShape(
+        /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(creature.id)
+        ),
+        logicalGridLayout,
+        '#b46b55'
+      );
+      return shape ? [shape] : [];
+    }),
+    ...(mara
+      ? [
+          {
+            ...createThreefoldRectShape(
+              [
+                mara.x +
+                  Math.floor((mara.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+                    GRID_PIXELS,
+                mara.y +
+                  Math.floor((mara.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+                    GRID_PIXELS,
+                GRID_PIXELS,
+                GRID_PIXELS,
+              ],
+              PALETTE[3]
+            ),
+            geometryId: 'mara',
+            logicalCellBounds: maraEntity.cellBounds,
+          },
+        ]
+      : []),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
     captionShape(
       { x: 8, y: 126 },
@@ -945,34 +1037,269 @@ function renderThreefoldHearthgapsFrame(state) {
     floodedHomeIds: [...floodedHomeIds],
     growthPreviewGeometryIds: growth.geometryIds,
     witnessLedger: [],
+    logicalGridLayout,
   });
 }
 
 /**
  * Draw one intact, flooded, damaged, or growth-threatened Latchfolk home.
- * @param {{x: number, y: number}} origin Home's grid-aligned canvas origin.
- * @param {boolean} flooded Whether runoff has submerged the home.
- * @param {boolean} damaged Whether committed growth damaged its geometry.
- * @param {boolean} threatened Whether the next scale rung overlaps it.
+ * @param {ReturnType<typeof resolveSceneLayout>['entities'][number]} entity Home's logical identity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite map layout.
+ * @param {{flooded:boolean,damaged:boolean,threatened:boolean}} status Home condition.
  * @returns {ThreefoldSpriteShape[]} Grid-aligned home and flood shapes.
  */
-function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
-  const wall = damaged ? '#526e4b' : threatened ? '#e16b5a' : '#bfd77c';
-  const roof = damaged ? '#526e4b' : threatened ? '#e16b5a' : '#d28b69';
+function hearthgapsHomeShapes(entity, layout, status) {
+  if (entity.placement === 'overflow') return [];
+  const bounds = hearthgapsEntityRect(entity, layout);
+  const wall = status.damaged
+    ? '#526e4b'
+    : status.threatened
+      ? '#e16b5a'
+      : '#bfd77c';
+  const roof = status.damaged
+    ? '#526e4b'
+    : status.threatened
+      ? '#e16b5a'
+      : '#d28b69';
+  const centerX =
+    bounds.x + Math.floor(bounds.width / (2 * GRID_PIXELS)) * GRID_PIXELS;
+  const wallY =
+    bounds.y + Math.min(2 * GRID_PIXELS, bounds.height - GRID_PIXELS);
+  const wallHeight = Math.max(
+    GRID_PIXELS,
+    bounds.y + bounds.height - wallY - GRID_PIXELS
+  );
+  /**
+   * Attach the home identity and projected bounds to one sprite.
+   * @param {ThreefoldSpriteShape} shape Home sprite shape.
+   * @returns {ThreefoldSpriteShape} Tagged home sprite.
+   */
+  function tag(shape) {
+    return {
+      ...shape,
+      geometryId: entity.id,
+      logicalCellBounds: entity.cellBounds,
+    };
+  }
   return [
-    createThreefoldRectShape([origin.x, origin.y, 24, 8], roof),
-    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], roof),
-    createThreefoldRectShape([origin.x + 8, origin.y + 8, 8, 16], wall),
-    createThreefoldRectShape([origin.x, origin.y + 24, 24, 8], '#182f36'),
-    ...(flooded
+    tag(
+      createThreefoldRectShape(
+        [bounds.x, bounds.y, bounds.width, GRID_PIXELS],
+        roof
+      )
+    ),
+    ...(bounds.height >= 3 * GRID_PIXELS
       ? [
-          createThreefoldRectShape(
-            [origin.x - 8, origin.y + 16, 40, 8],
-            '#25a9b8'
+          tag(
+            createThreefoldRectShape(
+              [centerX, bounds.y + GRID_PIXELS, GRID_PIXELS, GRID_PIXELS],
+              roof
+            )
+          ),
+        ]
+      : []),
+    tag(
+      createThreefoldRectShape([centerX, wallY, GRID_PIXELS, wallHeight], wall)
+    ),
+    tag(
+      createThreefoldRectShape(
+        [
+          bounds.x,
+          bounds.y + bounds.height - GRID_PIXELS,
+          bounds.width,
+          GRID_PIXELS,
+        ],
+        '#182f36'
+      )
+    ),
+    ...(status.flooded
+      ? [
+          tag(
+            createThreefoldRectShape(
+              [
+                bounds.x,
+                bounds.y + bounds.height - 2 * GRID_PIXELS,
+                bounds.width,
+                GRID_PIXELS,
+              ],
+              '#25a9b8'
+            )
           ),
         ]
       : []),
   ];
+}
+
+/**
+ * Resolve Hearthgaps geometry, controls, residents and Mara into finite cells.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'hearthgaps'}}>} state Current Hearthgaps simulation.
+ * @returns {Omit<ReturnType<typeof resolveSceneLayout>, 'entities'> & {viewport: ReturnType<typeof projectEntity>['cellBounds'], entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Finite authored map layout.
+ */
+function createHearthgapsGridLayout(state) {
+  const { scene, player } = state;
+  const creatures =
+    /** @type {Array<Pick<ThreefoldGridRenderEntity, 'id'|'bounds'>>} */ (
+      scene.creatures
+    );
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  const facets = /** @type {HearthgapsGridFacet[]} */ ([
+    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+    ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
+    ...creatures.map(entity => ({ ...entity, kind: 'creature' })),
+    {
+      id: 'mara',
+      kind: 'actor',
+      bounds: {
+        min: {
+          x: player.position.x - halfBodyWidth,
+          y: player.position.y - halfBodyWidth,
+          z: 0,
+        },
+        max: {
+          x: player.position.x + halfBodyWidth,
+          y: player.position.y + halfBodyWidth,
+          z: heightAtScale(player.scale),
+        },
+      },
+    },
+  ]);
+  const sceneCells = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
+    player.scale
+  ).cellBounds;
+  const viewport = {
+    ...sceneCells,
+    width: sceneCells.width + 1,
+    height: sceneCells.height + 1,
+  };
+  const layout = resolveSceneLayout(
+    facets.map(entity => ({
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId: entity.overlapGroupId,
+      hierarchy: entity.hierarchy,
+    })),
+    player.scale,
+    viewport
+  );
+  const kindsById = new Map(facets.map(({ id, kind }) => [id, kind]));
+  return {
+    ...layout,
+    viewport,
+    entities: layout.entities.map(entity => ({
+      ...entity,
+      logicalGridKinds: [/** @type {string} */ (kindsById.get(entity.id))],
+    })),
+  };
+}
+
+/**
+ * Convert a logical entity into an 8px-aligned Hearthgaps screen rectangle.
+ * @param {ReturnType<typeof resolveSceneLayout>['entities'][number]} entity Projected entity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @returns {{x:number,y:number,width:number,height:number}} Canvas rectangle derived from its cell bounds.
+ */
+function hearthgapsEntityRect(entity, layout) {
+  const bounds = entity.cellBounds;
+  const pitch = Math.max(
+    GRID_PIXELS,
+    Math.floor(
+      Math.min(144 / layout.viewport.width, 72 / layout.viewport.height) /
+        GRID_PIXELS
+    ) * GRID_PIXELS
+  );
+  const mapWidth = pitch * layout.viewport.width;
+  const mapHeight = pitch * layout.viewport.height;
+  return {
+    x: snapCanvasCoordinate(
+      8 + (144 - mapWidth) / 2 + (bounds.x - layout.viewport.x) * pitch
+    ),
+    y: snapCanvasCoordinate(
+      28 +
+        (72 - mapHeight) / 2 +
+        (layout.viewport.height -
+          (bounds.y - layout.viewport.y) -
+          bounds.height) *
+          pitch
+    ),
+    width: pitch * bounds.width,
+    height: pitch * bounds.height,
+  };
+}
+
+/**
+ * Draw a projected Hearthgaps source entity with its logical bounds.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected entity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @param {string} fill Sprite color.
+ * @returns {ThreefoldSpriteShape|null} Cell-derived sprite, omitted for overflow.
+ */
+function hearthgapsEntityShape(entity, layout, fill) {
+  const rect = hearthgapsEntityRect(entity, layout);
+  return {
+    ...createThreefoldRectShape(
+      [rect.x, rect.y, rect.width, rect.height],
+      fill
+    ),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+    logicalGridKinds: /** @type {string[]} */ (entity.logicalGridKinds),
+  };
+}
+
+/**
+ * Draw an in-cell runoff control marker from its resolved affordance.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected control.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @returns {ThreefoldSpriteShape|null} Cell-derived control marker, omitted for overflow.
+ */
+function hearthgapsControlShape(entity, layout) {
+  if (entity.placement === 'overflow') return null;
+  const rect = hearthgapsEntityRect(entity, layout);
+  return {
+    ...createThreefoldRectShape(
+      [
+        rect.x +
+          Math.floor((rect.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+            GRID_PIXELS,
+        rect.y +
+          Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+            GRID_PIXELS,
+        GRID_PIXELS,
+        GRID_PIXELS,
+      ],
+      entity.id === THREEFOLD_HEARTHGAPS_BRIN_GATE_ID ? '#e9d88d' : '#d28b69'
+    ),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+  };
+}
+
+/**
+ * Draw a resident sprite at the center of its resolved logical cell.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected actor.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @param {string} fill Sprite color.
+ * @returns {ThreefoldSpriteShape|null} Cell-sourced actor sprite, omitted for overflow.
+ */
+function hearthgapsActorShape(entity, layout, fill) {
+  if (entity.placement === 'overflow') return null;
+  const rect = hearthgapsEntityRect(entity, layout);
+  const offset =
+    Math.floor(
+      (Math.min(rect.width, rect.height) - GRID_PIXELS) / (2 * GRID_PIXELS)
+    ) * GRID_PIXELS;
+  return {
+    ...createThreefoldRectShape(
+      [rect.x + offset, rect.y + offset, GRID_PIXELS, GRID_PIXELS],
+      fill
+    ),
+    geometryId: entity.id,
+    logicalGridKinds: /** @type {string[]} */ (entity.logicalGridKinds),
+    logicalCellBounds: entity.cellBounds,
+  };
 }
 
 /**
