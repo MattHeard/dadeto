@@ -409,15 +409,12 @@ describe('createCopyCloudHandle', () => {
         '--runInBand',
         '--coverage=false',
         '--watchman=false',
+        '--runTestsByPath',
         path.join(fixtureRoot, 'test/infra/cloudBrowserEntrypoints.test.js'),
         path.join(fixtureRoot, 'test/infra/googleAuthEntrypoints.test.js'),
       ];
       const runContractSuite = () =>
-        execFileSync(process.execPath, args, {
-          cwd: fixtureRoot,
-          stdio: 'ignore',
-          timeout: 60_000,
-        });
+        runContractSuiteWithDiagnostics(args, fixtureRoot);
 
       expect(runContractSuite).not.toThrow();
 
@@ -457,3 +454,28 @@ describe('createCopyCloudHandle', () => {
     }
   });
 });
+
+/**
+ * Run the isolated source contracts and retain subprocess diagnostics on failure.
+ * @param {string[]} args Jest arguments for the copied checkout.
+ * @param {string} cwd Copied checkout root.
+ * @returns {void} Completes only when every contract passes.
+ */
+function runContractSuiteWithDiagnostics(args, cwd) {
+  try {
+    execFileSync(process.execPath, args, {
+      cwd,
+      encoding: 'utf8',
+      stdio: 'pipe',
+      timeout: 60_000,
+    });
+  } catch (error) {
+    const diagnostics = [error.stdout, error.stderr]
+      .map(output => (Buffer.isBuffer(output) ? output.toString() : output))
+      .filter(Boolean)
+      .join('\n');
+    throw new Error([error.message, diagnostics].filter(Boolean).join('\n'), {
+      cause: error,
+    });
+  }
+}

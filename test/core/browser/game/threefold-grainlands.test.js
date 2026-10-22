@@ -117,6 +117,20 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(repeated.elapsedGameSeconds).toBe(30);
   });
 
+  test('a stale Iru actor cannot bait the spider after Iru has died', () => {
+    const state = createGrainlandsRun();
+    state.encounter.growthDeaths = [
+      { creatureId: THREEFOLD_GRAINLANDS_IRU_ID, cause: 'growth' },
+    ];
+
+    const next = stepThreefoldSimulation(state, { type: 'interact' });
+
+    expect(state.scene.creatures.map(({ id }) => id)).toContain(
+      THREEFOLD_GRAINLANDS_IRU_ID
+    );
+    expect(next.grainlands.spiderFate).toBe('present');
+  });
+
   test('growth overpowers the spider and breaks its bridge with physical overlap', () => {
     const initial = createGrainlandsRun();
     const state = stepThreefoldSimulation(initial, { type: 'grow' });
@@ -137,13 +151,28 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(state.elapsedGameSeconds).toBe(15);
     expect(state.crisis).toEqual(initial.crisis);
     expect(state.episode).toEqual(initial.episode);
-    expect(frame.toast).toBe('Iru fears Mara; growth breaks nursery bridge.');
+    expect(state.encounter.growthDeaths).toContainEqual({
+      creatureId: THREEFOLD_GRAINLANDS_IRU_ID,
+      cause: 'growth',
+    });
+    expect(frame.toast).toBe(
+      'Iru is no longer here. The nursery and spider outcomes remain.'
+    );
     expect(frame.threefold).toMatchObject({
       spiderFate: 'overpowered',
       bridgeOutcome: 'broken',
     });
     expect(previewThreefoldGrowthEffects(state).creatureIds).not.toContain(
       THREEFOLD_GRAINLANDS_SPIDER_ID
+    );
+  });
+
+  test('living Iru names the cost when growth overpowers the spider', () => {
+    const state = createGrainlandsRun();
+    state.grainlands.spiderFate = 'overpowered';
+
+    expect(renderThreefoldFrame(state).toast).toBe(
+      'Iru fears Mara; growth breaks nursery bridge.'
     );
   });
 
@@ -189,7 +218,7 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     );
     expect(restoredBroken).toEqual(broken);
     expect(renderThreefoldFrame(restoredBroken).toast).toBe(
-      'Iru fears Mara; growth breaks nursery bridge.'
+      'Iru is no longer here. The nursery and spider outcomes remain.'
     );
     expect(restoredBaited).toEqual(baited);
     expect(renderThreefoldFrame(restoredBaited).toast).toBe(

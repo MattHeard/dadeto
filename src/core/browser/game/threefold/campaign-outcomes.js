@@ -1,7 +1,8 @@
+import { normalizeThreefoldReturnTide } from './return-tide.js';
 import { normalizeThreefoldElapsedGameSeconds } from './campaign-clock.js';
 
 const CAMPAIGN_OUTCOMES_GAME_ID = 'threefold-campaign-outcomes';
-const CAMPAIGN_OUTCOMES_SCHEMA_VERSION = 3;
+const CAMPAIGN_OUTCOMES_SCHEMA_VERSION = 4;
 const LEGACY_IRI_FATE_OUTCOMES = Object.freeze(['alive', 'escaped', 'dead']);
 const THREEFOLD_IRI_FATE_OUTCOMES = Object.freeze([
   'trapped',
@@ -14,24 +15,30 @@ const THREEFOLD_IRI_FATE_OUTCOMES = Object.freeze([
 
 /** @typedef {'trapped'|'rescued'|'escaped'|'dead'|'evacuated'|'abandoned'} ThreefoldIriOutcome */
 /** @typedef {{outcome: ThreefoldIriOutcome, milestoneId: string, elapsedGameSeconds: number}} ThreefoldIriFate */
-/** @typedef {{iriFate: ThreefoldIriFate|null, iriKnowledge?: ThreefoldIriFate|null}} ThreefoldCampaignOutcomes */
+/** @typedef {{iriFate: ThreefoldIriFate|null, iriKnowledge?: ThreefoldIriFate|null, returnTide?: import('./return-tide.js').ThreefoldReturnTide}} ThreefoldCampaignOutcomes */
 
 /**
  * Create the campaign record without merging it into any region save.
  * @param {ThreefoldIriFate|null} [iriFate] Last authored Iri outcome milestone.
  * @param {ThreefoldIriFate|null|undefined} [iriKnowledge] Last observed event when the current outcome remains undiscovered.
+ * @param {import('./return-tide.js').ThreefoldReturnTide|undefined} [returnTide] Conserved finale state, absent in legacy records.
  * @returns {ThreefoldCampaignOutcomes} Normalized physical outcome and player knowledge.
  */
 export function createThreefoldCampaignOutcomes(
   iriFate = null,
-  iriKnowledge = undefined
+  iriKnowledge = undefined,
+  returnTide = undefined
 ) {
   const fate = normalizeThreefoldIriFate(iriFate);
-  if (iriKnowledge === undefined) return { iriFate: fate };
+  const tide =
+    returnTide === undefined
+      ? {}
+      : { returnTide: normalizeThreefoldReturnTide(returnTide) };
+  if (iriKnowledge === undefined) return { iriFate: fate, ...tide };
   const knowledge = normalizeThreefoldIriFate(iriKnowledge);
   if (knowledge && (!fate || !isValidIriFateTransition(knowledge, fate)))
     throw new Error('Campaign knowledge conflicts with the current fate.');
-  return { iriFate: fate, iriKnowledge: knowledge };
+  return { iriFate: fate, iriKnowledge: knowledge, ...tide };
 }
 
 /**
@@ -45,11 +52,12 @@ export function createThreefoldCampaignOutcomes(
 export function recordThreefoldIriFate(state, milestone) {
   const current = createThreefoldCampaignOutcomes(
     state?.iriFate,
-    state?.iriKnowledge
+    state?.iriKnowledge,
+    state?.returnTide
   );
   const next = normalizeThreefoldIriFate(milestone);
   if (!next || !isValidIriFateTransition(current.iriFate, next)) return current;
-  return { iriFate: next };
+  return createThreefoldCampaignOutcomes(next, undefined, state.returnTide);
 }
 
 /**
@@ -63,7 +71,8 @@ export function serializeThreefoldCampaignOutcomes(outcomes) {
     schemaVersion: CAMPAIGN_OUTCOMES_SCHEMA_VERSION,
     state: createThreefoldCampaignOutcomes(
       outcomes?.iriFate,
-      outcomes?.iriKnowledge
+      outcomes?.iriKnowledge,
+      outcomes?.returnTide
     ),
   });
 }
@@ -85,7 +94,9 @@ export function restoreThreefoldCampaignOutcomes(serialized) {
     !envelope ||
     typeof envelope !== 'object' ||
     envelope.game !== CAMPAIGN_OUTCOMES_GAME_ID ||
-    ![1, 2, CAMPAIGN_OUTCOMES_SCHEMA_VERSION].includes(envelope.schemaVersion)
+    ![1, 2, 3, CAMPAIGN_OUTCOMES_SCHEMA_VERSION].includes(
+      envelope.schemaVersion
+    )
   )
     return null;
   if (!envelope.state || typeof envelope.state !== 'object') return null;
@@ -107,7 +118,8 @@ export function restoreThreefoldCampaignOutcomes(serialized) {
     }
     return createThreefoldCampaignOutcomes(
       iriFate,
-      envelope.schemaVersion === 3 ? envelope.state.iriKnowledge : undefined
+      envelope.schemaVersion >= 3 ? envelope.state.iriKnowledge : undefined,
+      envelope.schemaVersion === 4 ? envelope.state.returnTide : undefined
     );
   } catch {
     return null;
@@ -173,5 +185,9 @@ export function getKnownThreefoldIriFate(state) {
  * @returns {ThreefoldCampaignOutcomes} Current outcome made visible.
  */
 export function observeThreefoldIriFate(state) {
-  return createThreefoldCampaignOutcomes(state.iriFate);
+  return createThreefoldCampaignOutcomes(
+    state.iriFate,
+    undefined,
+    state.returnTide
+  );
 }

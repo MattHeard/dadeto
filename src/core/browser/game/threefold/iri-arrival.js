@@ -79,7 +79,11 @@ function resolveArrivalMilestone(campaign, runs, milestone) {
   return {
     ...campaign,
     network: { ...campaign.network, ...resolution.machinery },
-    outcomes: outcomes.createThreefoldCampaignOutcomes(recorded.iriFate, known),
+    outcomes: outcomes.createThreefoldCampaignOutcomes(
+      recorded.iriFate,
+      known,
+      campaign.outcomes.returnTide
+    ),
   };
 }
 

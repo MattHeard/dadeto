@@ -1,3 +1,4 @@
+import { isThreefoldResidentAvailable } from './return-tide-world.js';
 import {
   createThreefoldPressureNetwork,
   getThreefoldNurseryWaterDepthMeters,
@@ -471,7 +472,9 @@ function renderThreefoldSiltMarginFrame(state) {
     siltMarginQuietingEvidence: quietingEvidenceHeard
       ? {
           title: 'Neme’s translated Choir trace',
-          text: 'Neme translates the Choir’s surviving pattern: downstream replies stopped after the emergency pressure-regulator bypass. The trace does not identify who sent the final message, what Iri knew, or who was responsible.',
+          text: isThreefoldResidentAvailable(state, 'silt-margin-neme')
+            ? 'Neme translates the Choir’s surviving pattern: downstream replies stopped after the emergency pressure-regulator bypass. The trace does not identify who sent the final message, what Iri knew, or who was responsible.'
+            : 'Neme’s saved translation records that downstream replies stopped after the pressure-regulator bypass. Neme is no longer here; this surviving trace does not resolve the final sender, Iri’s knowledge, or responsibility.',
         }
       : null,
     siltMarginWater: water,
@@ -934,12 +937,7 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
       : bridgeThreatened
         ? '#e16b5a'
         : '#bfd77c';
-  const status =
-    spiderFate === 'baited-away'
-      ? 'Iru welcomes Mara; spider leaves, bridge holds.'
-      : spiderFate === 'overpowered'
-        ? 'Iru fears Mara; growth breaks nursery bridge.'
-        : 'Iru weighs the spider against the nursery crossing.';
+  const status = describeGrainlandsIru(state);
   const playerX = snapCanvasCoordinate(
     8 + (state.player.position.x / 0.8) * 144
   );
@@ -1871,4 +1869,21 @@ function formatScaleStatus(player) {
       ? `${(heightMeters * 100).toFixed(2)} cm`
       : `${heightMeters.toFixed(2)} m`;
   return `SCALE ${formatScale(player.scale)} · ${heightLabel} · A ${player.anchor}/${player.maximumAnchor}`;
+}
+
+/**
+ * Keep old nursery outcomes factual after Iru dies or evacuates.
+ * @param {Parameters<typeof renderThreefoldGrainlandsFrame>[0]} state Canonical nursery scene.
+ * @returns {string} Living response or an explicit absent-speaker account.
+ */
+function describeGrainlandsIru(state) {
+  if (
+    !isThreefoldResidentAvailable(state, grainlands.THREEFOLD_GRAINLANDS_IRU_ID)
+  )
+    return 'Iru is no longer here. The nursery and spider outcomes remain.';
+  if (state.grainlands.spiderFate === 'baited-away')
+    return 'Iru welcomes Mara; spider leaves, bridge holds.';
+  if (state.grainlands.spiderFate === 'overpowered')
+    return 'Iru fears Mara; growth breaks nursery bridge.';
+  return 'Iru weighs the spider against the nursery crossing.';
 }
