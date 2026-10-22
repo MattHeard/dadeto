@@ -542,3 +542,92 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(siltStore.load().scene.id).toBe('silt-margin');
   });
 });
+
+describe('THREEFOLD Silt Margin logical-grid renderer', () => {
+  test.each([-4, -3])(
+    'projects scene identities and derives static sprites from cells at scale %s',
+    scale => {
+      const state = createSiltMarginRun();
+      state.player.scale = scale;
+      const before = structuredClone(state);
+      const frame = renderThreefoldFrame(state);
+      const layout = frame.threefold.logicalGridLayout;
+      const entities = new Map(
+        layout.entities.map(entity => [entity.id, entity])
+      );
+
+      expect(layout.entities.map(entity => entity.id)).toEqual(
+        [...entities.keys()].sort()
+      );
+      expect(entities.get('silt-margin-guardian')).toMatchObject({
+        logicalGridKinds: ['creature', 'interactable'],
+      });
+      expect(entities.get('mara').logicalGridKinds).toEqual(['actor']);
+      expect(entities.get('silt-margin-water').logicalGridKinds).toEqual([
+        'fluid',
+      ]);
+      expect(entities.get('silt-margin-root-arch').cellBounds).toEqual(
+        expect.objectContaining({
+          width: expect.any(Number),
+          height: expect.any(Number),
+        })
+      );
+      for (const id of [
+        'silt-margin-root-arch',
+        'silt-margin-guardian',
+        'silt-margin-fine-valve',
+        'silt-margin-signal-root',
+        'mara',
+      ]) {
+        const entity = entities.get(id);
+        const shape = frame.shapes.find(item => item.geometryId === id);
+        expect(shape).toMatchObject({ logicalCellBounds: entity.cellBounds });
+        expect(shape.x % 8).toBe(0);
+        expect(shape.y % 8).toBe(0);
+        expect(shape.width % 8).toBe(0);
+        expect(shape.height % 8).toBe(0);
+        const cellSize = 1.8288 * 3 ** scale;
+        const pitchX = (144 / 0.32) * cellSize;
+        const pitchY = (72 / 0.18) * cellSize;
+        const expectedScreenY =
+          Math.round(
+            (100 - (entity.cellBounds.y + entity.cellBounds.height) * pitchY) /
+              8
+          ) * 8;
+        expect(shape.x).toBe(
+          Math.round((8 + entity.cellBounds.x * pitchX) / 8) * 8
+        );
+        expect(shape.y).toBe(expectedScreenY);
+      }
+      expect(state).toEqual(before);
+      expect(
+        frame.threefold.siltMarginWater.upstreamSurfaceElevationMeters
+      ).toBe(0.04);
+      expect(
+        frame.shapes.find(
+          item => item.geometryId === undefined && item.fill === '#25a9b8'
+        )
+      ).toMatchObject({ x: 88, y: 72, width: 24, height: 16 });
+    }
+  );
+
+  test('rejects non-identical facets that reuse a stable ID', () => {
+    const state = createSiltMarginRun();
+    state.scene.creatures[0].bounds.min.x += 0.001;
+
+    expect(() => renderThreefoldFrame(state)).toThrow(
+      'Conflicting Silt Margin geometry for silt-margin-guardian.'
+    );
+  });
+
+  test('reports a missing required static render identity', () => {
+    const state = createSiltMarginRun();
+    state.scene.decorations = state.scene.decorations.filter(
+      ({ id }) => id !== 'silt-margin-signal-root'
+    );
+
+    expect(() => renderThreefoldFrame(state)).toThrow(
+      'Silt Margin render entity is missing.'
+    );
+  });
+});

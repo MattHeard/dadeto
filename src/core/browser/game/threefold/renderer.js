@@ -373,6 +373,10 @@ function renderThreefoldSiltMarginFrame(state) {
   const quietingEvidenceHeard = state.siltMargin.quietingEvidenceHeard;
   const growth = previewThreefoldGrowthEffects(state);
   const water = getThreefoldSiltMarginWaterStatus(state.siltMargin.waterPuzzle);
+  const logicalGridLayout = createSiltMarginGridLayout(state, water);
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
+  );
   const rootArchBroken = state.player.destroyedGeometryIds.includes(
     THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID
   );
@@ -409,19 +413,14 @@ function renderThreefoldSiltMarginFrame(state) {
   });
   frame.quest = 'The Silt Margin';
   frame.toast = status;
-  const playerX = snapCanvasCoordinate(
-    8 + (state.player.position.x / 0.32) * 144
-  );
-  const playerY = snapCanvasCoordinate(
-    28 + ((0.18 - state.player.position.y) / 0.18) * 72
-  );
   const guardianShapes =
     guardian === 'present'
       ? [
-          createThreefoldRectShape([56, 64, 16, 16], '#b46b55'),
-          createThreefoldRectShape([64, 56, 16, 8], '#d28b69'),
-          createThreefoldRectShape([56, 56, 8, 8], '#e9d88d'),
-          createThreefoldRectShape([72, 56, 8, 8], '#e9d88d'),
+          createSiltMarginEntityShape(
+            logicalEntities.get(THREEFOLD_SILT_MARGIN_GUARDIAN_ID),
+            state.player.scale,
+            '#b46b55'
+          ),
         ]
       : [];
   const rootColor = signal === 'sent' ? '#25a9b8' : '#bfd77c';
@@ -438,27 +437,39 @@ function renderThreefoldSiltMarginFrame(state) {
     ),
     ...(!rootArchBroken
       ? [
-          createThreefoldRectShape(
-            [64, 48, 8, 24],
+          createSiltMarginEntityShape(
+            logicalEntities.get(THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID),
+            state.player.scale,
             growth.geometryIds.includes(THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID)
               ? '#e16b5a'
               : '#8b7950'
           ),
-          createThreefoldRectShape([72, 48, 8, 8], '#8b7950'),
-          createThreefoldRectShape([80, 48, 8, 24], '#8b7950'),
         ]
       : [
           createThreefoldRectShape([64, 72, 8, 8], '#8b7950'),
           createThreefoldRectShape([80, 72, 8, 8], '#8b7950'),
         ]),
     createThreefoldRectShape([88, waterY, 24, waterHeight], '#25a9b8'),
-    createThreefoldRectShape([72, 88, 8, 8], '#e9d88d'),
-    createThreefoldRectShape([112, 60, 8, 24], '#526e4b'),
-    createThreefoldRectShape([120, 52, 8, 40], rootColor),
-    createThreefoldRectShape([112, 52, 8, 8], rootColor),
-    createThreefoldRectShape([128, 44, 8, 16], rootColor),
+    ...(logicalEntities.has('silt-margin-fine-valve')
+      ? [
+          createSiltMarginEntityShape(
+            logicalEntities.get('silt-margin-fine-valve'),
+            state.player.scale,
+            '#e9d88d'
+          ),
+        ]
+      : []),
+    createSiltMarginEntityShape(
+      logicalEntities.get('silt-margin-signal-root'),
+      state.player.scale,
+      rootColor
+    ),
     ...guardianShapes,
-    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createSiltMarginEntityShape(
+      logicalEntities.get('mara'),
+      state.player.scale,
+      PALETTE[3]
+    ),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
     captionShape(
       { x: 8, y: 126 },
@@ -503,7 +514,124 @@ function renderThreefoldSiltMarginFrame(state) {
     guardianId: THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
     signalId: THREEFOLD_SILT_MARGIN_SIGNAL_ID,
     witnessLedger: [],
+    logicalGridLayout,
   });
+}
+
+/**
+ * Project the Silt Margin's physical scene into one logical identity per object.
+ * The guardian is authored as both an interactable and a creature; those roles
+ * are retained together only when their physical bounds match exactly.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'silt-margin'}}>} state Current branch simulation.
+ * @param {ReturnType<typeof getThreefoldSiltMarginWaterStatus>} water Hydraulic water state.
+ * @returns {ReturnType<typeof layoutScene> & {entities: Array<ReturnType<typeof layoutScene>['entities'][number] & {logicalGridKinds: string[]}>}} Deterministic projected scene layout.
+ */
+function createSiltMarginGridLayout(state, water) {
+  const { scene, player } = state;
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  const facets = [
+    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+    ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
+    ...scene.creatures.map(entity => ({ ...entity, kind: 'creature' })),
+    {
+      id: 'mara',
+      kind: 'actor',
+      bounds: {
+        min: {
+          x: player.position.x - halfBodyWidth,
+          y: player.position.y - halfBodyWidth,
+          z: 0,
+        },
+        max: {
+          x: player.position.x + halfBodyWidth,
+          y: player.position.y + halfBodyWidth,
+          z: heightAtScale(player.scale),
+        },
+      },
+    },
+    {
+      id: 'silt-margin-water',
+      kind: 'fluid',
+      bounds: {
+        min: { x: 0.1778, y: 0, z: 0 },
+        max: {
+          x: 0.2311,
+          y: Math.max(Number.EPSILON, water.upstreamSurfaceElevationMeters),
+          z: Math.max(Number.EPSILON, water.upstreamSurfaceElevationMeters),
+        },
+      },
+    },
+  ];
+  const byId = new Map();
+  for (const facet of facets) {
+    const existing = byId.get(facet.id);
+    if (!existing) {
+      byId.set(facet.id, { ...facet, kinds: [facet.kind] });
+      continue;
+    }
+    if (!sameSiltMarginBounds(existing.bounds, facet.bounds))
+      throw new RangeError(`Conflicting Silt Margin geometry for ${facet.id}.`);
+    existing.kinds.push(facet.kind);
+  }
+  const layout = layoutScene(
+    [...byId.values()].map(({ id, bounds }) => ({ id, bounds })),
+    player.scale
+  );
+  return {
+    ...layout,
+    entities: layout.entities.map(entity => ({
+      ...entity,
+      logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
+    })),
+  };
+}
+
+/**
+ * Compare the planar physical bounds used by duplicate scene facets.
+ * @param {{min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}} first First facet bounds.
+ * @param {{min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}} second Second facet bounds.
+ * @returns {boolean} Whether both facets describe identical physical geometry.
+ */
+function sameSiltMarginBounds(first, second) {
+  return (
+    first.min.x === second.min.x &&
+    first.min.y === second.min.y &&
+    first.min.z === second.min.z &&
+    first.max.x === second.max.x &&
+    first.max.y === second.max.y &&
+    first.max.z === second.max.z
+  );
+}
+
+/**
+ * Create a static Silt Margin sprite whose screen rectangle comes from its logical cells.
+ * @param {ReturnType<typeof layoutScene>['entities'][number] | undefined} entity Projected entity.
+ * @param {number} scale Current scale.
+ * @param {string} fill Sprite color.
+ * @returns {ThreefoldSpriteShape} Grid-derived sprite shape.
+ */
+function createSiltMarginEntityShape(entity, scale, fill) {
+  if (!entity) throw new RangeError('Silt Margin render entity is missing.');
+  const cellSize = heightAtScale(scale);
+  const bounds = entity.cellBounds;
+  const pitchX = (144 / 0.32) * cellSize;
+  const pitchY = (72 / 0.18) * cellSize;
+  const x = snapCanvasCoordinate(8 + bounds.x * pitchX);
+  const y = snapCanvasCoordinate(100 - (bounds.y + bounds.height) * pitchY);
+  const width = Math.max(
+    GRID_PIXELS,
+    snapCanvasDimension(bounds.width * pitchX)
+  );
+  const height = Math.max(
+    GRID_PIXELS,
+    snapCanvasDimension(bounds.height * pitchY)
+  );
+  return {
+    ...createThreefoldRectShape([x, y, width, height], fill),
+    geometryId: entity.id,
+    logicalCellBounds: bounds,
+  };
 }
 
 /**
