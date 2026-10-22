@@ -486,6 +486,62 @@ describe('THREEFOLD resolved scene layout', () => {
     expect(JSON.stringify(cratePile)).toBe(before);
   });
 
+  test('reports every conflict in a crowded two-by-two grid after coarsening', () => {
+    const crowdedObjects = Array.from({ length: 4 }, (_, index) =>
+      cell(
+        `crowded-${index + 1}`,
+        (index % 2) / 3,
+        Math.floor(index / 2) / 3,
+        1 / 3,
+        1 / 3
+      )
+    );
+    const before = JSON.stringify(crowdedObjects);
+    const fine = layoutScene(crowdedObjects, -1);
+    const coarse = layoutScene(crowdedObjects, 0);
+
+    expect(fine.entities.map(({ cellBounds }) => cellBounds)).toEqual(
+      Array.from({ length: 4 }, (_, index) => ({
+        x: index % 2,
+        y: Math.floor(index / 2),
+        width: 1,
+        height: 1,
+      }))
+    );
+    expect(fine.conflicts).toEqual([]);
+    expect(fine.entities.map(({ placement }) => placement)).toEqual([
+      'placed',
+      'placed',
+      'placed',
+      'placed',
+    ]);
+
+    expect(coarse.entities.map(({ cellBounds }) => cellBounds)).toEqual(
+      Array.from({ length: 4 }, () => ({
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      }))
+    );
+    expect(coarse.conflicts.map(({ entityIds }) => entityIds)).toEqual([
+      ['crowded-1', 'crowded-2'],
+      ['crowded-1', 'crowded-3'],
+      ['crowded-1', 'crowded-4'],
+      ['crowded-2', 'crowded-3'],
+      ['crowded-2', 'crowded-4'],
+      ['crowded-3', 'crowded-4'],
+    ]);
+    expect(coarse.entities.map(({ placement }) => placement)).toEqual([
+      'unresolved',
+      'unresolved',
+      'unresolved',
+      'unresolved',
+    ]);
+    expect(layoutScene([...crowdedObjects].reverse(), 0)).toEqual(coarse);
+    expect(JSON.stringify(crowdedObjects)).toBe(before);
+  });
+
   test('preserves packing conflicts and finite viewport overflow', () => {
     const result = resolveSceneLayout(
       [
