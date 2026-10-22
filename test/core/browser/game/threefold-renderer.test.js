@@ -2,6 +2,7 @@ import { createBrokenGateScene } from '../../../../src/core/browser/game/threefo
 import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
 import { createThreefoldCrownbackReachScene } from '../../../../src/core/browser/game/threefold/crownback-reach.js';
 import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
+import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/game/threefold/hearthgaps.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { createThreefoldWakeformShoalsScene } from '../../../../src/core/browser/game/threefold/wakeform-shoals.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
@@ -38,6 +39,147 @@ function createWithdrawnSimulation(episode = {}) {
   return stepThreefoldSimulation(
     { ...initial, episode: { ...initial.episode, ...episode } },
     { type: 'interact' }
+  );
+}
+
+/**
+ *
+ * @param scene
+ */
+/**
+ * List authored Hearthgaps identities, including the player.
+ * @param {ReturnType<typeof createThreefoldHearthgapsScene>} scene Authored scene.
+ * @returns {string[]} Stable entity identities.
+ */
+function getHearthgapsSourceIds(scene) {
+  return [
+    ...scene.geometry,
+    ...scene.decorations,
+    ...scene.interactables,
+    ...scene.creatures,
+    { id: 'mara' },
+  ].map(({ id }) => id);
+}
+
+/**
+ *
+ * @param frame
+ * @param sourceIds
+ */
+/**
+ * Verify each sprite stays within its projected logical-cell rectangle.
+ * @param {ReturnType<typeof renderThreefoldFrame>} frame Rendered frame.
+ * @param {string[]} sourceIds Authored entity identities.
+ * @returns {void} Throws through Jest assertions when a bound is wrong.
+ */
+function expectHearthgapsCellContainment(frame, sourceIds) {
+  const layout = frame.threefold.logicalGridLayout;
+  const entities = new Map(layout.entities.map(entity => [entity.id, entity]));
+  const pitch = Math.max(
+    8,
+    Math.floor(
+      Math.min(144 / layout.viewport.width, 72 / layout.viewport.height) / 8
+    ) * 8
+  );
+  const originX = 8 + (144 - pitch * layout.viewport.width) / 2;
+  const originY = 28 + (72 - pitch * layout.viewport.height) / 2;
+  const screenBounds = ({ cellBounds }) => ({
+    x: originX + (cellBounds.x - layout.viewport.x) * pitch,
+    y:
+      originY +
+      (layout.viewport.height -
+        (cellBounds.y - layout.viewport.y) -
+        cellBounds.height) *
+        pitch,
+    width: pitch * cellBounds.width,
+    height: pitch * cellBounds.height,
+  });
+  const sourceShapes = frame.shapes.filter(shape =>
+    sourceIds.includes(shape.geometryId)
+  );
+
+  for (const shape of sourceShapes) {
+    const bounds = screenBounds(entities.get(shape.geometryId));
+    expect(shape.logicalCellBounds).toEqual(
+      entities.get(shape.geometryId).cellBounds
+    );
+    expect(shape.x % 8).toBe(0);
+    expect(shape.y % 8).toBe(0);
+    expect(shape.x).toBeGreaterThanOrEqual(bounds.x);
+    expect(shape.y).toBeGreaterThanOrEqual(bounds.y);
+    expect(shape.x + shape.width).toBeLessThanOrEqual(bounds.x + bounds.width);
+    expect(shape.y + shape.height).toBeLessThanOrEqual(
+      bounds.y + bounds.height
+    );
+  }
+
+  const culvert = frame.shapes.find(
+    shape => shape.geometryId === 'hearthgaps-culvert'
+  );
+  for (const water of frame.shapes.filter(
+    shape => shape.fill === '#25a9b8' && !shape.geometryId
+  )) {
+    expect(water.x).toBeGreaterThanOrEqual(culvert.x);
+    expect(water.y).toBeGreaterThanOrEqual(culvert.y);
+    expect(water.x + water.width).toBeLessThanOrEqual(
+      culvert.x + culvert.width
+    );
+    expect(water.y + water.height).toBeLessThanOrEqual(
+      culvert.y + culvert.height
+    );
+  }
+}
+
+/**
+ *
+ */
+/**
+ * Build a Hearthgaps state whose authored entities exceed its finite viewport.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Overflow fixture.
+ */
+function createOverflowedHearthgapsState() {
+  const state = createThreefoldSimulation(
+    THRESHOLDS,
+    createThreefoldHearthgapsScene()
+  );
+  const moveOutOfRegion = entity => {
+    entity.bounds.min.x = 20;
+    entity.bounds.max.x = 21;
+  };
+  state.scene.geometry.forEach(moveOutOfRegion);
+  state.scene.decorations.forEach(moveOutOfRegion);
+  state.scene.interactables.forEach(moveOutOfRegion);
+  state.scene.creatures.forEach(moveOutOfRegion);
+  state.player.position.x = 20;
+  return state;
+}
+
+/**
+ *
+ * @param frame
+ * @param scene
+ */
+/**
+ * Verify overflow identities are diagnosed and omitted from rendering.
+ * @param {ReturnType<typeof renderThreefoldFrame>} frame Rendered frame.
+ * @param {ReturnType<typeof createThreefoldSimulation>['scene']} scene Scene fixture.
+ * @returns {void} Throws through Jest assertions when overflow handling fails.
+ */
+function expectHearthgapsOverflow(frame, scene) {
+  const ids = [
+    'hearthgaps-culvert',
+    ...scene.geometry.map(({ id }) => id),
+    ...scene.interactables.map(({ id }) => id),
+    ...scene.creatures.map(({ id }) => id),
+    'mara',
+  ];
+  const overflow = frame.threefold.logicalGridLayout.overflow;
+  expect(overflow.map(({ entityId }) => entityId)).toEqual(
+    expect.arrayContaining(ids)
+  );
+  const overflowIds = new Set(overflow.map(({ entityId }) => entityId));
+  expect(frame.shapes.some(shape => overflowIds.has(shape.geometryId))).toBe(
+    false
   );
 }
 
@@ -325,7 +467,65 @@ describe('THREEFOLD canvas grid', () => {
       expect(frame.threefold.logicalGridLayout.overflow).toEqual([]);
     }
   });
+});
 
+describe('THREEFOLD Hearthgaps logical grid', () => {
+  test('renders homes, controls and Mara from finite logical cells', () => {
+    const base = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldHearthgapsScene()
+    );
+    const sceneBefore = JSON.stringify(base.scene);
+    const sourceIds = getHearthgapsSourceIds(base.scene);
+
+    for (const scale of [-2, -1]) {
+      const state = { ...base, player: { ...base.player, scale } };
+      const frame = renderThreefoldFrame(state);
+      const { logicalGridLayout: layout } = frame.threefold;
+      expect(layout.scale).toBe(scale);
+      expect(layout.overflow).toEqual([]);
+      expect(layout.entities.map(({ id }) => id).sort()).toEqual(
+        [...sourceIds].sort()
+      );
+      expect(frame.shapes.map(({ geometryId }) => geometryId)).toEqual(
+        expect.arrayContaining(sourceIds)
+      );
+      expectHearthgapsCellContainment(frame, sourceIds);
+      for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
+        expect(shape.width % 8).toBe(0);
+        expect(shape.height % 8).toBe(0);
+      }
+      expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
+        layout
+      );
+    }
+
+    const diverted = {
+      ...base,
+      hearthgaps: {
+        runoffChoice: 'brin-diversion',
+        floodedHomeIds: ['hearthgaps-downstream-homes'],
+      },
+    };
+    const divertedFrame = renderThreefoldFrame(diverted);
+    expect(divertedFrame.threefold.runoffChoice).toBe('brin-diversion');
+    expect(divertedFrame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: 'hearthgaps-downstream-homes',
+        fill: '#25a9b8',
+      })
+    );
+
+    const outside = createOverflowedHearthgapsState();
+    const outsideBefore = JSON.stringify(outside.scene);
+    const outsideFrame = renderThreefoldFrame(outside);
+    expectHearthgapsOverflow(outsideFrame, outside.scene);
+    expect(JSON.stringify(outside.scene)).toBe(outsideBefore);
+    expect(JSON.stringify(base.scene)).toBe(sceneBefore);
+  });
+});
+
+describe('THREEFOLD canvas grid', () => {
   test('reports an authored object beyond the map viewport without moving it', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
     const scene = {
