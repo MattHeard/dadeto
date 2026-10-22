@@ -1,0 +1,7 @@
+# Atlas structural connection and circuit snapshot identities
+
+- Unexpected hurdle: circuit snapshots need a content digest, while the existing SHA-256 implementations are in Node-only build and cloud modules and should not be imported into the portable interpretability core.
+- Diagnosis: the repo has no shared browser-safe digest adapter for interpretability. A local cryptographic implementation would create a new portability and correctness risk.
+- Fix: keep snapshot canonicalization in core and inject a SHA-256 hex digest function. Connection records now carry a checkpoint-specific ID and a separate checkpoint-independent coordinate ID; circuit snapshots sort member and boundary IDs, include pinned checkpoint plus completeness, and keep the persistent circuit ID separate from the content hash.
+- Verification: `npm run check:impact:run -- --files src/core/interpretability/index.js test/core/interpretability/identityV2.test.js test/core/interpretability/testZodContract.test.js` passed 4 suites / 41 tests, changed-core coverage has no uncovered lines or branches, lint and core parsing passed, and duplication found 0 clones. `npm run check` passed all 10 fast local gates. The exact-head CI run for the preceding commit is still in progress; this follow-up is not pushed yet.
+- Next-time guidance: provide the digest callback from the consuming adapter and validate that connection endpoints belong to the record's model/checkpoint before accepting graph submissions. Do not conflate neural connections with evidence graph edges.

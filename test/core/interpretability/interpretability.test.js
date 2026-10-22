@@ -191,11 +191,108 @@ describe('versioned interpretability schemas', () => {
           artifactSha256: 'c'.repeat(64),
         },
       ],
+      causalInterventionResult: {
+        schemaVersion: 1,
+        status: 'not-tested',
+        reason: 'Synthetic schema fixture did not perform an intervention.',
+      },
       authorId: 'investigator-1',
       createdAt: '2026-10-16T10:00:00Z',
     });
 
     expect(experiment.observations[0].kind).toBe('negative');
+    expect(experiment.causalInterventionResult.status).toBe('not-tested');
+  });
+
+  it('validates typed causal intervention scores and experiment mechanism links', () => {
+    const experiment = {
+      schemaVersion: 1,
+      id: 'experiment-causal',
+      status: 'completed',
+      model,
+      mechanismIds: ['mechanism-causal'],
+      hypothesisIds: [],
+      procedure: {
+        repository: 'https://github.com/example/experiment',
+        revision: 'b'.repeat(40),
+        path: 'experiments/run.py',
+      },
+      seed: 42,
+      inputSplitId: 'investigator-selected-inputs-v1',
+      runtime: { python: '3.12' },
+      predictions: [{ target: 'classification', expected: 'positive' }],
+      observations: [],
+      authorId: 'investigator-1',
+      createdAt: '2026-10-16T10:00:00Z',
+    };
+    const testedResult = {
+      schemaVersion: 1,
+      status: 'tested',
+      targetMechanismId: 'mechanism-causal',
+      operation: 'set-activation-zero',
+      timeStepIndex: 4,
+      inputSequenceSha256: 'a'.repeat(64),
+      predictedOutputIndex: 7,
+      baselineOutputIndex: 2,
+      intervenedOutputIndex: 7,
+      causalScore: 1,
+      artifactSha256: 'c'.repeat(64),
+    };
+
+    expect(
+      experimentSchemaV1.safeParse({
+        ...experiment,
+        causalInterventionResult: testedResult,
+      }).success
+    ).toBe(true);
+    expect(
+      experimentSchemaV1.safeParse({
+        ...experiment,
+        causalInterventionResult: {
+          ...testedResult,
+          intervenedOutputIndex: 8,
+          causalScore: 0,
+        },
+      }).success
+    ).toBe(true);
+    expect(
+      experimentSchemaV1.safeParse({
+        ...experiment,
+        causalInterventionResult: {
+          ...testedResult,
+          causalScore: 0,
+        },
+      }).success
+    ).toBe(false);
+    expect(
+      experimentSchemaV1.safeParse({
+        ...experiment,
+        causalInterventionResult: {
+          ...testedResult,
+          timeStepIndex: 10,
+        },
+      }).success
+    ).toBe(false);
+    expect(
+      experimentSchemaV1.safeParse({
+        ...experiment,
+        causalInterventionResult: {
+          ...testedResult,
+          targetMechanismId: 'unlinked-mechanism',
+        },
+      }).success
+    ).toBe(false);
+    expect(
+      experimentSchemaV1.safeParse({
+        ...experiment,
+        causalInterventionResult: {
+          ...testedResult,
+          unexpected: true,
+        },
+      }).success
+    ).toBe(false);
+    // The new field remains optional for records created before this protocol update.
+    expect(experimentSchemaV1.safeParse(experiment).success).toBe(true);
   });
 
   it('accepts whole-model estimates and rejects inverted uncertainty bounds', () => {
@@ -290,6 +387,8 @@ describe('versioned interpretability schemas', () => {
 
   it('exports machine-readable schemas for all artifact types', () => {
     expect(Object.keys(interpretabilityJsonSchemasV1).sort()).toEqual([
+      'accuracyEvaluation',
+      'causalInterventionResult',
       'evidence',
       'evidenceEdge',
       'experiment',

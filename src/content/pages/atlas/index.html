@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Atlas research bundle viewer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="atlas-shell">
+      <header>
+        <p class="eyebrow">Interpretability research</p>
+        <h1>Atlas bundle viewer</h1>
+        <p>
+          Inspect a portable V2, V3, or V4 research bundle. The selected file is
+          read and validated in this browser; its contents are not sent or saved.
+        </p>
+      </header>
+
+      <section class="atlas-controls" aria-labelledby="bundle-heading">
+        <h2 id="bundle-heading">Choose a bundle</h2>
+        <label for="atlas-bundle-file">Portable JSON file</label>
+        <input
+          id="atlas-bundle-file"
+          type="file"
+          accept="application/json,.json"
+        />
+        <label for="atlas-mechanism">Mechanism</label>
+        <select id="atlas-mechanism" disabled>
+          <option value="">Choose a bundle first</option>
+        </select>
+        <p id="atlas-status" role="status" aria-live="polite">
+          Choose a local bundle to begin.
+        </p>
+      </section>
+
+      <section class="atlas-context" aria-labelledby="context-heading">
+        <div class="atlas-context-heading">
+          <h2 id="context-heading">Bounded context</h2>
+          <nav aria-label="Context pages">
+            <button id="atlas-previous" type="button" disabled>Previous</button>
+            <span id="atlas-page-status" aria-live="polite"></span>
+            <button id="atlas-next" type="button" disabled>Next</button>
+          </nav>
+        </div>
+
+        <section aria-labelledby="hypotheses-heading">
+          <h3 id="hypotheses-heading">Hypotheses</h3>
+          <div id="atlas-hypotheses" class="atlas-records"></div>
+        </section>
+        <section aria-labelledby="evidence-heading">
+          <h3 id="evidence-heading">Evidence</h3>
+          <div id="atlas-evidence" class="atlas-records"></div>
+        </section>
+        <section aria-labelledby="experiments-heading">
+          <h3 id="experiments-heading">Experiments</h3>
+          <div id="atlas-experiments" class="atlas-records"></div>
+        </section>
+        <section aria-labelledby="relationships-heading">
+          <h3 id="relationships-heading">Relationships</h3>
+          <div id="atlas-relationships" class="atlas-records"></div>
+        </section>
+        <section aria-labelledby="warnings-heading">
+          <h3 id="warnings-heading">Context warnings</h3>
+          <div id="atlas-warnings"></div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/browser/atlas.js"></script>
+  </body>
+</html>

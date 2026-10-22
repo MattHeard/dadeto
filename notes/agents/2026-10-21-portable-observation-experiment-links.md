@@ -1,0 +1,7 @@
+# Portable activation observation experiment references
+
+- Unexpected hurdle: the first changed-core coverage run flagged a branch on an optional fallback even though portable evidence imports always construct the experiments collection; removing it then exposed JSDoc typing and lint requirements.
+- Diagnosis: the imported graph type was broader than the guaranteed runtime shape, and the callback needed a combined typed JSDoc block to satisfy TypeScript and ESLint.
+- Fix: validate observation experiment IDs against the imported evidence graph in portable export and import, narrow the importer result type to its guaranteed experiments collection, and reject unresolved references with stable structured errors. Added V2/V3/V4 round-trip regression coverage, including empty observation graphs.
+- Next-time guidance: use `npm run check:impact:run -- --files ...` rather than invoking Jest directly in this ESM project; its selected tests and changed-core line/branch report are the relevant local evaluator. Keep standalone identity-graph imports independent of evidence-graph references.
+- Evidence: the changed-core evaluator passed 12 suites / 110 tests, ESLint, core-parse, duplication (0 clones), and full changed-core line/branch coverage. `npm run tsdoc:check` passed. `npm run check` passed all 10 local gates, with 12 related suites / 110 tests in the impact stage. Exact-head CI is pending for the next pushed commit.

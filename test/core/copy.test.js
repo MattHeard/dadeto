@@ -33,6 +33,11 @@ const createDirectories = () => {
     publicCoreDir: posix.join(publicDir, 'core'),
     srcCoreBrowserDir: posix.join(srcDir, 'core/browser'),
     publicCoreBrowserDir: posix.join(publicDir, 'core/browser'),
+    srcCoreInterpretabilityDir: posix.join(srcDir, 'core/interpretability'),
+    publicCoreInterpretabilityDir: posix.join(
+      publicDir,
+      'core/interpretability'
+    ),
     srcCoreCapabilitiesDir: posix.join(srcDir, 'core/capabilities'),
     publicCoreCapabilitiesDir: posix.join(publicDir, 'core/capabilities'),
     srcCoreObjectMinuteRentalSearchDir: posix.join(
@@ -43,6 +48,8 @@ const createDirectories = () => {
       publicDir,
       'core/object-minute-rental-search'
     ),
+    srcNodeModulesZodV4Dir: posix.join(projectRoot, 'node_modules/zod/v4'),
+    publicVendorZodV4Dir: posix.join(publicDir, 'vendor/zod/v4'),
   };
 };
 
@@ -93,6 +100,14 @@ describe('createSharedDirectoryEntries', () => {
     expect(entries).toContainEqual([
       'publicCoreBrowserDir',
       posix.join(publicDir, 'core/browser'),
+    ]);
+    expect(entries).toContainEqual([
+      'srcCoreInterpretabilityDir',
+      posix.join(srcDir, 'core/interpretability'),
+    ]);
+    expect(entries).toContainEqual([
+      'publicCoreInterpretabilityDir',
+      posix.join(publicDir, 'core/interpretability'),
     ]);
     expect(entries).toContainEqual([
       'srcCoreCapabilitiesDir',
@@ -222,11 +237,15 @@ describe('copy directory map helpers', () => {
       publicBrowserDir: directories.publicBrowserDir,
       srcCoreBrowserDir: directories.srcCoreBrowserDir,
       publicCoreBrowserDir: directories.publicCoreBrowserDir,
+      srcCoreInterpretabilityDir: directories.srcCoreInterpretabilityDir,
+      publicCoreInterpretabilityDir: directories.publicCoreInterpretabilityDir,
       srcCoreDir: directories.srcCoreDir,
       publicCoreDir: directories.publicCoreDir,
       srcBrowserAssetsDir: directories.srcBrowserAssetsDir,
       srcContentBlogMediaDir: directories.srcContentBlogMediaDir,
       srcContentPagesDir: directories.srcContentPagesDir,
+      srcNodeModulesZodV4Dir: directories.srcNodeModulesZodV4Dir,
+      publicVendorZodV4Dir: directories.publicVendorZodV4Dir,
     });
   });
 });
@@ -599,9 +618,19 @@ describe('createCopyCore directory traversal', () => {
         createDirectory: jest.fn(),
         removeDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest.fn(target =>
-          target === directories.srcCoreDir ? [createFileEntry('root.js')] : []
-        ),
+        readDirEntries: jest.fn(target => {
+          if (target === directories.srcCoreDir)
+            return [createFileEntry('root.js')];
+          if (target === directories.srcCoreInterpretabilityDir)
+            return [createFileEntry('interpretability.js')];
+          if (target === directories.srcNodeModulesZodV4Dir)
+            return [createDirectoryEntry('classic')];
+          if (
+            target === posix.join(directories.srcNodeModulesZodV4Dir, 'classic')
+          )
+            return [createFileEntry('index.js')];
+          return [];
+        }),
       };
       const consoleLike = { log: jest.fn(), warn: jest.fn() };
       const createFsAdapters = jest.fn(() => io);
@@ -631,7 +660,13 @@ describe('createCopyCore directory traversal', () => {
         'Core browser files copied successfully!'
       );
       expect(consoleLike.log).toHaveBeenCalledWith(
+        'Core interpretability files copied successfully!'
+      );
+      expect(consoleLike.log).toHaveBeenCalledWith(
         'Core capabilities copied successfully!'
+      );
+      expect(consoleLike.log).toHaveBeenCalledWith(
+        'Pinned Zod v4 runtime copied successfully!'
       );
       expect(consoleLike.log).toHaveBeenCalledWith(
         'Core root scripts copied successfully!'
@@ -640,6 +675,20 @@ describe('createCopyCore directory traversal', () => {
       expect(io.copyFile).toHaveBeenCalledWith(
         posix.join(directories.srcCoreDir, 'root.js'),
         posix.join(directories.publicCoreDir, 'root.js')
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(
+          directories.srcCoreInterpretabilityDir,
+          'interpretability.js'
+        ),
+        posix.join(
+          directories.publicCoreInterpretabilityDir,
+          'interpretability.js'
+        )
+      );
+      expect(io.copyFile).toHaveBeenCalledWith(
+        posix.join(directories.srcNodeModulesZodV4Dir, 'classic/index.js'),
+        posix.join(directories.publicVendorZodV4Dir, 'classic/index.js')
       );
       expect(core.copyPlannedDirectoryTrees).toEqual(expect.any(Function));
     });
@@ -798,10 +847,16 @@ describe('createCopyCore copy workflows', () => {
         ['Warning: browser directory not found at src/browser'],
         ['Warning: core/browser directory not found at src/core/browser'],
         [
+          'Warning: core/interpretability directory not found at src/core/interpretability',
+        ],
+        [
           'Warning: core/capabilities directory not found at src/core/capabilities',
         ],
         [
           'Warning: core/object-minute-rental-search directory not found at src/core/object-minute-rental-search',
+        ],
+        [
+          'Warning: node_modules/zod/v4 directory not found at node_modules/zod/v4',
         ],
         ['Warning: browser/assets directory not found at src/browser/assets'],
         [

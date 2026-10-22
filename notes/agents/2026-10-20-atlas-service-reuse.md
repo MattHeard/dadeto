@@ -1,0 +1,7 @@
+# Atlas two-session service reuse — 2026-10-20
+
+- **Unexpected hurdle:** The first focused test attempt called Jest directly and failed before loading tests because `import.meta` was parsed outside the repository's ESM test harness.
+- **Diagnosis:** These test files rely on the project `test:impact` wrapper to invoke Jest with its configured VM module support. The failure happened before any assertions ran.
+- **Chosen fix:** Use `npm run test:impact -- --files ...` for the service and evidence-reuse suites. The new test shares one in-memory bundle adapter across two independently created service objects and uses distinct allow-effects tokens. Investigator A submits evidence; investigator B retrieves its summary, derives a distinct deterministic prediction, and submits an experiment with an explicit `depends-on` edge. Portable reimport verifies A's evidence is unchanged.
+- **Evidence:** Focused `test:impact` passed 2 suites / 9 tests. `npm run check` passed all 10 fast local gates with 0 failures. No live inference, remote storage, API request, or deployment was used.
+- **Next-time guidance / open question:** Keep service sessions separate while sharing only the storage adapter; assert that the follow-up record actually incorporates retrieved evidence, and compare the first investigator's serialized evidence before and after persistence. This software fixture does not claim two real human investigators or validate scientific truth.

@@ -1,0 +1,7 @@
+# Atlas viewer coverage repair
+
+- **Unexpected hurdle:** The first exact-head Full Check for the static Atlas viewer failed the repository-wide 100% branch threshold. The local viewer tests passed, but the new controller and schema adapter still had 36 unvisited branch arms.
+- **Diagnosis:** The Full Check coverage artifact identified all uncovered arms in `bundleViewer.js`, `page.js`, and `schemaAdapter.js`. A changed-core coverage run then isolated these modules and confirmed which error, stale-request, empty-context, and schema-validation paths needed characterization.
+- **Fix:** Added injected-viewer and local-file edge-case tests, covered the schema resolver's invalid envelope/hash paths, and grouped pagination options to keep the controller within the effective-arity limit.
+- **Evidence:** `npm run check:impact:run -- --files src/core/browser/atlas/bundleViewer.js src/core/browser/atlas/page.js src/core/browser/atlas/schemaAdapter.js test/core/browser/atlas/bundleViewer.test.js` passed with no uncovered lines or branches in the three core modules; the focused Atlas test passed 1 suite / 11 tests; `npm run check` passed all 10 gates; `npm run build` passed. The repository-wide `check:full` result for the repair commit is still pending and remains the authoritative coverage gate.
+- **Next time:** Use the full-coverage artifact to identify exact missing branches, then run the changed-core coverage evaluator before the aggregate local check. Do not close the coverage Bead until the exact-head Full Check passes.

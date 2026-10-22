@@ -1,6 +1,14 @@
+export {
+  evaluateAlgZooRestrictedRule,
+  scoreAlgZooBlindedSubmissions,
+} from '../algZooPredictionScorer/index.js';
+
 const TARGET_COUNT = 16;
 const HELD_OUT_SEQUENCE_COUNT = 1024;
 const SEQUENCE_LENGTH = 10;
+const WHOLE_MODEL_VARIANT_COUNT = 32;
+const WHOLE_MODEL_SAMPLE_COUNT = 100000;
+const WHOLE_MODEL_NOISE_SCALES = Object.freeze([0.01, 0.05, 0.1, 0.2]);
 const PILOT_BUDGET = Object.freeze({
   investigatorTokens: 20000,
   elapsedMillis: 30 * 60 * 1000,
@@ -67,7 +75,7 @@ export function createAlgZooPilotSchedule(seed) {
       },
     };
   });
-  return { valid: true, protocolVersion: '1.0.0', targetOrder, pairs };
+  return { valid: true, protocolVersion: '1.0.3', targetOrder, pairs };
 }
 
 /**
@@ -315,6 +323,7 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
     restrictedRule: submission.restrictedRule,
     predictions: submission.predictions,
     causalEvidence: submission.causalEvidence,
+    causalInterventionResult: submission.causalInterventionResult,
     evidence: submission.evidence,
   };
 }
@@ -375,6 +384,18 @@ export function createAlgZooPilotRunner(adapters) {
 }
 
 /**
+ * Create the stable error returned for an invalid or unmatched variant.
+ * @param {number} index Invalid variant position.
+ * @returns {{valid: false, errors: Array<{code: string, index: number}>}} Validation error.
+ */
+function invalidAccuracyVariant(index) {
+  return {
+    valid: false,
+    errors: [{ code: 'invalid-or-unmatched-accuracy-variant', index }],
+  };
+}
+
+/**
  * Compare mechanistic accuracy estimates with a matched-compute sampling baseline.
  * @param {Array<Record<string, any>>} variants Held-out reference and paired estimates.
  * @returns {{valid: true, variantCount: number, mechanisticMse: number, samplingMse: number}|{valid: false, errors: Array<{code: string, index?: number}>}} MSE comparison or stable validation errors.
@@ -394,14 +415,7 @@ export function compareAlgZooWholeModelAccuracy(variants) {
         variant.mechanisticCompute === variant.samplingCompute
       )
   );
-  if (invalidIndex >= 0) {
-    return {
-      valid: false,
-      errors: [
-        { code: 'invalid-or-unmatched-accuracy-variant', index: invalidIndex },
-      ],
-    };
-  }
+  if (invalidIndex >= 0) return invalidAccuracyVariant(invalidIndex);
   const mechanisticSquaredError = variants.map(variant =>
     square(variant.mechanisticEstimate - variant.referenceAccuracy)
   );
@@ -413,6 +427,152 @@ export function compareAlgZooWholeModelAccuracy(variants) {
     variantCount: variants.length,
     mechanisticMse: mean(mechanisticSquaredError),
     samplingMse: mean(samplingSquaredError),
+  };
+}
+
+/**
+ * Validate preregistered held-out measurements and produce a versioned MSE report.
+ * @param {{heldOutSplitId: string, sampleCountPerVariant: number, samplingBaseline: {method: {repository: string, revision: string, path: string}, seedCommitment: string}, variants: Array<{variantId: string, heldOutSplitId: string, noiseScale: number, referenceAccuracy: number, mechanisticEstimate: number, samplingEstimate: number, mechanisticCompute: number, samplingCompute: number}>}} evaluation Whole-model variant measurements and provenance.
+ * @returns {{valid: true, report: Record<string, any>}|{valid: false, errors: Array<Record<string, string|number>>}} Stable comparison report or validation errors.
+ */
+export function evaluateAlgZooWholeModelAccuracyV1(evaluation) {
+  if (
+    !evaluation ||
+    typeof evaluation !== 'object' ||
+    Array.isArray(evaluation)
+  ) {
+    return { valid: false, errors: [{ code: 'invalid-accuracy-evaluation' }] };
+  }
+  if (evaluation.sampleCountPerVariant !== WHOLE_MODEL_SAMPLE_COUNT) {
+    return {
+      valid: false,
+      errors: [{ code: 'invalid-held-out-sample-count' }],
+    };
+  }
+  if (
+    typeof evaluation.heldOutSplitId !== 'string' ||
+    evaluation.heldOutSplitId.trim() === '' ||
+    !Array.isArray(evaluation.variants) ||
+    evaluation.variants.length !== WHOLE_MODEL_VARIANT_COUNT
+  ) {
+    return {
+      valid: false,
+      errors: [{ code: 'invalid-accuracy-variant-count' }],
+    };
+  }
+  const baseline = evaluation.samplingBaseline;
+  if (
+    !baseline ||
+    typeof baseline !== 'object' ||
+    typeof baseline.method?.repository !== 'string' ||
+    !baseline.method.repository.startsWith('https://') ||
+    !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i.test(baseline.method.revision ?? '') ||
+    typeof baseline.method.path !== 'string' ||
+    baseline.method.path.trim() === '' ||
+    !SHA256_PATTERN.test(baseline.seedCommitment ?? '')
+  ) {
+    return { valid: false, errors: [{ code: 'invalid-sampling-baseline' }] };
+  }
+
+  const variantIds = evaluation.variants.map(variant => variant?.variantId);
+  if (
+    variantIds.some(id => typeof id !== 'string' || id.trim() === '') ||
+    new Set(variantIds).size !== variantIds.length
+  ) {
+    return { valid: false, errors: [{ code: 'invalid-accuracy-variant-ids' }] };
+  }
+  const overall = compareAlgZooWholeModelAccuracy(evaluation.variants);
+  if (!overall.valid) return overall;
+
+  const invalidVariantIndex = evaluation.variants.findIndex(
+    variant =>
+      !(
+        variant.heldOutSplitId === evaluation.heldOutSplitId &&
+        WHOLE_MODEL_NOISE_SCALES.includes(variant.noiseScale) &&
+        variant.referenceAccuracy >= 0 &&
+        variant.referenceAccuracy <= 1 &&
+        variant.mechanisticEstimate >= 0 &&
+        variant.mechanisticEstimate <= 1 &&
+        variant.samplingEstimate >= 0 &&
+        variant.samplingEstimate <= 1
+      )
+  );
+  if (invalidVariantIndex >= 0) {
+    return invalidAccuracyVariant(invalidVariantIndex);
+  }
+
+  const scaleCounts = new Map(
+    WHOLE_MODEL_NOISE_SCALES.map(noiseScale => [noiseScale, 0])
+  );
+  for (const variant of evaluation.variants) {
+    const scaleCount = scaleCounts.get(variant.noiseScale);
+    scaleCounts.set(variant.noiseScale, /** @type {number} */ (scaleCount) + 1);
+  }
+  if (
+    WHOLE_MODEL_NOISE_SCALES.some(
+      noiseScale => scaleCounts.get(noiseScale) !== 8
+    )
+  ) {
+    return {
+      valid: false,
+      errors: [{ code: 'invalid-perturbation-scale-coverage' }],
+    };
+  }
+
+  const byNoiseScale = WHOLE_MODEL_NOISE_SCALES.map(noiseScale => {
+    const variants = evaluation.variants.filter(
+      variant => variant.noiseScale === noiseScale
+    );
+    const comparison =
+      /** @type {Extract<ReturnType<typeof compareAlgZooWholeModelAccuracy>, {valid: true}>} */ (
+        compareAlgZooWholeModelAccuracy(variants)
+      );
+    return {
+      noiseScale,
+      variantCount: variants.length,
+      mechanisticMse: comparison.mechanisticMse,
+      samplingMse: comparison.samplingMse,
+    };
+  });
+  const referenceAccuracies = evaluation.variants.map(
+    variant => variant.referenceAccuracy
+  );
+  const minimumReferenceAccuracy = Math.min(...referenceAccuracies);
+  const maximumReferenceAccuracy = Math.max(...referenceAccuracies);
+  const referenceAccuracySpread =
+    maximumReferenceAccuracy - minimumReferenceAccuracy;
+
+  return {
+    valid: true,
+    report: {
+      schemaVersion: 1,
+      protocolVersion: '1.0.0',
+      heldOutSplitId: evaluation.heldOutSplitId,
+      sampleCountPerVariant: WHOLE_MODEL_SAMPLE_COUNT,
+      variantCount: WHOLE_MODEL_VARIANT_COUNT,
+      samplingBaseline: {
+        method: { ...baseline.method },
+        seedCommitment: baseline.seedCommitment,
+      },
+      variants: [...evaluation.variants]
+        .sort(
+          (left, right) =>
+            left.noiseScale - right.noiseScale ||
+            left.variantId.localeCompare(right.variantId)
+        )
+        .map(variant => ({ ...variant })),
+      overall: {
+        mechanisticMse: overall.mechanisticMse,
+        samplingMse: overall.samplingMse,
+      },
+      byNoiseScale,
+      referenceAccuracyRange: {
+        minimum: minimumReferenceAccuracy,
+        maximum: maximumReferenceAccuracy,
+        spread: referenceAccuracySpread,
+      },
+      materialVariationMet: referenceAccuracySpread >= 0.05,
+    },
   };
 }
 

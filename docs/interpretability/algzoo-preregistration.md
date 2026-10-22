@@ -1,13 +1,13 @@
 # AlgZoo M16,10 shared-map pilot preregistration
 
-**Protocol version:** 1.0.0
+**Protocol version:** 1.0.3
 
 **Status:** Frozen by the Git commit containing this document; no pilot outcomes have been collected or reviewed.
 **Scope:** Exploratory validation pilot only. This protocol does not claim a confirmatory test or completion of the broader interpretability experiment.
 
 ## Registration and change control
 
-The version 1.0.0 protocol is the exact file tracked by Git in the commit that first adds it. The commit and the SHA-256 of this file identify the preregistered version. Before any target assignment or outcome access, the launch manifest must record both values, the fixture hash, all model/tool versions and prompt hashes, randomization seeds or commitments, evaluator version, budgets, and access-control configuration. The manifest itself must be committed before assignment. If either file changes before assignment, increment the protocol version and freeze the replacement commit and hash. After assignment, preserve the frozen files and record any deviation as a dated, append-only amendment with its reason; do not silently revise outcomes, thresholds, exclusions, or analyses.
+The version 1.0.3 protocol adds typed causal-intervention records to the deterministic local prediction scoring protocol. The commit and the SHA-256 of this file identify the preregistered version. Before any target assignment or outcome access, the launch manifest must record both values, the fixture hash, all model/tool versions and prompt hashes, randomization seeds or commitments, evaluator version, budgets, and access-control configuration. The manifest itself must be committed before assignment. If either file changes before assignment, increment the protocol version and freeze the replacement commit and hash. After assignment, preserve the frozen files and record any deviation as a dated, append-only amendment with its reason; do not silently revise outcomes, thresholds, exclusions, or analyses.
 
 This is an exploratory pilot. It estimates feasibility, leakage, cost, outcome variability, and design inputs for a later confirmatory study. All analyses below are descriptive for this pilot; do not interpret a nonsignificant or unestimable effect as evidence of no effect. No pilot runs or experimental outcomes have been examined while writing this protocol.
 
@@ -48,10 +48,39 @@ The paired arms use the same pinned investigator model, system and task prompts,
 Each session must submit, before seeing any held-out result:
 
 1. A concise functional hypothesis for its assigned unit over all ten time steps, including predicted conditions and non-conditions.
-2. A runnable, single time-indexed prediction rule in the preregistered restricted expression format, with at most 64 syntax-tree nodes. At time `t` it may use only `t` and the prefix inputs `x[0..t]`, plus scalar constants, arithmetic, comparisons, `max`, ReLU, and specified prefix reductions. The evaluator applies the same rule to each of the ten time steps; each operation and scalar constant counts as one node. It may not inspect future inputs, call the target model, load weight arrays, use loops or recursion, or look up a stored input/output table.
+2. A runnable, single time-indexed prediction rule in the restricted JSON AST defined below, with at most 64 nodes. The evaluator applies the same rule to each of the ten time steps. It may not inspect future inputs, call the target model, load weight arrays, use loops or recursion, or look up a stored input/output table.
 3. At least one discriminating prediction on an investigator-selected input and an explicit causal-evidence field. Either specify an intervention and predicted consequence or label the causal claim **not tested**. The fixed intervention operation sets the target unit's activation to zero at a stated time step while leaving all other activations unchanged, then continues the pinned recurrent pass; predict the resulting change in output index.
 4. Claim provenance: public-background claims, new claims, retrieved map entry IDs, dependencies, and uncertainty.
 5. All attempted hypotheses, counterexamples, tool calls, and work records, including unsuccessful attempts.
+
+### Typed causal-intervention record
+
+Store causal-intervention results in the separate `causalInterventionResult` field on an experiment record; do not encode the result only in hypothesis text or the free-form `causalEvidence` field. The field is optional on existing experiment records so earlier records remain importable. New AlgZoo submissions include either a strict `not-tested` record (with an optional reason) or a strict `tested` record.
+
+A `tested` record names a `targetMechanismId` already listed by the experiment, the fixed `set-activation-zero` operation, and a zero-based time step from 0 through 9. It identifies the investigator-selected length-ten input by the lowercase SHA-256 of the UTF-8 bytes of its compact JSON array serialization. Record the predicted output index before intervention, the baseline output index without intervention, and the observed output index after intervention; each is an integer from 0 through 9. The binary `causalScore` is 1 exactly when the predicted and observed intervened output indices match, and 0 otherwise. `artifactSha256` identifies the replay artifact with the input and intervention details. This input is investigator-selected and is not part of the hidden held-out set. A tested record is not evidence of a held-out causal effect by itself.
+
+### Restricted JSON prediction rule
+
+The submitted rule is one JSON object per syntax-tree node. Objects are strict: fields not listed for that operator are rejected. Every node counts toward the 64-node limit, including constants, variables, and the `input.index` expression subtree. JSON structure cannot contain executable code, loops, recursion, or references to shared nodes.
+
+| `op` | Fields | Meaning |
+| --- | --- | --- |
+| `constant` | `value` | One finite JSON number. |
+| `time` | none | The current zero-based time step `t`, from 0 through 9. |
+| `input` | `index` | Input `x[i]`; `index` is another rule node and must evaluate to an integer with `0 <= i <= t`. |
+| `add`, `subtract`, `multiply`, `divide`, `max`, `lessThan`, `lessThanOrEqual`, `greaterThan`, `greaterThanOrEqual`, `equal` | `left`, `right` | Binary numeric operation. Comparisons return 1 for true and 0 for false; `equal` uses exact numeric equality. |
+| `negate`, `relu` | `value` | Unary negation or `max(0, value)`. |
+| `prefixSum`, `prefixMean`, `prefixMax`, `prefixMin` | none | The named reduction over `x[0..t]`, inclusive. |
+
+For example, `{"op":"add","left":{"op":"input","index":{"op":"time"}},"right":{"op":"constant","value":0.25}}` predicts the current input plus 0.25. Every input sequence has exactly ten finite numbers. Division by zero, an out-of-prefix index, a non-finite intermediate, malformed object, or more than 64 nodes invalidates that prediction; it is not clipped, imputed, or silently scored as zero. An invalid prediction is retained as an attempted failure. Prefix reductions are always nonempty because `t` starts at zero. No other operators are permitted in protocol 1.0.3.
+
+### Deterministic held-out scorer
+
+The blinded evaluator receives exactly 1,024 input sequences of ten finite values and, for each target unit, a matching 1,024-by-10 matrix of reference activations. It evaluates the submitted rule at every time step using only the current sequence prefix. Invalid rules remain in the attempt records and receive a failed prediction status; the evaluator does not substitute a value.
+
+For a target, compute the arithmetic mean and population standard deviation of its 10,240 held-out reference activations. The constant-mean benchmark predicts that single mean at every sequence and time step. Compute its MSE on the same 10,240 values. The normalization scale is `max(population standard deviation, 0.01)`. Candidate MSE is the mean squared error over the same values; aggregate normalized RMSE is `sqrt(candidate MSE) / scale`; per-step normalized RMSE is calculated for each of the ten time steps with the same scale and all 1,024 sequences. The candidate meets the prediction thresholds only when aggregate normalized RMSE is at most 0.10, every per-step normalized RMSE is at most 0.25, and candidate MSE is at most 10% of constant-mean MSE. If constant-mean MSE is zero, the last condition passes only for zero candidate MSE.
+
+These held-out statistics are evaluator-only scoring benchmarks. They are computed after both submissions are locked and are never included in investigator requests. Prediction metrics and causal-intervention records remain separate from hypothesis text; passing the prediction thresholds does not establish novelty, reviewer agreement, or causal evidence.
 
 The fixed cap per target session is **20,000 investigator-model tokens including retrieved context, 30 minutes elapsed time, 100 tool calls, and 10,000 target-model forward passes**, whichever is reached first. Record wall-clock researcher time, input/output tokens, tool calls, target-model inference compute, and direct monetary cost where available. Apply every cap equally to both arms. Charge setup, map curation, and evaluator costs separately and also report total study cost.
 
