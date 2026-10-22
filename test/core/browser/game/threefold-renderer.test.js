@@ -181,6 +181,52 @@ describe('THREEFOLD canvas grid', () => {
       'gate-counterweight',
     ]);
   });
+
+  test('bounds every supported Broken Gate layout to its scale-local map viewport', () => {
+    const base = createThreefoldSimulation(THRESHOLDS);
+
+    for (const scale of [-2, -1, 0, 1]) {
+      const frame = renderThreefoldFrame({
+        ...base,
+        player: { ...base.player, scale },
+      });
+
+      expect(frame.threefold.logicalGridLayout.scale).toBe(scale);
+      expect(frame.threefold.logicalGridLayout.overflow).toEqual([]);
+    }
+  });
+
+  test('reports an authored object beyond the map viewport without moving it', () => {
+    const base = createThreefoldSimulation(THRESHOLDS);
+    const scene = {
+      ...base.scene,
+      geometry: base.scene.geometry.map(object =>
+        object.id === 'gatehouse-west-wall'
+          ? {
+              ...object,
+              bounds: {
+                min: { ...object.bounds.min, x: 100 },
+                max: { ...object.bounds.max, x: 101 },
+              },
+            }
+          : object
+      ),
+    };
+    const state = { ...base, scene };
+    const before = JSON.stringify(state.scene.geometry);
+
+    const frame = renderThreefoldFrame(state);
+    const layoutEntity = frame.threefold.logicalGridLayout.entities.find(
+      entity => entity.id === 'gatehouse-west-wall'
+    );
+
+    expect(frame.threefold.logicalGridLayout.overflow).toContainEqual({
+      entityId: 'gatehouse-west-wall',
+      cellBounds: layoutEntity.cellBounds,
+    });
+    expect(layoutEntity.placement).toBe('overflow');
+    expect(JSON.stringify(state.scene.geometry)).toBe(before);
+  });
 });
 
 describe('THREEFOLD status display', () => {

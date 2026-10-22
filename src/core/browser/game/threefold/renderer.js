@@ -1743,18 +1743,6 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
       logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('interactable'),
       growthPreview: growthPreviewIds.has(object.id),
     }));
-  const gridProjection = projectRenderEntitiesToGrid(player.scale, [
-    ...geometry.map(object => ({
-      ...object,
-      logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('structure'),
-      growthPreview: growthPreviewIds.has(object.id),
-    })),
-    ...interactableObjects,
-    ...creatureObjects.map(object => ({
-      ...object,
-      logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('creature'),
-    })),
-  ]);
   const mapWidth = Math.max(
     14,
     Math.ceil((scene.bounds.max.x - scene.bounds.min.x) / heightMeters) +
@@ -1764,6 +1752,27 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     9,
     Math.ceil((scene.bounds.max.y - scene.bounds.min.y) / heightMeters) +
       VIEW_ORIGIN.y * 2
+  );
+  const gridProjection = projectRenderEntitiesToGrid(
+    player.scale,
+    [
+      ...geometry.map(object => ({
+        ...object,
+        logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('structure'),
+        growthPreview: growthPreviewIds.has(object.id),
+      })),
+      ...interactableObjects,
+      ...creatureObjects.map(object => ({
+        ...object,
+        logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('creature'),
+      })),
+    ],
+    {
+      x: -VIEW_ORIGIN.x,
+      y: -VIEW_ORIGIN.y,
+      width: mapWidth,
+      height: mapHeight,
+    }
   );
   return {
     mapId: scene.id,
@@ -1827,9 +1836,10 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
  * Project static authored scene objects onto scale-local integer cells for rendering.
  * @param {number} scale Current THREEFOLD scale.
  * @param {ThreefoldGridRenderEntity[]} entities Static structures, interactables and creatures.
+ * @param {{x: number, y: number, width: number, height: number}} viewport Integer-cell world-map capacity.
  * @returns {{entities: ThreefoldGridRenderEntity[], layout: ReturnType<typeof resolveSceneLayout>}} Grid-projected render entities and diagnostics.
  */
-function projectRenderEntitiesToGrid(scale, entities) {
+function projectRenderEntitiesToGrid(scale, entities, viewport) {
   const byId = new Map(entities.map(entity => [entity.id, entity]));
   const layout = resolveSceneLayout(
     entities.map(entity => ({
@@ -1839,7 +1849,8 @@ function projectRenderEntitiesToGrid(scale, entities) {
       overlapGroupId: entity.overlapGroupId,
       hierarchy: entity.hierarchy,
     })),
-    scale
+    scale,
+    viewport
   );
   const layoutById = new Map(
     layout.entities.map(entity => [entity.id, entity])
