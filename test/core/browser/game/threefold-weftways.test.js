@@ -231,14 +231,6 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       elapsedGameSeconds: 0,
     });
     expect(frame.threefold.packBeetleIds).toEqual(beetles.map(({ id }) => id));
-    expect(frame.shapes).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ x: 24, y: 80 }),
-        expect.objectContaining({ x: 48, y: 80 }),
-        expect.objectContaining({ x: 80, y: 64 }),
-        expect.objectContaining({ x: 16, y: 64, fill: '#e16b5a' }),
-      ])
-    );
     expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
       true
     );
@@ -269,7 +261,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
     ];
     expect(
       renderThreefoldFrame(lostBeetle).shapes.find(
-        ({ x, y }) => x === 24 && y === 80
+        ({ geometryId }) => geometryId === 'weftways-pack-beetle-1'
       ).fill
     ).toBe('#526e4b');
   });
@@ -404,8 +396,13 @@ describe('THREEFOLD Weftways caravan bypass', () => {
         expect(publication.text).toContain('relay tokens stopped arriving');
         expect(publication.text).toContain('what Iri knew');
         expect(publication.text).toContain('assign responsibility');
-        expect(frame.shapes).toContainEqual(
-          expect.objectContaining({ x: 48, y: 48, fill: '#bfd77c' })
+        expect(frame.shapes).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              geometryId: THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID,
+              logicalCellBounds: expect.any(Object),
+            }),
+          ])
         );
         const restored = restoreThreefoldSimulation(
           serializeThreefoldSimulation(state)
@@ -520,6 +517,154 @@ describe('THREEFOLD Weftways caravan bypass', () => {
   );
 });
 
+describe('THREEFOLD Weftways logical-grid renderer', () => {
+  test('renders all Weftways source identities from deterministic logical cells', () => {
+    const state = createWeftwaysRun();
+    state.scene.decorations.push({
+      id: 'weftways-bank-mark',
+      bounds: {
+        min: { x: 0.08, y: 0.66, z: 0 },
+        max: { x: 0.18, y: 0.74, z: 0.04 },
+      },
+    });
+    const sourceScene = JSON.stringify(state.scene);
+    const sourceIds = [
+      ...state.scene.geometry,
+      ...state.scene.decorations,
+      ...state.scene.interactables,
+      ...state.scene.creatures,
+      { id: 'mara' },
+    ].map(({ id }) => id);
+    const frame = renderThreefoldFrame(state);
+    const layout = frame.threefold.logicalGridLayout;
+    const entityById = new Map(
+      layout.entities.map(entity => [entity.id, entity])
+    );
+
+    expect(layout.entities.map(({ id }) => id).sort()).toEqual(
+      [...new Set(sourceIds)].sort()
+    );
+    expect(entityById.get(THREEFOLD_WEFTWAYS_PELL_ID).logicalGridKinds).toEqual(
+      ['creature', 'interactable']
+    );
+    expect(frame.shapes.map(({ geometryId }) => geometryId)).toEqual(
+      expect.arrayContaining(
+        layout.entities
+          .filter(entity => entity.placement !== 'overflow')
+          .map(({ id }) => id)
+      )
+    );
+    for (const shape of frame.shapes.filter(({ geometryId }) =>
+      entityById.has(geometryId)
+    )) {
+      const { cellBounds: cell } = entityById.get(shape.geometryId);
+      const left =
+        8 +
+        (144 - layout.viewport.width * 8) / 2 +
+        (cell.x - layout.viewport.x) * 8;
+      const top =
+        28 +
+        (72 - layout.viewport.height * 8) / 2 +
+        (layout.viewport.height - (cell.y - layout.viewport.y) - cell.height) *
+          8;
+      expect(shape.logicalCellBounds).toEqual(cell);
+      expect(shape.x).toBeGreaterThanOrEqual(left);
+      expect(shape.y).toBeGreaterThanOrEqual(top);
+      expect(shape.x + shape.width).toBeLessThanOrEqual(left + cell.width * 8);
+      expect(shape.y + shape.height).toBeLessThanOrEqual(top + cell.height * 8);
+    }
+    expect(renderThreefoldFrame(state).shapes).toEqual(frame.shapes);
+    expect(JSON.stringify(state.scene)).toBe(sourceScene);
+  });
+
+  test('rejects mismatched duplicate Pell identities', () => {
+    const state = createWeftwaysRun();
+    state.scene.creatures.find(
+      ({ id }) => id === THREEFOLD_WEFTWAYS_PELL_ID
+    ).bounds.max.x += 0.01;
+
+    expect(() => renderThreefoldFrame(state)).toThrow(
+      'Conflicting Weftways geometry for weftways-pell.'
+    );
+  });
+
+  test('marks a newly intersected root crossing in the growth preview', () => {
+    const state = createWeftwaysRun();
+    state.player.position = { x: 0.26, y: 0.65 };
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.threefold.growthPreviewGeometryIds).toContain(
+      THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        geometryId: THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID,
+        fill: '#e16b5a',
+      })
+    );
+  });
+
+  test('keeps a one-cell pack beetle within its projected identity', () => {
+    const state = createWeftwaysRun();
+    const beetle = state.scene.creatures.find(
+      ({ id }) => id === 'weftways-pack-beetle-1'
+    );
+    beetle.bounds.min = { x: 0.08, y: 0.1, z: 0 };
+    beetle.bounds.max = { x: 0.12, y: 0.14, z: 0.04 };
+    const frame = renderThreefoldFrame(state);
+    const shape = frame.shapes.find(
+      ({ geometryId }) => geometryId === beetle.id
+    );
+    const entity = frame.threefold.logicalGridLayout.entities.find(
+      ({ id }) => id === beetle.id
+    );
+
+    expect(shape.logicalCellBounds).toEqual(entity.cellBounds);
+    expect(shape.width).toBe(8);
+    expect(shape.height).toBe(8);
+  });
+
+  test('reports off-region identities as overflow without moving source state', () => {
+    const state = createWeftwaysRun();
+    for (const entity of [
+      ...state.scene.geometry,
+      ...state.scene.decorations,
+      ...state.scene.interactables,
+      ...state.scene.creatures,
+    ]) {
+      entity.bounds.min.x = 100;
+      entity.bounds.max.x = 101;
+    }
+    state.player.position.x = 100;
+    state.weftways = normalizeThreefoldWeftwaysState({
+      flowChoice: 'quay-spill',
+    });
+    const sourceState = JSON.stringify(state.scene);
+    const frame = renderThreefoldFrame(state);
+    const layout = frame.threefold.logicalGridLayout;
+
+    expect(layout.overflow.map(({ entityId }) => entityId).sort()).toEqual(
+      [
+        ...new Set(
+          [
+            ...state.scene.geometry,
+            ...state.scene.decorations,
+            ...state.scene.interactables,
+            ...state.scene.creatures,
+            { id: 'mara' },
+          ].map(({ id }) => id)
+        ),
+      ].sort()
+    );
+    expect(
+      frame.shapes.filter(({ geometryId }) =>
+        layout.overflow.some(({ entityId }) => entityId === geometryId)
+      )
+    ).toEqual([]);
+    expect(JSON.stringify(state.scene)).toBe(sourceState);
+  });
+});
+
 describe('THREEFOLD Weftways negotiator loss', () => {
   test('previews, saves, and permanently renders Pell’s growth death', () => {
     let state = createPellGrowthPreviewState();
@@ -553,8 +698,7 @@ describe('THREEFOLD Weftways negotiator loss', () => {
     });
     expect(frame.shapes).not.toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ x: 80, y: 56 }),
-        expect.objectContaining({ x: 80, y: 64 }),
+        expect.objectContaining({ geometryId: THREEFOLD_WEFTWAYS_PELL_ID }),
       ])
     );
   });
@@ -774,7 +918,10 @@ describe('THREEFOLD Threadbound ledger destruction', () => {
     ).toBe(true);
     expect(frame.shapes).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ x: 16, y: 64, fill: '#8aa27b' }),
+        expect.objectContaining({
+          geometryId: THREEFOLD_WEFTWAYS_BRAZIER_ID,
+          fill: '#8aa27b',
+        }),
       ])
     );
     expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
@@ -841,7 +988,10 @@ function assertNegotiatedRestitutionOutcome(context) {
   expect(frame.shapes.some(({ text }) => text === testCase.caption)).toBe(true);
   expect(frame.shapes).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ x: 64, y: 64, fill: '#bfd77c' }),
+      expect.objectContaining({
+        geometryId: THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID,
+        fill: '#bfd77c',
+      }),
     ])
   );
   expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(

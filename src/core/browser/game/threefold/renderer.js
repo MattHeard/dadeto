@@ -59,6 +59,7 @@ const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'parentId'|'overlapGroupId'|'hierarchy'> & {bounds:{min:{x:number,y:number,z:number},max:{x:number,y:number,z:number}},kind:string}} GrainlandsGridFacet */
+/** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {bounds:{min:{x:number,y:number,z:number},max:{x:number,y:number,z:number}},kind:string}} WeftwaysGridFacet */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -1413,8 +1414,8 @@ function hearthgapsEntityRect(entity, layout) {
 
 /**
  * Map one logical cell rectangle into the shared 144 by 72 Mosslight field.
- * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number] | ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected scene identity.
- * @param {ReturnType<typeof createHearthgapsGridLayout> | ReturnType<typeof createGrainlandsGridLayout>} layout Finite logical view.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number] | ReturnType<typeof createGrainlandsGridLayout>['entities'][number] | ReturnType<typeof createWeftwaysGridLayout>['entities'][number]} entity Projected scene identity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout> | ReturnType<typeof createGrainlandsGridLayout> | ReturnType<typeof createWeftwaysGridLayout>} layout Finite logical view.
  * @returns {{x:number,y:number,width:number,height:number}} Screen rectangle.
  */
 function logicalGridEntityRect(entity, layout) {
@@ -1519,6 +1520,73 @@ function hearthgapsActorShape(entity, layout, fill) {
 }
 
 /**
+ * Project Weftways source identities and Mara into its authored finite view.
+ * Pell keeps one identity for its interactable and creature roles.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'weftways'}}>} state Current Weftways simulation.
+ * @returns {Omit<ReturnType<typeof resolveSceneLayout>, 'entities'> & {viewport: ReturnType<typeof projectEntity>['cellBounds'], entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Projected finite scene layout.
+ */
+function createWeftwaysGridLayout(state) {
+  const { scene, player } = state;
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  const facets = /** @type {WeftwaysGridFacet[]} */ ([
+    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+    ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
+    ...scene.creatures.map(entity => ({ ...entity, kind: 'creature' })),
+    {
+      id: 'mara',
+      kind: 'actor',
+      bounds: {
+        min: {
+          x: player.position.x - halfBodyWidth,
+          y: player.position.y - halfBodyWidth,
+          z: 0,
+        },
+        max: {
+          x: player.position.x + halfBodyWidth,
+          y: player.position.y + halfBodyWidth,
+          z: heightAtScale(player.scale),
+        },
+      },
+    },
+  ]);
+  const byId = new Map();
+  for (const facet of facets) {
+    const existing = byId.get(facet.id);
+    if (!existing) {
+      byId.set(facet.id, { ...facet, kinds: [facet.kind] });
+      continue;
+    }
+    if (!sameGrainlandsBounds(existing.bounds, facet.bounds))
+      throw new RangeError(`Conflicting Weftways geometry for ${facet.id}.`);
+    existing.kinds.push(facet.kind);
+  }
+  const viewport = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
+    player.scale
+  ).cellBounds;
+  const layout = resolveSceneLayout(
+    [...byId.values()].map(entity => ({
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId: entity.overlapGroupId,
+      hierarchy: entity.hierarchy,
+    })),
+    player.scale,
+    viewport
+  );
+  return {
+    ...layout,
+    viewport,
+    entities: layout.entities.map(entity => ({
+      ...entity,
+      logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
+    })),
+  };
+}
+
+/**
  * Render the Threadbound crossing and its two flow choices on the handheld grid.
  * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'weftways'}}>} state Current Weftways simulation.
  * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
@@ -1587,11 +1655,9 @@ function renderThreefoldWeftwaysFrame(state) {
             'the final sender, establish what Iri knew, or assign responsibility.',
         }
       : null;
-  const playerX = snapCanvasCoordinate(
-    8 + (state.player.position.x / 2.4) * 144
-  );
-  const playerY = snapCanvasCoordinate(
-    28 + ((0.8 - state.player.position.y) / 0.8) * 72
+  const logicalGridLayout = createWeftwaysGridLayout(state);
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
   );
   const frame = createThreefoldFramePayload({
     world: createSmallWorldFrameWorld(
@@ -1611,72 +1677,90 @@ function renderThreefoldWeftwaysFrame(state) {
   });
   frame.quest = 'The Threadbound Crossing';
   frame.toast = flowMessage;
-  frame.shapes = [
+  /**
+   * Create a pixel shape for a resolved source identity.
+   * @param {string} id Source identity.
+   * @param {string} fill Pixel fill.
+   * @returns {ThreefoldSpriteShape[]} Projected source shape, or none when omitted.
+   */
+  const sourceShape = (id, fill) => {
+    const entity = logicalEntities.get(id);
+    if (!entity || entity.placement === 'overflow') return [];
+    return [weftwaysEntityShape(entity, logicalGridLayout, fill)];
+  };
+  /**
+   * Select the saved-choice fill for a flow control.
+   * @param {string} id Flow-control identity.
+   * @returns {string} Selected control fill.
+   */
+  const flowControlFill = id =>
+    id === weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID
+      ? flowChoice === 'pell-bypass'
+        ? '#bfd77c'
+        : '#e9d88d'
+      : flowChoice === 'quay-spill'
+        ? '#bfd77c'
+        : '#e9d88d';
+  const rootThreatened = growth.geometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+  );
+  const shapes = [
     createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
     captionShape({ x: 8, y: 12 }, 'WEFTWAYS', true),
     createThreefoldRectShape([4, 20, 152, 92], '#102823'),
     createThreefoldRectShape([8, 28, 144, 72], '#315744'),
-    createThreefoldRectShape([8, 68, 144, 8], '#526e4b'),
-    createThreefoldRectShape([24, 44, 8, 32], '#526e4b'),
-    createThreefoldRectShape([40, 36, 8, 40], '#526e4b'),
-    createThreefoldRectShape([56, 44, 8, 32], '#526e4b'),
-    createThreefoldRectShape(
-      [72, 60, 24, 8],
-      rootFlooded ? '#25a9b8' : '#bfd77c'
+    ...state.scene.geometry.flatMap(({ id }) =>
+      sourceShape(
+        id,
+        id === weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+          ? rootFlooded
+            ? '#25a9b8'
+            : rootThreatened
+              ? '#e16b5a'
+              : '#bfd77c'
+          : quayFlooded
+            ? '#25a9b8'
+            : '#d28b69'
+      )
     ),
-    createThreefoldRectShape([96, 52, 8, 24], '#526e4b'),
-    createThreefoldRectShape([112, 44, 32, 8], '#d28b69'),
-    createThreefoldRectShape([112, 52, 8, 24], '#b46b55'),
-    createThreefoldRectShape([128, 52, 8, 24], '#b46b55'),
-    createThreefoldRectShape([8, 72, 24, 8], '#182f36'),
-    createThreefoldRectShape(
-      [16, 64, 8, 8],
-      relayRecordDestroyed ? '#8aa27b' : '#e16b5a'
-    ),
-    ...(quayFlooded
-      ? [createThreefoldRectShape([104, 68, 40, 8], '#25a9b8')]
-      : []),
-    ...weftwaysBeetleShapes(
-      { x: 24, y: 80 },
-      beetleFates.has('weftways-pack-beetle-1')
-    ),
-    ...weftwaysBeetleShapes(
-      { x: 48, y: 80 },
-      beetleFates.has('weftways-pack-beetle-2')
-    ),
-    ...(!pellDied
-      ? [
-          createThreefoldRectShape([80, 64, 8, 8], '#d28b69'),
-          createThreefoldRectShape([80, 56, 8, 8], '#e9d88d'),
-        ]
-      : []),
-    createThreefoldRectShape([72, 72, 24, 8], '#182f36'),
-    createThreefoldRectShape([16, 88, 16, 8], '#e9d88d'),
-    createThreefoldRectShape([128, 88, 16, 8], '#d28b69'),
-    createThreefoldRectShape(
-      [40, 64, 8, 8],
-      relayRecordDestroyed
-        ? '#526e4b'
-        : relayRecordShared
-          ? '#bfd77c'
-          : '#e9d88d'
-    ),
-    createThreefoldRectShape(
-      [64, 64, 8, 8],
-      relayRestitutionNegotiated ? '#bfd77c' : '#d28b69'
-    ),
+    ...state.scene.decorations.flatMap(({ id }) => sourceShape(id, '#526e4b')),
+    ...state.scene.interactables.flatMap(({ id }) => {
+      if (id === weftways.THREEFOLD_WEFTWAYS_PELL_ID)
+        return pellDied
+          ? []
+          : weftwaysPellShapes(logicalEntities.get(id), logicalGridLayout);
+      return sourceShape(
+        id,
+        id === weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID ||
+          id === weftways.THREEFOLD_WEFTWAYS_QUAY_SPILL_ID
+          ? flowControlFill(id)
+          : id === weftways.THREEFOLD_WEFTWAYS_BRAZIER_ID &&
+              relayRecordDestroyed
+            ? '#8aa27b'
+            : id === weftways.THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID &&
+                relayRecordShared
+              ? '#bfd77c'
+              : id === weftways.THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID &&
+                  relayRestitutionNegotiated
+                ? '#bfd77c'
+                : '#d28b69'
+      );
+    }),
+    ...state.scene.creatures.flatMap(({ id }) => {
+      if (id === weftways.THREEFOLD_WEFTWAYS_PELL_ID) return [];
+      return weftwaysBeetleShapes(
+        logicalEntities.get(id),
+        logicalGridLayout,
+        beetleFates.has(id)
+      );
+    }),
+    ...sourceShape('mara', PALETTE[3]),
     ...(threadboundIndependentPublication
-      ? [
-          createThreefoldRectShape([40, 48, 24, 8], '#d28b69'),
-          createThreefoldRectShape([48, 48, 8, 8], '#bfd77c'),
-        ]
+      ? weftwaysPublicationShapes(
+          logicalEntities.get(weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID),
+          logicalGridLayout
+        )
       : []),
-    createThreefoldRectShape(
-      [112, 40, 8, 8],
-      relayRecordConcealed ? '#bfd77c' : '#8aa27b'
-    ),
-    createThreefoldRectShape([32, 72, 24, 8], '#526e4b'),
-    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
     captionShape(
       { x: 8, y: 126 },
@@ -1718,6 +1802,7 @@ function renderThreefoldWeftwaysFrame(state) {
       ? [captionShape({ x: 8, y: 24 }, 'A KILLS PELL', true)]
       : []),
   ];
+  frame.shapes = shapes;
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
     heightMeters: heightAtScale(state.player.scale),
@@ -1805,6 +1890,7 @@ function renderThreefoldWeftwaysFrame(state) {
     growthPreviewGeometryIds: growth.geometryIds,
     growthPreviewCreatureIds: growth.creatureIds,
     witnessLedger: [],
+    logicalGridLayout,
   });
 }
 
@@ -2050,18 +2136,102 @@ function grainlandsSpiderShapes(entity, layout, overpowered) {
 }
 
 /**
- * Draw a pack beetle or its remains at one grid-aligned caravan position.
- * @param {{x: number, y: number}} origin Beetle canvas position.
+ * Draw a static Weftways identity inside its projected screen cells.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>['entities'][number]} entity Projected identity.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>} layout Finite authored view.
+ * @param {string} fill Identity state color.
+ * @returns {ThreefoldSpriteShape} Cell-derived identity sprite.
+ */
+function weftwaysEntityShape(entity, layout, fill) {
+  const rect = logicalGridEntityRect(entity, layout);
+  return {
+    ...createThreefoldRectShape(
+      [rect.x, rect.y, rect.width, rect.height],
+      fill
+    ),
+    geometryId: entity.id,
+    logicalGridKinds: entity.logicalGridKinds,
+    logicalCellBounds: entity.cellBounds,
+  };
+}
+
+/**
+ * Draw Pell within his projected identity cell.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>['entities'][number] | undefined} entity Projected Pell identity.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>} layout Finite authored view.
+ * @returns {ThreefoldSpriteShape[]} Pell's cell-contained sprite.
+ */
+function weftwaysPellShapes(entity, layout) {
+  if (!entity || entity.placement === 'overflow') return [];
+  const rect = logicalGridEntityRect(entity, layout);
+  const bodyWidth = Math.min(8, rect.width);
+  const bodyX = rect.x + Math.floor((rect.width - bodyWidth) / 16) * 8;
+  const bodyY = rect.y + Math.floor((rect.height - 8) / 16) * 8;
+  return [
+    {
+      ...createThreefoldRectShape([bodyX, bodyY, bodyWidth, 8], '#d28b69'),
+      geometryId: entity.id,
+      logicalGridKinds: entity.logicalGridKinds,
+      logicalCellBounds: entity.cellBounds,
+    },
+  ];
+}
+
+/**
+ * Render the published relay notice within the projected root crossing.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>['entities'][number] | undefined} entity Projected crossing identity.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>} layout Finite authored view.
+ * @returns {ThreefoldSpriteShape[]} Notice marker contained by the crossing cells.
+ */
+function weftwaysPublicationShapes(entity, layout) {
+  if (!entity || entity.placement === 'overflow') return [];
+  const rect = logicalGridEntityRect(entity, layout);
+  const width = Math.min(16, rect.width);
+  const x = rect.x + Math.floor((rect.width - width) / 16) * 8;
+  const y = rect.y + Math.max(0, rect.height - 8);
+  return [
+    {
+      ...createThreefoldRectShape([x, y, width, 8], '#d28b69'),
+      geometryId: entity.id,
+      logicalCellBounds: entity.cellBounds,
+    },
+  ];
+}
+
+/**
+ * Draw a pack beetle or its remains inside projected caravan cells.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>['entities'][number] | undefined} entity Projected beetle identity.
+ * @param {ReturnType<typeof createWeftwaysGridLayout>} layout Finite authored view.
  * @param {boolean} lost Whether growth permanently removed the beetle.
  * @returns {ThreefoldSpriteShape[]} Beetle silhouette.
  */
-function weftwaysBeetleShapes(origin, lost) {
+function weftwaysBeetleShapes(entity, layout, lost) {
+  if (!entity || entity.placement === 'overflow') return [];
+  const rect = logicalGridEntityRect(entity, layout);
   const shell = lost ? '#526e4b' : '#bfd77c';
+  const bodyWidth = Math.min(16, rect.width);
+  const bodyX = rect.x + Math.floor((rect.width - bodyWidth) / 16) * 8;
+  const bodyY = rect.y + Math.floor((rect.height - 8) / 16) * 8;
+  /**
+   * Tag a beetle sprite part with its projected cell identity.
+   * @param {[number, number, number, number]} bounds Pixel rectangle.
+   * @param {string} fill Sprite fill.
+   * @returns {ThreefoldSpriteShape} Cell-tagged beetle part.
+   */
+  const shape = (bounds, fill) => ({
+    ...createThreefoldRectShape(bounds, fill),
+    geometryId: entity.id,
+    logicalGridKinds: entity.logicalGridKinds,
+    logicalCellBounds: entity.cellBounds,
+  });
   return [
-    createThreefoldRectShape([origin.x, origin.y, 16, 8], shell),
-    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], shell),
-    createThreefoldRectShape([origin.x + 4, origin.y + 8, 8, 8], '#d28b69'),
-    createThreefoldRectShape([origin.x - 8, origin.y + 8, 8, 8], '#182f36'),
+    shape([bodyX, bodyY, bodyWidth, 8], shell),
+    ...(rect.width >= 24 && rect.height >= 16
+      ? [
+          shape([bodyX + 8, rect.y, 8, 8], shell),
+          shape([bodyX, rect.y + rect.height - 8, 8, 8], '#182f36'),
+        ]
+      : []),
   ];
 }
 
