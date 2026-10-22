@@ -61,6 +61,10 @@ test('keeps handheld page spacing and touch controls on an eight-pixel grid', ()
   expect(THREEFOLD_CSS).toContain('transform: none');
   expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
   expect(THREEFOLD_HTML).toContain(
+    'id="logical-grid-warning" class="logical-grid-warning" role="status" aria-live="polite" hidden'
+  );
+  expect(THREEFOLD_CSS).toContain('.logical-grid-warning');
+  expect(THREEFOLD_HTML).toContain(
     '<details id="iri-repair-log" class="witness-ledger" hidden>'
   );
   expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
@@ -222,6 +226,36 @@ describe('THREEFOLD page adapter', () => {
     expect(collectText(list.children)).toContain(
       'No gate events recorded yet.'
     );
+  });
+
+  test('announces unresolved projected overlaps and clears stale warnings', () => {
+    const { documentObj, logicalGridWarning } = createLedgerDocument();
+    startThreefoldPage({ documentObj, windowObj: {}, navigatorObj: {} });
+    const page = mockStartMosslightPage.mock.calls[0][0];
+    const frame = {
+      threefold: {
+        logicalGridLayout: {
+          conflicts: [{}, {}, {}],
+        },
+      },
+    };
+    const originalFrame = structuredClone(frame);
+
+    page.drawFrame({}, frame);
+    const firstWarning = logicalGridWarning.textContent;
+    page.drawFrame({}, frame);
+
+    expect(logicalGridWarning.hidden).toBe(false);
+    expect(firstWarning).toBe(
+      'At this scale, 3 pairs of objects share display cells. Their physical positions and collisions are unchanged.'
+    );
+    expect(logicalGridWarning.textContent).toBe(firstWarning);
+    expect(frame).toEqual(originalFrame);
+
+    page.drawFrame({}, { threefold: { logicalGridLayout: { conflicts: [] } } });
+
+    expect(logicalGridWarning.hidden).toBe(true);
+    expect(logicalGridWarning.textContent).toBe('');
   });
 
   test('shows the recovered Iri log only when the frame includes a reported clue', () => {
@@ -1291,6 +1325,7 @@ function assertGrainlandsRoute() {
  * @returns {{documentObj: any, list: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}, testimonyList: {children: any[], replaceChildren: () => void, appendChild: (node: any) => void}, responsibility: {textContent: string}}} Fake document and lists.
  */
 function createLedgerDocument() {
+  const logicalGridWarning = { hidden: true, textContent: '' };
   const list = {
     children: [],
     replaceChildren() {
@@ -1427,8 +1462,10 @@ function createLedgerDocument() {
     tidalArchiveTraceText,
     episodeEpilogue,
     episodeEpilogueList,
+    logicalGridWarning,
     documentObj: {
       querySelector: selector => {
+        if (selector === '#logical-grid-warning') return logicalGridWarning;
         if (selector === '#witness-ledger-entries') return list;
         if (selector === '#campaign-places') return campaignPlaces;
         if (selector === '#campaign-places-text') return campaignPlacesText;
