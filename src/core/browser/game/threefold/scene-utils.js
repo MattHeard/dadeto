@@ -41,12 +41,15 @@ export function isThreefoldInteractableInReach(state, id) {
 
 /**
  * Copy authored physical geometry without sharing mutable coordinate records.
- * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} geometry Authored scene geometry.
- * @returns {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} Independent geometry value.
+ * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}} geometry Authored scene geometry.
+ * @returns {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}} Independent geometry value.
  */
 export function copyThreefoldGeometry(geometry) {
   return {
     id: geometry.id,
+    ...(geometry.overlapGroupId === undefined
+      ? {}
+      : { overlapGroupId: geometry.overlapGroupId }),
     bounds: copyThreefoldBounds(geometry.bounds),
   };
 }
