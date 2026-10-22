@@ -364,13 +364,6 @@ describe('THREEFOLD canvas grid', () => {
       expect(layout.entities.map(entity => entity.logicalGridKind)).toEqual(
         expect.arrayContaining(['structure', 'interactable', 'creature'])
       );
-      const intentionalPairs = layout.intentionalOverlaps.map(
-        ({ entityIds }) => entityIds
-      );
-      expect(intentionalPairs).toContainEqual([
-        'signal-station',
-        'signal-station-console',
-      ]);
       expect(layout.conflicts.length).toBe(scale === 0 ? 3 : 0);
       if (scale === 0)
         expect(
@@ -440,10 +433,6 @@ describe('THREEFOLD canvas grid', () => {
       'relief-gate',
       'relief-gate-locking-pawl',
     ]);
-    expect(intentionalPairs).toContainEqual([
-      'signal-station',
-      'signal-station-console',
-    ]);
     expect(unresolvedPairs).toContainEqual([
       'drainage-weir',
       'ferry-mooring-line',
@@ -452,6 +441,56 @@ describe('THREEFOLD canvas grid', () => {
       'relief-gate',
       'gate-counterweight',
     ]);
+  });
+
+  test('uses the signal station as a coarse proxy and exposes its console at scale -2', () => {
+    const base = createThreefoldSimulation(THRESHOLDS);
+    const before = JSON.stringify(base);
+    const coarse = renderThreefoldFrame({
+      ...base,
+      player: { ...base.player, scale: -1 },
+    });
+    const fine = renderThreefoldFrame({
+      ...base,
+      player: { ...base.player, scale: -2 },
+    });
+
+    expect(coarse.threefold.logicalGridLayout.hierarchy).toMatchObject({
+      visibleEntityIds: expect.arrayContaining(['signal-station']),
+      hiddenEntities: expect.arrayContaining([
+        {
+          id: 'signal-station-console',
+          proxyId: 'signal-station',
+          reason: 'proxied',
+        },
+      ]),
+      proxies: expect.arrayContaining([
+        { id: 'signal-station', childIds: ['signal-station-console'] },
+      ]),
+    });
+    expect(coarse.world.map.objects.map(object => object.id)).toContain(
+      'signal-station'
+    );
+    expect(coarse.world.map.objects.map(object => object.id)).not.toContain(
+      'signal-station-console'
+    );
+    expect(
+      fine.threefold.logicalGridLayout.hierarchy.visibleEntityIds
+    ).toContain('signal-station-console');
+    expect(
+      fine.threefold.logicalGridLayout.hierarchy.hiddenEntities
+    ).toContainEqual({
+      id: 'signal-station',
+      proxyId: null,
+      reason: 'expanded',
+    });
+    expect(fine.world.map.objects.map(object => object.id)).toContain(
+      'signal-station-console'
+    );
+    expect(fine.world.map.objects.map(object => object.id)).not.toContain(
+      'signal-station'
+    );
+    expect(JSON.stringify(base)).toBe(before);
   });
 
   test('bounds every supported Broken Gate layout to its scale-local map viewport', () => {
@@ -1121,7 +1160,7 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     const initial = createThreefoldSimulation(THRESHOLDS, scene);
     const atConsole = {
       ...initial,
-      player: createScaleState(console.position),
+      player: createScaleState(console.position, { scale: -2 }),
     };
     const aftermath = stepThreefoldSimulation(atConsole, {
       type: 'wait',

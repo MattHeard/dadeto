@@ -34,7 +34,7 @@ describe('THREEFOLD post-storm closure simulation', () => {
     );
     const atConsole = {
       ...initial,
-      player: createScaleState(console.position),
+      player: createScaleState(console.position, { scale: -2 }),
     };
     const aftermath = stepThreefoldSimulation(atConsole, {
       type: 'wait',
@@ -81,6 +81,33 @@ describe('THREEFOLD post-storm closure simulation', () => {
     });
     expect(outOfRange.episode.closedBy).toBeUndefined();
     expect(outOfRange.crisis.stage).toBe('aftermath');
+  });
+
+  test('the console cannot file a report while proxied at a coarse scale', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    const console = initial.scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const coarse = {
+      ...initial,
+      player: createScaleState(console.position, { scale: -1 }),
+    };
+    const aftermath = stepThreefoldSimulation(coarse, {
+      type: 'wait',
+      elapsedGameMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes,
+    });
+    const coarseAttempt = stepThreefoldSimulation(aftermath, {
+      type: 'interact',
+    });
+    expect(coarseAttempt.episode.closedBy).toBeUndefined();
+
+    const fine = {
+      ...aftermath,
+      player: createScaleState(console.position, { scale: -2 }),
+    };
+    expect(
+      stepThreefoldSimulation(fine, { type: 'interact' }).episode.closedBy
+    ).toBe('reported');
   });
 
   test('station destruction blocks reporting but leaves a reachable departure closure', () => {

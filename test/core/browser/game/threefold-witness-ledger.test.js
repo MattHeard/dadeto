@@ -247,7 +247,7 @@ describe('THREEFOLD witness ledger', () => {
       item => item.id === 'upland-road-exit'
     );
     const reported = stepThreefoldSimulation(
-      { ...heard, player: createScaleState(console.position) },
+      { ...heard, player: createScaleState(console.position, { scale: -2 }) },
       { type: 'interact' }
     );
     const departed = stepThreefoldSimulation(
@@ -377,7 +377,10 @@ describe('THREEFOLD witness ledger', () => {
       item => item.id === 'upland-road-exit'
     );
     const reported = stepThreefoldSimulation(
-      { ...searched, player: createScaleState(console.position) },
+      {
+        ...searched,
+        player: createScaleState(console.position, { scale: -2 }),
+      },
       { type: 'interact' }
     );
     const departed = stepThreefoldSimulation(

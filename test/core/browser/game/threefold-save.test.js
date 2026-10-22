@@ -368,7 +368,7 @@ describe('THREEFOLD complete-run save codec', () => {
     );
     const intact = {
       ...createThreefoldSimulation(CRISIS_THRESHOLDS, intactScene),
-      player: createScaleState(stationConsole.position),
+      player: createScaleState(stationConsole.position, { scale: -2 }),
     };
     const aftermath = stepThreefoldSimulation(intact, {
       type: 'wait',
