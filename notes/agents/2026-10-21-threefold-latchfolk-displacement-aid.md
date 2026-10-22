@@ -1,0 +1,7 @@
+# THREEFOLD optional shelter aid for displaced Latchfolk
+
+- Unexpected hurdle: the existing post-storm watchkeeper relay interaction took priority over shelter aid, and repeating an interaction after aid correctly recorded the still-available relay lead. An early fixture also reached aftermath without warning the residents.
+- Diagnosis: focused regressions showed the prompt and simulation chose different optional actions while both were eligible; the test was also assuming aid should disable unrelated interactions.
+- Chosen fix: prioritize aid in both the prompt and witness-ledger selection, keep the relay lead available on the next interaction, use one shared eligibility guard for open aftermath interactions to avoid clone duplication, and build the flood fixture by warning the watchkeeper before the surge.
+- Next-time guidance: when adding another action to a shared interact control, compare renderer prompt precedence with reducer precedence and exercise subsequent optional actions. Build crisis fixtures through actual actions when possible.
+- Evidence: focused evaluator passed 24 suites / 291 tests, all changed core files have 100% statements and branches, ESLint/core-parse/duplication passed; `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates, 981 suites / 6,862 tests; `npm run build` passed and generated the aid details panel. Exact-head CI pending push.

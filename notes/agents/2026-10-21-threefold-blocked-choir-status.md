@@ -1,0 +1,7 @@
+# THREEFOLD blocked Choir status coverage
+
+- Hurdle: Full Check [39591655904](https://github.com/MattHeard/dadeto/actions/runs/39591655904) passed all 986 suites / 6,942 tests but failed the 100% branch requirement at `page.js:703`, branch 99 arm 1 (global branches 99.994%).
+- Diagnosis: inspect `coverage/full-test-run.json` and the branch map in the downloaded report. The missing behavior was the accessible blocked Choir signal, not a missing campaign-frame property. The owning Bead is `dadeto-5c26`.
+- Fix: add a page regression for a blocked signal and flooded crossing, followed by a sent signal and open crossing. Assert visible accessible wording after each frame. Production code and quality thresholds are unchanged.
+- Evidence: focused page Jest with coverage passed 1 suite / 31 tests; `reports/coverage/choir-status/coverage-final.json` records branch 99 counts `[1,1]`. The focused suite alone does not prove all page coverage. `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 fast gates; retained execution log `/tmp/dadeto-5c26-check.log`. `git diff --check` passed. Full validation remains asynchronous in Actions.
+- Next time: inspect the exact uncovered branch location before hypothesizing from a source filename or function. A green fast check does not replace full branch coverage evidence. Beads became accessible again with elevated access; no lock was removed and no database was rebuilt.

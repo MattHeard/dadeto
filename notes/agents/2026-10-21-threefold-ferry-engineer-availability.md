@@ -1,0 +1,7 @@
+# THREEFOLD ferry engineer availability
+
+- Unexpected hurdle: the Beads database still refused access with a shared Dolt lock timeout, even though no bead process was visible.
+- Diagnosis: reran `bd prime` and `bd ready --sort priority`; `bd prime` returned the workflow context but the subsequent database access failed on the same lock. Did not remove or alter the lock.
+- Fix: derived the unnamed ferry engineer's availability from the existing passenger outcome (`partial` or `evacuated` means available; `lost` means unavailable), exposed it through the existing harbor campaign projection, and rendered an accessible Belltops disclosure. Added focused tests for each outcome and invalid/missing/non-Belltops states; documented the outcome rule in the spec, manual, harness, failure modes, and acceptance evidence.
+- Evidence: focused impact passed 11 related suites / 93 tests with 100% statements and branches on changed core files; `npm run tsdoc:check`, `npm run build`, `npm run manuals:check`, and all 10 gates in `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed (984 suites / 6,910 tests, 0 clones, 0 audit vulnerabilities). Local check excludes full coverage and E2E.
+- Next time: when the passenger outcome model already captures a consequence, keep follow-on campaign context derived from that state instead of adding save fields. Retry Beads only after the shared Dolt lock owner releases it; exact-head CI remains pending after push.

@@ -1,14 +1,48 @@
+import {
+  createThreefoldPressureNetwork,
+  getThreefoldNurseryWaterDepthMeters,
+} from './pressure-network.js';
 import { createRectShapeFromBounds } from '../../canvasShapes.js';
 import { toFramePayload } from '../mosslight-valley/renderer.js';
 import { spriteShapes } from '../mosslight-valley/sprites.js';
-import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './episode.js';
+import {
+  canHelpThreefoldDisplacedLatchfolk,
+  canHearThreefoldLatchfolkLead,
+  canSearchThreefoldFerryWreck,
+  THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
+} from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
+import {
+  isThreefoldCrownbackTharnInReach,
+  THREEFOLD_CROWNBACK_REACH_SCENE_ID,
+} from './crownback-reach.js';
+import {
+  isThreefoldWakeformInReach,
+  THREEFOLD_WAKEFORM_SHOALS_SCENE_ID,
+} from './wakeform-shoals.js';
+import {
+  THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
+  THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID,
+  THREEFOLD_SILT_MARGIN_SIGNAL_ID,
+} from './silt-margin.js';
+import {
+  THREEFOLD_HEARTHGAPS_BRIN_HOME_ID,
+  THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID,
+} from './hearthgaps.js';
+import * as weftways from './weftways.js';
+import * as grainlands from './grainlands.js';
+import { getThreefoldSiltMarginWaterStatus } from './silt-margin-water.js';
 import { getThreefoldGateOutcome } from './outcome.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import { presentThreefoldTestimony } from './testimony.js';
 import {
   isSluiceSimulationState,
+  isSiltMarginSimulationState,
+  isHearthgapsSimulationState,
+  isHighWorldSimulationState,
   previewThreefoldGrowthEffects,
+  isWeftwaysSimulationState,
+  isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
@@ -33,12 +67,34 @@ const RAT_SILHOUETTE = [
  * Adapt the canonical Broken Gate simulation to Mosslight's shared handheld renderer.
  * World geometry scales around Mara while her 12x12 pixel sprite stays fixed.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current gatehouse simulation.
+ * @param {import('./pressure-network.js').ThreefoldPressureNetwork} [pressureNetwork] Shared campaign water.
+ * @param {ReturnType<typeof import('./quay-regulator.js').getThreefoldQuayContent>} [quayContent] Current physical Quay operation.
  * @returns {Record<string, any>} Shared 160x144 Mosslight frame plus THREEFOLD metadata.
  */
-export function renderThreefoldFrame(state) {
+export function renderThreefoldFrame(
+  state,
+  pressureNetwork = createThreefoldPressureNetwork(),
+  quayContent = null
+) {
   if (isSluiceSimulationState(state)) return renderThreefoldSluiceFrame(state);
+  if (isSiltMarginSimulationState(state))
+    return renderThreefoldSiltMarginFrame(state);
+  if (isHearthgapsSimulationState(state))
+    return renderThreefoldHearthgapsFrame(state);
+  if (isWeftwaysSimulationState(state))
+    return renderThreefoldWeftwaysFrame(state);
+  if (isThreefoldGrainlandsSimulationState(state))
+    return renderThreefoldGrainlandsFrame(state, pressureNetwork);
+  const isHighWorld = isHighWorldSimulationState(state);
   const heightMeters = heightAtScale(state.player.scale);
-  const gateOutcome = getThreefoldGateOutcome(state);
+  const gateOutcome = isHighWorld
+    ? {
+        gateState: null,
+        drainageState: /** @type {'dry'|'at-risk'|'flooded'|'receded'} */ (
+          'dry'
+        ),
+      }
+    : getThreefoldGateOutcome(state);
   const growthPreview = previewThreefoldGrowthEffects(state);
   const { geometryIds, occupantIds, creatureIds } = growthPreview;
   const growthPreviewSet = new Set([
@@ -50,7 +106,7 @@ export function renderThreefoldFrame(state) {
   const frame = createThreefoldFramePayload({
     world,
     dialogue:
-      state.crisis.elapsedMinutes === 0
+      !isHighWorld && state.crisis.elapsedMinutes === 0
         ? {
             actorId: 'dock-worker',
             lines: [
@@ -67,10 +123,14 @@ export function renderThreefoldFrame(state) {
       : isGatehouseRatInReach(state)
         ? 'fight'
         : 'grow',
-    toast: getThreefoldToast(state, gateOutcome.drainageState),
+    toast: quayContent
+      ? quayContent.hud
+      : isHighWorld
+        ? getHighWorldToast(state)
+        : getThreefoldToast(state, gateOutcome.drainageState),
     presentation: {
       palette: PALETTE,
-      status: `SCALE ${formatScale(state.player.scale)} · A ${state.player.anchor}/${state.player.maximumAnchor} · ${state.crisis.stage.toUpperCase()}`,
+      status: formatScaleStatus(state.player),
     },
     spriteRenderer: (
       /** @type {Parameters<typeof spriteShapes>[0]} */ actor,
@@ -92,26 +152,31 @@ export function renderThreefoldFrame(state) {
       }));
     },
   });
-  frame.quest = 'The Broken Gate';
+  frame.quest = isHighWorld ? state.scene.displayName : 'The Broken Gate';
   const tideProgress =
     state.crisis.elapsedMinutes / state.crisis.thresholds.aftermathAtMinutes;
-  frame.shapes.push(
-    { type: 'rect', x: 104, y: 4, width: 52, height: 12, fill: PALETTE[0] },
-    {
-      type: 'text',
-      x: 107,
-      y: 11,
-      text: 'TIDE',
-      fill: PALETTE[2],
-      font: '5px monospace',
-    },
-    tideBar(26, PALETTE[1]),
-    tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
-  );
+  if (!isHighWorld)
+    frame.shapes.push(
+      { type: 'rect', x: 104, y: 4, width: 52, height: 12, fill: PALETTE[0] },
+      {
+        type: 'text',
+        x: 107,
+        y: 11,
+        text: 'TIDE',
+        fill: PALETTE[2],
+        font: '5px monospace',
+      },
+      tideBar(26, PALETTE[1]),
+      tideBar(Math.round(26 * tideProgress), tideColor(state.crisis.stage))
+    );
   const growthLabels = [
-    geometryIds.length > 0 ? getGrowthPreviewLabel(geometryIds) : null,
+    geometryIds.length > 0
+      ? getGrowthPreviewLabel(geometryIds, state.scene.geometry)
+      : null,
     occupantIds.length > 0 ? 'A KILLS LATCHFOLK' : null,
-    creatureIds.length > 0 ? getCreatureGrowthPreviewLabel(creatureIds) : null,
+    creatureIds.length > 0
+      ? getCreatureGrowthPreviewLabel(creatureIds, state.scene.creatures)
+      : null,
   ].filter(label => label !== null);
   growthLabels.forEach((text, index) => {
     const y = 17 + index * 12;
@@ -132,9 +197,13 @@ export function renderThreefoldFrame(state) {
     heightMeters,
     anchor: state.player.anchor,
     maximumAnchor: state.player.maximumAnchor,
-    crisisStage: state.crisis.stage,
-    elapsedMinutes: state.crisis.elapsedMinutes,
-    tideProgress,
+    ...(isHighWorld
+      ? { elapsedGameSeconds: state.elapsedGameSeconds }
+      : {
+          crisisStage: state.crisis.stage,
+          elapsedMinutes: state.crisis.elapsedMinutes,
+          tideProgress,
+        }),
     gateState: gateOutcome.gateState,
     drainageState: gateOutcome.drainageState,
     passengers: state.episode.passengers,
@@ -147,16 +216,77 @@ export function renderThreefoldFrame(state) {
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ),
     closedBy: state.episode.closedBy ?? null,
+    episodeEpilogue: getThreefoldEpisodeEpilogue(state, gateOutcome),
+    iriRepairLog:
+      state.episode.closedBy === 'reported'
+        ? {
+            title: "Iri's pressure-regulator log",
+            text:
+              'An earlier log credits Iri with an emergency pressure-regulator bypass. ' +
+              'It records that downstream messages were lost, but cannot establish ' +
+              'which warnings reached each settlement or what Iri understood about ' +
+              'the wider consequences.',
+          }
+        : null,
+    iriRecordedConfession:
+      state.episode.closedBy === 'reported' && hasLatchfolkIriLead(state)
+        ? {
+            title: "Iri's recorded confession",
+            text:
+              'Iri writes: I saw downstream relay messages thinning after I ' +
+              'opened the emergency bypass. I could not tell which settlements ' +
+              'had missed warnings, but I suspected they were in danger. I kept ' +
+              'the bypass open to hold Harrowfen’s pressure line and left my ' +
+              'uncertainty out of the handover. The note does not identify the ' +
+              'final sender or what anyone else knew.',
+          }
+        : null,
+    iriWitnessLead: hasLatchfolkIriLead(state)
+      ? {
+          title: "The Watchkeeper's relay account",
+          text:
+            'After the surge, the watchkeeper remembers a faint relay call asking for Iri. ' +
+            'They cannot say who sent it or whether Iri heard.',
+        }
+      : null,
+    ferryWreckSearch: hasFerryWreckSearch(state)
+      ? {
+          title: 'Ferry wreck search',
+          text: getFerryWreckSearchText(state.episode),
+        }
+      : null,
+    latchfolkAid: hasLatchfolkDisplacementAid(state)
+      ? {
+          title: 'Help for displaced Latchfolk',
+          text: getLatchfolkDisplacementAidText(state),
+        }
+      : null,
     witnessLedger: (state.episode.witnessLedger || []).map(
       presentThreefoldWitnessEntry
     ),
-    testimony: presentThreefoldTestimony(),
+    testimony: isHighWorld ? null : presentThreefoldTestimony(),
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
     growthPreviewCreatureIds: creatureIds,
     ratFate: state.encounter.ratFate,
     ratAction: state.encounter.ratAction,
+    crownbackReach:
+      state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID
+        ? /** @type {Record<string, any>} */ (state).crownbackReach
+        : null,
+    wakeformShoals:
+      state.scene.id === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID
+        ? /** @type {Record<string, any>} */ (state).wakeformShoals
+        : null,
   };
+  if (quayContent && !quayContent.craneAvailable)
+    frame.shapes.push(
+      captionShape(
+        { x: 8, y: 104 },
+        pressureNetwork.craneDestroyed ? 'CRANE LOST' : 'CRANE IDLE',
+        true
+      )
+    );
   return alignThreefoldFrame(frame);
 }
 
@@ -172,47 +302,824 @@ function renderThreefoldSluiceFrame(state) {
     state.player.scale
   );
   const frame = createThreefoldFramePayload({
-    world: {
-      mapId: state.scene.id,
-      map: {
-        name: 'THE TIDAL ARCHIVE',
-        width: 14,
-        height: 9,
-        blocked: [],
-        exits: [],
-        objects: [],
-        palette: 'shore',
-      },
-      player: { x: 7, y: 4 },
-      npcs: [],
-      day: 1,
-      time: state.elapsedGameSeconds / 3600,
-      flags: {},
-    },
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'THE TIDAL ARCHIVE',
+      state.elapsedGameSeconds,
+      { x: 7, y: 4 }
+    ),
     dialogue: null,
     quickAction: 'interact',
-    toast: sluiceToast(water),
+    toast: `${sluiceToast(water)} · WATER FOLLOWS SIM TIME`,
     presentation: {
       palette: PALETTE,
-      status: `SCALE ${formatScale(state.player.scale)} · WATER MOVES WITH GAME TIME`,
+      status: formatScaleStatus(state.player),
     },
     spriteRenderer: () => [],
   });
   frame.quest = 'The Tidal Archive';
-  frame.toast = sluiceToast(water);
+  frame.toast = `${sluiceToast(water)} · WATER FOLLOWS SIM TIME`;
   frame.shapes = sluiceShapes(state, water);
-  frame.threefold = {
+  return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
     heightMeters,
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
     elapsedGameSeconds: state.elapsedGameSeconds,
     portOpen: water.portOpen,
     upperWaterSurfaceElevationMeters: water.upperWaterSurfaceElevationMeters,
     lowerWaterSurfaceElevationMeters: water.lowerWaterSurfaceElevationMeters,
     lowerBasinRaised: water.lowerBasinRaised,
     crossingAvailable: water.crossingAvailable,
+    archiveTraceHeard: state.archiveTraceHeard,
+    archiveQuietingTrace: state.archiveTraceHeard
+      ? {
+          title: 'Tidal Archive coil register',
+          text: 'A waxed maintenance strip records the emergency pressure-regulator bypass. The receiving-coil register shows downstream replies stopping afterward. It names no sender and says nothing about what Iri knew or who was responsible.',
+        }
+      : null,
     witnessLedger: [],
-  };
+  });
+}
+
+/**
+ * Render the Silt Margin branch through the shared 160×144 Mosslight renderer.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'silt-margin'}}>} state Current Silt Margin simulation.
+ * @returns {Record<string, any>} Mosslight frame and branch metadata.
+ */
+function renderThreefoldSiltMarginFrame(state) {
+  const guardian = state.siltMargin.guardian;
+  const signal = state.siltMargin.signal;
+  const quietingEvidenceHeard = state.siltMargin.quietingEvidenceHeard;
+  const growth = previewThreefoldGrowthEffects(state);
+  const water = getThreefoldSiltMarginWaterStatus(state.siltMargin.waterPuzzle);
+  const rootArchBroken = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID
+  );
+  const waterHeight = Math.max(
+    8,
+    snapCanvasCoordinate((water.upstreamSurfaceElevationMeters / 0.04) * 16)
+  );
+  const waterY = 88 - waterHeight;
+  const status =
+    guardian === 'killed'
+      ? 'ROOT BROKEN · GUARDIAN KILLED · CHOIR DISRUPTED'
+      : guardian === 'guided-aside'
+        ? quietingEvidenceHeard
+          ? 'NEME TRANSLATED A QUIETING TRACE'
+          : signal === 'sent'
+            ? 'SIGNAL SENT · NEME’S REPLY AWAITS'
+            : 'GUARDIAN GUIDED · OPEN THE FINE VALVE'
+        : 'DEW BLOCKS THE ROOT · GROW OR OPEN THE VALVE';
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'THE SILT MARGIN',
+      state.elapsedGameSeconds,
+      { x: 6, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Silt Margin';
+  frame.toast = status;
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 0.32) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.18 - state.player.position.y) / 0.18) * 72
+  );
+  const guardianShapes =
+    guardian === 'present'
+      ? [
+          createThreefoldRectShape([56, 64, 16, 16], '#b46b55'),
+          createThreefoldRectShape([64, 56, 16, 8], '#d28b69'),
+          createThreefoldRectShape([56, 56, 8, 8], '#e9d88d'),
+          createThreefoldRectShape([72, 56, 8, 8], '#e9d88d'),
+        ]
+      : [];
+  const rootColor = signal === 'sent' ? '#25a9b8' : '#bfd77c';
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'THE SILT MARGIN', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    ...[16, 32, 48, 88, 104, 136].map((x, index) =>
+      createThreefoldRectShape(
+        [x, 36 + (index % 3) * 8, 8, 8],
+        index % 2 === 0 ? '#526e4b' : '#71915b'
+      )
+    ),
+    ...(!rootArchBroken
+      ? [
+          createThreefoldRectShape(
+            [64, 48, 8, 24],
+            growth.geometryIds.includes(THREEFOLD_SILT_MARGIN_ROOT_ARCH_ID)
+              ? '#e16b5a'
+              : '#8b7950'
+          ),
+          createThreefoldRectShape([72, 48, 8, 8], '#8b7950'),
+          createThreefoldRectShape([80, 48, 8, 24], '#8b7950'),
+        ]
+      : [
+          createThreefoldRectShape([64, 72, 8, 8], '#8b7950'),
+          createThreefoldRectShape([80, 72, 8, 8], '#8b7950'),
+        ]),
+    createThreefoldRectShape([88, waterY, 24, waterHeight], '#25a9b8'),
+    createThreefoldRectShape([72, 88, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([112, 60, 8, 24], '#526e4b'),
+    createThreefoldRectShape([120, 52, 8, 40], rootColor),
+    createThreefoldRectShape([112, 52, 8, 8], rootColor),
+    createThreefoldRectShape([128, 44, 8, 16], rootColor),
+    ...guardianShapes,
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      guardian === 'killed'
+        ? 'ROOT BROKEN · CHOIR SIGNAL DISRUPTED'
+        : guardian === 'guided-aside'
+          ? quietingEvidenceHeard
+            ? 'NEME’S TRACE · FINAL SENDER UNKNOWN'
+            : signal === 'sent'
+              ? 'SIGNAL CROSSED · NEME’S REPLY AWAITS'
+              : water.crossingAvailable
+                ? 'CROSSING OPEN · REACH THE CHOIR ROOT'
+                : 'OPEN THE FINE VALVE · WAIT FOR THE DEW'
+          : 'GROW THROUGH THE ROOT OR GUIDE THE GUARDIAN'
+    ),
+    captionShape(
+      { x: 8, y: 136 },
+      'ARROWS MOVE · A GROW · B SHRINK · E INTERACT'
+    ),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    guardian,
+    signal,
+    quietingEvidenceHeard,
+    siltMarginQuietingEvidence: quietingEvidenceHeard
+      ? {
+          title: 'Neme’s translated Choir trace',
+          text: 'Neme translates the Choir’s surviving pattern: downstream replies stopped after the emergency pressure-regulator bypass. The trace does not identify who sent the final message, what Iri knew, or who was responsible.',
+        }
+      : null,
+    siltMarginWater: water,
+    rootArchBroken,
+    growthPreviewGeometryIds: growth.geometryIds,
+    growthPreviewCreatureIds: growth.creatureIds,
+    guardianId: THREEFOLD_SILT_MARGIN_GUARDIAN_ID,
+    signalId: THREEFOLD_SILT_MARGIN_SIGNAL_ID,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Render the Latchfolk runoff choice through Mosslight's shared handheld frame.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'hearthgaps'}}>} state Current Hearthgaps simulation.
+ * @returns {Record<string, any>} Snapped pixel frame and route metadata.
+ */
+function renderThreefoldHearthgapsFrame(state) {
+  const { runoffChoice, floodedHomeIds } = state.hearthgaps;
+  const heightMeters = heightAtScale(state.player.scale);
+  const growth = previewThreefoldGrowthEffects(state);
+  const brinFlooded = floodedHomeIds.includes(
+    THREEFOLD_HEARTHGAPS_BRIN_HOME_ID
+  );
+  const downstreamFlooded = floodedHomeIds.includes(
+    THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID
+  );
+  const brinDamaged = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_HEARTHGAPS_BRIN_HOME_ID
+  );
+  const downstreamDamaged = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID
+  );
+  const flowRight = runoffChoice === 'brin-diversion';
+  const flowLeft = runoffChoice === 'shared-bypass';
+  const status =
+    runoffChoice === 'brin-diversion'
+      ? "Brin's homes stay dry; downstream homes flood."
+      : runoffChoice === 'shared-bypass'
+        ? "Brin's homes flood; downstream homes stay dry."
+        : 'Choose where to send the culvert runoff.';
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 1.2) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.4 - state.player.position.y) / 0.4) * 72
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'HEARTHGAPS',
+      state.elapsedGameSeconds,
+      { x: 7, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'Hearthgaps';
+  frame.toast = status;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'HEARTHGAPS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    createThreefoldRectShape([24, 68, 112, 8], '#526e4b'),
+    createThreefoldRectShape([40, 60, 80, 8], '#526e4b'),
+    ...[48, 64, 80, 96].map(x =>
+      createThreefoldRectShape([x, 68, 8, 8], '#25a9b8')
+    ),
+    ...(flowRight
+      ? [112, 120].map(x => createThreefoldRectShape([x, 68, 8, 8], '#25a9b8'))
+      : []),
+    ...(flowLeft
+      ? [32, 40].map(x => createThreefoldRectShape([x, 68, 8, 8], '#25a9b8'))
+      : []),
+    ...hearthgapsHomeShapes(
+      { x: 16, y: 52 },
+      brinFlooded,
+      brinDamaged,
+      growth.geometryIds.includes(THREEFOLD_HEARTHGAPS_BRIN_HOME_ID)
+    ),
+    ...hearthgapsHomeShapes(
+      { x: 128, y: 52 },
+      downstreamFlooded,
+      downstreamDamaged,
+      growth.geometryIds.includes(THREEFOLD_HEARTHGAPS_DOWNSTREAM_HOME_ID)
+    ),
+    createThreefoldRectShape([24, 76, 8, 8], '#d28b69'),
+    createThreefoldRectShape([24, 68, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([32, 76, 8, 8], '#b46b55'),
+    createThreefoldRectShape([16, 84, 24, 8], '#182f36'),
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      runoffChoice === 'brin-diversion'
+        ? 'BRIN SAFE · DOWNSTREAM FLOODS'
+        : runoffChoice === 'shared-bypass'
+          ? 'BRIN FLOODS · DOWNSTREAM SAFE'
+          : 'CHOOSE WHICH HOMES FLOOD'
+    ),
+    captionShape({ x: 8, y: 136 }, 'MOVE · E CHOOSE · A GROW · B SHRINK'),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters,
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    runoffChoice,
+    floodedHomeIds: [...floodedHomeIds],
+    growthPreviewGeometryIds: growth.geometryIds,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Draw one intact, flooded, damaged, or growth-threatened Latchfolk home.
+ * @param {{x: number, y: number}} origin Home's grid-aligned canvas origin.
+ * @param {boolean} flooded Whether runoff has submerged the home.
+ * @param {boolean} damaged Whether committed growth damaged its geometry.
+ * @param {boolean} threatened Whether the next scale rung overlaps it.
+ * @returns {ThreefoldSpriteShape[]} Grid-aligned home and flood shapes.
+ */
+function hearthgapsHomeShapes(origin, flooded, damaged, threatened) {
+  const wall = damaged ? '#526e4b' : threatened ? '#e16b5a' : '#bfd77c';
+  const roof = damaged ? '#526e4b' : threatened ? '#e16b5a' : '#d28b69';
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 24, 8], roof),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], roof),
+    createThreefoldRectShape([origin.x + 8, origin.y + 8, 8, 16], wall),
+    createThreefoldRectShape([origin.x, origin.y + 24, 24, 8], '#182f36'),
+    ...(flooded
+      ? [
+          createThreefoldRectShape(
+            [origin.x - 8, origin.y + 16, 40, 8],
+            '#25a9b8'
+          ),
+        ]
+      : []),
+  ];
+}
+
+/**
+ * Render the Threadbound crossing and its two flow choices on the handheld grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'weftways'}}>} state Current Weftways simulation.
+ * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
+ */
+function renderThreefoldWeftwaysFrame(state) {
+  const {
+    flowChoice,
+    floodedGeometryIds,
+    relayRecordRead,
+    relayRecordShared,
+    relayRecordConcealed,
+    relayRecordDestroyed,
+    relayRestitutionNegotiated,
+  } = state.weftways;
+  const pellDied = weftways.hasThreefoldWeftwaysPellGrowthDeath(
+    state.encounter
+  );
+  const rootFlooded = floodedGeometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+  );
+  const quayFlooded = floodedGeometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_LOW_QUAY_ID
+  );
+  const growth = previewThreefoldGrowthEffects(state);
+  const beetleFates = new Set(
+    (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
+  );
+  const flowMessage = relayRecordShared
+    ? pellDied
+      ? 'Mara shared Pell’s record with the relay keeper; responsibility remains unresolved.'
+      : 'Mara shared the record; responsibility remains unresolved.'
+    : relayRecordConcealed
+      ? pellDied
+        ? 'Mara keeps Pell’s record private from the relay keeper.'
+        : 'Mara keeps Pell’s record private.'
+      : relayRecordDestroyed
+        ? 'Mara destroyed the record; responsibility remains unresolved.'
+        : relayRestitutionNegotiated
+          ? pellDied
+            ? 'The relay keeper records Mara’s offer and will carry it onward; Pell’s answer is unknown.'
+            : flowChoice === 'pell-bypass'
+              ? 'Pell accepts Mara’s offer to carry relay tokens and help restore the route.'
+              : 'Pell defers terms until root-channel damage is assessed.'
+          : flowChoice === 'pell-bypass'
+            ? pellDied
+              ? 'The relay keeper preserves Pell’s crossing choice; roots hold, quay floods.'
+              : 'Pell trusts Mara; roots hold, quay floods.'
+            : flowChoice === 'quay-spill'
+              ? pellDied
+                ? 'The relay keeper preserves Pell’s crossing choice; quay stays dry, root crossing floods.'
+                : 'Pell is wary; quay stays dry, root crossing floods.'
+              : pellDied
+                ? 'The relay keeper can discuss the crossing and preserve its evidence.'
+                : 'Pell knows a bypass through the deep roots.';
+  const threadboundIndependentPublication =
+    flowChoice === 'quay-spill'
+      ? {
+          title: pellDied
+            ? 'Caravan relay keeper’s independent notice'
+            : 'Pell’s independent relay notice',
+          text:
+            `After the root crossing flooded, ${pellDied ? 'the caravan relay keeper published' : 'Pell posted'} a notice from the ` +
+            'caravan’s own relay notes to help the downstream crews restore ' +
+            'their route. The notes say relay tokens stopped arriving after ' +
+            'the emergency pressure-regulator bypass. They do not identify ' +
+            'the final sender, establish what Iri knew, or assign responsibility.',
+        }
+      : null;
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 2.4) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.8 - state.player.position.y) / 0.8) * 72
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'WEFTWAYS',
+      state.elapsedGameSeconds,
+      { x: 7, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: flowMessage,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Threadbound Crossing';
+  frame.toast = flowMessage;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'WEFTWAYS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    createThreefoldRectShape([8, 68, 144, 8], '#526e4b'),
+    createThreefoldRectShape([24, 44, 8, 32], '#526e4b'),
+    createThreefoldRectShape([40, 36, 8, 40], '#526e4b'),
+    createThreefoldRectShape([56, 44, 8, 32], '#526e4b'),
+    createThreefoldRectShape(
+      [72, 60, 24, 8],
+      rootFlooded ? '#25a9b8' : '#bfd77c'
+    ),
+    createThreefoldRectShape([96, 52, 8, 24], '#526e4b'),
+    createThreefoldRectShape([112, 44, 32, 8], '#d28b69'),
+    createThreefoldRectShape([112, 52, 8, 24], '#b46b55'),
+    createThreefoldRectShape([128, 52, 8, 24], '#b46b55'),
+    createThreefoldRectShape([8, 72, 24, 8], '#182f36'),
+    createThreefoldRectShape(
+      [16, 64, 8, 8],
+      relayRecordDestroyed ? '#8aa27b' : '#e16b5a'
+    ),
+    ...(quayFlooded
+      ? [createThreefoldRectShape([104, 68, 40, 8], '#25a9b8')]
+      : []),
+    ...weftwaysBeetleShapes(
+      { x: 24, y: 80 },
+      beetleFates.has('weftways-pack-beetle-1')
+    ),
+    ...weftwaysBeetleShapes(
+      { x: 48, y: 80 },
+      beetleFates.has('weftways-pack-beetle-2')
+    ),
+    ...(!pellDied
+      ? [
+          createThreefoldRectShape([80, 64, 8, 8], '#d28b69'),
+          createThreefoldRectShape([80, 56, 8, 8], '#e9d88d'),
+        ]
+      : []),
+    createThreefoldRectShape([72, 72, 24, 8], '#182f36'),
+    createThreefoldRectShape([16, 88, 16, 8], '#e9d88d'),
+    createThreefoldRectShape([128, 88, 16, 8], '#d28b69'),
+    createThreefoldRectShape(
+      [40, 64, 8, 8],
+      relayRecordDestroyed
+        ? '#526e4b'
+        : relayRecordShared
+          ? '#bfd77c'
+          : '#e9d88d'
+    ),
+    createThreefoldRectShape(
+      [64, 64, 8, 8],
+      relayRestitutionNegotiated ? '#bfd77c' : '#d28b69'
+    ),
+    ...(threadboundIndependentPublication
+      ? [
+          createThreefoldRectShape([40, 48, 24, 8], '#d28b69'),
+          createThreefoldRectShape([48, 48, 8, 8], '#bfd77c'),
+        ]
+      : []),
+    createThreefoldRectShape(
+      [112, 40, 8, 8],
+      relayRecordConcealed ? '#bfd77c' : '#8aa27b'
+    ),
+    createThreefoldRectShape([32, 72, 24, 8], '#526e4b'),
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      flowChoice === 'pell-bypass'
+        ? pellDied
+          ? 'RELAY KEEPER · ROOTS SAFE · QUAY FLOODS'
+          : 'ROOTS SAFE · QUAY FLOODS'
+        : flowChoice === 'quay-spill'
+          ? pellDied
+            ? 'RELAY KEEPER · QUAY SAFE · ROOTS FLOOD'
+            : 'QUAY SAFE · ROOTS FLOOD'
+          : pellDied
+            ? 'CARAVAN KEEPER · CHOOSE A FLOW'
+            : 'PELL · CHOOSE A FLOW'
+    ),
+    captionShape(
+      { x: 8, y: 136 },
+      flowChoice === 'undecided'
+        ? 'MOVE · E CHOOSE · A GROW · B SHRINK'
+        : relayRecordShared
+          ? 'CARAVAN KNOWS THE RECORD'
+          : relayRecordConcealed
+            ? 'MARA KEPT THE RECORD PRIVATE'
+            : relayRecordDestroyed
+              ? 'LEDGER DESTROYED · FACTS UNRESOLVED'
+              : relayRestitutionNegotiated
+                ? pellDied
+                  ? 'KEEPER CARRIES OFFER · PELL ANSWER UNKNOWN'
+                  : flowChoice === 'pell-bypass'
+                    ? 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR'
+                    : 'PELL DEFERS · ROOT DAMAGE TO ASSESS'
+                : relayRecordRead
+                  ? 'E SHARE · REPAIR · KEEP · DESTROY'
+                  : pellDied
+                    ? 'REACH CARAVAN CIRCLE · E READ COPY'
+                    : 'REACH PELL · E READ RELAY LOG'
+    ),
+    ...(growth.creatureIds.includes(weftways.THREEFOLD_WEFTWAYS_PELL_ID)
+      ? [captionShape({ x: 8, y: 24 }, 'A KILLS PELL', true)]
+      : []),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    flowChoice,
+    floodedGeometryIds: [...floodedGeometryIds],
+    relayRecordRead,
+    relayRecordShared,
+    relayRecordConcealed,
+    relayRecordDestroyed,
+    relayRestitutionNegotiated,
+    pellDied,
+    threadboundPellOutcome: pellDied
+      ? {
+          title: 'Pell’s death and the caravan relay keeper',
+          text:
+            'Mara’s growth killed Pell. The caravan relay keeper now preserves ' +
+            'his record and can discuss the crossing and carry route-repair ' +
+            'offers onward. Pell does not return, and his response to any offer ' +
+            'after his death is unknown.',
+        }
+      : null,
+    threadboundIndependentPublication,
+    threadboundRelayRecord:
+      relayRecordRead && !relayRecordDestroyed
+        ? {
+            title: 'Threadbound relay ledger',
+            text:
+              `${pellDied ? 'The relay keeper preserves Pell’s caravan ledger, which shows' : 'Pell’s caravan ledger shows'} downstream relay tokens stopped ` +
+              'arriving after an emergency pressure-regulator bypass. It does ' +
+              'not identify who sent the final message, what Iri knew, or who ' +
+              'was responsible.',
+          }
+        : null,
+    threadboundRelayDestruction: relayRecordDestroyed
+      ? {
+          title: 'What happened to the Threadbound ledger',
+          text:
+            'Mara destroyed Pell’s relay ledger at the brazier. The record ' +
+            'can no longer be read. It did not identify the final sender, ' +
+            'establish what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayDisclosure: relayRecordShared
+      ? {
+          title: 'What Mara shared with the caravan',
+          text:
+            'Mara told the Threadbound caravan that downstream relay tokens ' +
+            'stopped arriving after an emergency pressure-regulator bypass. ' +
+            'The record still cannot identify the final sender, establish ' +
+            'what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayConcealment: relayRecordConcealed
+      ? {
+          title: 'What Mara kept private',
+          text:
+            'Mara chose not to share Pell’s relay ledger with the caravan and ' +
+            'kept the record for herself. It still cannot identify the final ' +
+            'sender, establish what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayRestitution: relayRestitutionNegotiated
+      ? {
+          title: 'Threadbound relay restitution',
+          text: pellDied
+            ? 'Mara offered to carry replacement relay tokens to downstream settlements and help restore their route. The caravan relay keeper records the offer and will carry it onward; Pell’s answer is unknown. The offer does not identify the final sender, establish what Iri knew, or assign responsibility.'
+            : flowChoice === 'pell-bypass'
+              ? 'Mara offered to carry replacement relay tokens to downstream ' +
+                'settlements and help restore their route. Pell accepts the ' +
+                'plan. The agreement does not identify the final sender, ' +
+                'establish what Iri knew, or assign responsibility.'
+              : 'Mara offered to carry replacement relay tokens to downstream ' +
+                'settlements and help restore their route. Pell defers final ' +
+                'terms until the root-channel damage is assessed. The offer ' +
+                'does not identify the final sender, establish what Iri knew, ' +
+                'or assign responsibility.',
+        }
+      : null,
+    packBeetleIds: state.scene.creatures
+      .filter(({ id }) => id.startsWith('weftways-pack-beetle-'))
+      .map(({ id }) => id),
+    growthPreviewGeometryIds: growth.geometryIds,
+    growthPreviewCreatureIds: growth.creatureIds,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Render Iru's nursery and the scale-aware spider decision on Mosslight's grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'grainlands'}}>} state Current Grainlands simulation.
+ * @param {import('./pressure-network.js').ThreefoldPressureNetwork} pressureNetwork Shared campaign water.
+ * @returns {Record<string, any>} Snapped handheld frame and route state.
+ */
+function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
+  const nurseryDepth = getThreefoldNurseryWaterDepthMeters(pressureNetwork);
+  const waterHeight = snapCanvasCoordinate(
+    Math.min(32, (nurseryDepth / 0.04) * 32)
+  );
+  const growth = previewThreefoldGrowthEffects(state);
+  const spiderFate = state.grainlands.spiderFate;
+  const bridgeOutcome = state.grainlands.bridgeOutcome;
+  const bridgeThreatened = growth.geometryIds.includes(
+    grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID
+  );
+  const bridgeColor =
+    bridgeOutcome === 'broken'
+      ? '#526e4b'
+      : bridgeThreatened
+        ? '#e16b5a'
+        : '#bfd77c';
+  const status =
+    spiderFate === 'baited-away'
+      ? 'Iru welcomes Mara; spider leaves, bridge holds.'
+      : spiderFate === 'overpowered'
+        ? 'Iru fears Mara; growth breaks nursery bridge.'
+        : 'Iru weighs the spider against the nursery crossing.';
+  const playerX = snapCanvasCoordinate(
+    8 + (state.player.position.x / 0.8) * 144
+  );
+  const playerY = snapCanvasCoordinate(
+    28 + ((0.4 - state.player.position.y) / 0.4) * 72
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'GRAINLANDS',
+      state.elapsedGameSeconds,
+      { x: 4, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Nursery Crossing';
+  frame.toast = status;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'GRAINLANDS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    ...[16, 40, 88, 136].map(x =>
+      createThreefoldRectShape([x, 36, 8, 8], '#526e4b')
+    ),
+    createThreefoldRectShape([32, 68, 24, 8], '#526e4b'),
+    createThreefoldRectShape([40, 60, 8, 16], '#526e4b'),
+    createThreefoldRectShape([48, 64, 24, 8], bridgeColor),
+    ...(bridgeOutcome === 'broken'
+      ? [createThreefoldRectShape([56, 72, 8, 8], '#182f36')]
+      : []),
+    ...(pressureNetwork.nurseryDamaged
+      ? [createThreefoldRectShape([112, 64, 32, 8], '#b46b55')]
+      : grainlandsNurseryShapes({ x: 112, y: 52 })),
+    ...(waterHeight > 0
+      ? [
+          createThreefoldRectShape(
+            [104, 80 - waterHeight, 40, waterHeight],
+            '#1b8a83'
+          ),
+        ]
+      : []),
+    createThreefoldRectShape(
+      [104, 32, 8, 8],
+      pressureNetwork.nurseryDamaged
+        ? '#b46b55'
+        : pressureNetwork.hatchClosed
+          ? '#e9d88d'
+          : '#526e4b'
+    ),
+    ...(spiderFate === 'baited-away'
+      ? []
+      : grainlandsSpiderShapes({ x: 64, y: 56 }, spiderFate === 'overpowered')),
+    createThreefoldRectShape([32, 76, 8, 8], '#b46b55'),
+    createThreefoldRectShape([32, 68, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([40, 76, 8, 8], '#d28b69'),
+    createThreefoldRectShape([playerX, playerY, 8, 8], PALETTE[3]),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      spiderFate === 'baited-away'
+        ? 'SPIDER BAITED · BRIDGE SAFE'
+        : spiderFate === 'overpowered'
+          ? 'SPIDER BEATEN · BRIDGE BROKE'
+          : 'IRU · NURSERY · SPIDER'
+    ),
+    captionShape({ x: 8, y: 136 }, 'E IRU/HATCH · A GROW'),
+  ];
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    spiderFate,
+    bridgeOutcome,
+    nurseryId: grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID,
+    nurseryWaterDepthMeters: nurseryDepth,
+    nurseryFlooded: pressureNetwork.nurseryFlooded,
+    shelterHatchClosed:
+      pressureNetwork.hatchClosed && !pressureNetwork.nurseryDamaged,
+    growthPreviewGeometryIds: growth.geometryIds,
+    growthPreviewCreatureIds: growth.creatureIds,
+    witnessLedger: [],
+  });
+}
+
+/**
+ * Draw Nursery Clades shelters and the eggs they protect.
+ * @param {{x: number, y: number}} origin Grid-aligned shelter origin.
+ * @returns {ThreefoldSpriteShape[]} Clade shelter and egg silhouettes.
+ */
+function grainlandsNurseryShapes(origin) {
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 24, 8], '#bfd77c'),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], '#d28b69'),
+    createThreefoldRectShape([origin.x + 8, origin.y + 8, 8, 16], '#526e4b'),
+    createThreefoldRectShape([origin.x, origin.y + 24, 24, 8], '#182f36'),
+    createThreefoldRectShape([origin.x + 8, origin.y + 16, 8, 8], '#e9d88d'),
+    createThreefoldRectShape([origin.x + 16, origin.y + 16, 8, 8], '#e9d88d'),
+  ];
+}
+
+/**
+ * Draw a large predator, or the remains left by growth.
+ * @param {{x: number, y: number}} origin Grid-aligned spider position.
+ * @param {boolean} overpowered Whether growth defeated the spider.
+ * @returns {ThreefoldSpriteShape[]} Spider body and legs.
+ */
+function grainlandsSpiderShapes(origin, overpowered) {
+  const bodyColor = overpowered ? '#526e4b' : '#d28b69';
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 16, 8], bodyColor),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], '#b46b55'),
+    createThreefoldRectShape([origin.x - 8, origin.y - 8, 8, 8], '#182f36'),
+    createThreefoldRectShape([origin.x - 8, origin.y + 8, 8, 8], '#182f36'),
+    createThreefoldRectShape([origin.x + 16, origin.y + 8, 8, 8], '#182f36'),
+  ];
+}
+
+/**
+ * Draw a pack beetle or its remains at one grid-aligned caravan position.
+ * @param {{x: number, y: number}} origin Beetle canvas position.
+ * @param {boolean} lost Whether growth permanently removed the beetle.
+ * @returns {ThreefoldSpriteShape[]} Beetle silhouette.
+ */
+function weftwaysBeetleShapes(origin, lost) {
+  const shell = lost ? '#526e4b' : '#bfd77c';
+  return [
+    createThreefoldRectShape([origin.x, origin.y, 16, 8], shell),
+    createThreefoldRectShape([origin.x + 8, origin.y - 8, 8, 8], shell),
+    createThreefoldRectShape([origin.x + 4, origin.y + 8, 8, 8], '#d28b69'),
+    createThreefoldRectShape([origin.x - 8, origin.y + 8, 8, 8], '#182f36'),
+  ];
+}
+
+/**
+ * Attach scene-specific metadata and align the finished small-world frame.
+ * @param {Record<string, any>} frame Completed Mosslight frame.
+ * @param {Record<string, any>} threefold Scene metadata.
+ * @returns {Record<string, any>} Grid-aligned THREEFOLD frame.
+ */
+function finishSmallWorldFrame(frame, threefold) {
+  frame.threefold = threefold;
   return alignThreefoldFrame(frame);
+}
+
+/**
+ * Build the common world-model input for selectable small-world regions.
+ * @param {string} mapId Authored region identifier.
+ * @param {string} name Visible map name.
+ * @param {number} elapsedGameSeconds Explicit in-world elapsed time.
+ * @param {{x: number, y: number}} player Grid-map player coordinate.
+ * @returns {Record<string, any>} Mosslight world model.
+ */
+function createSmallWorldFrameWorld(mapId, name, elapsedGameSeconds, player) {
+  return {
+    mapId,
+    map: {
+      name,
+      width: 14,
+      height: 9,
+      blocked: [],
+      exits: [],
+      objects: [],
+      palette: 'shore',
+    },
+    player,
+    npcs: [],
+    day: 1,
+    time: elapsedGameSeconds / 3600,
+    flags: {},
+  };
 }
 
 /**
@@ -340,6 +1247,11 @@ function sluiceShapes(state, water) {
       [149, 54, 3, 43],
       water.crossingAvailable ? waterColor : '#e16b5a'
     ),
+    createThreefoldRectShape(
+      [140, 64, 5, 5],
+      state.archiveTraceHeard ? '#e9d88d' : '#789378'
+    ),
+    captionShape({ x: 132, y: 58 }, 'LOG'),
     createThreefoldRectShape([playerX, playerY, 4, 4], '#e9d88d'),
     captionShape({ x: 69, y: 102 }, water.portOpen ? 'OPEN' : 'VALVE'),
     captionShape(
@@ -493,6 +1405,55 @@ function getThreefoldToast(state, drainageState) {
 }
 
 /**
+ * Summarize the branch-specific, saved consequences after the Broken Gate closes.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation state.
+ * @param {{gateState: 'held'|'forced-open'|'repaired'|null, drainageState: 'dry'|'at-risk'|'flooded'|'receded'}} gateOutcome Derived gate outcome.
+ * @returns {{title: string, paragraphs: string[]}|null} Text-only epilogue for a closed episode.
+ */
+function getThreefoldEpisodeEpilogue(state, gateOutcome) {
+  if (gateOutcome.gateState === null) return null;
+  if (
+    state.episode.closedBy !== 'reported' &&
+    state.episode.closedBy !== 'departed'
+  )
+    return null;
+  const signalStationDestroyed = state.player.destroyedGeometryIds.includes(
+    THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+  );
+  const closure =
+    state.episode.closedBy === 'reported'
+      ? 'Mara files the storm report from the intact signal station.'
+      : signalStationDestroyed
+        ? 'Mara leaves by the upland road; the signal station is rubble and no report is sent.'
+        : 'The signal station stands, but Mara leaves by the upland road without filing a report.';
+  const channel =
+    gateOutcome.drainageState === 'dry'
+      ? 'The lower channel stays dry.'
+      : gateOutcome.drainageState === 'receded'
+        ? 'Floodwater recedes from the lower channel during aftermath.'
+        : 'Floodwater remains in the lower channel after the storm.';
+  const latchfolkResponse =
+    state.episode.closedBy === 'reported' &&
+    state.episode.latchfolk === 'safe' &&
+    hasLatchfolkIriLead(state)
+      ? [
+          'The report carries Iri’s account to the surviving Latchfolk watchkeeper. They ask for the downstream relay stations to be traced before responsibility is assigned; the final sender and missed warnings remain unknown.',
+        ]
+      : [];
+  return {
+    title: state.episode.closedBy === 'reported' ? 'Report filed' : 'Departure',
+    paragraphs: [
+      closure,
+      ...latchfolkResponse,
+      `Passenger outcome: ${getPassengerOutcomeLabel(state.episode).toLowerCase()}.`,
+      `Latchfolk outcome: ${state.episode.latchfolk}.`,
+      `Relief gate: ${gateOutcome.gateState}.`,
+      channel,
+    ],
+  };
+}
+
+/**
  * Describe the two passenger groups across ferry and surge outcomes.
  * @param {ReturnType<import('./episode.js').createThreefoldEpisodeState>} episode Current episode outcomes.
  * @returns {string} Passenger rescue result for the shared Mosslight frame.
@@ -520,7 +1481,81 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
   const prompt = signalStationDestroyed
     ? 'SIGNAL STATION LOST · DEPART UPLAND TO CLOSE'
     : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
-  return `${message} · ${prompt}`;
+  const aftermathAction = canHelpThreefoldDisplacedLatchfolk(state)
+    ? ' · E HELP LATCHFOLK'
+    : canHearThreefoldLatchfolkLead(state)
+      ? ' · E SPEAK WITH THE WATCHKEEPER'
+      : canSearchThreefoldFerryWreck(state)
+        ? ' · E SEARCH FERRY WRECK'
+        : '';
+  const aftermathRecord = hasLatchfolkDisplacementAid(state)
+    ? ' · LATCHFOLK AID IN JOURNAL'
+    : hasLatchfolkIriLead(state)
+      ? ' · WATCHKEEPER ACCOUNT IN JOURNAL'
+      : hasFerryWreckSearch(state)
+        ? ' · FERRY SEARCH IN JOURNAL'
+        : '';
+  return `${message} · ${prompt}${aftermathAction}${aftermathRecord}`;
+}
+
+/**
+ * Determine whether the optional displaced-resident aid was recorded.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the aid observation is saved.
+ */
+function hasLatchfolkDisplacementAid(state) {
+  return (state.episode.witnessLedger || []).some(
+    entry => entry.action === 'latchfolk-displacement-aid'
+  );
+}
+
+/**
+ * Describe the optional aid and current lower-home water condition.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {string} Factual record of the help and remaining damage.
+ */
+function getLatchfolkDisplacementAidText(state) {
+  const homes = getThreefoldGateOutcome(state).drainageState;
+  const homeCondition =
+    homes === 'receded'
+      ? 'Water has receded, but their homes remain damaged.'
+      : 'Floodwater remains in their homes.';
+  return `Mara and the watchkeeper help the displaced Latchfolk arrange temporary shelter. ${homeCondition}`;
+}
+
+/**
+ * Determine whether the ferry wreck search was recorded in the witness ledger.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the search observation is saved.
+ */
+function hasFerryWreckSearch(state) {
+  return (state.episode.witnessLedger || []).some(
+    entry => entry.action === 'ferry-wreck-search'
+  );
+}
+
+/**
+ * Describe the passenger outcome confirmed by the post-surge search.
+ * @param {ReturnType<typeof import('./episode.js').createThreefoldEpisodeState>} episode Saved episode outcome.
+ * @returns {string} Factual search account without changing the passenger outcome.
+ */
+function getFerryWreckSearchText(episode) {
+  if (episode.passengers === 'evacuated')
+    return 'Both passenger groups reached shore before the ferry was lost. The wreck holds no remaining passengers.';
+  if (episode.passengers === 'partial')
+    return 'One passenger group reached shore; the other was aboard when the ferry was lost. No further survivors are found in the wreck.';
+  return 'Both passenger groups were still aboard when the ferry was lost. No survivors are found in the wreck.';
+}
+
+/**
+ * Determine whether the optional witness-supplied Iri lead was recorded.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current simulation.
+ * @returns {boolean} Whether the saved witness ledger contains the lead.
+ */
+function hasLatchfolkIriLead(state) {
+  return (state.episode.witnessLedger || []).some(
+    entry => entry.action === 'latchfolk-witness-lead'
+  );
 }
 
 /**
@@ -532,7 +1567,9 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
-  const { drainageState } = getThreefoldGateOutcome(state);
+  const drainageState = isHighWorldSimulationState(state)
+    ? 'dry'
+    : getThreefoldGateOutcome(state).drainageState;
   const { geometry } = projectGeometryForScale(player, scene.geometry);
   const growthDeathIds = new Set(
     (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
@@ -562,7 +1599,9 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     mapId: scene.id,
     location: scene.id,
     map: {
-      name: 'BROKEN GATE',
+      name: isHighWorldSimulationState(state)
+        ? state.scene.displayName.replace(/^The /, '').toUpperCase()
+        : 'BROKEN GATE',
       width: mapWidth,
       height: mapHeight,
       blocked: [],
@@ -613,7 +1652,9 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
       y: VIEW_ORIGIN.y + player.position.y / heightMeters,
       facing: 'down',
     },
-    time: crisis.elapsedMinutes / 60,
+    time: isHighWorldSimulationState(state)
+      ? state.elapsedGameSeconds / 3600
+      : crisis.elapsedMinutes / 60,
     day: 1,
     flags: {},
     npcs: [],
@@ -699,34 +1740,104 @@ function screenFootprint(actor, camera, heightMeters) {
 }
 
 /**
- * Identify the known structures affected by the next growth action.
- * @param {string[]} geometryIds Identifiers returned by the growth preview.
+ * Identify the authored structures affected by the next growth action.
+ * @param {string[]} geometryIds Geometry affected by the next growth action.
+ * @param {Array<{id: string, displayName?: string}>} geometry Authored scene structures.
  * @returns {string} Compact handheld message.
  */
-function getGrowthPreviewLabel(geometryIds) {
-  const labels = geometryIds.map(id =>
-    id
-      .replace(/^gatehouse-/, '')
-      .replaceAll('-', ' ')
-      .toUpperCase()
-  );
+function getGrowthPreviewLabel(geometryIds, geometry) {
+  const displayNames = geometryIds.map(id => {
+    const object = geometry.find(item => item.id === id);
+    return object?.displayName;
+  });
+  const labels = displayNames.every(name => typeof name === 'string')
+    ? displayNames
+    : geometryIds.map(id =>
+        id
+          .replace(/^gatehouse-/, '')
+          .replaceAll('-', ' ')
+          .toUpperCase()
+      );
   const shown =
-    labels.length > 1 ? `${labels[0]} +${labels.length - 1}` : labels[0];
+    labels.length > 1
+      ? displayNames.every(name => typeof name === 'string')
+        ? labels.join(' + ')
+        : `${labels[0]} +${labels.length - 1}`
+      : labels[0];
   return `A BREAKS ${shown}`;
 }
 
 /**
- * Describe the creature outcomes while keeping the rat's established label.
- * @param {string[]} creatureIds Sorted creatures affected by the next growth action.
+ * Describe creature outcomes, preserving the established rat label.
+ * @param {string[]} creatureIds Creatures affected by the next growth action.
+ * @param {Array<{id: string, displayName?: string}>} creatures Authored scene residents.
  * @returns {string} Compact handheld message.
  */
-function getCreatureGrowthPreviewLabel(creatureIds) {
+function getCreatureGrowthPreviewLabel(creatureIds, creatures) {
   if (creatureIds.length === 1 && creatureIds[0] === 'gatehouse-rat')
     return 'A KILLS RAT';
+  const names = creatureIds.map(id => {
+    const creature = creatures.find(item => item.id === id);
+    return /** @type {{displayName?: string}|undefined} */ (creature)
+      ?.displayName;
+  });
+  if (names.every(name => typeof name === 'string'))
+    return `A KILLS ${names.join(' + ')}`;
   const creatureCount = creatureIds.length;
   const countLabel =
     creatureCount === 1 ? '1 CREATURE' : `${creatureCount} CREATURES`;
   return `A KILLS ${countLabel}`;
+}
+
+/**
+ * Describe the high-world scene's preview or persisted consequences.
+ * @param {ReturnType<typeof import('./simulation.js').createThreefoldSimulation>} state Current district state.
+ * @returns {string} Compact city-scale status without Broken Gate language.
+ */
+function getHighWorldToast(state) {
+  const displayName = /** @type {{displayName: string}} */ (state.scene)
+    .displayName;
+  const region = displayName.replace(/^The /, '').toUpperCase();
+  const residents = new Map(
+    state.scene.creatures.map(creature => [
+      creature.id,
+      /** @type {{displayName?: string}} */ (creature).displayName,
+    ])
+  );
+  const lostResidents = (state.encounter.growthDeaths ?? [])
+    .map(({ creatureId }) => residents.get(creatureId))
+    .filter(Boolean);
+  const damagedStructures = state.scene.geometry
+    .filter(object => state.player.destroyedGeometryIds.includes(object.id))
+    .map(object => /** @type {{displayName?: string}} */ (object).displayName);
+  if (state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID) {
+    const crownbackState = /** @type {Record<string, any>} */ (state)
+      .crownbackReach;
+    if (crownbackState?.tharnMet !== true)
+      return isThreefoldCrownbackTharnInReach(/** @type {any} */ (state))
+        ? 'ELDER THARN IN REACH · E MEET'
+        : 'FIND ELDER THARN · E TO MEET';
+  }
+  if (state.scene.id === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID) {
+    const shoalsState = /** @type {Record<string, any>} */ (state)
+      .wakeformShoals;
+    const wakeformLost = lostResidents.includes('WAKEFORM');
+    if (shoalsState?.outerDefenseBreached === true)
+      return wakeformLost
+        ? 'OUTER WALL BROKEN · WAKEFORM LOST · FLOW DIVERTED'
+        : 'OUTER WALL BROKEN · FLOW DIVERTED SEAWARD';
+    if (shoalsState?.wakeformDiverted === true)
+      return 'WAKEFORM GUIDED NORTH · CURRENT DIVERTED';
+    return isThreefoldWakeformInReach(/** @type {any} */ (state))
+      ? 'WAKEFORM IN REACH · E DIVERT'
+      : 'FIND WAKEFORM · E TO DIVERT';
+  }
+  if (lostResidents.length > 0 || damagedStructures.length > 0)
+    return `${region} GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;
+  const growth = previewThreefoldGrowthEffects(state);
+  if (growth.geometryIds.length > 0 || growth.creatureIds.length > 0)
+    return `A GROW · ${region} AND ITS RESIDENTS ARE AT RISK`;
+  return `${region} · A GROW · B SHRINK`;
 }
 
 /**
@@ -746,4 +1857,18 @@ function centerOf(minimum, maximum) {
  */
 function formatScale(scale) {
   return scale > 0 ? `+${scale}` : String(scale);
+}
+
+/**
+ * Show scale, physical height, and the remaining resource on one handheld row.
+ * @param {ReturnType<typeof import('./spatial.js').createScaleState>} player Current scale and Anchor state.
+ * @returns {string} Compact player measurement for the shared HUD.
+ */
+function formatScaleStatus(player) {
+  const heightMeters = heightAtScale(player.scale);
+  const heightLabel =
+    heightMeters < 1
+      ? `${(heightMeters * 100).toFixed(2)} cm`
+      : `${heightMeters.toFixed(2)} m`;
+  return `SCALE ${formatScale(player.scale)} · ${heightLabel} · A ${player.anchor}/${player.maximumAnchor}`;
 }

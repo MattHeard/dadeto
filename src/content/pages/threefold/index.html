@@ -23,7 +23,9 @@
           <h1>THREEFOLD</h1>
           <span id="chapter-subtitle">The Weight of Water</span>
         </div>
-        <p class="chapter-tag" id="chapter-tag">HARROWFEN <i>✦</i> THE BROKEN GATE</p>
+        <p class="chapter-tag" id="chapter-tag">
+          HARROWFEN <i>✦</i> THE BROKEN GATE
+        </p>
       </header>
       <section class="play-layout" aria-label="THREEFOLD game">
         <div class="screen-frame">
@@ -37,27 +39,57 @@
           </div>
           <div class="screen-caption">
             <span>HANDHELD DISPLAY · 160 × 144</span>
-            <span id="game-status" aria-live="polite">The tide is climbing.</span>
+            <span id="game-status" aria-live="polite"
+              >The tide is climbing.</span
+            >
           </div>
         </div>
         <aside class="side-panel">
           <div class="chapter-copy">
             <p class="eyebrow" id="chapter-eyebrow">THE GATE IS FAILING</p>
-            <h2 id="chapter-heading">One place. Four scales. Every action leaves a trace.</h2>
+            <h2 id="chapter-heading">
+              One place. Four scales. Every action leaves a trace.
+            </h2>
             <p id="chapter-description">
               Walk the gatehouse, change size, and study the tide. Grow through
               the west wall to leave a lasting breach, warn the Latchfolk in the
-              lower settlement, reach the ferry mooring, or withdraw up the
-              road before the surge.
+              lower settlement, reach the ferry mooring, or withdraw up the road
+              before the surge.
             </p>
             <p><a href="/manuals/threefold.md">Field guide</a></p>
-            <p><a id="scene-link" href="/threefold/?scene=sluice">Explore the small-world sluice</a></p>
+            <p>
+              <a id="scene-link" href="/threefold/?scene=sluice"
+                >Explore the small-world sluice</a
+              >
+            </p>
+            <p id="hearthgaps-entry">
+              <a href="/threefold/?scene=hearthgaps"
+                >Explore the Hearthgaps culverts</a
+              >
+            </p>
+            <p id="weftways-entry">
+              <a href="/threefold/?scene=weftways"
+                >Enter the Weftways caravan crossing</a
+              >
+            </p>
+            <p id="grainlands-entry">
+              <a href="/threefold/?scene=grainlands"
+                >Enter the Grainlands nursery crossing</a
+              >
+            </p>
           </div>
           <div class="control-card">
             <div><span class="keycap">↑ ↓ ← →</span><b>MOVE</b></div>
-            <div><span class="keycap">A</span><b>GROW · BREAK THROUGH</b></div>
-            <div><span class="keycap">B</span><b>SHRINK</b></div>
-            <div><span class="keycap">E</span><b>INTERACT</b></div>
+            <div>
+              <span class="keycap">A</span
+              ><b id="a-control-label">GROW · BREAK THROUGH</b>
+            </div>
+            <div>
+              <span class="keycap">B</span><b id="b-control-label">SHRINK</b>
+            </div>
+            <div>
+              <span class="keycap">E</span><b id="e-control-label">INTERACT</b>
+            </div>
             <div><span class="keycap">X</span><b>WAIT 15 GAME MINUTES</b></div>
             <div><span class="keycap">Y</span><b>SAVE</b></div>
           </div>
@@ -74,11 +106,22 @@
                 <button data-action="a" aria-label="A button: grow">A</button>
               </div>
               <div class="system-buttons">
-                <button data-action="x" aria-label="X button: wait 15 game minutes">X</button>
+                <button
+                  data-action="x"
+                  aria-label="X button: wait 15 game minutes"
+                >
+                  X
+                </button>
                 <button data-action="y" aria-label="Y button: save">Y</button>
               </div>
               <div class="extra-buttons">
-              <button id="interact-control" data-action="interact" aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"><span id="interact-label">E · INTERACT</span></button>
+                <button
+                  id="interact-control"
+                  data-action="interact"
+                  aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"
+                >
+                  <span id="interact-label">E · INTERACT</span>
+                </button>
               </div>
             </div>
           </div>
@@ -88,11 +131,129 @@
               <li>No gate events recorded yet.</li>
             </ol>
           </details>
+          <details id="campaign-places" class="witness-ledger" hidden>
+            <summary>Campaign status</summary>
+            <p id="campaign-clock-text"></p>
+            <p id="campaign-places-text" aria-live="polite"></p>
+            <p id="campaign-pressure-text" aria-live="polite" hidden></p>
+            <p id="campaign-iri-fate-text" hidden></p>
+          </details>
           <details id="testimony" class="witness-ledger">
             <summary>Testimony and unresolved responsibility</summary>
             <ol id="testimony-accounts" aria-live="polite"></ol>
             <p id="testimony-responsibility"></p>
           </details>
+          <details id="iri-repair-log" class="witness-ledger" hidden>
+            <summary>Iri's pressure-regulator log</summary>
+            <p id="iri-repair-log-text"></p>
+          </details>
+          <details id="iri-recorded-confession" class="witness-ledger" hidden>
+            <summary>Iri's recorded confession</summary>
+            <p id="iri-recorded-confession-text"></p>
+          </details>
+          <details id="harbor-memorial" class="witness-ledger" hidden>
+            <summary>Harrowfen ferry memorial</summary>
+            <p id="harbor-memorial-text" aria-live="polite"></p>
+          </details>
+          <details id="belltops-watch-response" class="witness-ledger" hidden>
+            <summary>Orla's harbor response</summary>
+            <p id="belltops-watch-response-text" aria-live="polite"></p>
+          </details>
+          <details
+            id="harbor-engineer-availability"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>Harbor engineering support</summary>
+            <p id="harbor-engineer-availability-text" aria-live="polite"></p>
+          </details>
+          <details id="iri-witness-lead" class="witness-ledger" hidden>
+            <summary>The Watchkeeper's relay account</summary>
+            <p id="iri-witness-lead-text"></p>
+          </details>
+          <details id="ferry-wreck-search" class="witness-ledger" hidden>
+            <summary>Ferry wreck search</summary>
+            <p id="ferry-wreck-search-text"></p>
+          </details>
+          <details
+            id="latchfolk-displacement-aid"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>Help for displaced Latchfolk</summary>
+            <p id="latchfolk-displacement-aid-text"></p>
+          </details>
+          <details id="weftways-relay-record" class="witness-ledger" hidden>
+            <summary>Threadbound relay ledger</summary>
+            <p id="weftways-relay-record-text"></p>
+          </details>
+          <details id="weftways-pell-outcome" class="witness-ledger" hidden>
+            <summary>Pell’s death and the caravan relay keeper</summary>
+            <p id="weftways-pell-outcome-text"></p>
+          </details>
+          <details id="weftways-relay-disclosure" class="witness-ledger" hidden>
+            <summary>What Mara shared with the caravan</summary>
+            <p id="weftways-relay-disclosure-text"></p>
+          </details>
+          <details
+            id="weftways-relay-concealment"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>What Mara kept private</summary>
+            <p id="weftways-relay-concealment-text"></p>
+          </details>
+          <details
+            id="weftways-relay-destruction"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>What happened to the Threadbound ledger</summary>
+            <p id="weftways-relay-destruction-text"></p>
+          </details>
+          <details
+            id="weftways-relay-restitution"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>Threadbound relay restitution</summary>
+            <p id="weftways-relay-restitution-text"></p>
+          </details>
+          <details
+            id="weftways-independent-publication"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>Pell’s independent relay notice</summary>
+            <p id="weftways-independent-publication-text"></p>
+          </details>
+          <details
+            id="tidal-archive-quieting-trace"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>Tidal Archive coil register</summary>
+            <p id="tidal-archive-quieting-trace-text"></p>
+          </details>
+          <details
+            id="silt-margin-quieting-evidence"
+            class="witness-ledger"
+            hidden
+          >
+            <summary>Neme’s translated Choir trace</summary>
+            <p id="silt-margin-quieting-evidence-text"></p>
+          </details>
+          <details id="episode-epilogue" class="witness-ledger" hidden>
+            <summary>After the Broken Gate</summary>
+            <ol id="episode-epilogue-outcomes" aria-live="polite"></ol>
+          </details>
+          <p class="campaign-tide-guide">
+            Harbor support shifts at 9 game minutes. At 15, a forced, unrepaired
+            gate can send the surge through the Quay. Surviving ferry engineers,
+            a working crane governor and coordinated relief routes change who
+            can leave.
+          </p>
+          <p id="campaign-persistence" role="status" aria-live="polite"></p>
           <nav class="utility-actions" aria-label="Save controls">
             <label class="slot-picker" hidden
               >SAVE SLOT
@@ -103,9 +264,22 @@
               </select>
             </label>
             <button id="save-game">Save</button>
-            <button id="export-game">Export</button>
-            <button id="import-button">Import</button>
-            <input id="import-game" type="file" accept="application/json,.json" hidden />
+            <button id="export-game">Export region</button>
+            <button id="import-button">Import region</button>
+            <button id="export-campaign">Backup campaign</button>
+            <button id="import-campaign-button">Restore campaign</button>
+            <input
+              id="import-campaign"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            />
+            <input
+              id="import-game"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            />
             <button id="pause-game">Pause</button>
             <button id="resume-game">Resume</button>
             <button id="fullscreen-game">Fullscreen</button>
@@ -114,7 +288,10 @@
         </aside>
       </section>
       <footer>
-        <span id="game-footer">Rescue passengers at the mooring before surge. In-game time advances from deliberate actions, never the browser clock.</span>
+        <span id="game-footer"
+          >Rescue passengers at the mooring before surge. In-game time advances
+          from deliberate actions, never the browser clock.</span
+        >
         <span>DETERMINISTIC CONSEQUENCES <i>✦</i></span>
       </footer>
     </main>

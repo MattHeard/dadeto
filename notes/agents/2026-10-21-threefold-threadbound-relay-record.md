@@ -1,0 +1,7 @@
+# THREEFOLD Threadbound relay record
+
+- Unexpected hurdle: the first Pell-reach fixture mapped positive world-Y movement to up, while this game's up direction decreases Y. Mara moved into the southern boundary and could not approach Pell from either crossing control.
+- Diagnosis: the focused route simulation showed the player stopped at the Y boundary. Inspecting the authored movement vector exposed the sign mismatch; both corrected paths then ended within Pell's 0.55-height interaction radius.
+- Chosen fix: corrected the fixture's direction mapping, made the optional relay discovery a route-specific saved fact, defaulted missing schema-v1 fields to unread, and displayed the record through the existing accessible disclosure pattern. The new disclosure test lives in a focused page-test file so the larger page-adapter suite remains within its lint line budget.
+- Next-time guidance: derive test movement from world-coordinate direction vectors and verify physical reach after each route. For additive route-local save facts, preserve the existing save version only when absent legacy fields have a safe canonical default.
+- Evidence: focused impact passed 24 related suites / 265 tests with all changed core statements and branches at 100%; `npm run check` passed 10 fast gates across five shards (982 suites / 6,866 tests); `npm run build` passed and generated the relay details panel. Exact-head GitHub CI is pending push.

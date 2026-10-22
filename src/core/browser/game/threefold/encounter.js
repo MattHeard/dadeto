@@ -51,7 +51,7 @@ export function isInsideGatehouseRat(simulation) {
 /**
  * Check whether Mara fits wholly inside one authored creature's bounds.
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} simulation Current run.
- * @param {ReturnType<import('./gatehouse.js').createBrokenGateScene>['creatures'][number]} creature Authored creature volume.
+ * @param {{bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}} creature Authored creature volume.
  * @returns {boolean} Whether the current player body fits inside the creature.
  */
 export function isPlayerInsideCreature(simulation, creature) {
@@ -225,7 +225,11 @@ function normalizeGrowthDeaths(candidate) {
  * @returns {{rat: ReturnType<import('./gatehouse.js').createBrokenGateScene>['creatures'][number], player: ReturnType<import('./simulation.js').createThreefoldSimulation>['player']}|null} Current encounter context.
  */
 function getPresentGatehouseRatContext(simulation) {
-  if (simulation?.encounter?.ratFate !== 'present' || !simulation?.player)
+  if (
+    simulation?.scene?.id !== 'broken-gate' ||
+    simulation?.encounter?.ratFate !== 'present' ||
+    !simulation?.player
+  )
     return null;
   const rat = simulation.scene.creatures.find(
     creature => creature.id === 'gatehouse-rat'

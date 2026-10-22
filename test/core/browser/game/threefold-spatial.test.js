@@ -160,7 +160,7 @@ describe('THREEFOLD scale-space', () => {
     );
   });
 
-  test('projects persistent rubble consistently across views and reloaded chunks', () => {
+  test('retains damage when independently unloaded chunks reload after serialization', () => {
     const wall = {
       id: 'wall',
       bounds: {
@@ -182,9 +182,20 @@ describe('THREEFOLD scale-space', () => {
         max: { x: -2, y: 3, z: 1 },
       },
     };
-    const originalGeometry = JSON.stringify([wall, stone, beam]);
+    const remoteBeam = {
+      id: 'remote-beam',
+      bounds: {
+        min: { x: -5, y: 4, z: 0 },
+        max: { x: -4, y: 5, z: 1 },
+      },
+    };
+    const firstChunk = [wall, stone];
+    const secondChunk = [remoteBeam, beam];
+    const originalGeometry = JSON.stringify([firstChunk, secondChunk]);
     const initial = createScaleState({ x: 0, y: 0 });
-    const grown = growThroughGeometry(initial, [wall, stone], 0.4);
+    const grown = growThroughGeometry(initial, firstChunk, 0.4);
+    const reloadedFirstChunk = JSON.parse(JSON.stringify(firstChunk));
+    const reloadedSecondChunk = JSON.parse(JSON.stringify(secondChunk));
     const restoredRecord = JSON.parse(JSON.stringify(grown));
     const restored = createScaleState(restoredRecord.position, {
       scale: restoredRecord.scale,
@@ -194,30 +205,35 @@ describe('THREEFOLD scale-space', () => {
       maximumUnlockedScale: restoredRecord.maximumUnlockedScale,
       destroyedGeometryIds: restoredRecord.destroyedGeometryIds,
     });
-    const atGrowthScale = projectGeometryForScale(restored, [
-      stone,
-      wall,
-      beam,
-    ]);
-    const atFinerScale = projectGeometryForScale(changeScale(restored, -1), [
-      wall,
-      beam,
-      stone,
-    ]);
-    const reloadedChunk = projectGeometryForScale(restored, [
-      wall,
-      stone,
-      beam,
-    ]);
+    const restoredStateBeforeProjection = JSON.stringify(restored);
+    const adjacentChunk = projectGeometryForScale(
+      restored,
+      reloadedSecondChunk
+    );
+    const reorderedAdjacentChunk = projectGeometryForScale(
+      restored,
+      [...reloadedSecondChunk].reverse()
+    );
+    const restoredChunk = projectGeometryForScale(restored, reloadedFirstChunk);
+    const finerScaleState = changeScale(restored, -1);
+    const finerView = projectGeometryForScale(
+      finerScaleState,
+      reloadedFirstChunk
+    );
 
-    expect(atGrowthScale.view.scale).toBe(1);
-    expect(atFinerScale.view.scale).toBe(0);
-    expect(atGrowthScale.geometry).toEqual([beam, stone]);
-    expect(atFinerScale.geometry).toEqual(atGrowthScale.geometry);
-    expect(reloadedChunk.geometry).toEqual(atGrowthScale.geometry);
-    expect(atGrowthScale.geometry[0]).not.toBe(beam);
-    expect(atGrowthScale.geometry[0].bounds).not.toBe(beam.bounds);
-    expect(JSON.stringify([wall, stone, beam])).toBe(originalGeometry);
+    expect(adjacentChunk.geometry).toEqual([beam, remoteBeam]);
+    expect(reorderedAdjacentChunk.geometry).toEqual(adjacentChunk.geometry);
+    expect(restoredChunk.view.scale).toBe(1);
+    expect(restoredChunk.geometry).toEqual([stone]);
+    expect(finerView.view.scale).toBe(0);
+    expect(finerView.geometry).toEqual(restoredChunk.geometry);
+    expect(restoredChunk.geometry[0]).not.toBe(stone);
+    expect(restoredChunk.geometry[0].bounds).not.toBe(stone.bounds);
+    expect(JSON.stringify([firstChunk, secondChunk])).toBe(originalGeometry);
+    expect(JSON.stringify([reloadedFirstChunk, reloadedSecondChunk])).toBe(
+      originalGeometry
+    );
+    expect(JSON.stringify(restored)).toBe(restoredStateBeforeProjection);
     expect(projectGeometryForScale(restored, []).geometry).toEqual([]);
   });
 
