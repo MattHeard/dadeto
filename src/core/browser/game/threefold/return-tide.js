@@ -116,7 +116,7 @@ const DAMAGE_OBLIGATIONS = {
 /** @typedef {'assembly'|'latchfolk'|'threadbound'|'nursery'|'choir'|'crownback'} ReturnTideFaction */
 /** @typedef {{sealClosed:boolean,spillwayOpen:boolean,humanManifold:boolean,rootManifold:boolean,coastManifold:boolean,foldglassBound:boolean}} ReturnTideControls */
 /** @typedef {{originGameSeconds:number,elapsedGameSeconds:number,controls:ReturnTideControls,agreements:string[],volumesCubicMeters:number[],peakDepthsMeters:number[],damageIds:string[],deathIds:string[],displacedGroups:string[],observedSceneIds:string[],brokenMechanisms:string[],rememberedGrowthDeaths:string[],regulatorFailed:boolean}} ThreefoldReturnTide */
-/** @typedef {{intactMechanisms:string[],availableFactions:string[],engineerAvailable:boolean,evidenceCount:number,rootRelief:boolean,coastReady:boolean,preparedGroups:string[],priorDeathIds:string[]}} ReturnTideFacts */
+/** @typedef {{intactMechanisms:string[],availableFactions:string[],engineerAvailable:boolean,evidenceCount:number,rootRelief:boolean,coastReady:boolean,preparedGroups:string[],priorDeathIds:string[],civicAccount?:{reportFiled:boolean,iriConfessionDisclosed:boolean,passengerOutcome:'aboard'|'partial'|'evacuated'|'lost'|null,ferryOutcome:'afloat'|'lost'|null}}} ReturnTideFacts */
 /** @typedef {'close-seal'|'open-seal'|'open-spillway'|'fit-human-manifold'|'fit-root-manifold'|'fit-coast-manifold'|'bind-foldglass'} ReturnTideOperation */
 
 /**

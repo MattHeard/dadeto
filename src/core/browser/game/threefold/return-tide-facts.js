@@ -42,6 +42,8 @@ export function getThreefoldReturnTideFacts(
     )
     .map(person => /** @type {string} */ (person.faction));
   const gate = runs['broken-gate'];
+  const gateEpisode = gate?.episode;
+  const reportFiled = gateEpisode?.closedBy === 'reported';
   const engineerAvailable =
     ['partial', 'evacuated'].includes(gate?.episode.passengers) ||
     gate?.episode.gateRepairedBeforeSurge === true ||
@@ -69,6 +71,20 @@ export function getThreefoldReturnTideFacts(
       ...new Set([...tide.agreements, ...naturallyPrepared(runs, network)]),
     ],
     priorDeathIds: priorDeaths,
+    civicAccount: {
+      reportFiled,
+      iriConfessionDisclosed:
+        reportFiled &&
+        gateEpisode?.witnessLedger?.some(
+          /**
+           * @param {{action?: string}} entry Saved Broken Gate witness record.
+           * @returns {boolean} Whether the optional lead was in the report.
+           */
+          entry => entry.action === 'latchfolk-witness-lead'
+        ) === true,
+      passengerOutcome: gateEpisode?.passengers || null,
+      ferryOutcome: gateEpisode?.ferry || null,
+    },
   };
 }
 
