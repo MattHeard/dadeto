@@ -46,7 +46,7 @@ import {
   isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
-import { layoutScene } from './logical-grid.js';
+import { layoutScene, resolveSceneLayout } from './logical-grid.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
@@ -55,7 +55,7 @@ const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
-/** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, overlapGroupId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
+/** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -1827,55 +1827,64 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
  * Project static authored scene objects onto scale-local integer cells for rendering.
  * @param {number} scale Current THREEFOLD scale.
  * @param {ThreefoldGridRenderEntity[]} entities Static structures, interactables and creatures.
- * @returns {{entities: ThreefoldGridRenderEntity[], layout: ReturnType<typeof layoutScene>}} Grid-projected render entities and diagnostics.
+ * @returns {{entities: ThreefoldGridRenderEntity[], layout: ReturnType<typeof resolveSceneLayout>}} Grid-projected render entities and diagnostics.
  */
 function projectRenderEntitiesToGrid(scale, entities) {
-  const sortedEntities = [...entities].sort((left, right) =>
-    left.id.localeCompare(right.id)
-  );
-  const layout = layoutScene(
-    sortedEntities.map(({ id, bounds, overlapGroupId }) => ({
-      id,
-      bounds,
-      ...(overlapGroupId === undefined ? {} : { overlapGroupId }),
+  const byId = new Map(entities.map(entity => [entity.id, entity]));
+  const layout = resolveSceneLayout(
+    entities.map(entity => ({
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId: entity.overlapGroupId,
+      hierarchy: entity.hierarchy,
     })),
     scale
   );
-  const projectedById = new Map(
-    layout.entities.map(entity => [entity.id, entity.cellBounds])
+  const layoutById = new Map(
+    layout.entities.map(entity => [entity.id, entity])
   );
+  const visibleIds = new Set(layout.hierarchy.visibleEntityIds);
   const cellSizeMeters = heightAtScale(scale);
   return {
     layout: {
       ...layout,
-      entities: layout.entities.map((entity, index) => ({
-        ...entity,
-        logicalGridKind: sortedEntities[index].logicalGridKind,
-      })),
-    },
-    entities: entities.map(object => {
-      const logicalCellBounds =
-        /** @type {{x: number, y: number, width: number, height: number}} */ (
-          projectedById.get(object.id)
+      entities: layout.entities.map(entity => {
+        const source = /** @type {ThreefoldGridRenderEntity} */ (
+          byId.get(entity.id)
         );
-      return {
-        ...object,
-        logicalCellBounds,
-        bounds: {
-          min: {
-            ...object.bounds.min,
-            x: logicalCellBounds.x * cellSizeMeters,
-            y: logicalCellBounds.y * cellSizeMeters,
+        return { ...entity, logicalGridKind: source.logicalGridKind };
+      }),
+    },
+    entities: entities
+      .filter(object => visibleIds.has(object.id))
+      .map(object => {
+        const resolved =
+          /** @type {NonNullable<ReturnType<typeof layoutById.get>>} */ (
+            layoutById.get(object.id)
+          );
+        const logicalCellBounds = resolved.cellBounds;
+        return {
+          ...object,
+          logicalCellBounds,
+          bounds: {
+            min: {
+              ...object.bounds.min,
+              x: logicalCellBounds.x * cellSizeMeters,
+              y: logicalCellBounds.y * cellSizeMeters,
+            },
+            max: {
+              ...object.bounds.max,
+              x:
+                (logicalCellBounds.x + logicalCellBounds.width) *
+                cellSizeMeters,
+              y:
+                (logicalCellBounds.y + logicalCellBounds.height) *
+                cellSizeMeters,
+            },
           },
-          max: {
-            ...object.bounds.max,
-            x: (logicalCellBounds.x + logicalCellBounds.width) * cellSizeMeters,
-            y:
-              (logicalCellBounds.y + logicalCellBounds.height) * cellSizeMeters,
-          },
-        },
-      };
-    }),
+        };
+      }),
   };
 }
 

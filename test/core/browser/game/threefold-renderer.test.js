@@ -86,6 +86,9 @@ describe('THREEFOLD canvas grid', () => {
       );
 
       expect(layout.scale).toBe(scale);
+      expect(layout.hierarchy.visibleEntityIds).toEqual(
+        layout.entities.map(entity => entity.id).sort()
+      );
       expect(layout.entities.map(entity => entity.logicalGridKind)).toEqual(
         expect.arrayContaining(['structure', 'interactable', 'creature'])
       );

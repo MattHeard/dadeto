@@ -1,6 +1,6 @@
 # THREEFOLD semantic hierarchy exposure
 
-`exposeHierarchy(entities, scale)` is the pure identity-selection step before a per-scale logical layout. Authored entities remain in the canonical world regardless of which identities the current view exposes.
+`exposeHierarchy(entities, scale)` is the pure identity-selection step before a per-scale logical layout. `resolveSceneLayout(entities, scale, viewport)` composes that selection with integer-cell packing and returns both the visible layout and the full hierarchy diagnostics. Authored entities remain in the canonical world regardless of which identities the current view exposes.
 
 ## Authored fields
 
@@ -12,6 +12,8 @@ Scales at or coarser than the threshold (`scale > expandAtScale`) expose the com
 
 The function returns identity-sorted `visibleEntityIds`, `hiddenEntities` with either a visible `proxyId` or reason `expanded`, and `proxies` listing every descendant represented by each visible composite. It rejects duplicate IDs, malformed or missing parents, cycles, invalid scale thresholds, composites without thresholds, and thresholds on leaves. It never repositions, merges, deletes, or mutates canonical entities.
 
+`resolveSceneLayout` reads semantic hierarchy only from each entity's separate `hierarchy` field. The layout's top-level `parentId` remains geometric containment. Hidden identities are omitted from the visible integer-cell layout while remaining represented in `hierarchy`; packing conflicts and viewport overflow remain explicit. The Broken Gate renderer now uses this composed resolver and preserves the prior flat-scene draw order and geometry when no semantic hierarchy is authored. No feature-specific composite hierarchy is authored yet. Silt Margin continues to use its specialized logical-grid projection.
+
 ## Validation
 
-Run `npm run test:impact -- --files test/core/browser/game/threefold-logical-grid.test.js` and `npm run check:impact:run -- --files src/core/browser/game/threefold/logical-grid.js test/core/browser/game/threefold-logical-grid.test.js`. Cover nested building → wall → crack exposure at both exact transition scales, stable results under input permutation, complete proxy mappings, invalid graphs, and input immutability. This API defines semantic exposure only; scene registration, resolved packing, renderer consumption, interaction routing, and authored scale-specific assets remain separate requirements of the live THREEFOLD specification.
+Run `npm run test:impact -- --files test/core/browser/game/threefold-logical-grid.test.js` and `npm run check:impact:run -- --files src/core/browser/game/threefold/logical-grid.js src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-logical-grid.test.js test/core/browser/game/threefold-renderer.test.js`. Cover nested building → wall → crack exposure at coarse, exact transition, and fine scales; stable results under input permutation; complete proxy mappings; conflict and overflow propagation; invalid graphs; input immutability; and the Broken Gate renderer's flat-scene geometry. Interaction routing and authored scale-specific assets remain separate requirements of the live THREEFOLD specification.
