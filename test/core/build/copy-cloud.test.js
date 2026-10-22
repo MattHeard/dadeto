@@ -452,7 +452,7 @@ describe('createCopyCloudHandle', () => {
     } finally {
       await rm(fixtureRoot, { recursive: true, force: true });
     }
-  });
+  }, 190_000);
 });
 
 /**

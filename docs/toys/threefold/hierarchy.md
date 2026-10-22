@@ -14,7 +14,7 @@ The function returns identity-sorted `visibleEntityIds`, `hiddenEntities` with e
 
 `resolveSceneLayout` reads semantic hierarchy only from each entity's separate `hierarchy` field. The layout's top-level `parentId` remains geometric containment. Hidden identities are omitted from the visible integer-cell layout while remaining represented in `hierarchy`; packing conflicts and viewport overflow remain explicit. The Broken Gate renderer passes the finite Mosslight world-map capacity in logical cells, including its camera origin, so an entity outside that capacity appears in `overflow` instead of silently extending the map. This is a projection diagnostic and never changes canonical geometry.
 
-The Broken Gate renderer uses this composed resolver and preserves the prior flat-scene draw order and geometry when no semantic hierarchy is authored. No feature-specific composite hierarchy is authored yet. Silt Margin continues to use its specialized logical-grid projection.
+The Broken Gate renderer uses this composed resolver and preserves the prior flat-scene draw order and geometry when no semantic hierarchy is authored. No feature-specific composite hierarchy is authored yet. Silt Margin also uses the composed resolver, with a finite viewport projected from its authored scene bounds at the current scale; out-of-region entities remain in the report as overflow without changing canonical geometry or hydraulic simulation state.
 
 ## Validation
 
