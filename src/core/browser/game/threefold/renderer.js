@@ -1164,25 +1164,39 @@ function createGrainlandsGridLayout(state) {
       throw new RangeError(`Conflicting Grainlands geometry for ${facet.id}.`);
     existing.kinds.push(facet.kind);
   }
-  const facets = [...facetsById.values()];
-  const layout = resolveSceneLayout(
-    facets.map(entity => ({
-      id: entity.id,
-      bounds: entity.bounds,
-      parentId: entity.parentId,
-      overlapGroupId: entity.overlapGroupId,
-      hierarchy: entity.hierarchy,
-    })),
+  const facets = [...facetsById.keys()].sort().map(id => facetsById.get(id));
+  const entities = facets.map(entity => ({
+    id: entity.id,
+    bounds: entity.bounds,
+    parentId: entity.parentId,
+    overlapGroupId: entity.overlapGroupId,
+    hierarchy: entity.hierarchy,
+  }));
+  const resolved = resolveSceneLayout(entities, player.scale, viewport);
+  const offViewportIds = new Set(
+    resolved.overflow.map(({ entityId }) => entityId)
+  );
+  const packed = packSceneLayout(
+    entities.filter(entity => !offViewportIds.has(entity.id)),
     player.scale,
     viewport
   );
   return {
-    ...layout,
+    ...resolved,
+    ...packed,
     viewport,
-    entities: layout.entities.map(entity => ({
+    entities: [
+      ...packed.entities,
+      ...resolved.entities.filter(entity => offViewportIds.has(entity.id)),
+    ].map(entity => ({
       ...entity,
       logicalGridKinds: [...facetsById.get(entity.id).kinds].sort(),
     })),
+    overflow: [...packed.overflow, ...resolved.overflow],
+    hierarchy: resolved.hierarchy,
+    containments: resolved.containments,
+    intentionalOverlaps: packed.intentionalOverlaps,
+    relationshipIssues: resolved.relationshipIssues,
   };
 }
 
