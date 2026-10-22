@@ -203,6 +203,20 @@ function createLargeScaleDistrictGrowthState() {
         max: { x: currentHalfWidth + 2, y: 1, z: 30 },
       },
     },
+    {
+      id: 'remote-projection-a',
+      bounds: {
+        min: { x: 100, y: 0, z: 0 },
+        max: { x: 101, y: 1, z: 1 },
+      },
+    },
+    {
+      id: 'remote-projection-b',
+      bounds: {
+        min: { x: 102, y: 0, z: 0 },
+        max: { x: 103, y: 1, z: 1 },
+      },
+    },
   ];
   const watchkeeper = scene.interactables.find(
     ({ id }) => id === THREEFOLD_LATCHFOLK_INTERACTABLE_ID
@@ -510,6 +524,7 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
   test('previews and persists +3 to +4 growth across two districts and one resident', () => {
     const state = createLargeScaleDistrictGrowthState();
     const districtIds = ['harbor-warehouse-district', 'outer-housing-district'];
+    const remoteIds = ['remote-projection-a', 'remote-projection-b'];
     const before = JSON.parse(JSON.stringify(state));
 
     expect(previewThreefoldGrowthEffects(state)).toEqual({
@@ -531,8 +546,46 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     expect(restored?.player.destroyedGeometryIds).toEqual(districtIds);
     expect(restored?.episode.latchfolk).toBe('lost');
     expect(
-      projectGeometryForScale(restored.player, state.scene.geometry).geometry
-    ).toEqual([]);
+      projectGeometryForScale(
+        restored.player,
+        state.scene.geometry
+      ).geometry.map(({ id }) => id)
+    ).toEqual(remoteIds);
+  });
+
+  test('does not turn remote coarse-grid conflicts into physical growth damage', () => {
+    const state = createLargeScaleDistrictGrowthState();
+    const districtIds = ['harbor-warehouse-district', 'outer-housing-district'];
+    const remoteIds = ['remote-projection-a', 'remote-projection-b'];
+    const before = JSON.parse(JSON.stringify(state));
+    const frame = renderThreefoldFrame(state);
+    const conflicts = frame.threefold.logicalGridLayout.conflicts.map(
+      ({ entityIds }) => entityIds
+    );
+
+    expect(conflicts).toContainEqual(remoteIds);
+    expect(previewThreefoldGrowthEffects(state).geometryIds).toEqual(
+      districtIds
+    );
+    expect(state).toEqual(before);
+
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+
+    expect(grown.player.scale).toBe(4);
+    expect(grown.player.destroyedGeometryIds).toEqual(districtIds);
+    expect(grown.player.destroyedGeometryIds).not.toEqual(
+      expect.arrayContaining(remoteIds)
+    );
+    expect(restored?.player.destroyedGeometryIds).toEqual(districtIds);
+    expect(
+      projectGeometryForScale(
+        restored.player,
+        state.scene.geometry
+      ).geometry.map(({ id }) => id)
+    ).toEqual(remoteIds);
   });
 
   test('shows the high-scale district and resident risk while keeping growth available', () => {
