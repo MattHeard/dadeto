@@ -8,7 +8,7 @@
 
 ## Current Implementation Status
 
-Rank 1 remains Active / Partial in the live Specs database. Hearthgaps renderer packing is merged. Grainlands packs in-camera identities across scales −4 through +4, preserves finite-camera overflow, and is merged as `c16f0efaa9124fa9bc55c2e4a06ead12235fb40c` after exact-head Full Check 39863483874 and Terraform Validate 39863483791 passed. Weftways now packs distinct in-view projections at scales −3 and −2 while retaining Pell’s intentional accord overlap; focused tests, changed-core evaluation, the local fast check, build, and manual validation have passed before the latest rebase. Exact-head CI and post-rebase verification remain pending. Broader semantic proxy, movement, causal, and campaign acceptance remains open.
+Rank 1 remains Active / Partial in the live Specs database. Hearthgaps renderer packing is merged. Grainlands packs in-camera identities across scales −4 through +4, preserves finite-camera overflow, and is merged as `c16f0efaa9124fa9bc55c2e4a06ead12235fb40c` after exact-head Full Check 39863483874 and Terraform Validate 39863483791 passed. Weftways now packs distinct in-view projections at scales −3 and −2 while retaining Pell’s intentional accord overlap. Its post-rebase fast check passed all 10 gates (1,006 suites / 7,250 tests); the build passed, manuals validated 79, and diff check passed. PR #2788 is open; Terraform Validate 39866399204 passed and exact-head Full Check 39866399188 is running. Broader semantic proxy, movement, causal, and campaign acceptance remains open.
 
 ## Problem Statement
 

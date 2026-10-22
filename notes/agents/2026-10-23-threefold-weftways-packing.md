@@ -14,7 +14,7 @@
 
 - Focused `npm run test:impact -- --files test/core/browser/game/threefold-weftways.test.js`: 1 suite / 36 tests passed.
 - Changed-core `npm run check:impact:run -- --files src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-weftways.test.js`: 27 suites / 362 tests passed; renderer has 100% statements, branches, functions, and lines; ESLint, core parsing, and zero-clone duplication passed.
-- Aggregate `npm run check`, build, manuals, diff check, and exact-head CI remain to be run for this branch.
+- After rebasing onto Grainlands main, `DADETO_CHECK_BASE=origin/main DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates across six impact shards (1,006 suites / 7,250 tests); manuals validated 79, `npm run build` passed, and `git diff --check HEAD^ HEAD` passed. Exact-head Terraform Validate 39866399204 passed; Full Check 39866399188 is running.
 
 ## Next-time guidance
 
