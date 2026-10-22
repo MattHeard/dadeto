@@ -26,3 +26,10 @@ Preserved optional parent/child hierarchy metadata through canonical geometry pr
 ## Next-time guidance
 
 Keep semantic metadata separate from physical bounds, but preserve it through pure projection. Add a renderer test with non-special-cased entity IDs so it cannot accidentally pass only through a named-scene fallback.
+
+## Follow-up review regression — 2026-10-23
+
+- Unexpected hurdle: geometry projection filtered growth-destroyed objects but retained parent/child metadata that referenced the removed identities. Review demonstrated both a missing-parent failure and an expansion threshold left on a leaf.
+- Diagnosis: `exposeHierarchy` correctly rejected the malformed projected tree; the projection boundary needed to reconcile only relationships invalidated by destroyed objects.
+- Fix: detach a surviving child only when its original parent was destroyed, and remove a composite threshold only when all of its original children were destroyed. Nested surviving composites and unrelated authored metadata remain unchanged.
+- Evidence: focused impact passed 2 suites / 53 tests, including both render-after-destruction cases. Aggregate and exact-head CI results are recorded in the acceptance file after they finish.

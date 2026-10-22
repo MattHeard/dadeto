@@ -461,3 +461,54 @@ describe('THREEFOLD scale-space', () => {
     ).toThrow(RangeError);
   });
 });
+
+describe('THREEFOLD hierarchy projection after destruction', () => {
+  test('reconciles metadata with geometry destroyed by growth', () => {
+    const geometry = [
+      {
+        id: 'house',
+        bounds: { min: { x: 0, y: 0, z: 0 }, max: { x: 3, y: 3, z: 3 } },
+        hierarchy: { expandAtScale: -1 },
+      },
+      {
+        id: 'house-wall',
+        bounds: { min: { x: 1, y: 1, z: 0 }, max: { x: 2, y: 2, z: 2 } },
+        hierarchy: { parentId: 'house', expandAtScale: -3 },
+      },
+      {
+        id: 'house-wall-crack',
+        bounds: { min: { x: 1, y: 1, z: 0 }, max: { x: 1.5, y: 1.5, z: 1 } },
+        hierarchy: { parentId: 'house-wall' },
+      },
+    ];
+
+    const withoutHouse = projectGeometryForScale(
+      createScaleState({ x: 0, y: 0 }, { destroyedGeometryIds: ['house'] }),
+      geometry
+    );
+    const withoutWall = projectGeometryForScale(
+      createScaleState(
+        { x: 0, y: 0 },
+        { destroyedGeometryIds: ['house-wall'] }
+      ),
+      geometry
+    );
+
+    expect(
+      withoutHouse.geometry.map(({ id, hierarchy }) => ({ id, hierarchy }))
+    ).toEqual([
+      { id: 'house-wall', hierarchy: { expandAtScale: -3 } },
+      { id: 'house-wall-crack', hierarchy: { parentId: 'house-wall' } },
+    ]);
+    expect(
+      withoutWall.geometry.map(({ id, hierarchy }) => ({ id, hierarchy }))
+    ).toEqual([
+      { id: 'house', hierarchy: undefined },
+      { id: 'house-wall-crack', hierarchy: undefined },
+    ]);
+    expect(geometry[1].hierarchy).toEqual({
+      parentId: 'house',
+      expandAtScale: -3,
+    });
+  });
+});

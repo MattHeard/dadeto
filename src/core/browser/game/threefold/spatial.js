@@ -281,24 +281,53 @@ export function projectGeometryForScale(state, geometry) {
   assertScaleState(state);
   const objects = validateGeometry(geometry);
   const destroyed = new Set(state.destroyedGeometryIds);
+  const geometryIds = new Set(objects.map(object => object.id));
+  const survivingObjects = objects.filter(object => !destroyed.has(object.id));
+  const survivingIds = new Set(survivingObjects.map(object => object.id));
+  const originalCompositeIds = new Set(
+    objects
+      .map(object => object.hierarchy?.parentId)
+      .filter(parentId => parentId !== undefined && geometryIds.has(parentId))
+  );
+  const survivingCompositeIds = new Set(
+    survivingObjects
+      .map(object => object.hierarchy?.parentId)
+      .filter(parentId => parentId !== undefined && survivingIds.has(parentId))
+  );
   return {
     view: viewAtScale(state.position, state.scale),
-    geometry: objects
-      .filter(object => !destroyed.has(object.id))
+    geometry: survivingObjects
       .sort((first, second) => (first.id < second.id ? -1 : 1))
-      .map(object => ({
-        id: object.id,
-        ...(object.overlapGroupId === undefined
-          ? {}
-          : { overlapGroupId: object.overlapGroupId }),
-        ...(object.hierarchy === undefined
-          ? {}
-          : { hierarchy: { ...object.hierarchy } }),
-        bounds: {
-          min: { ...object.bounds.min },
-          max: { ...object.bounds.max },
-        },
-      })),
+      .map(object => {
+        const hierarchy = object.hierarchy
+          ? { ...object.hierarchy }
+          : undefined;
+        if (
+          hierarchy?.parentId &&
+          geometryIds.has(hierarchy.parentId) &&
+          !survivingIds.has(hierarchy.parentId)
+        )
+          delete hierarchy.parentId;
+        if (
+          hierarchy?.expandAtScale !== undefined &&
+          originalCompositeIds.has(object.id) &&
+          !survivingCompositeIds.has(object.id)
+        )
+          delete hierarchy.expandAtScale;
+        return {
+          id: object.id,
+          ...(object.overlapGroupId === undefined
+            ? {}
+            : { overlapGroupId: object.overlapGroupId }),
+          ...(hierarchy && Object.keys(hierarchy).length > 0
+            ? { hierarchy }
+            : {}),
+          bounds: {
+            min: { ...object.bounds.min },
+            max: { ...object.bounds.max },
+          },
+        };
+      }),
   };
 }
 

@@ -600,6 +600,25 @@ describe('THREEFOLD canvas grid', () => {
     );
     expect(JSON.stringify(state)).toBe(before);
     expect(state.scene.geometry.slice(-2)).toEqual(compositeGeometry);
+
+    const houseDestroyed = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, destroyedGeometryIds: ['authored-house'] },
+    });
+    const wallDestroyed = renderThreefoldFrame({
+      ...state,
+      player: {
+        ...state.player,
+        destroyedGeometryIds: ['authored-house-wall'],
+      },
+    });
+
+    expect(houseDestroyed.world.map.objects.map(object => object.id)).toContain(
+      'authored-house-wall'
+    );
+    expect(wallDestroyed.world.map.objects.map(object => object.id)).toContain(
+      'authored-house'
+    );
   });
 
   test('bounds every supported Broken Gate layout to its scale-local map viewport', () => {
