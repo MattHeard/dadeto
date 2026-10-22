@@ -11,6 +11,7 @@ import {
   createScaleState,
   projectGeometryForScale,
 } from '../../../../src/core/browser/game/threefold/spatial.js';
+import { projectEntity } from '../../../../src/core/browser/game/threefold/logical-grid.js';
 import {
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
@@ -562,12 +563,34 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
     const conflicts = frame.threefold.logicalGridLayout.conflicts.map(
       ({ entityIds }) => entityIds
     );
+    const remoteGeometry = state.scene.geometry.filter(({ id }) =>
+      remoteIds.includes(id)
+    );
+    const remoteProjection = remoteGeometry.map(entity =>
+      projectEntity(entity, state.player.scale)
+    );
+
+    expect(remoteProjection[1].cellBounds).toEqual(
+      remoteProjection[0].cellBounds
+    );
 
     expect(conflicts).not.toContainEqual(remoteIds);
+    const packedRemoteEntities = frame.threefold.logicalGridLayout.entities
+      .filter(({ id }) => remoteIds.includes(id))
+      .sort((first, second) => first.id.localeCompare(second.id));
+    expect(packedRemoteEntities).toHaveLength(2);
+    expect(packedRemoteEntities.map(({ placement }) => placement)).toEqual([
+      'placed',
+      'placed',
+    ]);
+    const [first, second] = packedRemoteEntities.map(
+      ({ cellBounds }) => cellBounds
+    );
     expect(
-      frame.threefold.logicalGridLayout.entities
-        .filter(({ id }) => remoteIds.includes(id))
-        .every(({ placement }) => placement === 'placed')
+      first.x + first.width <= second.x ||
+        second.x + second.width <= first.x ||
+        first.y + first.height <= second.y ||
+        second.y + second.height <= first.y
     ).toBe(true);
     expect(previewThreefoldGrowthEffects(state).geometryIds).toEqual(
       districtIds
