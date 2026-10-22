@@ -518,6 +518,52 @@ describe('THREEFOLD Weftways caravan bypass', () => {
 });
 
 describe('THREEFOLD Weftways logical-grid renderer', () => {
+  test('packs conflict-free cells at the minimum and authored scales deterministically', () => {
+    const base = createWeftwaysRun();
+    const sourceScene = JSON.stringify(base.scene);
+
+    for (const scale of [-3, -2]) {
+      const state = { ...base, player: { ...base.player, scale } };
+      const layout = renderThreefoldFrame(state).threefold.logicalGridLayout;
+
+      expect(layout.conflicts).toEqual([]);
+      expect(layout.overflow).toEqual([]);
+      expect(
+        layout.entities.every(({ placement }) => placement === 'placed')
+      ).toBe(true);
+      expect(layout.intentionalOverlaps).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            groupId: 'weftways-pell-accord',
+            entityIds: expect.arrayContaining([
+              'weftways-pell',
+              'return-tide-accord-threadbound',
+            ]),
+          }),
+        ])
+      );
+      expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
+        layout
+      );
+
+      const reorderedState = {
+        ...state,
+        scene: {
+          ...state.scene,
+          geometry: [...state.scene.geometry].reverse(),
+          decorations: [...state.scene.decorations].reverse(),
+          interactables: [...state.scene.interactables].reverse(),
+          creatures: [...state.scene.creatures].reverse(),
+        },
+      };
+      expect(
+        renderThreefoldFrame(reorderedState).threefold.logicalGridLayout
+      ).toEqual(layout);
+    }
+
+    expect(JSON.stringify(base.scene)).toBe(sourceScene);
+  });
+
   test('renders all Weftways source identities from deterministic logical cells', () => {
     const state = createWeftwaysRun();
     state.scene.decorations.push({

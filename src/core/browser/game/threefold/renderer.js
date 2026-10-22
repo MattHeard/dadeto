@@ -1649,24 +1649,46 @@ function createWeftwaysGridLayout(state) {
     { id: scene.id, bounds: scene.bounds },
     player.scale
   ).cellBounds;
-  const layout = resolveSceneLayout(
-    [...byId.values()].map(entity => ({
+  const intentionalOverlapGroupById = new Map([
+    ['weftways-pell', 'weftways-pell-accord'],
+    ['return-tide-accord-threadbound', 'weftways-pell-accord'],
+  ]);
+  const entities = [...byId.keys()].sort().map(id => {
+    const entity = byId.get(id);
+    return {
       id: entity.id,
       bounds: entity.bounds,
       parentId: entity.parentId,
-      overlapGroupId: entity.overlapGroupId,
+      overlapGroupId:
+        entity.overlapGroupId ?? intentionalOverlapGroupById.get(id),
       hierarchy: entity.hierarchy,
-    })),
+    };
+  });
+  const resolved = resolveSceneLayout(entities, player.scale, viewport);
+  const offViewportIds = new Set(
+    resolved.overflow.map(({ entityId }) => entityId)
+  );
+  const packed = packSceneLayout(
+    entities.filter(entity => !offViewportIds.has(entity.id)),
     player.scale,
     viewport
   );
   return {
-    ...layout,
+    ...resolved,
+    ...packed,
     viewport,
-    entities: layout.entities.map(entity => ({
+    entities: [
+      ...packed.entities,
+      ...resolved.entities.filter(entity => offViewportIds.has(entity.id)),
+    ].map(entity => ({
       ...entity,
       logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
     })),
+    overflow: [...packed.overflow, ...resolved.overflow],
+    hierarchy: resolved.hierarchy,
+    containments: resolved.containments,
+    intentionalOverlaps: packed.intentionalOverlaps,
+    relationshipIssues: resolved.relationshipIssues,
   };
 }
 
