@@ -1,5 +1,23 @@
 import { BASE_HEIGHT_METERS } from '../../../../src/core/browser/game/threefold/spatial.js';
-import { projectEntity } from '../../../../src/core/browser/game/threefold/logical-grid.js';
+import {
+  layoutScene,
+  projectEntity,
+} from '../../../../src/core/browser/game/threefold/logical-grid.js';
+
+const cell = (...args) => {
+  const [id, x, y, width = 1, height = 1, extra = {}] = args;
+  return {
+    id,
+    ...extra,
+    bounds: {
+      min: { x: x * BASE_HEIGHT_METERS, y: y * BASE_HEIGHT_METERS },
+      max: {
+        x: (x + width) * BASE_HEIGHT_METERS,
+        y: (y + height) * BASE_HEIGHT_METERS,
+      },
+    },
+  };
+};
 
 describe('THREEFOLD logical grid projection', () => {
   test('uses the world origin and nearest grid lines with positive-direction ties', () => {
@@ -103,5 +121,161 @@ describe('THREEFOLD logical grid projection', () => {
         0
       )
     ).toThrow(RangeError);
+  });
+});
+
+describe('THREEFOLD logical grid scene layout', () => {
+  test('sorts disjoint placements and leaves canonical entities unchanged', () => {
+    const entities = [cell('west', -2, 0), cell('east', 2, 0)];
+    const before = JSON.stringify(entities);
+
+    expect(
+      layoutScene(entities, 0, { x: -3, y: -1, width: 7, height: 3 })
+    ).toEqual({
+      scale: 0,
+      entities: [
+        {
+          id: 'east',
+          cellBounds: { x: 2, y: 0, width: 1, height: 1 },
+          placement: 'placed',
+        },
+        {
+          id: 'west',
+          cellBounds: { x: -2, y: 0, width: 1, height: 1 },
+          placement: 'placed',
+        },
+      ],
+      containments: [],
+      intentionalOverlaps: [],
+      conflicts: [],
+      relationshipIssues: [],
+      overflow: [],
+    });
+    expect(JSON.stringify(entities)).toBe(before);
+  });
+
+  test('reports same-cell and partial overlaps in stable identity order', () => {
+    const entities = [cell('zeta', 1, 0, 2, 2), cell('alpha', 2, 1, 2, 2)];
+    const forward = layoutScene(entities, 0);
+    const reverse = layoutScene([...entities].reverse(), 0);
+
+    expect(forward).toEqual(reverse);
+    expect(forward.conflicts).toEqual([
+      {
+        type: 'unresolved-overlap',
+        entityIds: ['alpha', 'zeta'],
+        cellBounds: { x: 2, y: 1, width: 1, height: 1 },
+      },
+    ]);
+    expect(forward.entities.map(entity => entity.placement)).toEqual([
+      'unresolved',
+      'unresolved',
+    ]);
+    expect(
+      layoutScene([cell('b', 0, 0), cell('a', 0, 0)], 0).conflicts[0]
+    ).toEqual({
+      type: 'unresolved-overlap',
+      entityIds: ['a', 'b'],
+      cellBounds: { x: 0, y: 0, width: 1, height: 1 },
+    });
+  });
+
+  test('recognizes authored containment while flagging a child outside its parent', () => {
+    const valid = layoutScene(
+      [
+        cell('room', 0, 0, 3, 3),
+        cell('table', 1, 1, 1, 1, { parentId: 'room' }),
+      ],
+      0
+    );
+    expect(valid.containments).toEqual([
+      {
+        parentId: 'room',
+        childId: 'table',
+        cellBounds: { x: 1, y: 1, width: 1, height: 1 },
+      },
+    ]);
+    expect(valid.conflicts).toEqual([]);
+
+    const invalid = layoutScene(
+      [cell('room', 0, 0), cell('table', 2, 0, 1, 1, { parentId: 'room' })],
+      0
+    );
+    expect(invalid.relationshipIssues).toEqual([
+      { type: 'child-not-contained', parentId: 'room', childId: 'table' },
+    ]);
+    expect(invalid.entities.map(entity => entity.placement)).toEqual([
+      'unresolved',
+      'unresolved',
+    ]);
+  });
+
+  test('allows only shared explicit overlap groups and returns shared cells', () => {
+    const result = layoutScene(
+      [
+        cell('upper', 0, 0, 2, 1, { overlapGroupId: 'bridge' }),
+        cell('lower', 1, 0, 2, 1, { overlapGroupId: 'bridge' }),
+        cell('other', 1, 0),
+      ],
+      0
+    );
+    expect(result.intentionalOverlaps).toEqual([
+      {
+        groupId: 'bridge',
+        entityIds: ['lower', 'upper'],
+        cellBounds: { x: 1, y: 0, width: 1, height: 1 },
+      },
+    ]);
+    expect(result.conflicts.map(conflict => conflict.entityIds)).toEqual([
+      ['lower', 'other'],
+      ['other', 'upper'],
+    ]);
+  });
+
+  test('reports all viewport overflow and gives it placement precedence', () => {
+    const result = layoutScene(
+      [
+        cell('inside', 0, 0),
+        cell('outside', -1, 0),
+        cell('crossing', 1, 0, 2, 1),
+      ],
+      0,
+      { x: 0, y: 0, width: 2, height: 1 }
+    );
+    expect(result.overflow.map(item => item.entityId)).toEqual([
+      'crossing',
+      'outside',
+    ]);
+    expect(result.entities.map(entity => entity.placement)).toEqual([
+      'overflow',
+      'placed',
+      'overflow',
+    ]);
+  });
+
+  test('rejects invalid scenes, duplicate identities, relationships, groups and viewport bounds', () => {
+    expect(() => layoutScene(null, 0)).toThrow(TypeError);
+    expect(() =>
+      layoutScene([cell('same', 0, 0), cell('same', 2, 0)], 0)
+    ).toThrow(RangeError);
+    expect(() =>
+      layoutScene([cell('orphan', 0, 0, 1, 1, { parentId: 'missing' })], 0)
+    ).toThrow(RangeError);
+    expect(() =>
+      layoutScene([cell('self', 0, 0, 1, 1, { parentId: 'self' })], 0)
+    ).toThrow(RangeError);
+    expect(() =>
+      layoutScene([cell('bad-parent', 0, 0, 1, 1, { parentId: '' })], 0)
+    ).toThrow(TypeError);
+    expect(() =>
+      layoutScene([cell('bad-group', 0, 0, 1, 1, { overlapGroupId: '' })], 0)
+    ).toThrow(TypeError);
+    expect(() =>
+      layoutScene([], 0, { x: 0, y: 0, width: 0, height: 1 })
+    ).toThrow(RangeError);
+    expect(() =>
+      layoutScene([], 0, { x: 0.5, y: 0, width: 1, height: 1 })
+    ).toThrow(RangeError);
+    expect(() => layoutScene([], 0, null)).toThrow(TypeError);
   });
 });
