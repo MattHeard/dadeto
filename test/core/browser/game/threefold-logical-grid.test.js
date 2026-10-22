@@ -3,6 +3,7 @@ import {
   exposeHierarchy,
   layoutScene,
   projectEntity,
+  resolveSceneLayout,
 } from '../../../../src/core/browser/game/threefold/logical-grid.js';
 
 const cell = (...args) => {
@@ -387,5 +388,107 @@ describe('THREEFOLD semantic hierarchy exposure', () => {
         0
       )
     ).toThrow('Hierarchy contains a cycle');
+  });
+});
+
+describe('THREEFOLD resolved scene layout', () => {
+  const authoredScene = () => [
+    cell('building', 0, 0, 3, 3, { hierarchy: { expandAtScale: -1 } }),
+    cell('wall', 1, 1, 2, 1, {
+      hierarchy: { parentId: 'building', expandAtScale: -3 },
+    }),
+    cell('crack', 2, 1, 1, 1, { hierarchy: { parentId: 'wall' } }),
+  ];
+
+  test('composes nested visibility with geometry at coarse, exact and fine scales', () => {
+    const entities = authoredScene();
+    const coarse = resolveSceneLayout(entities, 0);
+    const atBuildingThreshold = resolveSceneLayout(entities, -1);
+    const atWallThreshold = resolveSceneLayout(entities, -3);
+
+    expect(coarse.hierarchy.visibleEntityIds).toEqual(['building']);
+    expect(coarse.entities.map(entity => entity.id)).toEqual(['building']);
+    expect(coarse.entities[0].cellBounds).toEqual({
+      x: 0,
+      y: 0,
+      width: 3,
+      height: 3,
+    });
+    expect(coarse.hierarchy.proxies).toEqual([
+      { id: 'building', childIds: ['crack', 'wall'] },
+    ]);
+
+    expect(atBuildingThreshold.hierarchy.visibleEntityIds).toEqual(['wall']);
+    expect(atBuildingThreshold.entities.map(entity => entity.id)).toEqual([
+      'wall',
+    ]);
+    expect(atBuildingThreshold.hierarchy.proxies).toEqual([
+      { id: 'wall', childIds: ['crack'] },
+    ]);
+
+    expect(atWallThreshold.hierarchy.visibleEntityIds).toEqual(['crack']);
+    expect(atWallThreshold.entities.map(entity => entity.id)).toEqual([
+      'crack',
+    ]);
+    expect(atWallThreshold.hierarchy.hiddenEntities).toEqual([
+      { id: 'building', proxyId: null, reason: 'expanded' },
+      { id: 'wall', proxyId: null, reason: 'expanded' },
+    ]);
+  });
+
+  test('preserves packing conflicts and finite viewport overflow', () => {
+    const result = resolveSceneLayout(
+      [
+        cell('building', 0, 0, 1, 1, { hierarchy: { expandAtScale: -1 } }),
+        cell('wall', 0, 0, 1, 1, {
+          hierarchy: { parentId: 'building' },
+        }),
+        cell('other', 0, 0),
+        cell('outside', 2, 0),
+      ],
+      0,
+      { x: 0, y: 0, width: 1, height: 1 }
+    );
+
+    expect(result.conflicts).toEqual([
+      {
+        type: 'unresolved-overlap',
+        entityIds: ['building', 'other'],
+        cellBounds: { x: 0, y: 0, width: 1, height: 1 },
+      },
+    ]);
+    expect(result.overflow.map(item => item.entityId)).toEqual(['outside']);
+    expect(result.entities.map(entity => entity.placement)).toEqual([
+      'unresolved',
+      'unresolved',
+      'overflow',
+    ]);
+    expect(result.hierarchy.hiddenEntities).toEqual([
+      { id: 'wall', proxyId: 'building', reason: 'proxied' },
+    ]);
+  });
+
+  test('is stable under permutation and leaves canonical entities unchanged', () => {
+    const entities = authoredScene();
+    const before = JSON.stringify(entities);
+
+    expect(resolveSceneLayout([...entities].reverse(), -1)).toEqual(
+      resolveSceneLayout(entities, -1)
+    );
+    expect(JSON.stringify(entities)).toBe(before);
+  });
+
+  test('rejects malformed semantic hierarchy fields and missing hierarchy parents', () => {
+    expect(() => resolveSceneLayout(null, 0)).toThrow(TypeError);
+    expect(() => resolveSceneLayout([null], 0)).toThrow(TypeError);
+    expect(() =>
+      resolveSceneLayout([cell('bad', 0, 0, 1, 1, { hierarchy: [] })], 0)
+    ).toThrow(TypeError);
+    expect(() =>
+      resolveSceneLayout(
+        [cell('orphan', 0, 0, 1, 1, { hierarchy: { parentId: 'missing' } })],
+        0
+      )
+    ).toThrow(RangeError);
   });
 });

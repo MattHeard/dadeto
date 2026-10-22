@@ -1,7 +1,7 @@
 import { heightAtScale } from './spatial.js';
 
 /** @typedef {{min: {x: number, y: number}, max: {x: number, y: number}}} ThreefoldPhysicalBounds */
-/** @typedef {{id: string, bounds: ThreefoldPhysicalBounds, parentId?: string, overlapGroupId?: string}} ThreefoldGridEntity */
+/** @typedef {{id: string, bounds: ThreefoldPhysicalBounds, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}} ThreefoldGridEntity */
 /** @typedef {{id: string, parentId?: string, expandAtScale?: number}} ThreefoldHierarchyEntity */
 /** @typedef {{id: string, proxyId: string|null, reason: 'expanded'|'proxied'}} ThreefoldHiddenHierarchyEntity */
 /** @typedef {{id: string, childIds: string[]}} ThreefoldHierarchyProxy */
@@ -10,6 +10,7 @@ import { heightAtScale } from './spatial.js';
 /** @typedef {{id: string, cellBounds: ThreefoldCellBounds}} ThreefoldProjectedEntity */
 /** @typedef {{id: string, cellBounds: ThreefoldCellBounds, parentId?: string, overlapGroupId?: string, placement: 'placed'|'unresolved'|'overflow'}} ThreefoldLayoutEntity */
 /** @typedef {{scale: number, entities: ThreefoldLayoutEntity[], containments: Array<{parentId: string, childId: string, cellBounds: ThreefoldCellBounds}>, intentionalOverlaps: Array<{groupId: string, entityIds: [string, string], cellBounds: ThreefoldCellBounds}>, conflicts: Array<{type: 'unresolved-overlap', entityIds: [string, string], cellBounds: ThreefoldCellBounds}>, relationshipIssues: Array<{type: 'child-not-contained', parentId: string, childId: string}>, overflow: Array<{entityId: string, cellBounds: ThreefoldCellBounds}>}} ThreefoldSceneLayout */
+/** @typedef {ThreefoldSceneLayout & {hierarchy: ThreefoldHierarchyExposure}} ThreefoldResolvedSceneLayout */
 
 /**
  * Expose authored hierarchy nodes at one scale without changing the world.
@@ -123,6 +124,40 @@ export function exposeHierarchy(entities, scale) {
       compareIds(left.id, right.id)
     ),
     proxies: proxies.sort((left, right) => compareIds(left.id, right.id)),
+  };
+}
+
+/**
+ * Resolve one immutable scene into visible hierarchy identities and integer-cell
+ * geometry. Semantic hierarchy stays separate from geometric containment.
+ * @param {ThreefoldGridEntity[]} entities Canonical scene entities.
+ * @param {number} scale Requested THREEFOLD scale from -4 through +4.
+ * @param {ThreefoldCellBounds} [viewport] Optional finite logical-cell capacity.
+ * @returns {ThreefoldResolvedSceneLayout} Visible cells plus hierarchy and packing diagnostics.
+ */
+export function resolveSceneLayout(entities, scale, viewport) {
+  if (!Array.isArray(entities))
+    throw new TypeError('Logical-grid scene entities must be an array.');
+
+  const hierarchyEntities = entities.map(entity => {
+    if (!entity || typeof entity !== 'object' || Array.isArray(entity))
+      throw new TypeError('A logical-grid entity is required.');
+    const hierarchy = entity.hierarchy;
+    if (
+      hierarchy !== undefined &&
+      (!hierarchy || typeof hierarchy !== 'object' || Array.isArray(hierarchy))
+    )
+      throw new TypeError('A logical-grid hierarchy node must be an object.');
+    return { id: entity.id, ...hierarchy };
+  });
+  const hierarchy = exposeHierarchy(hierarchyEntities, scale);
+  const visibleEntityIds = new Set(hierarchy.visibleEntityIds);
+  const visibleEntities = entities.filter(entity =>
+    visibleEntityIds.has(entity.id)
+  );
+  return {
+    ...layoutScene(visibleEntities, scale, viewport),
+    hierarchy,
   };
 }
 
