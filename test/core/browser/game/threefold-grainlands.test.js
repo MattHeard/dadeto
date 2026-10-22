@@ -117,6 +117,40 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(JSON.stringify(base.scene)).toBe(authored);
   });
 
+  test('keeps Mara visible when movement reaches the eastern scene edge', () => {
+    const state = createGrainlandsRun();
+    state.player.scale = -4;
+    state.player.minimumUnlockedScale = -4;
+    state.player.maximumUnlockedScale = 4;
+    state.player.position.x = 0.79706;
+    state.player.position.y = 0.05;
+
+    const frame = renderThreefoldFrame(state);
+    const layout = frame.threefold.logicalGridLayout;
+    const mara = layout.entities.find(entity => entity.id === 'mara');
+
+    expect(mara.placement).not.toBe('overflow');
+    expect(frame.shapes.some(shape => shape.geometryId === 'mara')).toBe(true);
+    expect(mara.cellBounds.x + mara.cellBounds.width).toBeLessThanOrEqual(
+      layout.viewport.x + layout.viewport.width
+    );
+  });
+
+  test('keeps Mara visible when projection rounds just west of the region', () => {
+    const state = createGrainlandsRun();
+    state.player.scale = -4;
+    state.player.minimumUnlockedScale = -4;
+    state.player.maximumUnlockedScale = 4;
+    state.player.position.x = -0.01;
+
+    const frame = renderThreefoldFrame(state);
+    const layout = frame.threefold.logicalGridLayout;
+    const mara = layout.entities.find(entity => entity.id === 'mara');
+
+    expect(mara.cellBounds.x).toBe(layout.viewport.x);
+    expect(mara.placement).not.toBe('overflow');
+  });
+
   test('keeps pressure water inside the projected nursery and reports camera overflow', () => {
     const state = createGrainlandsRun();
     const pressureNetwork = createThreefoldPressureNetwork();

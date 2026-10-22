@@ -1155,17 +1155,29 @@ function createGrainlandsGridLayout(state) {
  * @returns {number} Camera origin for the selected axis.
  */
 function grainlandsViewportAxisOrigin(sceneBounds, actorBounds, viewportSize) {
-  if (sceneBounds.size <= viewportSize)
-    return (
-      sceneBounds.start - Math.floor((viewportSize - sceneBounds.size) / 2)
-    );
-  const desired = Math.floor(
-    actorBounds.start + actorBounds.size / 2 - viewportSize / 2
-  );
-  return Math.max(
-    sceneBounds.start,
-    Math.min(sceneBounds.start + sceneBounds.size - viewportSize, desired)
-  );
+  const centered =
+    sceneBounds.size <= viewportSize
+      ? sceneBounds.start - Math.floor((viewportSize - sceneBounds.size) / 2)
+      : Math.floor(actorBounds.start + actorBounds.size / 2 - viewportSize / 2);
+  let origin =
+    sceneBounds.size <= viewportSize
+      ? centered
+      : Math.max(
+          sceneBounds.start,
+          Math.min(
+            sceneBounds.start + sceneBounds.size - viewportSize,
+            centered
+          )
+        );
+  const sceneEnd = sceneBounds.start + sceneBounds.size;
+  const actorEnd = actorBounds.start + actorBounds.size;
+  const actorIsWithinScene =
+    actorBounds.start >= sceneBounds.start - 1 && actorEnd <= sceneEnd + 1;
+  if (actorIsWithinScene && actorBounds.start < origin)
+    origin = actorBounds.start;
+  if (actorIsWithinScene && actorEnd > origin + viewportSize)
+    origin = actorEnd - viewportSize;
+  return origin;
 }
 
 /**
