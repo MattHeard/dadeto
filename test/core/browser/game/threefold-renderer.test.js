@@ -65,6 +65,43 @@ describe('THREEFOLD canvas grid', () => {
 
     expect(sluice.sluicePuzzle).toEqual(fluidBeforeRender);
   });
+
+  test('renders baseline structures from scale-local logical cells without mutating geometry', () => {
+    const base = createThreefoldSimulation(THRESHOLDS);
+    const before = JSON.stringify(base.scene.geometry);
+    const layouts = [-1, 0].map(scale => {
+      const state = {
+        ...base,
+        player: { ...base.player, scale },
+      };
+      const frame = renderThreefoldFrame(state);
+      const layout = frame.threefold.logicalGridLayout;
+      const byId = new Map(layout.entities.map(entity => [entity.id, entity]));
+      const renderedStructures = frame.shapes.filter(shape =>
+        byId.has(shape.geometryId)
+      );
+
+      expect(layout.scale).toBe(scale);
+      expect(renderedStructures.length).toBeGreaterThan(0);
+      for (const shape of renderedStructures) {
+        expect(shape.logicalCellBounds).toEqual(
+          byId.get(shape.geometryId).cellBounds
+        );
+        const { x, y, width, height } = shape.logicalCellBounds;
+        const screenX = (x + 7 - frame.camera.x) * 12;
+        const screenY = (y + 4 - frame.camera.y) * 12;
+        expect(shape.x).toBe(Math.round(screenX / 8) * 8);
+        expect(shape.y).toBe(Math.round(screenY / 8) * 8);
+        expect(shape.width).toBe(Math.ceil((width * 12) / 8) * 8);
+        expect(shape.height).toBe(Math.ceil((height * 12) / 8) * 8);
+      }
+      expect(state.scene.geometry).toEqual(base.scene.geometry);
+      return layout;
+    });
+
+    expect(layouts[0].entities).not.toEqual(layouts[1].entities);
+    expect(JSON.stringify(base.scene.geometry)).toBe(before);
+  });
 });
 
 describe('THREEFOLD status display', () => {

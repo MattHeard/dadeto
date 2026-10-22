@@ -46,13 +46,14 @@ import {
   isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
+import { layoutScene } from './logical-grid.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldSpriteShape */
 const createThreefoldRectShape =
   /** @type {(bounds: [number, number, number, number], fill: string) => ThreefoldSpriteShape} */
   (createRectShapeFromBounds);
@@ -104,6 +105,7 @@ export function renderThreefoldFrame(
     ...creatureIds,
   ]);
   const world = createRenderWorld(state, heightMeters, growthPreviewSet);
+  const logicalGridLayout = world.logicalGridLayout;
   const frame = createThreefoldFramePayload({
     world,
     dialogue:
@@ -266,6 +268,7 @@ export function renderThreefoldFrame(
       presentThreefoldWitnessEntry
     ),
     testimony: isHighWorld ? null : presentThreefoldTestimony(),
+    logicalGridLayout,
     growthPreviewIds: geometryIds,
     growthPreviewOccupantIds: occupantIds,
     growthPreviewCreatureIds: creatureIds,
@@ -1561,7 +1564,7 @@ function hasLatchfolkIriLead(state) {
  * @param {ReturnType<import('./simulation.js').createThreefoldSimulation>} state Current simulation.
  * @param {number} heightMeters Mara's current physical height.
  * @param {Set<string>} growthPreviewIds Geometry, occupants, or creatures affected by the next growth step.
- * @returns {Record<string, any>} Mosslight-compatible world snapshot.
+ * @returns {Record<string, any>} Mosslight-compatible world snapshot and grid projection.
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
@@ -1569,6 +1572,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     ? 'dry'
     : getThreefoldGateOutcome(state).drainageState;
   const { geometry } = projectGeometryForScale(player, scene.geometry);
+  const gridProjection = projectRenderGeometryToGrid(player.scale, geometry);
   const growthDeathIds = new Set(
     (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
   );
@@ -1631,7 +1635,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
             ]
           : []),
         ...creatureObjects,
-        ...geometry.map(object => ({
+        ...gridProjection.geometry.map(object => ({
           ...object,
           growthPreview: growthPreviewIds.has(object.id),
         })),
@@ -1656,12 +1660,56 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     day: 1,
     flags: {},
     npcs: [],
+    logicalGridLayout: gridProjection.layout,
+  };
+}
+
+/**
+ * Project surviving physical structures onto scale-local integer cells for the renderer.
+ * @param {number} scale Current THREEFOLD scale.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometry Surviving canonical structure geometry.
+ * @returns {{geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, logicalCellBounds: {x: number, y: number, width: number, height: number}}>, layout: ReturnType<typeof layoutScene>}} Grid-projected render geometry and diagnostics.
+ */
+function projectRenderGeometryToGrid(scale, geometry) {
+  const layout = layoutScene(
+    geometry.map(({ id, bounds }) => ({ id, bounds })),
+    scale
+  );
+  const projectedById = new Map(
+    layout.entities.map(entity => [entity.id, entity.cellBounds])
+  );
+  const cellSizeMeters = heightAtScale(scale);
+  return {
+    layout,
+    geometry: geometry.map(object => {
+      const logicalCellBounds =
+        /** @type {{x: number, y: number, width: number, height: number}} */ (
+          projectedById.get(object.id)
+        );
+      return {
+        ...object,
+        logicalCellBounds,
+        bounds: {
+          min: {
+            ...object.bounds.min,
+            x: logicalCellBounds.x * cellSizeMeters,
+            y: logicalCellBounds.y * cellSizeMeters,
+          },
+          max: {
+            ...object.bounds.max,
+            x: (logicalCellBounds.x + logicalCellBounds.width) * cellSizeMeters,
+            y:
+              (logicalCellBounds.y + logicalCellBounds.height) * cellSizeMeters,
+          },
+        },
+      };
+    }),
   };
 }
 
 /**
  * Paint one physical geometry footprint at the current world scale.
- * @param {{id: string, growthPreview?: boolean, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Projected world object.
+ * @param {{id: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}} actor Projected world object.
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} heightMeters Mara's current physical height.
  * @returns {Array<{type: string, geometryId: string, x: number, y: number, width: number, height: number, fill: string, growthPreview: boolean}>} Pixelated structure shape.
@@ -1673,6 +1721,9 @@ function geometrySprite(actor, camera, heightMeters) {
     {
       type: 'rect',
       geometryId: actor.id,
+      ...(actor.logicalCellBounds === undefined
+        ? {}
+        : { logicalCellBounds: actor.logicalCellBounds }),
       ...footprint,
       fill:
         actor.growthPreview === true
