@@ -142,8 +142,11 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
       'broken-gate': {
         episode: {
           passengers: 'partial',
+          ferry: 'lost',
           latchfolk: 'warned',
           gateRepairedBeforeSurge: false,
+          closedBy: 'reported',
+          witnessLedger: [{ action: 'latchfolk-witness-lead' }],
         },
         encounter: { growthDeaths: [] },
         player: { destroyedGeometryIds: [] },
@@ -213,6 +216,12 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
       evidenceCount: 3,
       rootRelief: true,
       coastReady: true,
+      civicAccount: {
+        reportFiled: true,
+        iriConfessionDisclosed: true,
+        passengerOutcome: 'partial',
+        ferryOutcome: 'lost',
+      },
       priorDeathIds: expect.arrayContaining(['tov']),
       preparedGroups: expect.arrayContaining([
         'assembly',
@@ -571,5 +580,57 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     expect(actualTide(runtime).controls.sealClosed).toBe(true);
     expect(actualTide(runtime).damageIds).toContain('living-breakwater');
     expect(runtime.frame().threefold.returnTide.phase).toBe('aftermath');
+  });
+});
+
+describe('THREEFOLD civic Return Tide aftermath', () => {
+  test('surveying Belltops reads shared report and ferry outcomes after a stale-page refresh', () => {
+    const storage = browserStorage();
+    const gate = createThreefoldRuntime({ storage });
+    gate.getState().episode.passengers = 'partial';
+    gate.getState().episode.ferry = 'lost';
+    gate.getState().crisis.elapsedMinutes = 15;
+    gate.getState().crisis.stage = 'aftermath';
+    gate.getState().episode.closedBy = 'reported';
+    gate.save();
+
+    const belltops = createThreefoldRuntime({
+      storage,
+      scene: createThreefoldBelltopsScene(),
+    });
+    const staleBelltops = createThreefoldRuntime({
+      storage,
+      scene: createThreefoldBelltopsScene(),
+    });
+    waitForAftermath(belltops);
+    expect(
+      belltops
+        .frame()
+        .threefold.returnTide.epilogue.some(row =>
+          row.startsWith('Civic reckoning:')
+        )
+    ).toBe(false);
+
+    expect(staleBelltops.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(
+      5400
+    );
+    staleBelltops.dispatch('interact');
+    const epilogue = staleBelltops.frame().threefold.returnTide.epilogue;
+    expect(epilogue).toContain(
+      'Civic reckoning: Iri’s pressure-regulator log is public, but the confession about thinning relay warnings was not filed; responsibility remains contested.'
+    );
+    expect(epilogue).toContain(
+      'Harbor reckoning: One ferry passenger group reached shore; the other was lost with the wreck, leaving fewer harbor engineers for recovery.'
+    );
+    expect(epilogue).not.toContain(
+      'Civic reckoning: Iri’s confession is public; the Assembly calls for the missing relay warnings to be traced before responsibility is assigned.'
+    );
+
+    const restored = createThreefoldRuntime({
+      storage: browserStorage(),
+      scene: createThreefoldBelltopsScene(),
+    });
+    restored.importCampaign(belltops.exportCampaign());
+    expect(restored.frame().threefold.returnTide.epilogue).toEqual(epilogue);
   });
 });

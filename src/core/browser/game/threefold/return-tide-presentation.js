@@ -61,7 +61,7 @@ export function presentThreefoldReturnTide(state, tide, facts, notice = '') {
     notice,
     text: `${interaction ? `${text} ${interaction.detail}` : text}${notice ? ` ${notice}` : ''}`,
     hud: interaction?.label || `RETURN TIDE · ${phase.toUpperCase()}`,
-    epilogue: observedEpilogue(tide),
+    epilogue: observedEpilogue(tide, facts),
     finished: phase === 'aftermath',
     interaction,
   };
@@ -70,12 +70,15 @@ export function presentThreefoldReturnTide(state, tide, facts, notice = '') {
 /**
  * Revisit only the places whose high-water records Mara actually surveyed.
  * @param {import('./return-tide.js').ThreefoldReturnTide} tide Actual and observed history.
+ * @param {import('./return-tide.js').ReturnTideFacts} facts Known public campaign facts.
  * @returns {string[]} Authored consequences and surviving obligations without grading.
  */
-function observedEpilogue(tide) {
+function observedEpilogue(tide, facts) {
   const rows = [];
   for (const sceneId of tide.observedSceneIds) {
     rows.push(`${sceneId}: the high-water survey is recorded.`);
+    if (sceneId === 'belltops')
+      rows.push(...civicReckoning(facts.civicAccount));
     for (const loss of SITE_LOSSES[sceneId] || [])
       if (tide.damageIds.includes(loss)) rows.push(LOSS_TEXT[loss]);
     for (const person of RETURN_TIDE_PEOPLE.filter(
@@ -106,6 +109,45 @@ function observedEpilogue(tide) {
       'The distributed response still sacrificed homes and Foldglass freedom; this is no cost-free ending.'
     );
   return [...new Set(rows)];
+}
+
+/**
+ * Connect public accountability to the actual report and ferry outcomes.
+ * @param {import('./return-tide.js').ReturnTideFacts['civicAccount']} account Saved civic record.
+ * @returns {string[]} Concrete public account without inferring private knowledge.
+ */
+function civicReckoning(account) {
+  if (!account) return [];
+  const rows = [];
+  if (account.reportFiled) {
+    rows.push(
+      account.iriConfessionDisclosed
+        ? 'Civic reckoning: Iri’s confession is public; the Assembly calls for the missing relay warnings to be traced before responsibility is assigned.'
+        : 'Civic reckoning: Iri’s pressure-regulator log is public, but the confession about thinning relay warnings was not filed; responsibility remains contested.'
+    );
+  } else {
+    rows.push(
+      'Civic reckoning: Mara filed no signal-station report, so the Assembly has no public account from her of Iri’s pressure-regulator decisions.'
+    );
+  }
+  const passengerOutcomes = {
+    evacuated:
+      'Both ferry passenger groups reached shore before the surge; harbor crews can draw on their surviving engineers.',
+    partial:
+      account.ferryOutcome === 'lost'
+        ? 'One ferry passenger group reached shore; the other was lost with the wreck, leaving fewer harbor engineers for recovery.'
+        : 'One ferry passenger group reached shore; the other remained aboard the surviving ferry, leaving harbor crews short-handed.',
+    lost: 'Neither ferry passenger group reached shore before the ferry was lost.',
+    aboard:
+      account.ferryOutcome === 'lost'
+        ? 'Neither ferry passenger group was evacuated before the ferry was lost.'
+        : 'Neither ferry passenger group was evacuated before the crisis ended; they remain aboard the surviving ferry.',
+  };
+  const passengerAccount = account.passengerOutcome
+    ? passengerOutcomes[account.passengerOutcome]
+    : undefined;
+  if (passengerAccount) rows.push(`Harbor reckoning: ${passengerAccount}`);
+  return rows;
 }
 
 /**

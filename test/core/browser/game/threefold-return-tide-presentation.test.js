@@ -159,6 +159,88 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     );
   });
 
+  test.each([
+    {
+      passengerOutcome: 'evacuated',
+      ferryOutcome: 'afloat',
+      reportFiled: true,
+      iriConfessionDisclosed: true,
+      civic:
+        'Civic reckoning: Iri’s confession is public; the Assembly calls for the missing relay warnings to be traced before responsibility is assigned.',
+      harbor:
+        'Harbor reckoning: Both ferry passenger groups reached shore before the surge; harbor crews can draw on their surviving engineers.',
+    },
+    {
+      passengerOutcome: 'partial',
+      ferryOutcome: 'lost',
+      reportFiled: true,
+      iriConfessionDisclosed: false,
+      civic:
+        'Civic reckoning: Iri’s pressure-regulator log is public, but the confession about thinning relay warnings was not filed; responsibility remains contested.',
+      harbor:
+        'Harbor reckoning: One ferry passenger group reached shore; the other was lost with the wreck, leaving fewer harbor engineers for recovery.',
+    },
+    {
+      passengerOutcome: 'lost',
+      ferryOutcome: 'lost',
+      reportFiled: false,
+      iriConfessionDisclosed: false,
+      civic:
+        'Civic reckoning: Mara filed no signal-station report, so the Assembly has no public account from her of Iri’s pressure-regulator decisions.',
+      harbor:
+        'Harbor reckoning: Neither ferry passenger group reached shore before the ferry was lost.',
+    },
+  ])(
+    'derives civic aftermath from public disclosure and ferry outcome %s',
+    scenario => {
+      const state = createThreefoldSimulation(
+        CRISIS_THRESHOLDS,
+        createThreefoldHearthgapsScene()
+      );
+      const content = presentThreefoldReturnTide(state, observedAftermath(), {
+        ...facts(),
+        civicAccount: {
+          reportFiled: scenario.reportFiled,
+          iriConfessionDisclosed: scenario.iriConfessionDisclosed,
+          passengerOutcome: scenario.passengerOutcome,
+          ferryOutcome: scenario.ferryOutcome,
+        },
+      });
+
+      expect(content.epilogue).toContain(scenario.civic);
+      expect(content.epilogue).toContain(scenario.harbor);
+    }
+  );
+
+  test('keeps civic and harbor accounts hidden until Belltops is actually surveyed', () => {
+    const state = createThreefoldSimulation(
+      CRISIS_THRESHOLDS,
+      createThreefoldHearthgapsScene()
+    );
+    const tide = {
+      ...observedAftermath(),
+      observedSceneIds: observedAftermath().observedSceneIds.filter(
+        sceneId => sceneId !== 'belltops'
+      ),
+    };
+    const content = presentThreefoldReturnTide(state, tide, {
+      ...facts(),
+      civicAccount: {
+        reportFiled: true,
+        iriConfessionDisclosed: true,
+        passengerOutcome: 'evacuated',
+        ferryOutcome: 'lost',
+      },
+    });
+
+    expect(content.epilogue).not.toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('Civic reckoning:'),
+        expect.stringContaining('Harbor reckoning:'),
+      ])
+    );
+  });
+
   test('names signed shift duties and reveals each repair obligation only after its place is surveyed', () => {
     const tide = {
       ...createThreefoldReturnTide(),
