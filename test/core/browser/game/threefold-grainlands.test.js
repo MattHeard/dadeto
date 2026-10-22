@@ -77,6 +77,7 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
       expect(layout.scale).toBe(scale);
       expect(layout.viewport.width).toBe(18);
       expect(layout.viewport.height).toBe(8);
+      expect(layout.conflicts).toEqual([]);
       expect(layout.entities.map(({ id }) => id).sort()).toEqual(
         [...new Set(sourceIds)].sort()
       );
@@ -112,6 +113,19 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
       );
+      const reorderedState = {
+        ...state,
+        scene: {
+          ...state.scene,
+          geometry: [...state.scene.geometry].reverse(),
+          decorations: [...state.scene.decorations].reverse(),
+          interactables: [...state.scene.interactables].reverse(),
+          creatures: [...state.scene.creatures].reverse(),
+        },
+      };
+      expect(
+        renderThreefoldFrame(reorderedState).threefold.logicalGridLayout
+      ).toEqual(layout);
     }
 
     expect(JSON.stringify(base.scene)).toBe(authored);
