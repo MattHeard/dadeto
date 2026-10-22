@@ -781,23 +781,55 @@ function createSiltMarginGridLayout(state, water) {
     { id: scene.id, bounds: scene.bounds },
     player.scale
   ).cellBounds;
-  const layout = resolveSceneLayout(
-    [...byId.values()].map(entity => ({
-      id: entity.id,
-      bounds: entity.bounds,
-      parentId: entity.parentId,
-      overlapGroupId: entity.overlapGroupId,
-      hierarchy: entity.hierarchy,
-    })),
+  const entities = [...byId.values()].map(entity => ({
+    id: entity.id,
+    bounds: entity.bounds,
+    parentId: entity.parentId,
+    overlapGroupId: entity.overlapGroupId,
+    hierarchy: entity.hierarchy,
+  }));
+  const resolved = resolveSceneLayout(entities, player.scale, viewport);
+  /**
+   * @param {ReturnType<typeof projectEntity>['cellBounds']} bounds Projected cell bounds.
+   * @returns {boolean} Whether the bounds fit inside the authored viewport.
+   */
+  const isInsideViewport = bounds =>
+    bounds.x >= viewport.x &&
+    bounds.y >= viewport.y &&
+    bounds.x + bounds.width <= viewport.x + viewport.width &&
+    bounds.y + bounds.height <= viewport.y + viewport.height;
+  const inViewportIds = new Set(
+    resolved.entities
+      .filter(entity => isInsideViewport(entity.cellBounds))
+      .map(entity => entity.id)
+  );
+  const packed = packSceneLayout(
+    entities.filter(entity => inViewportIds.has(entity.id)),
     player.scale,
     viewport
   );
   return {
-    ...layout,
-    entities: layout.entities.map(entity => ({
-      ...entity,
-      logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
-    })),
+    ...resolved,
+    ...packed,
+    entities: [
+      ...packed.entities,
+      ...resolved.entities.filter(entity => !inViewportIds.has(entity.id)),
+    ]
+      .map(entity => ({
+        ...entity,
+        logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
+      }))
+      .sort((first, second) => first.id.localeCompare(second.id)),
+    overflow: [
+      ...packed.overflow,
+      ...resolved.overflow.filter(
+        ({ entityId }) => !inViewportIds.has(entityId)
+      ),
+    ],
+    hierarchy: resolved.hierarchy,
+    containments: resolved.containments,
+    intentionalOverlaps: resolved.intentionalOverlaps,
+    relationshipIssues: resolved.relationshipIssues,
   };
 }
 
