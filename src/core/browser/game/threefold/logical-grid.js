@@ -386,11 +386,11 @@ export function layoutScene(entities, scale, viewport) {
  * @param {ThreefoldGridEntity[]} entities Canonical entities in any input order.
  * @param {number} scale Requested THREEFOLD scale from -4 through +4.
  * @param {ThreefoldCellBounds} viewport Finite integer-cell layout capacity.
- * @returns {ThreefoldSceneLayout} Stable packed positions and remaining overflow/conflicts.
+ * @returns {ThreefoldResolvedSceneLayout} Stable packed positions and remaining overflow/conflicts.
  */
 export function packSceneLayout(entities, scale, viewport) {
   assertCellBounds(viewport, 'viewport');
-  const initial = layoutScene(entities, scale, viewport);
+  const initial = resolveSceneLayout(entities, scale, viewport);
   const sourceById = new Map(entities.map(entity => [entity.id, entity]));
   const relationshipIds = new Set([
     ...initial.containments.flatMap(({ parentId, childId }) => [
@@ -466,6 +466,7 @@ export function packSceneLayout(entities, scale, viewport) {
     conflicts,
     relationshipIssues: initial.relationshipIssues,
     overflow,
+    hierarchy: initial.hierarchy,
   };
 }
 

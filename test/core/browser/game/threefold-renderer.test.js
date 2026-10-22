@@ -364,11 +364,10 @@ describe('THREEFOLD canvas grid', () => {
       expect(layout.entities.map(entity => entity.logicalGridKind)).toEqual(
         expect.arrayContaining(['structure', 'interactable', 'creature'])
       );
-      expect(layout.conflicts.length).toBe(scale === 0 ? 3 : 0);
-      if (scale === 0)
-        expect(
-          layout.conflicts.map(({ entityIds }) => entityIds)
-        ).toContainEqual(['gatehouse-rat', 'gatehouse-west-wall']);
+      expect(layout.conflicts).toEqual([]);
+      expect(
+        layout.entities.every(({ placement }) => placement === 'placed')
+      ).toBe(true);
       for (const conflict of layout.conflicts)
         for (const id of conflict.entityIds)
           expect(byId.get(id).placement).toBe('unresolved');
@@ -396,6 +395,19 @@ describe('THREEFOLD canvas grid', () => {
           expect(shape.height).toBe(bottom - top);
         }
       }
+      const reversed = {
+        ...state,
+        scene: {
+          ...state.scene,
+          geometry: [...state.scene.geometry].reverse(),
+          decorations: [...(state.scene.decorations ?? [])].reverse(),
+          interactables: [...state.scene.interactables].reverse(),
+          creatures: [...state.scene.creatures].reverse(),
+        },
+      };
+      expect(
+        renderThreefoldFrame(reversed).threefold.logicalGridLayout
+      ).toEqual(layout);
       expect(state.scene.geometry).toEqual(base.scene.geometry);
       expect(state.scene.interactables).toEqual(base.scene.interactables);
       expect(state.scene.creatures).toEqual(base.scene.creatures);
@@ -433,10 +445,24 @@ describe('THREEFOLD canvas grid', () => {
       'relief-gate',
       'relief-gate-locking-pawl',
     ]);
-    expect(unresolvedPairs).toContainEqual([
+    expect(unresolvedPairs).not.toContainEqual([
       'drainage-weir',
       'ferry-mooring-line',
     ]);
+    const packed = new Map(
+      frame.threefold.logicalGridLayout.entities.map(entity => [
+        entity.id,
+        entity.cellBounds,
+      ])
+    );
+    const weir = packed.get('drainage-weir');
+    const line = packed.get('ferry-mooring-line');
+    expect(
+      weir.x + weir.width <= line.x ||
+        line.x + line.width <= weir.x ||
+        weir.y + weir.height <= line.y ||
+        line.y + line.height <= weir.y
+    ).toBe(true);
     expect(unresolvedPairs).not.toContainEqual([
       'relief-gate',
       'gate-counterweight',
@@ -565,7 +591,7 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
 });
 
 describe('THREEFOLD canvas grid', () => {
-  test('reports an authored object beyond the map viewport without moving it', () => {
+  test('packs an out-of-viewport object into the rendered map without moving physical geometry', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
     const scene = {
       ...base.scene,
@@ -589,11 +615,8 @@ describe('THREEFOLD canvas grid', () => {
       entity => entity.id === 'gatehouse-west-wall'
     );
 
-    expect(frame.threefold.logicalGridLayout.overflow).toContainEqual({
-      entityId: 'gatehouse-west-wall',
-      cellBounds: layoutEntity.cellBounds,
-    });
-    expect(layoutEntity.placement).toBe('overflow');
+    expect(frame.threefold.logicalGridLayout.overflow).toEqual([]);
+    expect(layoutEntity.placement).toBe('placed');
     expect(JSON.stringify(state.scene.geometry)).toBe(before);
   });
 });

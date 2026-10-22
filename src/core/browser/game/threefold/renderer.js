@@ -49,7 +49,11 @@ import {
   isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
-import { projectEntity, resolveSceneLayout } from './logical-grid.js';
+import {
+  packSceneLayout,
+  projectEntity,
+  resolveSceneLayout,
+} from './logical-grid.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
@@ -2918,7 +2922,7 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
  */
 function projectRenderEntitiesToGrid(scale, entities, viewport) {
   const byId = new Map(entities.map(entity => [entity.id, entity]));
-  const layout = resolveSceneLayout(
+  const layout = packSceneLayout(
     entities.map(entity => ({
       id: entity.id,
       bounds: entity.bounds,
