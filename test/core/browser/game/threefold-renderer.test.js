@@ -83,10 +83,18 @@ describe('THREEFOLD canvas grid', () => {
 
       expect(layout.scale).toBe(scale);
       expect(renderedStructures.length).toBeGreaterThan(0);
-      for (const shape of renderedStructures)
+      for (const shape of renderedStructures) {
         expect(shape.logicalCellBounds).toEqual(
           byId.get(shape.geometryId).cellBounds
         );
+        const { x, y, width, height } = shape.logicalCellBounds;
+        const screenX = (x + 7 - frame.camera.x) * 12;
+        const screenY = (y + 4 - frame.camera.y) * 12;
+        expect(shape.x).toBe(Math.round(screenX / 8) * 8);
+        expect(shape.y).toBe(Math.round(screenY / 8) * 8);
+        expect(shape.width).toBe(Math.ceil((width * 12) / 8) * 8);
+        expect(shape.height).toBe(Math.ceil((height * 12) / 8) * 8);
+      }
       expect(state.scene.geometry).toEqual(base.scene.geometry);
       return layout;
     });
