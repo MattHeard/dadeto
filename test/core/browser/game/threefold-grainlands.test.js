@@ -7,6 +7,7 @@ import {
   THREEFOLD_GRAINLANDS_NURSERY_ID,
   THREEFOLD_GRAINLANDS_SPIDER_ID,
 } from '../../../../src/core/browser/game/threefold/grainlands.js';
+import { createThreefoldPressureNetwork } from '../../../../src/core/browser/game/threefold/pressure-network.js';
 import {
   createThreefoldSimulationSaveStore,
   restoreThreefoldSimulation,
@@ -36,6 +37,192 @@ function createGrainlandsRun() {
 }
 
 describe('THREEFOLD Grainlands nursery crossing', () => {
+  test('renders every source identity from a finite camera-centered logical grid', () => {
+    const base = createGrainlandsRun();
+    base.scene.decorations.push({
+      id: 'grainlands-ground-mark',
+      bounds: {
+        min: { x: 0.05, y: 0.05, z: 0 },
+        max: { x: 0.08, y: 0.08, z: 0.01 },
+      },
+    });
+    const authored = JSON.stringify(base.scene);
+    const sourceIds = [
+      ...base.scene.geometry,
+      ...base.scene.decorations,
+      ...base.scene.interactables,
+      ...base.scene.creatures,
+      { id: 'mara' },
+    ].map(({ id }) => id);
+
+    for (let scale = -4; scale <= 4; scale += 1) {
+      const state = {
+        ...base,
+        player: {
+          ...base.player,
+          scale,
+          minimumUnlockedScale: -4,
+          maximumUnlockedScale: 4,
+        },
+      };
+      const frame = renderThreefoldFrame(state);
+      const { logicalGridLayout: layout } = frame.threefold;
+      const entities = new Map(
+        layout.entities.map(entity => [entity.id, entity])
+      );
+      const visibleIds = layout.entities
+        .filter(entity => entity.placement !== 'overflow')
+        .map(({ id }) => id);
+
+      expect(layout.scale).toBe(scale);
+      expect(layout.viewport.width).toBe(18);
+      expect(layout.viewport.height).toBe(8);
+      expect(layout.entities.map(({ id }) => id).sort()).toEqual(
+        [...new Set(sourceIds)].sort()
+      );
+      expect(
+        entities.get(THREEFOLD_GRAINLANDS_IRU_ID).logicalGridKinds
+      ).toEqual(['creature', 'interactable']);
+      expect(frame.shapes.map(({ geometryId }) => geometryId)).toEqual(
+        expect.arrayContaining(visibleIds)
+      );
+      for (const shape of frame.shapes.filter(shape =>
+        visibleIds.includes(shape.geometryId)
+      )) {
+        const cell = entities.get(shape.geometryId).cellBounds;
+        const left = 8 + (cell.x - layout.viewport.x) * 8;
+        const top =
+          32 +
+          (layout.viewport.height -
+            (cell.y - layout.viewport.y) -
+            cell.height) *
+            8;
+        expect(shape.logicalCellBounds).toEqual(cell);
+        expect(shape.x).toBeGreaterThanOrEqual(left);
+        expect(shape.y).toBeGreaterThanOrEqual(top);
+        expect(shape.x + shape.width).toBeLessThanOrEqual(
+          left + cell.width * 8
+        );
+        expect(shape.y + shape.height).toBeLessThanOrEqual(
+          top + cell.height * 8
+        );
+        expect(shape.x % 8).toBe(0);
+        expect(shape.y % 8).toBe(0);
+      }
+      expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
+        layout
+      );
+    }
+
+    expect(JSON.stringify(base.scene)).toBe(authored);
+  });
+
+  test('keeps Mara visible when movement reaches the eastern scene edge', () => {
+    const state = createGrainlandsRun();
+    state.player.scale = -4;
+    state.player.minimumUnlockedScale = -4;
+    state.player.maximumUnlockedScale = 4;
+    state.player.position.x = 0.79706;
+    state.player.position.y = 0.05;
+
+    const frame = renderThreefoldFrame(state);
+    const layout = frame.threefold.logicalGridLayout;
+    const mara = layout.entities.find(entity => entity.id === 'mara');
+
+    expect(mara.placement).not.toBe('overflow');
+    expect(frame.shapes.some(shape => shape.geometryId === 'mara')).toBe(true);
+    expect(mara.cellBounds.x + mara.cellBounds.width).toBeLessThanOrEqual(
+      layout.viewport.x + layout.viewport.width
+    );
+  });
+
+  test('keeps Mara visible when projection rounds just west of the region', () => {
+    const state = createGrainlandsRun();
+    state.player.scale = -4;
+    state.player.minimumUnlockedScale = -4;
+    state.player.maximumUnlockedScale = 4;
+    state.player.position.x = -0.01;
+
+    const frame = renderThreefoldFrame(state);
+    const layout = frame.threefold.logicalGridLayout;
+    const mara = layout.entities.find(entity => entity.id === 'mara');
+
+    expect(mara.cellBounds.x).toBe(layout.viewport.x);
+    expect(mara.placement).not.toBe('overflow');
+  });
+
+  test('keeps pressure water inside the projected nursery and reports camera overflow', () => {
+    const state = createGrainlandsRun();
+    const pressureNetwork = createThreefoldPressureNetwork();
+    pressureNetwork.volumesCubicMeters = [0, 0.004, 0];
+    const wetFrame = renderThreefoldFrame(state, pressureNetwork);
+    const nursery = wetFrame.shapes.find(
+      shape => shape.geometryId === THREEFOLD_GRAINLANDS_NURSERY_ID
+    );
+    const water = wetFrame.shapes.find(shape => shape.fill === '#1b8a83');
+    expect(water.logicalContainerBounds).toEqual(nursery.logicalCellBounds);
+    expect(water.x).toBeGreaterThanOrEqual(nursery.x);
+    expect(water.y).toBeGreaterThanOrEqual(nursery.y);
+    expect(water.x + water.width).toBeLessThanOrEqual(
+      nursery.x + nursery.width
+    );
+    expect(water.y + water.height).toBeLessThanOrEqual(
+      nursery.y + nursery.height
+    );
+
+    const conflicting = createGrainlandsRun();
+    conflicting.scene.creatures.find(
+      entity => entity.id === THREEFOLD_GRAINLANDS_IRU_ID
+    ).bounds.max.y += 0.01;
+    expect(() => renderThreefoldFrame(conflicting)).toThrow(
+      'Conflicting Grainlands geometry for grainlands-iru.'
+    );
+
+    const outside = createGrainlandsRun();
+    for (const entity of [
+      ...outside.scene.geometry,
+      ...outside.scene.decorations,
+      ...outside.scene.interactables,
+      ...outside.scene.creatures,
+    ]) {
+      entity.bounds.min.x = 100;
+      entity.bounds.max.x = 101;
+    }
+    outside.player.position.x = -100;
+    outside.player.scale = -4;
+    outside.player.minimumUnlockedScale = -4;
+    outside.player.maximumUnlockedScale = 4;
+    const before = JSON.stringify(outside.scene);
+    const overflowFrame = renderThreefoldFrame(outside, pressureNetwork);
+    expect(overflowFrame.shapes.some(shape => shape.fill === '#1b8a83')).toBe(
+      false
+    );
+    const layout = overflowFrame.threefold.logicalGridLayout;
+    expect(layout.overflow.map(({ entityId }) => entityId).sort()).toEqual(
+      [
+        ...new Set(
+          [
+            ...outside.scene.geometry,
+            ...outside.scene.decorations,
+            ...outside.scene.interactables,
+            ...outside.scene.creatures,
+            { id: 'mara' },
+          ].map(({ id }) => id)
+        ),
+      ].sort()
+    );
+    expect(
+      overflowFrame.shapes.filter(shape =>
+        layout.overflow.some(({ entityId }) => entityId === shape.geometryId)
+      )
+    ).toEqual([]);
+    expect(JSON.stringify(outside.scene)).toBe(before);
+
+    expect(
+      renderThreefoldFrame(outside).threefold.logicalGridLayout.viewport.x
+    ).toBe(0);
+  });
+
   test('authors the 6.77 cm nursery, Iru, and a substantially larger spider', () => {
     const scene = createThreefoldGrainlandsScene();
     const state = createGrainlandsRun();
