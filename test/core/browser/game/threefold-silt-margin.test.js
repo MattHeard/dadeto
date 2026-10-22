@@ -559,6 +559,10 @@ describe('THREEFOLD Silt Margin logical-grid renderer', () => {
       expect(layout.entities.map(entity => entity.id)).toEqual(
         [...entities.keys()].sort()
       );
+      expect(layout.hierarchy.visibleEntityIds).toEqual(
+        [...entities.keys()].sort()
+      );
+      expect(layout.overflow).toEqual([]);
       expect(entities.get('silt-margin-guardian')).toMatchObject({
         logicalGridKinds: ['creature', 'interactable'],
       });
@@ -629,5 +633,33 @@ describe('THREEFOLD Silt Margin logical-grid renderer', () => {
     expect(() => renderThreefoldFrame(state)).toThrow(
       'Silt Margin render entity is missing.'
     );
+  });
+
+  test('reports out-of-region decorations without mutating the Silt Margin scene', () => {
+    const state = createSiltMarginRun();
+    state.scene.decorations = state.scene.decorations.map(object =>
+      object.id === 'silt-margin-dew-pool'
+        ? {
+            ...object,
+            bounds: {
+              min: { ...object.bounds.min, x: 0.5 },
+              max: { ...object.bounds.max, x: 0.6 },
+            },
+          }
+        : object
+    );
+    const before = structuredClone(state);
+
+    const frame = renderThreefoldFrame(state);
+    const outOfRegion = frame.threefold.logicalGridLayout.entities.find(
+      entity => entity.id === 'silt-margin-dew-pool'
+    );
+
+    expect(frame.threefold.logicalGridLayout.overflow).toContainEqual({
+      entityId: 'silt-margin-dew-pool',
+      cellBounds: outOfRegion.cellBounds,
+    });
+    expect(outOfRegion.placement).toBe('overflow');
+    expect(state).toEqual(before);
   });
 });

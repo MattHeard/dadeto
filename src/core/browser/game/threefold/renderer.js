@@ -46,7 +46,7 @@ import {
   isThreefoldGrainlandsSimulationState,
 } from './simulation.js';
 import { heightAtScale, projectGeometryForScale } from './spatial.js';
-import { layoutScene, resolveSceneLayout } from './logical-grid.js';
+import { projectEntity, resolveSceneLayout } from './logical-grid.js';
 import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
@@ -524,7 +524,7 @@ function renderThreefoldSiltMarginFrame(state) {
  * are retained together only when their physical bounds match exactly.
  * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'silt-margin'}}>} state Current branch simulation.
  * @param {ReturnType<typeof getThreefoldSiltMarginWaterStatus>} water Hydraulic water state.
- * @returns {ReturnType<typeof layoutScene> & {entities: Array<ReturnType<typeof layoutScene>['entities'][number] & {logicalGridKinds: string[]}>}} Deterministic projected scene layout.
+ * @returns {ReturnType<typeof resolveSceneLayout> & {entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Deterministic projected scene layout.
  */
 function createSiltMarginGridLayout(state, water) {
   const { scene, player } = state;
@@ -574,9 +574,20 @@ function createSiltMarginGridLayout(state, water) {
       throw new RangeError(`Conflicting Silt Margin geometry for ${facet.id}.`);
     existing.kinds.push(facet.kind);
   }
-  const layout = layoutScene(
-    [...byId.values()].map(({ id, bounds }) => ({ id, bounds })),
+  const viewport = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
     player.scale
+  ).cellBounds;
+  const layout = resolveSceneLayout(
+    [...byId.values()].map(entity => ({
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId: entity.overlapGroupId,
+      hierarchy: entity.hierarchy,
+    })),
+    player.scale,
+    viewport
   );
   return {
     ...layout,
@@ -606,7 +617,7 @@ function sameSiltMarginBounds(first, second) {
 
 /**
  * Create a static Silt Margin sprite whose screen rectangle comes from its logical cells.
- * @param {ReturnType<typeof layoutScene>['entities'][number] | undefined} entity Projected entity.
+ * @param {ReturnType<typeof resolveSceneLayout>['entities'][number] | undefined} entity Projected entity.
  * @param {number} scale Current scale.
  * @param {string} fill Sprite color.
  * @returns {ThreefoldSpriteShape} Grid-derived sprite shape.
