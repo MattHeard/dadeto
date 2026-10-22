@@ -213,6 +213,28 @@ describe('THREEFOLD Silt Margin crossing', () => {
     ).toEqual(frame.threefold.siltMarginQuietingEvidence);
   });
 
+  test('a stale Neme actor cannot supply Choir evidence after Neme has died', () => {
+    const state = sendSiltMarginChoirSignal();
+    state.siltMargin.quietingEvidenceHeard = false;
+    state.encounter.growthDeaths = [
+      { creatureId: 'silt-margin-neme', cause: 'growth' },
+    ];
+
+    const next = stepThreefoldSimulation(state, { type: 'interact' });
+
+    expect(state.scene.creatures.map(({ id }) => id)).toContain(
+      'silt-margin-neme'
+    );
+    expect(next.siltMargin.quietingEvidenceHeard).toBe(false);
+    const remembered = {
+      ...next,
+      siltMargin: { ...next.siltMargin, quietingEvidenceHeard: true },
+    };
+    expect(
+      renderThreefoldFrame(remembered).threefold.siltMarginQuietingEvidence.text
+    ).toContain('Neme is no longer here');
+  });
+
   test('blocks the rivulet before diversion and growth breaks the root arch as a second solution', () => {
     let state = createSiltMarginRun();
     for (let step = 0; step < 20; step += 1)

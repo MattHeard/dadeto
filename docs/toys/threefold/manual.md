@@ -171,7 +171,15 @@ Press E at the nearest reachable Quay panel to check Iri. The next press release
 
 For a governed handoff, move toward the harbor crane until the HUD offers TAKE GOVERNOR. E removes its governor and permanently stops harbor lifting; the crane stays standing and the screen marks CRANE IDLE. Return within reach of the panel, use E to FIT GOVERNOR, then press E again to RELEASE IRI. The installed governor controls the feed when Iri leaves. Each operation requires a new press, so holding E cannot silently commit several choices.
 
-A destroyed crane cannot supply its governor, and a destroyed regulator cannot accept one. If installed machinery is later destroyed, its governor is lost; a carried governor survives crane damage. Reopening a region cannot duplicate the part or bring a departed Iri back. The other investigation routes remain available. Campaign status and the handheld HUD show the current handoff and machine cost; this is not yet the complete Return Tide finale.
+A destroyed crane cannot supply its governor, and a destroyed regulator cannot accept one. If installed machinery is later destroyed, its governor is lost; a carried governor survives crane damage. Reopening a region cannot duplicate the part or bring a departed Iri back. The other investigation routes remain available. Campaign status and the handheld HUD show the current handoff and machine cost.
+
+## Return Tide
+
+The Return Tide starts with a 20,000 m³ reservoir and advances only through deliberate game actions. Its warning lasts 30 game minutes, the rise reaches its peak at 60 minutes, and recession completes at 90 minutes. Waiting is a choice: the tide still resolves if Mara does nothing. Pausing, opening menus, drawing frames, or loading a save does not advance it.
+
+The finale has no ending selector. Reach physical controls in their existing regions to close or reopen the city seal, open the Crownback spillway, fit finite human/root/coast manifolds, and bind Foldglass control when its evidence, engineering, hardware and cross-community agreements are actually available. The seal protects the Quay while cutting deep roots; the spillway protects those roots by flooding the Quay. A shared regulator spreads exposure and requires ongoing labor, with sacrifice-channel homes still at risk. Controls can combine into hybrid outcomes. Missing or later-destroyed machinery can leave a partial regulator that fails at the peak; past damage and deaths remain.
+
+The Assembly, Latchfolk, Threadbound, Nursery, Choir and Crownback accords are explicit reachable conversations based on surviving people and real prior preparation. Found evidence and discovered outcomes remain separate: a physical event elsewhere is not reported until Mara surveys that region after the tide. The accessible aftermath account describes surveyed local losses, displacement, deaths, survivors and continuing obligations. Other regions remain unknown until visited. Full scenario coverage and remaining epilogue breadth are tracked in `acceptance.md`; this slice does not mark the complete campaign spec done.
 
 
 ## Tide milestones and what Mara knows

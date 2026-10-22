@@ -1,3 +1,4 @@
+import { attachThreefoldReturnTideScene } from './return-tide-world.js';
 import {
   createThreefoldCampaignStorage,
   THREEFOLD_CAMPAIGN_RECORD_KEYS,
@@ -528,7 +529,7 @@ function restoreTimedScene(restoredState, state, scene, sceneState = {}) {
   return /** @type {ReturnType<typeof createThreefoldSimulation>} */ ({
     ...restoredState,
     ...sceneState,
-    scene,
+    scene: attachThreefoldReturnTideScene(scene),
     elapsedGameSeconds: normalizeThreefoldElapsedGameSeconds(
       state.elapsedGameSeconds,
       'Small-world'

@@ -1,3 +1,15 @@
+import { getThreefoldHandheldInput } from './runtime-input.js';
+import {
+  ensureThreefoldReturnTide,
+  advanceThreefoldFinale,
+  retainAndProjectThreefoldFinale,
+  interactThreefoldFinale,
+} from './return-tide-runtime.js';
+import { getThreefoldReturnTideFacts } from './return-tide-facts.js';
+import {
+  presentThreefoldReturnTide,
+  renderThreefoldReturnTide,
+} from './return-tide-presentation.js';
 import { advanceThreefoldIriArrival } from './iri-arrival.js';
 import { presentThreefoldIriArrival } from './iri-arrival-content.js';
 import { getThreefoldCampaignPressureInputs } from './campaign-pressure.js';
@@ -38,7 +50,6 @@ import {
   isThreefoldGrainlandsSimulationState,
   isHighWorldSimulationState,
   isWeftwaysSimulationState,
-  previewThreefoldGrowthEffects,
   getThreefoldWorldActionDurationSeconds,
   stepThreefoldSimulation,
 } from './simulation.js';
@@ -50,7 +61,6 @@ import {
   recordThreefoldIriFate,
 } from './campaign-outcomes.js';
 import { renderThreefoldFrame } from './renderer.js';
-import { isGatehouseRatInReach } from './encounter.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import {
   THREEFOLD_BELLTOPS_SCENE_ID,
@@ -69,7 +79,6 @@ const CRISIS_THRESHOLDS = {
   aftermathAtMinutes: 15,
 };
 const FIXED_STEP_MS = 125;
-const WAIT_MINUTES = 15;
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
 
 /**
@@ -106,8 +115,10 @@ export function createThreefoldRuntime(options = {}) {
   let state = loadInitialState();
   let campaignClock =
     campaignClockSave.load() || createThreefoldCampaignClock();
-  let campaignOutcomes =
-    campaignOutcomesSave.load() || createThreefoldCampaignOutcomes();
+  let campaignOutcomes = ensureThreefoldReturnTide(
+    campaignOutcomesSave.load() || createThreefoldCampaignOutcomes(),
+    campaignClock
+  );
   let pressureNetwork = pressureSave.load() || createThreefoldPressureNetwork();
   let revision = storage.readCampaign().revision;
   let inAction = false;
@@ -115,6 +126,7 @@ export function createThreefoldRuntime(options = {}) {
   let accumulator = 0;
   let tick = 0;
   let previousActions = new Set();
+  let finaleNotice = '';
 
   /**
    * Refresh stale pages before any read or mutation; retain unsaved local play.
@@ -133,8 +145,10 @@ export function createThreefoldRuntime(options = {}) {
         ]
       ) || (force ? createInitialState() : loadInitialState());
     campaignClock = campaignClockSave.load() || createThreefoldCampaignClock();
-    campaignOutcomes =
-      campaignOutcomesSave.load() || createThreefoldCampaignOutcomes();
+    campaignOutcomes = ensureThreefoldReturnTide(
+      campaignOutcomesSave.load() || createThreefoldCampaignOutcomes(),
+      campaignClock
+    );
     pressureNetwork = pressureSave.load() || createThreefoldPressureNetwork();
     savedCampaignRuns = loadSavedCampaignRuns(storage, state.scene.id);
     harborCampaign = loadHarborCampaign(storage, state.scene.id);
@@ -148,6 +162,14 @@ export function createThreefoldRuntime(options = {}) {
       pressureNetwork,
       campaignOutcomes
     );
+    const projected = retainAndProjectThreefoldFinale(
+      state,
+      campaignOutcomes,
+      { ...savedCampaignRuns, [state.scene.id]: state },
+      pressureNetwork
+    );
+    state = projected.state;
+    campaignOutcomes = projected.outcomes;
   }
 
   /**
@@ -163,6 +185,7 @@ export function createThreefoldRuntime(options = {}) {
     try {
       const result = storage.transaction(() => {
         const value = action();
+        projectCampaignState();
         campaignClockSave.save(campaignClock);
         campaignOutcomesSave.save(campaignOutcomes);
         pressureSave.save(pressureNetwork);
@@ -179,6 +202,20 @@ export function createThreefoldRuntime(options = {}) {
     }
   }
 
+  const tideFacts = () =>
+    getThreefoldReturnTideFacts(
+      { ...savedCampaignRuns, [state.scene.id]: state },
+      campaignOutcomes.returnTide,
+      pressureNetwork,
+      campaignOutcomes.iriFate
+    );
+  const tideContent = () =>
+    presentThreefoldReturnTide(
+      state,
+      campaignOutcomes.returnTide,
+      tideFacts(),
+      finaleNotice
+    );
   const campaignPlaces = () =>
     getThreefoldCampaignPlaces(
       { ...savedCampaignRuns, [state.scene.id]: state },
@@ -214,7 +251,11 @@ export function createThreefoldRuntime(options = {}) {
   const frame = () => {
     refreshCampaign();
     const quay = quayContent();
-    const rendered = renderThreefoldFrame(state, pressureNetwork, quay);
+    const rendered = renderThreefoldReturnTide(
+      renderThreefoldFrame(state, pressureNetwork, quay),
+      state,
+      tideContent()
+    );
     return {
       ...rendered,
       threefold: {
@@ -243,42 +284,9 @@ export function createThreefoldRuntime(options = {}) {
         },
         clock: { ...campaignClock },
         iriFate: knownIriFate() ? { ...knownIriFate() } : null,
+        returnTide: tideContent(),
       },
-      world: {
-        map: {
-          name:
-            state.scene.id === THREEFOLD_SLUICE_SCENE_ID
-              ? 'THE TIDAL ARCHIVE'
-              : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
-                ? 'THE SILT MARGIN'
-                : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
-                  ? 'HEARTHGAPS'
-                  : isWeftwaysSimulationState(state)
-                    ? 'WEFTWAYS'
-                    : isThreefoldGrainlandsSimulationState(state)
-                      ? 'GRAINLANDS'
-                      : isHighWorldSimulationState(state)
-                        ? state.scene.displayName
-                            .replace(/^The /, '')
-                            .toUpperCase()
-                        : 'THE BROKEN GATE',
-        },
-        day: 1,
-        time:
-          state.scene.id === THREEFOLD_SLUICE_SCENE_ID
-            ? state.elapsedGameSeconds / 3600
-            : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
-              ? state.elapsedGameSeconds / 3600
-              : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
-                ? state.elapsedGameSeconds / 3600
-                : isWeftwaysSimulationState(state)
-                  ? state.elapsedGameSeconds / 3600
-                  : isThreefoldGrainlandsSimulationState(state)
-                    ? state.elapsedGameSeconds / 3600
-                    : isHighWorldSimulationState(state)
-                      ? state.elapsedGameSeconds / 3600
-                      : state.crisis.elapsedMinutes / 60,
-      },
+      world: describeThreefoldRuntimeWorld(state),
     };
   };
 
@@ -295,32 +303,9 @@ export function createThreefoldRuntime(options = {}) {
      */
     const dispatchAction = action =>
       applyWorldAction({ ...action, preActionFrame: frame() });
-    const direction = DIRECTIONS.find(action => pressed.has(action));
-    if (direction) state = dispatchAction({ type: 'move', direction });
-    else if (pressed.has('a') && !previousActions.has('a')) {
-      const growsThroughRat =
-        previewThreefoldGrowthEffects(state).creatureIds.includes(
-          'gatehouse-rat'
-        );
-      state = dispatchAction({
-        type: growsThroughRat
-          ? 'grow'
-          : isGatehouseRatInReach(state)
-            ? 'fight'
-            : 'grow',
-      });
-    } else if (pressed.has('b') && !previousActions.has('b'))
-      state = dispatchAction({ type: 'shrink' });
-    else if (pressed.has('interact') && !previousActions.has('interact'))
-      state = dispatchAction({ type: 'interact' });
-    else if (pressed.has('x') && !previousActions.has('x'))
-      state = dispatchAction(
-        isGatehouseRatInReach(state)
-          ? { type: 'bypass' }
-          : { type: 'wait', elapsedGameMinutes: WAIT_MINUTES }
-      );
-    else if (pressed.has('y') && !previousActions.has('y'))
-      campaignAction(() => state);
+    const action = getThreefoldHandheldInput(state, pressed, previousActions);
+    if (action?.type === 'save') campaignAction(() => state);
+    else if (action) state = dispatchAction(action);
     previousActions = pressed;
   }
 
@@ -354,6 +339,16 @@ export function createThreefoldRuntime(options = {}) {
       state,
       action
     );
+    finaleNotice = '';
+    const priorTideFacts = tideFacts();
+    const finaleInteraction =
+      action.type === 'interact'
+        ? interactThreefoldFinale(state, campaignOutcomes, priorTideFacts)
+        : null;
+    if (finaleInteraction) {
+      campaignOutcomes = finaleInteraction.outcomes;
+      finaleNotice = finaleInteraction.notice;
+    }
     const arrival =
       elapsedGameSeconds === null
         ? null
@@ -368,18 +363,30 @@ export function createThreefoldRuntime(options = {}) {
           );
     if (arrival) {
       campaignClock = arrival.clock;
-      campaignOutcomes = arrival.outcomes;
+      campaignOutcomes = ensureThreefoldReturnTide(
+        arrival.outcomes,
+        campaignClock
+      );
       pressureNetwork = arrival.network;
+      campaignOutcomes = advanceThreefoldFinale(
+        ensureThreefoldReturnTide(campaignOutcomes, campaignClock),
+        priorTideFacts,
+        campaignClock
+      );
       projectCampaignState();
     }
     const readArrival =
       action.type === 'interact' &&
+      !finaleInteraction?.handled &&
       campaignOutcomes.iriKnowledge !== undefined &&
       isThreefoldBelltopsRegulatorInReach(state);
     if (readArrival)
-      campaignOutcomes = observeThreefoldIriFate(campaignOutcomes);
+      campaignOutcomes = ensureThreefoldReturnTide(
+        observeThreefoldIriFate(campaignOutcomes),
+        campaignClock
+      );
     const quayAction =
-      action.type === 'interact' && !readArrival
+      action.type === 'interact' && !readArrival && !finaleInteraction?.handled
         ? applyThreefoldQuayInteraction(
             state,
             pressureNetwork,
@@ -387,7 +394,12 @@ export function createThreefoldRuntime(options = {}) {
           )
         : null;
     const hadIriGrowthDeath = hasThreefoldQuayIriDeath(state);
-    state = stepThreefoldSimulation(state, action);
+    state = stepThreefoldSimulation(
+      state,
+      finaleInteraction?.handled
+        ? { type: 'wait', elapsedGameMinutes: 0.25 }
+        : action
+    );
     const hasIriGrowthDeath = hasThreefoldQuayIriDeath(state);
     if (quayAction?.outcome) {
       recordIriFate(quayAction.outcome, quayAction.milestoneId);
@@ -420,7 +432,7 @@ export function createThreefoldRuntime(options = {}) {
       elapsedGameSeconds: campaignClock.elapsedGameSeconds,
     });
     if (JSON.stringify(next) === JSON.stringify(campaignOutcomes)) return false;
-    campaignOutcomes = next;
+    campaignOutcomes = ensureThreefoldReturnTide(next, campaignClock);
     projectCampaignState();
     return campaignOutcomesSave.save(campaignOutcomes);
   }
@@ -647,4 +659,45 @@ function loadHarborCampaign(storage, sceneId) {
   return getThreefoldHarborCampaignContent(
     createThreefoldSimulationSaveStore(storage).load()
   );
+}
+
+/**
+ * Describe the active region without coupling its local clock to browser time.
+ * @param {any} state Active region.
+ * @returns {{map:{name:string},day:number,time:number}} Shared handheld snapshot header.
+ */
+function describeThreefoldRuntimeWorld(state) {
+  return {
+    map: {
+      name:
+        state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+          ? 'THE TIDAL ARCHIVE'
+          : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
+            ? 'THE SILT MARGIN'
+            : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
+              ? 'HEARTHGAPS'
+              : isWeftwaysSimulationState(state)
+                ? 'WEFTWAYS'
+                : isThreefoldGrainlandsSimulationState(state)
+                  ? 'GRAINLANDS'
+                  : isHighWorldSimulationState(state)
+                    ? state.scene.displayName.replace(/^The /, '').toUpperCase()
+                    : 'THE BROKEN GATE',
+    },
+    day: 1,
+    time:
+      state.scene.id === THREEFOLD_SLUICE_SCENE_ID
+        ? state.elapsedGameSeconds / 3600
+        : state.scene.id === THREEFOLD_SILT_MARGIN_SCENE_ID
+          ? state.elapsedGameSeconds / 3600
+          : state.scene.id === THREEFOLD_HEARTHGAPS_SCENE_ID
+            ? state.elapsedGameSeconds / 3600
+            : isWeftwaysSimulationState(state)
+              ? state.elapsedGameSeconds / 3600
+              : isThreefoldGrainlandsSimulationState(state)
+                ? state.elapsedGameSeconds / 3600
+                : isHighWorldSimulationState(state)
+                  ? state.elapsedGameSeconds / 3600
+                  : state.crisis.elapsedMinutes / 60,
+  };
 }

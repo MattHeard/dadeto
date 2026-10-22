@@ -1,3 +1,4 @@
+import { attachThreefoldReturnTideScene } from './return-tide-world.js';
 import { createCrisisClock, advanceCrisisClock } from './crisis.js';
 import {
   getThreefoldActionDurationSeconds,
@@ -160,7 +161,7 @@ export function createThreefoldSimulation(
   scene = createBrokenGateScene()
 ) {
   const state = {
-    scene,
+    scene: attachThreefoldReturnTideScene(scene),
     player: scene.spawn,
     crisis: createCrisisClock(thresholds),
     episode: createThreefoldEpisodeState({
@@ -729,6 +730,12 @@ function stepSiltMarginScene(state, action) {
           siltMargin.guardian === 'guided-aside' &&
           siltMargin.signal === 'sent' &&
           !siltMargin.quietingEvidenceHeard &&
+          state.scene.creatures.some(
+            creature => creature.id === 'silt-margin-neme'
+          ) &&
+          !(state.encounter.growthDeaths || []).some(
+            death => death.creatureId === 'silt-margin-neme'
+          ) &&
           isThreefoldInteractableInReach(state, THREEFOLD_SILT_MARGIN_SIGNAL_ID)
         ) {
           siltMargin = { ...siltMargin, quietingEvidenceHeard: true };
@@ -781,6 +788,12 @@ function stepGrainlandsScene(state, action) {
       if (
         action.type === 'interact' &&
         grainlandsState.spiderFate === 'present' &&
+        state.scene.creatures.some(
+          creature => creature.id === grainlands.THREEFOLD_GRAINLANDS_IRU_ID
+        ) &&
+        !(state.encounter.growthDeaths || []).some(
+          death => death.creatureId === grainlands.THREEFOLD_GRAINLANDS_IRU_ID
+        ) &&
         isThreefoldInteractableInReach(
           state,
           grainlands.THREEFOLD_GRAINLANDS_IRU_ID
@@ -986,9 +999,11 @@ function stepHighWorldScene(state, action) {
         return state;
       return /** @type {WakeformShoalsSimulationState} */ ({
         ...state,
-        scene: wakeformShoals.createThreefoldWakeformShoalsScene({
-          wakeformDiverted: true,
-        }),
+        scene: attachThreefoldReturnTideScene(
+          wakeformShoals.createThreefoldWakeformShoalsScene({
+            wakeformDiverted: true,
+          })
+        ),
         wakeformShoals: { ...shoalsState, wakeformDiverted: true },
         elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
       });

@@ -289,6 +289,10 @@ export function startThreefoldPage(options) {
         persistence.textContent = frame.threefold?.campaignPersistence?.dirty
           ? 'Progress is only in this open page. Back up your campaign before leaving; this device could not save it.'
           : '';
+      renderThreefoldReturnTidePanel(
+        options.documentObj,
+        frame.threefold?.returnTide
+      );
       renderThreefoldWitnessLedger(
         options.documentObj,
         frame.threefold?.witnessLedger || []
@@ -799,4 +803,34 @@ function appendWitnessField(documentObj, parent, label, value) {
   heading.textContent = `${label}: `;
   paragraph.append(heading, documentObj.createTextNode(value));
   parent.appendChild(paragraph);
+}
+
+/**
+ * Present the world phase, explicit costs and only surveyed consequence accounts.
+ * @param {any} documentObj Injected page document.
+ * @param {any} content Shared-renderer tide context.
+ * @returns {void}
+ */
+function renderThreefoldReturnTidePanel(documentObj, content) {
+  const panel = documentObj.querySelector?.('#return-tide');
+  const text = documentObj.querySelector?.('#return-tide-text');
+  const list = documentObj.querySelector?.('#return-tide-epilogue');
+  if (!panel || !text || !list || !content) return;
+  panel.hidden = false;
+  if (text.textContent !== content.text) text.textContent = content.text;
+  const serialized = JSON.stringify(content.epilogue);
+  if (list.dataset.entries === serialized) return;
+  list.dataset.entries = serialized;
+  list.replaceChildren(
+    ...content.epilogue.map(
+      /**
+       * @param {string} message Observed local account.
+       * @returns {any} Accessible list item.
+       */ message => {
+        const item = documentObj.createElement('li');
+        item.textContent = message;
+        return item;
+      }
+    )
+  );
 }

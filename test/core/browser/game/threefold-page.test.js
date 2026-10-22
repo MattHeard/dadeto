@@ -1554,3 +1554,65 @@ test('falls back to in-memory storage when the browser denies localStorage', () 
   expect(runtime.getSnapshot()).toEqual(before);
   expect(env.size).toBe(0);
 });
+
+test('updates the accessible Return Tide panel without rebuilding unchanged surveys', () => {
+  const panel = { hidden: true };
+  const text = { textContent: '' };
+  const list = { dataset: {}, replaceChildren: jest.fn() };
+  const elements = new Map([
+    ['#return-tide', panel],
+    ['#return-tide-text', text],
+    ['#return-tide-epilogue', list],
+  ]);
+  const missing = new Set();
+  const documentObj = {
+    querySelector: selector =>
+      missing.has(selector) ? null : elements.get(selector) || null,
+    createElement: tag => ({ tag, textContent: '' }),
+  };
+  mockStartMosslightPage.mockClear();
+  startThreefoldPage({
+    documentObj,
+    windowObj: {},
+    navigatorObj: {},
+    drawFrame: jest.fn(),
+  });
+  const page = mockStartMosslightPage.mock.calls[0][0];
+  const content = {
+    text: 'The tide has resolved.',
+    epilogue: ['belltops: the high-water survey is recorded.'],
+  };
+  const frame = { threefold: { returnTide: content } };
+
+  page.drawFrame({}, frame);
+  expect(panel.hidden).toBe(false);
+  expect(text.textContent).toBe(content.text);
+  expect(list.replaceChildren).toHaveBeenCalledTimes(1);
+  expect(list.replaceChildren.mock.calls[0][0]).toMatchObject({
+    tag: 'li',
+    textContent: content.epilogue[0],
+  });
+
+  page.drawFrame({}, frame);
+  expect(list.replaceChildren).toHaveBeenCalledTimes(1);
+  page.drawFrame(
+    {},
+    {
+      threefold: {
+        returnTide: { ...content, epilogue: ['A changed local survey.'] },
+      },
+    }
+  );
+  expect(list.replaceChildren).toHaveBeenCalledTimes(2);
+
+  for (const selector of [
+    '#return-tide',
+    '#return-tide-text',
+    '#return-tide-epilogue',
+  ]) {
+    missing.add(selector);
+    page.drawFrame({}, frame);
+    missing.delete(selector);
+  }
+  page.drawFrame({}, { threefold: {} });
+});
