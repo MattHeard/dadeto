@@ -563,7 +563,12 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
       ({ entityIds }) => entityIds
     );
 
-    expect(conflicts).toContainEqual(remoteIds);
+    expect(conflicts).not.toContainEqual(remoteIds);
+    expect(
+      frame.threefold.logicalGridLayout.entities
+        .filter(({ id }) => remoteIds.includes(id))
+        .every(({ placement }) => placement === 'placed')
+    ).toBe(true);
     expect(previewThreefoldGrowthEffects(state).geometryIds).toEqual(
       districtIds
     );
