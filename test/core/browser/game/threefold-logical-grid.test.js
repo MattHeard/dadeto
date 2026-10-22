@@ -3,6 +3,7 @@ import {
   exposeHierarchy,
   layoutScene,
   projectEntity,
+  resolveHierarchyActionTarget,
   resolveSceneLayout,
 } from '../../../../src/core/browser/game/threefold/logical-grid.js';
 
@@ -388,6 +389,73 @@ describe('THREEFOLD semantic hierarchy exposure', () => {
         0
       )
     ).toThrow('Hierarchy contains a cycle');
+  });
+});
+
+describe('THREEFOLD scale-specific hierarchy action targets', () => {
+  const nestedHierarchy = () => [
+    { id: 'building', expandAtScale: -1 },
+    { id: 'wall', parentId: 'building', expandAtScale: -3 },
+    { id: 'crack', parentId: 'wall' },
+  ];
+
+  test('maps coarse targets to descendants and narrows targets as scale expands', () => {
+    const entities = nestedHierarchy();
+    const original = JSON.stringify(entities);
+    expect(resolveHierarchyActionTarget(entities, 0, 'building')).toEqual({
+      targetId: 'building',
+      affectedEntityIds: ['building', 'crack', 'wall'],
+    });
+    expect(resolveHierarchyActionTarget(entities, 0, 'wall')).toBeNull();
+    expect(resolveHierarchyActionTarget(entities, -1, 'wall')).toEqual({
+      targetId: 'wall',
+      affectedEntityIds: ['crack', 'wall'],
+    });
+    expect(resolveHierarchyActionTarget(entities, -1, 'building')).toBeNull();
+    expect(resolveHierarchyActionTarget(entities, -3, 'crack')).toEqual({
+      targetId: 'crack',
+      affectedEntityIds: ['crack'],
+    });
+    expect(resolveHierarchyActionTarget(entities, -3, 'wall')).toBeNull();
+    expect(
+      resolveHierarchyActionTarget([...entities].reverse(), 0, 'building')
+    ).toEqual(resolveHierarchyActionTarget(entities, 0, 'building'));
+    expect(JSON.stringify(entities)).toBe(original);
+  });
+
+  test('expands a visible crate-pile target and restores distinct fine targets', () => {
+    const cratePile = [
+      { id: 'crate-pile', expandAtScale: -1 },
+      ...Array.from({ length: 9 }, (_, index) => ({
+        id: `crate-${index + 1}`,
+        parentId: 'crate-pile',
+      })),
+    ];
+    expect(resolveHierarchyActionTarget(cratePile, 0, 'crate-pile')).toEqual({
+      targetId: 'crate-pile',
+      affectedEntityIds: [
+        'crate-1',
+        'crate-2',
+        'crate-3',
+        'crate-4',
+        'crate-5',
+        'crate-6',
+        'crate-7',
+        'crate-8',
+        'crate-9',
+        'crate-pile',
+      ],
+    });
+    expect(
+      resolveHierarchyActionTarget(cratePile, -1, 'crate-pile')
+    ).toBeNull();
+    expect(resolveHierarchyActionTarget(cratePile, -1, 'crate-4')).toEqual({
+      targetId: 'crate-4',
+      affectedEntityIds: ['crate-4'],
+    });
+    expect(resolveHierarchyActionTarget(cratePile, 0, 'unrelated')).toBeNull();
+    expect(resolveHierarchyActionTarget(cratePile, 0, '')).toBeNull();
+    expect(resolveHierarchyActionTarget(cratePile, 0, null)).toBeNull();
   });
 });
 
