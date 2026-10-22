@@ -2,10 +2,184 @@ import { heightAtScale } from './spatial.js';
 
 /** @typedef {{min: {x: number, y: number}, max: {x: number, y: number}}} ThreefoldPhysicalBounds */
 /** @typedef {{id: string, bounds: ThreefoldPhysicalBounds, parentId?: string, overlapGroupId?: string}} ThreefoldGridEntity */
+/** @typedef {{id: string, parentId?: string, expandAtScale?: number}} ThreefoldHierarchyEntity */
+/** @typedef {{id: string, proxyId: string|null, reason: 'expanded'|'proxied'}} ThreefoldHiddenHierarchyEntity */
+/** @typedef {{id: string, childIds: string[]}} ThreefoldHierarchyProxy */
+/** @typedef {{scale: number, visibleEntityIds: string[], hiddenEntities: ThreefoldHiddenHierarchyEntity[], proxies: ThreefoldHierarchyProxy[]}} ThreefoldHierarchyExposure */
 /** @typedef {{x: number, y: number, width: number, height: number}} ThreefoldCellBounds */
 /** @typedef {{id: string, cellBounds: ThreefoldCellBounds}} ThreefoldProjectedEntity */
 /** @typedef {{id: string, cellBounds: ThreefoldCellBounds, parentId?: string, overlapGroupId?: string, placement: 'placed'|'unresolved'|'overflow'}} ThreefoldLayoutEntity */
 /** @typedef {{scale: number, entities: ThreefoldLayoutEntity[], containments: Array<{parentId: string, childId: string, cellBounds: ThreefoldCellBounds}>, intentionalOverlaps: Array<{groupId: string, entityIds: [string, string], cellBounds: ThreefoldCellBounds}>, conflicts: Array<{type: 'unresolved-overlap', entityIds: [string, string], cellBounds: ThreefoldCellBounds}>, relationshipIssues: Array<{type: 'child-not-contained', parentId: string, childId: string}>, overflow: Array<{entityId: string, cellBounds: ThreefoldCellBounds}>}} ThreefoldSceneLayout */
+
+/**
+ * Expose authored hierarchy nodes at one scale without changing the world.
+ * A composite with children is visible while the requested scale is greater
+ * than its authored `expandAtScale`; at that threshold and finer scales the
+ * composite is hidden and its children are considered recursively. Hidden
+ * descendants of a visible composite map to that composite as their proxy.
+ * @param {ThreefoldHierarchyEntity[]} entities Authored identities and parent links.
+ * @param {number} scale Requested THREEFOLD scale from -4 through +4.
+ * @returns {ThreefoldHierarchyExposure} Deterministic visible identities and proxy mapping.
+ */
+export function exposeHierarchy(entities, scale) {
+  heightAtScale(scale);
+  if (!Array.isArray(entities))
+    throw new TypeError('Logical-grid hierarchy entities must be an array.');
+
+  const byId = new Map();
+  const childrenById = new Map();
+  for (const entity of entities) {
+    if (!entity || typeof entity !== 'object' || Array.isArray(entity))
+      throw new TypeError('A hierarchy entity is required.');
+    if (typeof entity.id !== 'string' || entity.id.length === 0)
+      throw new TypeError('A hierarchy entity requires a stable identifier.');
+    if (byId.has(entity.id))
+      throw new RangeError(`Duplicate hierarchy entity: ${entity.id}`);
+    if (
+      entity.parentId !== undefined &&
+      (typeof entity.parentId !== 'string' || entity.parentId.length === 0)
+    )
+      throw new TypeError('A hierarchy parent requires a stable identifier.');
+    if (entity.expandAtScale !== undefined) {
+      if (!Number.isInteger(entity.expandAtScale))
+        throw new RangeError(
+          'A hierarchy expansion threshold must be an integer scale.'
+        );
+      heightAtScale(entity.expandAtScale);
+    }
+    byId.set(entity.id, entity);
+    childrenById.set(entity.id, []);
+  }
+
+  for (const entity of entities) {
+    if (entity.parentId === undefined) continue;
+    if (entity.parentId === entity.id || !byId.has(entity.parentId))
+      throw new RangeError(
+        `Hierarchy parent is unavailable: ${entity.parentId}`
+      );
+    childrenById.get(entity.parentId).push(entity.id);
+  }
+  for (const children of childrenById.values()) children.sort(compareIds);
+
+  for (const entity of entities) {
+    const children = childrenById.get(entity.id);
+    if (children.length > 0 && entity.expandAtScale === undefined)
+      throw new TypeError(
+        `Hierarchy composite requires an expansion threshold: ${entity.id}`
+      );
+    if (children.length === 0 && entity.expandAtScale !== undefined)
+      throw new TypeError(
+        `Hierarchy leaf cannot have an expansion threshold: ${entity.id}`
+      );
+  }
+
+  assertHierarchyAcyclic(byId, childrenById);
+
+  const visibleEntityIds = /** @type {string[]} */ ([]);
+  const hiddenEntities = /** @type {ThreefoldHiddenHierarchyEntity[]} */ ([]);
+  const proxies = /** @type {ThreefoldHierarchyProxy[]} */ ([]);
+  /**
+   * @param {string} id Current hierarchy identity.
+   * @param {string|undefined} proxyId Visible composite representing this subtree.
+   */
+  const exposeNode = (id, proxyId) => {
+    if (proxyId !== undefined) {
+      hiddenEntities.push({ id, proxyId, reason: 'proxied' });
+      for (const childId of childrenById.get(id)) exposeNode(childId, proxyId);
+      return;
+    }
+
+    const children = /** @type {string[]} */ (childrenById.get(id));
+    if (children.length === 0) {
+      visibleEntityIds.push(id);
+      return;
+    }
+    const entity = /** @type {ThreefoldHierarchyEntity} */ (byId.get(id));
+    const expansionThreshold = /** @type {number} */ (entity.expandAtScale);
+    if (scale > expansionThreshold) {
+      visibleEntityIds.push(id);
+      proxies.push({
+        id,
+        childIds: collectHierarchyDescendants(id, childrenById),
+      });
+      for (const childId of children) exposeNode(childId, id);
+      return;
+    }
+
+    hiddenEntities.push({ id, proxyId: null, reason: 'expanded' });
+    for (const childId of children) exposeNode(childId, undefined);
+  };
+  const roots = [...byId.values()]
+    .filter(entity => entity.parentId === undefined)
+    .map(entity => entity.id)
+    .sort(compareIds);
+
+  for (const id of roots) exposeNode(id, undefined);
+
+  return {
+    scale,
+    visibleEntityIds: visibleEntityIds.sort(compareIds),
+    hiddenEntities: hiddenEntities.sort((left, right) =>
+      compareIds(left.id, right.id)
+    ),
+    proxies: proxies.sort((left, right) => compareIds(left.id, right.id)),
+  };
+}
+
+/**
+ * Validate the complete parent graph before producing any exposure result.
+ * @param {Map<string, ThreefoldHierarchyEntity>} byId Authored identity lookup.
+ * @param {Map<string, string[]>} childrenById Authored child relationships.
+ */
+function assertHierarchyAcyclic(byId, childrenById) {
+  const active = new Set();
+  const visited = new Set();
+  for (const id of [...byId.keys()].sort(compareIds))
+    visitHierarchyNode(id, childrenById, active, visited);
+}
+
+/**
+ * Visit one hierarchy branch and reject parent cycles.
+ * @param {string} id Current stable identity.
+ * @param {Map<string, string[]>} childrenById Authored child relationships.
+ * @param {Set<string>} active Current depth-first path.
+ * @param {Set<string>} visited Completed identities.
+ */
+function visitHierarchyNode(id, childrenById, active, visited) {
+  if (active.has(id))
+    throw new RangeError(`Hierarchy contains a cycle at ${id}.`);
+  if (visited.has(id)) return;
+  active.add(id);
+  for (const childId of /** @type {string[]} */ (childrenById.get(id)))
+    visitHierarchyNode(childId, childrenById, active, visited);
+  active.delete(id);
+  visited.add(id);
+}
+
+/**
+ * Collect every descendant of an authored composite in stable identity order.
+ * @param {string} id Composite identity.
+ * @param {Map<string, string[]>} childrenById Authored child relationships.
+ * @returns {string[]} Sorted descendants excluding the composite itself.
+ */
+function collectHierarchyDescendants(id, childrenById) {
+  return /** @type {string[]} */ (childrenById.get(id))
+    .flatMap(childId => [
+      childId,
+      ...collectHierarchyDescendants(childId, childrenById),
+    ])
+    .sort(compareIds);
+}
+
+/**
+ * Compare stable identifiers without locale-dependent ordering.
+ * @param {string} left First identity.
+ * @param {string} right Second identity.
+ * @returns {number} Lexical ordering result.
+ */
+function compareIds(left, right) {
+  return Number(left > right) - Number(left < right);
+}
 
 /**
  * Project one canonical physical footprint into integer cells at a requested

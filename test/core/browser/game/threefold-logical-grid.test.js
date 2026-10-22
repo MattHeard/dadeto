@@ -1,5 +1,6 @@
 import { BASE_HEIGHT_METERS } from '../../../../src/core/browser/game/threefold/spatial.js';
 import {
+  exposeHierarchy,
   layoutScene,
   projectEntity,
 } from '../../../../src/core/browser/game/threefold/logical-grid.js';
@@ -277,5 +278,114 @@ describe('THREEFOLD logical grid scene layout', () => {
       layoutScene([], 0, { x: 0.5, y: 0, width: 1, height: 1 })
     ).toThrow(RangeError);
     expect(() => layoutScene([], 0, null)).toThrow(TypeError);
+  });
+});
+
+describe('THREEFOLD semantic hierarchy exposure', () => {
+  const authoredHierarchy = () => [
+    { id: 'building', expandAtScale: -1 },
+    { id: 'wall', parentId: 'building', expandAtScale: -3 },
+    { id: 'crack', parentId: 'wall' },
+    { id: 'door', parentId: 'building' },
+  ];
+
+  test('keeps a coarse composite visible and maps every hidden descendant to it', () => {
+    const entities = authoredHierarchy();
+
+    expect(exposeHierarchy(entities, 0)).toEqual({
+      scale: 0,
+      visibleEntityIds: ['building'],
+      hiddenEntities: [
+        { id: 'crack', proxyId: 'building', reason: 'proxied' },
+        { id: 'door', proxyId: 'building', reason: 'proxied' },
+        { id: 'wall', proxyId: 'building', reason: 'proxied' },
+      ],
+      proxies: [{ id: 'building', childIds: ['crack', 'door', 'wall'] }],
+    });
+  });
+
+  test('expands at the authored threshold and resolves nested composites independently', () => {
+    expect(exposeHierarchy(authoredHierarchy(), -1)).toEqual({
+      scale: -1,
+      visibleEntityIds: ['door', 'wall'],
+      hiddenEntities: [
+        { id: 'building', proxyId: null, reason: 'expanded' },
+        { id: 'crack', proxyId: 'wall', reason: 'proxied' },
+      ],
+      proxies: [{ id: 'wall', childIds: ['crack'] }],
+    });
+    expect(exposeHierarchy(authoredHierarchy(), -3)).toEqual({
+      scale: -3,
+      visibleEntityIds: ['crack', 'door'],
+      hiddenEntities: [
+        { id: 'building', proxyId: null, reason: 'expanded' },
+        { id: 'wall', proxyId: null, reason: 'expanded' },
+      ],
+      proxies: [],
+    });
+  });
+
+  test('sorts several visible proxies by stable identity', () => {
+    const entities = [
+      { id: 'z-house', expandAtScale: -1 },
+      { id: 'z-wall', parentId: 'z-house' },
+      { id: 'a-house', expandAtScale: -1 },
+      { id: 'a-wall', parentId: 'a-house' },
+    ];
+
+    expect(exposeHierarchy(entities, 0).proxies).toEqual([
+      { id: 'a-house', childIds: ['a-wall'] },
+      { id: 'z-house', childIds: ['z-wall'] },
+    ]);
+  });
+
+  test('returns deterministic exposure under input permutation without mutating authored data', () => {
+    const entities = authoredHierarchy();
+    const before = JSON.stringify(entities);
+
+    expect(exposeHierarchy([...entities].reverse(), -1)).toEqual(
+      exposeHierarchy(entities, -1)
+    );
+    expect(JSON.stringify(entities)).toBe(before);
+  });
+
+  test('rejects invalid identities, parent graphs, and expansion thresholds', () => {
+    expect(() => exposeHierarchy(null, 0)).toThrow(TypeError);
+    expect(() => exposeHierarchy([null], 0)).toThrow(TypeError);
+    expect(() => exposeHierarchy([[]], 0)).toThrow(TypeError);
+    expect(() => exposeHierarchy([{ id: '' }], 0)).toThrow(TypeError);
+    expect(() => exposeHierarchy([{ id: 'same' }, { id: 'same' }], 0)).toThrow(
+      RangeError
+    );
+    expect(() => exposeHierarchy([{ id: 'child', parentId: '' }], 0)).toThrow(
+      TypeError
+    );
+    expect(() =>
+      exposeHierarchy([{ id: 'child', parentId: 'missing' }], 0)
+    ).toThrow(RangeError);
+    expect(() =>
+      exposeHierarchy([{ id: 'parent', expandAtScale: -1.5 }], 0)
+    ).toThrow(RangeError);
+    expect(() =>
+      exposeHierarchy([{ id: 'parent', expandAtScale: -5 }], 0)
+    ).toThrow(RangeError);
+    expect(() =>
+      exposeHierarchy(
+        [{ id: 'parent' }, { id: 'child', parentId: 'parent' }],
+        0
+      )
+    ).toThrow('Hierarchy composite requires an expansion threshold: parent');
+    expect(() =>
+      exposeHierarchy([{ id: 'leaf', expandAtScale: -1 }], 0)
+    ).toThrow('Hierarchy leaf cannot have an expansion threshold: leaf');
+    expect(() =>
+      exposeHierarchy(
+        [
+          { id: 'first', parentId: 'second', expandAtScale: -1 },
+          { id: 'second', parentId: 'first', expandAtScale: -1 },
+        ],
+        0
+      )
+    ).toThrow('Hierarchy contains a cycle');
   });
 });
