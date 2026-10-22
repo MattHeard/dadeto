@@ -68,7 +68,11 @@ describe('THREEFOLD canvas grid', () => {
 
   test('renders baseline structures from scale-local logical cells without mutating geometry', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
-    const before = JSON.stringify(base.scene.geometry);
+    const before = JSON.stringify({
+      geometry: base.scene.geometry,
+      interactables: base.scene.interactables,
+      creatures: base.scene.creatures,
+    });
     const layouts = [-1, 0].map(scale => {
       const state = {
         ...base,
@@ -77,30 +81,56 @@ describe('THREEFOLD canvas grid', () => {
       const frame = renderThreefoldFrame(state);
       const layout = frame.threefold.logicalGridLayout;
       const byId = new Map(layout.entities.map(entity => [entity.id, entity]));
-      const renderedStructures = frame.shapes.filter(shape =>
+      const renderedEntities = frame.shapes.filter(shape =>
         byId.has(shape.geometryId)
       );
 
       expect(layout.scale).toBe(scale);
-      expect(renderedStructures.length).toBeGreaterThan(0);
-      for (const shape of renderedStructures) {
-        expect(shape.logicalCellBounds).toEqual(
-          byId.get(shape.geometryId).cellBounds
-        );
-        const { x, y, width, height } = shape.logicalCellBounds;
+      expect(layout.entities.map(entity => entity.logicalGridKind)).toEqual(
+        expect.arrayContaining(['structure', 'interactable', 'creature'])
+      );
+      expect(layout.conflicts.length).toBeGreaterThan(0);
+      for (const conflict of layout.conflicts)
+        for (const id of conflict.entityIds)
+          expect(byId.get(id).placement).toBe('unresolved');
+      expect(renderedEntities.length).toBeGreaterThan(0);
+      for (const shape of renderedEntities) {
+        const entity = byId.get(shape.geometryId);
+        expect(shape.logicalCellBounds).toEqual(entity.cellBounds);
+        expect(shape.logicalGridKind).toBe(entity.logicalGridKind);
+        const { x, y, width, height } = entity.cellBounds;
         const screenX = (x + 7 - frame.camera.x) * 12;
         const screenY = (y + 4 - frame.camera.y) * 12;
-        expect(shape.x).toBe(Math.round(screenX / 8) * 8);
-        expect(shape.y).toBe(Math.round(screenY / 8) * 8);
-        expect(shape.width).toBe(Math.ceil((width * 12) / 8) * 8);
-        expect(shape.height).toBe(Math.ceil((height * 12) / 8) * 8);
+        const left = Math.round(screenX / 8) * 8;
+        const top = Math.round(screenY / 8) * 8;
+        const right = left + Math.ceil((width * 12) / 8) * 8;
+        const bottom = top + Math.ceil((height * 12) / 8) * 8;
+        if (entity.logicalGridKind === 'creature') {
+          expect(shape.x).toBeGreaterThanOrEqual(left);
+          expect(shape.y).toBeGreaterThanOrEqual(top);
+          expect(shape.x + shape.width).toBeLessThanOrEqual(right);
+          expect(shape.y + shape.height).toBeLessThanOrEqual(bottom);
+        } else {
+          expect(shape.x).toBe(left);
+          expect(shape.y).toBe(top);
+          expect(shape.width).toBe(right - left);
+          expect(shape.height).toBe(bottom - top);
+        }
       }
       expect(state.scene.geometry).toEqual(base.scene.geometry);
+      expect(state.scene.interactables).toEqual(base.scene.interactables);
+      expect(state.scene.creatures).toEqual(base.scene.creatures);
       return layout;
     });
 
     expect(layouts[0].entities).not.toEqual(layouts[1].entities);
-    expect(JSON.stringify(base.scene.geometry)).toBe(before);
+    expect(
+      JSON.stringify({
+        geometry: base.scene.geometry,
+        interactables: base.scene.interactables,
+        creatures: base.scene.creatures,
+      })
+    ).toBe(before);
   });
 });
 
