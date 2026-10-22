@@ -8,6 +8,8 @@ import {
 import { normalizeThreefoldWitnessLedger } from './witness-ledger.js';
 import { createThreefoldTestimony } from './testimony.js';
 export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
+/** The smallest scale at which the signal-station console is exposed. */
+export const THREEFOLD_SIGNAL_STATION_DETAIL_SCALE = -2;
 /** Stable identifier for the authored Latchfolk watchkeeper interactable. */
 export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
 export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
@@ -166,6 +168,7 @@ export function attemptThreefoldReport(state) {
   const { episode, crisis, player } = state;
   if (
     crisis.stage !== 'aftermath' ||
+    player.scale > THREEFOLD_SIGNAL_STATION_DETAIL_SCALE ||
     player.destroyedGeometryIds.includes(
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ) ||

@@ -82,8 +82,6 @@ describe('THREEFOLD early gate repair frame', () => {
     expect(frame.toast).toContain('GATE REPAIRED BEFORE SURGE');
     expect(frame.toast).toContain('PASSENGERS LOST');
     expect(frame.toast).toContain('LATCHFOLK LOST');
-    expect(frame.toast).toContain(
-      'STORM PASSED · FILE A REPORT OR DEPART UPLAND'
-    );
+    expect(frame.toast).toContain('SHRINK TO -2 TO REPORT OR DEPART UPLAND');
   });
 });

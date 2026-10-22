@@ -10,6 +10,7 @@ import {
   canHelpThreefoldDisplacedLatchfolk,
   canHearThreefoldLatchfolkLead,
   canSearchThreefoldFerryWreck,
+  THREEFOLD_SIGNAL_STATION_DETAIL_SCALE,
   THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
 } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
@@ -2682,7 +2683,9 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
   if (state.crisis.stage !== 'aftermath') return message;
   const prompt = signalStationDestroyed
     ? 'SIGNAL STATION LOST · DEPART UPLAND TO CLOSE'
-    : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
+    : state.player.scale > THREEFOLD_SIGNAL_STATION_DETAIL_SCALE
+      ? 'SHRINK TO -2 TO REPORT OR DEPART UPLAND'
+      : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
   const aftermathAction = canHelpThreefoldDisplacedLatchfolk(state)
     ? ' · E HELP LATCHFOLK'
     : canHearThreefoldLatchfolkLead(state)
@@ -2797,6 +2800,9 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     )
     .map(object => ({
       ...object,
+      ...(object.id === 'signal-station-console'
+        ? { hierarchy: { parentId: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } }
+        : {}),
       logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('interactable'),
       growthPreview: growthPreviewIds.has(object.id),
     }));
@@ -2815,6 +2821,13 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     [
       ...geometry.map(object => ({
         ...object,
+        ...(object.id === THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
+          ? {
+              hierarchy: {
+                expandAtScale: THREEFOLD_SIGNAL_STATION_DETAIL_SCALE,
+              },
+            }
+          : {}),
         logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('structure'),
         growthPreview: growthPreviewIds.has(object.id),
       })),

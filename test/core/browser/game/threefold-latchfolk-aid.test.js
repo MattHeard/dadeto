@@ -141,6 +141,7 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
       {
         ...helped,
         player: createScaleState(console.position, {
+          scale: -2,
           destroyedGeometryIds: helped.player.destroyedGeometryIds,
         }),
       },
@@ -184,6 +185,7 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
     const atConsole = {
       ...state,
       player: createScaleState(console.position, {
+        scale: -2,
         destroyedGeometryIds: state.player.destroyedGeometryIds,
       }),
     };
@@ -230,6 +232,7 @@ describe('THREEFOLD optional aid for displaced Latchfolk', () => {
       {
         ...withoutLead,
         player: createScaleState(reportConsole.position, {
+          scale: -2,
           destroyedGeometryIds: withoutLead.player.destroyedGeometryIds,
         }),
       },
