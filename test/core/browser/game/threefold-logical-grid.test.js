@@ -72,6 +72,50 @@ describe('THREEFOLD logical grid projection', () => {
     });
   });
 
+  test.each([-4, -3, -2, -1, 0, 1, 2, 3, 4])(
+    'projects varied positive footprints to integer cells at scale %i',
+    scale => {
+      const scaleRatio = 3 ** scale;
+      const snap = value => Math.floor(value + 0.5);
+      const fixtures = [
+        { id: 'small-rectangle', x: -2, y: 1, width: 2, height: 3 },
+        { id: 'wide-rectangle', x: -5, y: -3, width: 7, height: 2 },
+        { id: 'tall-rectangle', x: 3, y: -4, width: 1, height: 6 },
+      ];
+
+      for (const fixture of fixtures) {
+        const entity = cell(
+          fixture.id,
+          fixture.x,
+          fixture.y,
+          fixture.width,
+          fixture.height
+        );
+        const original = JSON.stringify(entity);
+        const left = snap(fixture.x / scaleRatio);
+        const top = snap(fixture.y / scaleRatio);
+        const right = snap((fixture.x + fixture.width) / scaleRatio);
+        const bottom = snap((fixture.y + fixture.height) / scaleRatio);
+        const projected = projectEntity(entity, scale);
+
+        expect(projected).toEqual({
+          id: fixture.id,
+          cellBounds: {
+            x: left,
+            y: top,
+            width: Math.max(1, right - left),
+            height: Math.max(1, bottom - top),
+          },
+        });
+        expect(
+          Object.values(projected.cellBounds).every(Number.isInteger)
+        ).toBe(true);
+        expect(projectEntity(entity, scale)).toEqual(projected);
+        expect(JSON.stringify(entity)).toBe(original);
+      }
+    }
+  );
+
   test('reduces a two-by-two fine footprint to one coarse cell', () => {
     const fineCell = BASE_HEIGHT_METERS / 3;
     const entity = {
