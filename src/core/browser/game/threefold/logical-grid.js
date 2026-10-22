@@ -331,9 +331,7 @@ export function layoutScene(entities, scale, viewport) {
   const conflicts = /** @type {ThreefoldSceneLayout['conflicts']} */ ([]);
   const relationshipIssues =
     /** @type {ThreefoldSceneLayout['relationshipIssues']} */ ([]);
-  const overflow = [];
   const unresolvedIds = new Set();
-  const overflowIds = new Set();
 
   for (const child of projected) {
     if (child.source.parentId === undefined) continue;
@@ -360,37 +358,217 @@ export function layoutScene(entities, scale, viewport) {
   conflicts.push(...overlaps.conflicts);
   overlaps.unresolvedIds.forEach(id => unresolvedIds.add(id));
 
-  if (viewport !== undefined) {
-    for (const entity of projected) {
-      if (containsCellBounds(viewport, entity.cellBounds)) continue;
-      overflow.push({ entityId: entity.id, cellBounds: entity.cellBounds });
-      overflowIds.add(entity.id);
-    }
-  }
+  const overflowIds = new Set();
+  const overflow =
+    viewport === undefined
+      ? []
+      : collectViewportOverflow(projected, viewport, overflowIds);
 
   return {
     scale,
-    entities: projected.map(entity => ({
-      id: entity.id,
-      cellBounds: entity.cellBounds,
-      ...(entity.source.parentId === undefined
-        ? {}
-        : { parentId: entity.source.parentId }),
-      ...(entity.source.overlapGroupId === undefined
-        ? {}
-        : { overlapGroupId: entity.source.overlapGroupId }),
-      placement: overflowIds.has(entity.id)
-        ? 'overflow'
-        : unresolvedIds.has(entity.id)
-          ? 'unresolved'
-          : 'placed',
-    })),
+    entities: projected.map(entity =>
+      createLayoutEntity(entity, entity.cellBounds, unresolvedIds, overflowIds)
+    ),
     containments,
     intentionalOverlaps,
     conflicts,
     relationshipIssues,
     overflow,
   };
+}
+
+/**
+ * Resolve projected collisions inside a finite viewport without changing the
+ * canonical scene. Authored containments, intentional overlap groups, and
+ * invalid parent relationships stay at their projected positions; unrelated
+ * entities keep their projected position when free, otherwise they take the
+ * nearest free viewport rectangle by Manhattan distance, then row and column.
+ * @param {ThreefoldGridEntity[]} entities Canonical entities in any input order.
+ * @param {number} scale Requested THREEFOLD scale from -4 through +4.
+ * @param {ThreefoldCellBounds} viewport Finite integer-cell layout capacity.
+ * @returns {ThreefoldSceneLayout} Stable packed positions and remaining overflow/conflicts.
+ */
+export function packSceneLayout(entities, scale, viewport) {
+  assertCellBounds(viewport, 'viewport');
+  const initial = layoutScene(entities, scale, viewport);
+  const sourceById = new Map(entities.map(entity => [entity.id, entity]));
+  const relationshipIds = new Set([
+    ...initial.containments.flatMap(({ parentId, childId }) => [
+      parentId,
+      childId,
+    ]),
+    ...initial.intentionalOverlaps.flatMap(({ entityIds }) => entityIds),
+    ...initial.relationshipIssues.flatMap(({ parentId, childId }) => [
+      parentId,
+      childId,
+    ]),
+  ]);
+  const entries = initial.entities.map(entity => ({
+    ...entity,
+    source: sourceById.get(entity.id),
+  }));
+  const ordered = [
+    ...entries.filter(entity => relationshipIds.has(entity.id)),
+    ...entries.filter(entity => !relationshipIds.has(entity.id)),
+  ];
+  const placed = [];
+  const positions = new Map();
+  const overflowIds = new Set();
+
+  for (const entity of ordered) {
+    const candidate = relationshipIds.has(entity.id)
+      ? containsCellBounds(viewport, entity.cellBounds)
+        ? entity.cellBounds
+        : null
+      : findPackedPosition(entity, placed, viewport);
+    if (candidate === null) {
+      overflowIds.add(entity.id);
+      positions.set(entity.id, entity.cellBounds);
+      placed.push({
+        ...entity,
+        cellBounds: entity.cellBounds,
+        source: entity.source,
+      });
+      continue;
+    }
+    positions.set(entity.id, candidate);
+    placed.push({ ...entity, cellBounds: candidate, source: entity.source });
+  }
+
+  const projected = placed.map(entity => ({
+    id: entity.id,
+    source: entity.source,
+    cellBounds: entity.cellBounds,
+  }));
+  const overlaps = classifyOverlaps(projected);
+  const unresolvedIds = new Set(overlaps.unresolvedIds);
+  initial.relationshipIssues.forEach(({ parentId, childId }) => {
+    unresolvedIds.add(parentId);
+    unresolvedIds.add(childId);
+  });
+  const conflicts = overlaps.conflicts;
+
+  const overflow = collectViewportOverflow(placed, viewport, overflowIds);
+
+  return {
+    scale,
+    entities: entries.map(entity =>
+      createLayoutEntity(
+        entity,
+        positions.get(entity.id),
+        unresolvedIds,
+        overflowIds
+      )
+    ),
+    containments: initial.containments,
+    intentionalOverlaps: overlaps.intentionalOverlaps,
+    conflicts,
+    relationshipIssues: initial.relationshipIssues,
+    overflow,
+  };
+}
+
+/**
+ * Build the shared public layout record for a projected entity.
+ * @param {{id: string, parentId?: string, overlapGroupId?: string, source: ThreefoldGridEntity}} entity Stable identity and authored relationship fields.
+ * @param {ThreefoldCellBounds} cellBounds Final display rectangle.
+ * @param {Set<string>} unresolvedIds Identities in unresolved relationships or conflicts.
+ * @param {Set<string>} overflowIds Identities outside or beyond viewport capacity.
+ * @returns {ThreefoldLayoutEntity} Public layout entity.
+ */
+function createLayoutEntity(entity, cellBounds, unresolvedIds, overflowIds) {
+  const parentId = entity.parentId ?? entity.source.parentId;
+  const overlapGroupId = entity.overlapGroupId ?? entity.source.overlapGroupId;
+  return {
+    id: entity.id,
+    cellBounds,
+    ...(parentId === undefined ? {} : { parentId }),
+    ...(overlapGroupId === undefined ? {} : { overlapGroupId }),
+    placement: overflowIds.has(entity.id)
+      ? 'overflow'
+      : unresolvedIds.has(entity.id)
+        ? 'unresolved'
+        : 'placed',
+  };
+}
+
+/**
+ * Collect entities that overflow the viewport or could not fit its capacity.
+ * @param {Array<{id: string, cellBounds: ThreefoldCellBounds}>} entities Candidate final display records.
+ * @param {ThreefoldCellBounds} viewport Finite integer-cell capacity.
+ * @param {Set<string>} overflowIds Explicit capacity failures to preserve.
+ * @returns {Array<{entityId: string, cellBounds: ThreefoldCellBounds}>} Stable overflow records.
+ */
+function collectViewportOverflow(entities, viewport, overflowIds) {
+  const overflow = [];
+  for (const entity of entities) {
+    if (
+      !overflowIds.has(entity.id) &&
+      containsCellBounds(viewport, entity.cellBounds)
+    )
+      continue;
+    overflow.push({ entityId: entity.id, cellBounds: entity.cellBounds });
+    overflowIds.add(entity.id);
+  }
+  return overflow;
+}
+
+/**
+ * Find the nearest free integer-cell rectangle inside a viewport.
+ * @param {{id: string, cellBounds: ThreefoldCellBounds, source: ThreefoldGridEntity}} entity Candidate entity.
+ * @param {Array<{id: string, cellBounds: ThreefoldCellBounds, source: ThreefoldGridEntity}>} placed Already reserved entities.
+ * @param {ThreefoldCellBounds} viewport Finite packing capacity.
+ * @returns {ThreefoldCellBounds|null} Candidate position, or null when capacity is exhausted.
+ */
+function findPackedPosition(entity, placed, viewport) {
+  const maxX = viewport.x + viewport.width - entity.cellBounds.width;
+  const maxY = viewport.y + viewport.height - entity.cellBounds.height;
+  if (maxX < viewport.x || maxY < viewport.y) return null;
+
+  const candidates = [];
+  for (let y = viewport.y; y <= maxY; y += 1)
+    for (let x = viewport.x; x <= maxX; x += 1)
+      candidates.push({
+        x,
+        y,
+        distance:
+          Math.abs(x - entity.cellBounds.x) + Math.abs(y - entity.cellBounds.y),
+      });
+  candidates.sort(
+    (left, right) =>
+      left.distance - right.distance || left.y - right.y || left.x - right.x
+  );
+
+  for (const candidate of candidates) {
+    const bounds = {
+      ...entity.cellBounds,
+      x: candidate.x,
+      y: candidate.y,
+    };
+    if (placed.some(other => hasUnpermittedOverlap(entity, bounds, other)))
+      continue;
+    return bounds;
+  }
+  return null;
+}
+
+/**
+ * Check whether a candidate conflicts with a reserved display footprint.
+ * Authored relationships are held fixed, so only explicit overlap groups can
+ * share cells during placement.
+ * @param {{id: string, source: ThreefoldGridEntity}} entity Candidate entity.
+ * @param {ThreefoldCellBounds} bounds Candidate display rectangle.
+ * @param {{id: string, source: ThreefoldGridEntity, cellBounds: ThreefoldCellBounds}} other Reserved entity.
+ * @returns {boolean} True when the overlap is not authored.
+ */
+function hasUnpermittedOverlap(entity, bounds, other) {
+  if (!intersectCellBounds(bounds, other.cellBounds)) return false;
+  if (
+    entity.source.overlapGroupId !== undefined &&
+    entity.source.overlapGroupId === other.source.overlapGroupId
+  )
+    return false;
+  return true;
 }
 
 /**

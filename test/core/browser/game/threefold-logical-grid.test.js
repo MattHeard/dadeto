@@ -2,6 +2,7 @@ import { BASE_HEIGHT_METERS } from '../../../../src/core/browser/game/threefold/
 import {
   exposeHierarchy,
   layoutScene,
+  packSceneLayout,
   projectEntity,
   resolveHierarchyActionTarget,
   resolveSceneLayout,
@@ -708,5 +709,240 @@ describe('THREEFOLD resolved scene layout', () => {
         0
       )
     ).toThrow(RangeError);
+  });
+});
+
+describe('THREEFOLD deterministic logical-grid packing', () => {
+  test('packs a crowded coarse projection into nearest stable viewport cells', () => {
+    const entities = Array.from({ length: 4 }, (_, index) =>
+      cell(`crowded-${index + 1}`, 0, 0)
+    );
+    const before = JSON.stringify(entities);
+    const viewport = { x: 0, y: 0, width: 2, height: 2 };
+    const packed = packSceneLayout(entities, 0, viewport);
+
+    expect(
+      packed.entities.map(({ id, cellBounds }) => [id, cellBounds])
+    ).toEqual([
+      ['crowded-1', { x: 0, y: 0, width: 1, height: 1 }],
+      ['crowded-2', { x: 1, y: 0, width: 1, height: 1 }],
+      ['crowded-3', { x: 0, y: 1, width: 1, height: 1 }],
+      ['crowded-4', { x: 1, y: 1, width: 1, height: 1 }],
+    ]);
+    expect(packed.conflicts).toEqual([]);
+    expect(packed.overflow).toEqual([]);
+    expect(packed.entities.map(({ placement }) => placement)).toEqual([
+      'placed',
+      'placed',
+      'placed',
+      'placed',
+    ]);
+    expect(packSceneLayout([...entities].reverse(), 0, viewport)).toEqual(
+      packed
+    );
+    expect(JSON.stringify(entities)).toBe(before);
+  });
+
+  test('packs varied rectangles without overlap while retaining integer cells', () => {
+    const entities = [
+      cell('wide', 0, 0, 2, 1),
+      cell('square', 0, 0, 2, 2),
+      cell('tall', 0, 0, 1, 2),
+    ];
+    const before = JSON.stringify(entities);
+    const packed = packSceneLayout(entities, 0, {
+      x: 0,
+      y: 0,
+      width: 5,
+      height: 3,
+    });
+
+    expect(packed.conflicts).toEqual([]);
+    expect(packed.overflow).toEqual([]);
+    expect(
+      packed.entities.every(
+        ({ cellBounds, placement }) =>
+          Object.values(cellBounds).every(Number.isInteger) &&
+          placement === 'placed'
+      )
+    ).toBe(true);
+    expect(JSON.stringify(entities)).toBe(before);
+  });
+
+  test('uses ascending x as the final tie-break for equidistant free cells', () => {
+    const packed = packSceneLayout(
+      [cell('blocker', 0, 0), cell('mover', 0, 0)],
+      0,
+      { x: -1, y: 0, width: 3, height: 1 }
+    );
+
+    expect(
+      packed.entities.find(entity => entity.id === 'mover').cellBounds
+    ).toEqual({ x: -1, y: 0, width: 1, height: 1 });
+  });
+
+  test('reports stable overflow when the viewport has insufficient capacity', () => {
+    const entities = Array.from({ length: 3 }, (_, index) =>
+      cell(`crowded-${index + 1}`, 0, 0)
+    );
+    const viewport = { x: -1, y: 2, width: 2, height: 1 };
+    const packed = packSceneLayout(entities, 0, viewport);
+
+    expect(
+      packed.entities.map(({ id, cellBounds, placement }) => [
+        id,
+        cellBounds,
+        placement,
+      ])
+    ).toEqual([
+      ['crowded-1', { x: 0, y: 2, width: 1, height: 1 }, 'placed'],
+      ['crowded-2', { x: -1, y: 2, width: 1, height: 1 }, 'placed'],
+      ['crowded-3', { x: 0, y: 0, width: 1, height: 1 }, 'overflow'],
+    ]);
+    expect(packed.overflow).toEqual([
+      {
+        entityId: 'crowded-3',
+        cellBounds: { x: 0, y: 0, width: 1, height: 1 },
+      },
+    ]);
+    expect(packSceneLayout([...entities].reverse(), 0, viewport)).toEqual(
+      packed
+    );
+  });
+
+  test('keeps authored containment and overlap groups fixed while packing outsiders', () => {
+    const entities = [
+      cell('room', 0, 0, 2, 1),
+      cell('first-facet', 0, 0, 1, 1, {
+        parentId: 'room',
+        overlapGroupId: 'assembly',
+      }),
+      cell('second-facet', 0, 0, 1, 1, {
+        parentId: 'room',
+        overlapGroupId: 'assembly',
+      }),
+      cell('outsider', 0, 0),
+    ];
+    const before = JSON.stringify(entities);
+    const packed = packSceneLayout(entities, 0, {
+      x: 0,
+      y: 0,
+      width: 3,
+      height: 2,
+    });
+    const boundsById = new Map(
+      packed.entities.map(entity => [entity.id, entity.cellBounds])
+    );
+
+    expect(boundsById.get('room')).toEqual({
+      x: 0,
+      y: 0,
+      width: 2,
+      height: 1,
+    });
+    expect(boundsById.get('first-facet')).toEqual({
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+    });
+    expect(boundsById.get('second-facet')).toEqual({
+      x: 0,
+      y: 0,
+      width: 1,
+      height: 1,
+    });
+    expect(boundsById.get('outsider')).not.toEqual(boundsById.get('room'));
+    expect(packed.containments).toHaveLength(2);
+    expect(packed.intentionalOverlaps).toEqual([
+      {
+        groupId: 'assembly',
+        entityIds: ['first-facet', 'second-facet'],
+        cellBounds: { x: 0, y: 0, width: 1, height: 1 },
+      },
+    ]);
+    expect(packed.conflicts).toEqual([]);
+    expect(JSON.stringify(entities)).toBe(before);
+  });
+
+  test('allows a moved entity to join its authored overlap group', () => {
+    const entities = [
+      cell('group-anchor-a', 1, 0, 1, 1, { overlapGroupId: 'group-a' }),
+      cell('group-anchor-b', 1, 0, 1, 1, { overlapGroupId: 'group-a' }),
+      cell('blocker-a', 0, 0, 1, 1, { overlapGroupId: 'group-b' }),
+      cell('blocker-b', 0, 0, 1, 1, { overlapGroupId: 'group-b' }),
+      cell('mover', 0, 0, 1, 1, { overlapGroupId: 'group-a' }),
+    ];
+    const packed = packSceneLayout(entities, 0, {
+      x: 0,
+      y: 0,
+      width: 2,
+      height: 1,
+    });
+    const mover = packed.entities.find(entity => entity.id === 'mover');
+
+    expect(mover).toMatchObject({
+      cellBounds: { x: 1, y: 0, width: 1, height: 1 },
+      placement: 'placed',
+    });
+    expect(packed.conflicts).toEqual([]);
+    expect(packed.intentionalOverlaps).toContainEqual({
+      groupId: 'group-a',
+      entityIds: ['group-anchor-a', 'mover'],
+      cellBounds: { x: 1, y: 0, width: 1, height: 1 },
+    });
+  });
+
+  test('requires an authored finite viewport', () => {
+    const entities = [cell('a', 0, 0), cell('b', 0, 0)];
+    expect(() => packSceneLayout(entities, 0, null)).toThrow(TypeError);
+  });
+
+  test('preserves invalid authored containment as unresolved and overflowing', () => {
+    const entities = [
+      cell('parent', 0, 0),
+      cell('child', 4, 0, 1, 1, { parentId: 'parent' }),
+      cell('outsider', 0, 0),
+    ];
+    const packed = packSceneLayout(entities, 0, {
+      x: 0,
+      y: 0,
+      width: 2,
+      height: 1,
+    });
+
+    expect(packed.relationshipIssues).toEqual([
+      { type: 'child-not-contained', parentId: 'parent', childId: 'child' },
+    ]);
+    expect(packed.entities.map(({ id, placement }) => [id, placement])).toEqual(
+      [
+        ['child', 'overflow'],
+        ['outsider', 'placed'],
+        ['parent', 'unresolved'],
+      ]
+    );
+    expect(packed.overflow).toEqual([
+      { entityId: 'child', cellBounds: { x: 4, y: 0, width: 1, height: 1 } },
+    ]);
+  });
+
+  test('overflows a footprint that is larger than the viewport', () => {
+    const packed = packSceneLayout([cell('too-wide', 0, 0, 3, 1)], 0, {
+      x: 0,
+      y: 0,
+      width: 2,
+      height: 1,
+    });
+
+    expect(packed.entities).toEqual([
+      {
+        id: 'too-wide',
+        cellBounds: { x: 0, y: 0, width: 3, height: 1 },
+        placement: 'overflow',
+      },
+    ]);
+    expect(packed.overflow).toEqual([
+      { entityId: 'too-wide', cellBounds: { x: 0, y: 0, width: 3, height: 1 } },
+    ]);
   });
 });
