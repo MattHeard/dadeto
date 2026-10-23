@@ -1,5 +1,6 @@
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 import { createAuthorUuidResponse } from './response.js';
+import * as operationBilling from '../billing/operation-billing-core.js';
 
 const OPERATION_TYPE = 'get-author-uuid-v2';
 
@@ -71,10 +72,7 @@ export async function handleBillableAuthorUuidRequest(input) {
       reservation.body.status
     );
   }
-  if (
-    reservation.body.status !== 'reserved' ||
-    reservation.body.applied !== true
-  )
+  if (!operationBilling.isOperationReservationConfirmed(reservation))
     return rejectUnknownReservation(
       operationInput,
       billingUuid,
@@ -185,24 +183,14 @@ async function resolveOperation(
   operationAttemptId,
   outcome
 ) {
-  try {
-    const result = await input.billing.resolveOperation(input.allowEffects, {
-      uuid: billingUuid,
-      eventId: `${operationAttemptId}:${outcome}`,
-      operationType: OPERATION_TYPE,
-      operationAttemptId,
-      outcome,
-    });
-    if (result.status !== 200) return false;
-    if (outcome === 'ambiguous')
-      return (
-        result.body.status === 'needs_recovery' ||
-        result.body.duplicate === true
-      );
-    return result.body.status === 'settled' || result.body.duplicate === true;
-  } catch {
-    return false;
-  }
+  return operationBilling.resolveOperationOutcome({
+    billing: input.billing,
+    allowEffects: input.allowEffects,
+    uuid: billingUuid,
+    operationType: OPERATION_TYPE,
+    operationAttemptId,
+    outcome,
+  });
 }
 
 /**

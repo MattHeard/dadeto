@@ -681,11 +681,10 @@ export function createAsyncFsAdapters(fsPromisesModule) {
 }
 
 /**
- * Repository quality checks run by the aggregate check script.
+ * Repository quality checks shared by the fast and full aggregate check scripts.
  * @type {{ name: string, command: string, args: string[] }[]}
  */
-export const CHECK_COMMANDS = [
-  { name: 'test', command: 'npm', args: ['test'] },
+const STATIC_CHECK_COMMANDS = [
   { name: 'manuals:check', command: 'npm', args: ['run', 'manuals:check'] },
   { name: 'lint', command: 'npm', args: ['run', 'lint'] },
   { name: 'depcruise', command: 'npm', args: ['run', 'depcruise'] },
@@ -711,10 +710,28 @@ export const CHECK_COMMANDS = [
 ];
 
 /**
+ * Fast local checks: impacted tests run without coverage, alongside static gates.
+ * @type {{ name: string, command: string, args: string[] }[]}
+ */
+export const CHECK_COMMANDS = [
+  { name: 'test:impact', command: 'npm', args: ['run', 'test:impact'] },
+  ...STATIC_CHECK_COMMANDS,
+];
+
+/**
+ * Full authoritative checks retained for CI and explicit local runs.
+ * @type {{ name: string, command: string, args: string[] }[]}
+ */
+export const FULL_CHECK_COMMANDS = [
+  { name: 'test', command: 'npm', args: ['test'] },
+  ...STATIC_CHECK_COMMANDS,
+];
+
+/**
  * Create the command handler for the aggregate check script.
  * @param {{
  *   argv: string[],
- *   runSuite: (options: { failFast: boolean, skipTests: boolean }) => Promise<{ exitCode: number }>,
+ *   runSuite: (options: { failFast: boolean, skipTests: boolean, fullCheck: boolean, suiteCommand: string }) => Promise<{ exitCode: number }>,
  *   setExitCode: (exitCode: number) => void,
  * }} deps Command dependencies.
  * @returns {() => Promise<void>} Handler that runs the aggregate check.
@@ -723,7 +740,14 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
   return async () => {
     const failFast = argv.includes('--fail-fast');
     const skipTests = argv.includes('--skip-tests');
-    const result = await runSuite({ failFast, skipTests });
+    const fullCheck = argv.includes('--full');
+    const suiteCommand = fullCheck ? 'npm run check:full' : 'npm run check';
+    const result = await runSuite({
+      failFast,
+      skipTests,
+      fullCheck,
+      suiteCommand,
+    });
     setExitCode(result.exitCode);
   };
 }
@@ -747,7 +771,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
 
 /**
  * @typedef {object} CheckEvent
- * @property {'check-start' | 'check-success' | 'check-failure' | 'check-summary'} type Event type.
+ * @property {'check-start' | 'check-progress' | 'check-success' | 'check-failure' | 'check-summary'} type Event type.
  * @property {string} name Check label.
  * @property {string} command Command string.
  * @property {number | null} [exitCode] Process exit code.
@@ -757,6 +781,7 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  * @property {CheckFailure[]} [failures] Failures observed across the suite.
  * @property {number} [total] Total number of checks.
  * @property {number} [failed] Number of failed checks.
+ * @property {{name: string, elapsedMs: number}[]} [active] Active commands in a progress event.
  * @property {'passed' | 'failed'} [status] Overall suite status.
  */
 
@@ -778,10 +803,12 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  *   defaultStderr: { write: (text: string) => void },
  *   defaultNow: () => number,
  *   defaultTimeoutMs?: number,
+ *   defaultProgressIntervalMs?: number,
  * }} defaults Default platform dependencies.
  * @returns {(options?: {
  *   commands?: CheckCommand[],
  *   failFast?: boolean,
+ *   suiteCommand?: string,
  *   spawnImpl?: CheckSpawn,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
@@ -790,20 +817,22 @@ export function createRunCheckHandle({ argv, runSuite, setExitCode }) {
  */
 export function createRunCheckSuite(defaults) {
   return async function runCheckSuite(options) {
-    const { commands, failFast, spawnImpl, stdout, stderr, now } =
+    const { commands, failFast, suiteCommand, spawnImpl, stdout, stderr, now } =
       resolveRunCheckOptions(options, defaults);
 
     /** @type {CheckFailure[]} */
     const failures = [];
     /** @type {Map<string, CheckChild>} */
     const activeChildren = new Map();
+    /** @type {Map<string, number>} */
+    const activeStartedAt = new Map();
     let aborted = false;
 
     if (commands.length === 0) {
       emitEvent(stderr, {
         type: 'check-summary',
         name: 'check-suite',
-        command: 'npm run check',
+        command: suiteCommand,
         status: 'passed',
         total: 0,
         failed: 0,
@@ -812,126 +841,161 @@ export function createRunCheckSuite(defaults) {
       return { exitCode: 0, failures };
     }
 
-    await Promise.all(
-      commands.map(command => {
-        return new Promise(resolve => {
-          const startedAt = now();
-          const timeoutMs = defaults.defaultTimeoutMs ?? 30 * 60 * 1000;
-          /** @type {CheckChild} */
-          let child;
-          const state = {
-            settled: false,
-            /** @type {ReturnType<typeof globalThis.setTimeout> | null} */
-            timeoutId: null,
-          };
-
-          if (failFast && aborted) {
-            resolve(undefined);
-            return;
-          }
-
-          /**
-           * Record a failure exactly once for the current command.
-           * @param {CheckFailure} failure Failure details to report.
-           * @param {boolean} shouldAbort Whether fail-fast should stop the rest of the suite.
-           * @returns {void}
-           */
-          const finishWithFailure = (failure, shouldAbort) => {
-            state.settled = true;
-            if (state.timeoutId !== null) {
-              clearTimeout(state.timeoutId);
-              state.timeoutId = null;
-            }
-            failures.push(failure);
-            emitFailureEvent(stderr, command.name, failure);
-
-            if (shouldAbort && failFast && !aborted) {
-              aborted = true;
-              abortRemainingChildren(activeChildren, command.name);
-            }
-
-            resolve(undefined);
-          };
-
-          try {
-            child = spawnImpl(command.command, command.args, {
-              stdio: ['ignore', 'pipe', 'pipe'],
+    const progressIntervalMs = defaults.defaultProgressIntervalMs ?? 0;
+    const progressIntervalId =
+      progressIntervalMs > 0
+        ? setInterval(() => {
+            const currentTime = now();
+            const active = [...activeChildren.keys()].map(name => ({
+              name,
+              elapsedMs: Math.max(
+                0,
+                currentTime - /** @type {number} */ (activeStartedAt.get(name))
+              ),
+            }));
+            if (active.length === 0) return;
+            emitEvent(stderr, {
+              type: 'check-progress',
+              name: 'check-suite',
+              command: suiteCommand,
+              active,
             });
-          } catch (error) {
-            const failure = buildSpawnFailure(command, startedAt, error, now);
-            failures.push(failure);
-            emitFailureEvent(stderr, command.name, failure);
+          }, progressIntervalMs)
+        : null;
 
-            if (failFast) {
-              aborted = true;
-              abortRemainingChildren(activeChildren, command.name);
-            }
+    try {
+      await Promise.all(
+        commands.map(command => {
+          return new Promise(resolve => {
+            const startedAt = now();
+            const timeoutMs = defaults.defaultTimeoutMs ?? 120 * 60 * 1000;
+            /** @type {CheckChild} */
+            let child;
+            const state = {
+              settled: false,
+              /** @type {ReturnType<typeof globalThis.setTimeout> | null} */
+              timeoutId: null,
+            };
 
-            resolve(undefined);
-            return;
-          }
-
-          activeChildren.set(command.name, child);
-          emitEvent(stderr, {
-            type: 'check-start',
-            name: command.name,
-            command: renderCommand(command),
-          });
-          state.timeoutId = setTimeout(() => {
-            if (state.settled) {
+            if (failFast && aborted) {
+              resolve(undefined);
               return;
             }
 
-            const failure = {
-              name: command.name,
-              command: renderCommand(command),
-              exitCode: null,
-              signal: 'SIGTERM',
-              durationMs: Math.max(0, now() - startedAt),
-              error: `Check timed out after ${timeoutMs}ms`,
+            /**
+             * Record a failure exactly once for the current command.
+             * @param {CheckFailure} failure Failure details to report.
+             * @param {boolean} shouldAbort Whether fail-fast should stop the rest of the suite.
+             * @returns {void}
+             */
+            const finishWithFailure = (failure, shouldAbort) => {
+              state.settled = true;
+              activeChildren.delete(command.name);
+              activeStartedAt.delete(command.name);
+              if (state.timeoutId !== null) {
+                clearTimeout(state.timeoutId);
+                state.timeoutId = null;
+              }
+              failures.push(failure);
+              emitFailureEvent(stderr, command.name, failure);
+
+              if (shouldAbort && failFast && !aborted) {
+                aborted = true;
+                abortRemainingChildren(activeChildren, command.name);
+              }
+
+              resolve(undefined);
             };
 
-            if (child && typeof child.kill === 'function') {
-              child.kill('SIGTERM');
+            try {
+              child = spawnImpl(command.command, command.args, {
+                stdio: ['ignore', 'pipe', 'pipe'],
+              });
+            } catch (error) {
+              const failure = buildSpawnFailure(command, startedAt, error, now);
+              failures.push(failure);
+              emitFailureEvent(stderr, command.name, failure);
+
+              if (failFast) {
+                aborted = true;
+                abortRemainingChildren(activeChildren, command.name);
+              }
+
+              resolve(undefined);
+              return;
             }
 
-            finishWithFailure(failure, true);
-          }, timeoutMs);
-          forwardStreamLines(child.stdout, line =>
-            stdout.write(`[${command.name}][stdout] ${line}\n`)
-          );
-          forwardStreamLines(child.stderr, line =>
-            stderr.write(`[${command.name}][stderr] ${line}\n`)
-          );
-
-          child.on(
-            'error',
-            /** @param {unknown} error Error raised by the child process. */ error => {
-              if (state.settled || (aborted && failFast)) {
+            activeChildren.set(command.name, child);
+            activeStartedAt.set(command.name, startedAt);
+            emitEvent(stderr, {
+              type: 'check-start',
+              name: command.name,
+              command: renderCommand(command),
+            });
+            state.timeoutId = setTimeout(() => {
+              if (state.settled) {
                 return;
               }
 
-              const failure = buildSpawnFailure(command, startedAt, error, now);
-              finishWithFailure(failure, true);
-            }
-          );
+              const failure = {
+                name: command.name,
+                command: renderCommand(command),
+                exitCode: null,
+                signal: 'SIGTERM',
+                durationMs: Math.max(0, now() - startedAt),
+                error: `Check timed out after ${timeoutMs}ms`,
+              };
 
-          child.on(
-            'close',
-            /**
-             * @param {number | null} exitCode Exit code reported by the child process.
-             * @param {string | null} signal Process signal reported by the child process.
-             */ (exitCode, signal) => {
-              handleChildClose(
-                { activeChildren, state, aborted, failFast, failures },
-                { command, startedAt, exitCode, signal, stderr },
-                { now, emitEvent, finishWithFailure, resolve, renderCommand }
-              );
-            }
-          );
-        });
-      })
-    );
+              if (child && typeof child.kill === 'function') {
+                child.kill('SIGTERM');
+              }
+
+              finishWithFailure(failure, true);
+            }, timeoutMs);
+            forwardStreamLines(child.stdout, line =>
+              stdout.write(`[${command.name}][stdout] ${line}\n`)
+            );
+            forwardStreamLines(child.stderr, line =>
+              stderr.write(`[${command.name}][stderr] ${line}\n`)
+            );
+
+            child.on(
+              'error',
+              /** @param {unknown} error Error raised by the child process. */ error => {
+                if (state.settled || (aborted && failFast)) {
+                  return;
+                }
+
+                const failure = buildSpawnFailure(
+                  command,
+                  startedAt,
+                  error,
+                  now
+                );
+                finishWithFailure(failure, true);
+              }
+            );
+
+            child.on(
+              'close',
+              /**
+               * @param {number | null} exitCode Exit code reported by the child process.
+               * @param {string | null} signal Process signal reported by the child process.
+               */ (exitCode, signal) => {
+                activeStartedAt.delete(command.name);
+                handleChildClose(
+                  { activeChildren, state, aborted, failFast, failures },
+                  { command, startedAt, exitCode, signal, stderr },
+                  { now, emitEvent, finishWithFailure, resolve, renderCommand }
+                );
+              }
+            );
+          });
+        })
+      );
+    } finally {
+      if (progressIntervalId !== null) clearInterval(progressIntervalId);
+    }
 
     let exitCode = 0;
     if (failures.length !== 0) {
@@ -946,7 +1010,7 @@ export function createRunCheckSuite(defaults) {
     emitEvent(stderr, {
       type: 'check-summary',
       name: 'check-suite',
-      command: 'npm run check',
+      command: suiteCommand,
       status,
       total: commands.length,
       failed: failures.length,
@@ -962,6 +1026,7 @@ export function createRunCheckSuite(defaults) {
  * @param {{
  *   commands?: CheckCommand[],
  *   failFast?: boolean,
+ *   suiteCommand?: string,
  *   spawnImpl?: CheckSpawn,
  *   stdout?: { write: (text: string) => void },
  *   stderr?: { write: (text: string) => void },
@@ -976,6 +1041,7 @@ export function createRunCheckSuite(defaults) {
  * @returns {{
  *   commands: CheckCommand[],
  *   failFast: boolean,
+ *   suiteCommand: string,
  *   spawnImpl: CheckSpawn,
  *   stdout: { write: (text: string) => void },
  *   stderr: { write: (text: string) => void },
@@ -986,6 +1052,7 @@ export function resolveRunCheckOptions(options = {}, defaults = {}) {
   return {
     commands: resolveCheckCommands(options),
     failFast: resolveFailFast(options),
+    suiteCommand: resolveSuiteCommand(options),
     spawnImpl: resolveSpawnImpl(options, defaults),
     stdout: resolveOutputStream(
       options.stdout,
@@ -999,6 +1066,15 @@ export function resolveRunCheckOptions(options = {}, defaults = {}) {
     ),
     now: resolveNow(options, defaults),
   };
+}
+
+/**
+ * Resolve the command label used by structured suite summaries.
+ * @param {{ suiteCommand?: string }} options Runner options.
+ * @returns {string} Aggregate command label.
+ */
+function resolveSuiteCommand(options) {
+  return options.suiteCommand ?? 'npm run check';
 }
 
 /**

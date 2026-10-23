@@ -1,6 +1,9 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import {
   createReservation,
+  isOperationReservationConfirmed,
+  isOperationResolutionComplete,
+  resolveOperationOutcome,
   resolveReservation,
 } from '../../../../src/core/cloud/billing/operation-billing-core.js';
 
@@ -75,5 +78,66 @@ describe('operation billing', () => {
         outcome: 'success',
       })
     ).toThrow('Invalid operation transition');
+  });
+
+  it.each([
+    [{ status: 200, body: { status: 'reserved', applied: true } }, true],
+    [{ status: 200, body: { status: 'reserved', applied: false } }, false],
+    [{ status: 200, body: { status: 'settled', applied: true } }, false],
+    [{ status: 200, body: null }, false],
+  ])('recognizes only newly applied reservations', (result, expected) => {
+    expect(isOperationReservationConfirmed(result)).toBe(expected);
+  });
+
+  it.each([
+    [{ status: 200, body: { status: 'settled' } }, 'success', true],
+    [{ status: 200, body: { duplicate: true } }, 'success', true],
+    [{ status: 200, body: { status: 'reserved' } }, 'success', false],
+    [{ status: 503, body: { status: 'settled' } }, 'success', false],
+    [{ status: 200, body: { status: 'needs_recovery' } }, 'ambiguous', true],
+    [{ status: 200, body: { duplicate: true } }, 'ambiguous', true],
+    [{ status: 200, body: { status: 'settled' } }, 'ambiguous', false],
+  ])('recognizes the confirmed %s outcome', (result, outcome, expected) => {
+    expect(isOperationResolutionComplete(result, outcome)).toBe(expected);
+  });
+
+  it('resolves through the injected billing service', async () => {
+    const resolveOperation = jest.fn().mockResolvedValue({
+      status: 200,
+      body: { status: 'settled' },
+    });
+    const allowEffects = { testOnly: true };
+    const input = {
+      billing: { resolveOperation },
+      allowEffects,
+      uuid: 'billing-1',
+      operationType: 'chat',
+      operationAttemptId: 'attempt-1',
+      outcome: 'success',
+    };
+
+    await expect(resolveOperationOutcome(input)).resolves.toBe(true);
+    expect(resolveOperation).toHaveBeenCalledWith(allowEffects, {
+      uuid: 'billing-1',
+      eventId: 'attempt-1:success',
+      operationType: 'chat',
+      operationAttemptId: 'attempt-1',
+      outcome: 'success',
+    });
+  });
+
+  it('returns false when the injected billing service throws', async () => {
+    const input = {
+      billing: {
+        resolveOperation: jest.fn().mockRejectedValue(new Error('offline')),
+      },
+      allowEffects: {},
+      uuid: 'billing-1',
+      operationType: 'chat',
+      operationAttemptId: 'attempt-1',
+      outcome: 'ambiguous',
+    };
+
+    await expect(resolveOperationOutcome(input)).resolves.toBe(false);
   });
 });

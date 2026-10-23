@@ -173,6 +173,12 @@ variable "get_author_uuid_v2_billing_enabled" {
   default     = false
 }
 
+variable "openai_chat_enabled" {
+  description = "Whether the fixed-model, credit-billed OpenAI chat endpoint is enabled"
+  type        = bool
+  default     = false
+}
+
 variable "enable_runner_commitment_projection" {
   description = "Whether object-minute rental search reads from the backfilled runner commitment projection"
   type        = bool

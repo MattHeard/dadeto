@@ -1166,6 +1166,7 @@ function createCopyCloudDirectoryPlan(planValues) {
     'get-api-key-credit',
     'get-api-key-credit-v2',
     'get-author-uuid-v2',
+    'openai-chat',
     'get-moderation-variant',
     'hide-variant-html',
     'mark-variant-dirty',

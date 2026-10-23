@@ -9,8 +9,7 @@ import {
   createEffectFetchBeaconReporter,
   installGlobalErrorBeaconListeners,
 } from './effect-adapters.js';
-const statusModuleUrl = new URL(
-  '../core/browser/google-auth-status.js',
+const statusModuleUrl = new URL('../core/browser/google-auth-status.js',
   import.meta.url
 );
 statusModuleUrl.searchParams.set('v', GOOGLE_AUTH_STATUS_ASSET_VERSION);

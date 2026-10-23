@@ -3,8 +3,7 @@ import { getAuthorUuid, initGoogleSignIn, signOut } from './googleAuth.js';
 import { getIdToken } from '../core/browser/browser-core.js';
 import { isAdminWithDeps } from './admin-core.js';
 
-const statusModuleUrl = new URL(
-  '../core/browser/google-auth-status.js',
+const statusModuleUrl = new URL('../core/browser/google-auth-status.js',
   import.meta.url
 );
 statusModuleUrl.searchParams.set('v', GOOGLE_AUTH_STATUS_ASSET_VERSION);

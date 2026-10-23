@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#102823" />
+    <meta
+      name="description"
+      content="A minimal, credit-billed chat through the DADETO service."
+    />
+    <title>OpenAI Chat — DADETO</title>
+    <link rel="stylesheet" href="/openai-chat/styles.css" />
+  </head>
+  <body>
+    <main class="chat-shell">
+      <header>
+        <a href="/">DADETO</a>
+        <p class="eyebrow">BETA TOOL</p>
+        <h1>OpenAI Chat</h1>
+        <p>
+          A short conversation through the DADETO service. Replies use the
+          account’s configured credits.
+        </p>
+      </header>
+      <section aria-label="Chat">
+        <ol id="messages" class="messages" aria-live="polite"></ol>
+        <p id="chat-status" role="status" aria-live="polite">
+          Sign in before sending a message.
+        </p>
+        <div id="signinButton"></div>
+        <form id="chat-form">
+          <label for="message-input">Message</label>
+          <textarea
+            id="message-input"
+            name="message"
+            rows="3"
+            maxlength="4096"
+            required
+            placeholder="Write a message…"
+          ></textarea>
+          <button id="send-button" type="submit">Send</button>
+        </form>
+      </section>
+      <footer>
+        <a href="/manuals/openai-chat.md">Field guide</a>
+        <span>History stays in this page until you leave.</span>
+      </footer>
+    </main>
+    <script type="module" src="/openai-chat/chat.js"></script>
+  </body>
+</html>
