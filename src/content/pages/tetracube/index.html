@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#142521" />
+    <meta name="description" content="Build freely with falling tetracubes in a quiet first-person construction toy." />
+    <title>Tetracube — Open Ground</title>
+    <link rel="stylesheet" href="/tetracube/styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="masthead">
+        <a class="back-link" href="/">← Dadeto</a>
+        <p class="eyebrow">TETRACUBE · OPEN GROUND</p>
+        <h1>Build one piece at a time.</h1>
+        <p class="intro">A small construction world with no score and no wrong shapes. See what the next piece lets you make.</p>
+      </header>
+
+      <section class="world-card" aria-label="Tetracube construction game">
+        <div class="world-heading">
+          <div>
+            <span class="eyebrow">FIRST-PERSON BUILDING TOY</span>
+            <p id="piece-readout" class="piece-readout" aria-live="polite"></p>
+          </div>
+          <p id="structure-readout" class="structure-readout" aria-live="polite"></p>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="tetracube-world" tabindex="0" aria-label="3D voxel construction world. Drag to look; use WASD to walk and Q and E to fly."></canvas>
+          <span class="reticle" aria-hidden="true">+</span>
+        </div>
+        <p id="tetracube-status" class="status-line" role="status" aria-live="polite"></p>
+        <div class="touch-controls" aria-label="Touch movement and building controls">
+          <div class="movement-pad">
+            <button type="button" data-action="move-forward" aria-label="Move forward">▲</button>
+            <button type="button" data-action="move-left" aria-label="Strafe left">◀</button>
+            <button type="button" data-action="move-backward" aria-label="Move backward">▼</button>
+            <button type="button" data-action="move-right" aria-label="Strafe right">▶</button>
+          </div>
+          <div class="action-pad">
+            <button type="button" data-action="move-up" aria-label="Fly up">UP</button>
+            <button type="button" data-action="move-down" aria-label="Fly down">DOWN</button>
+            <button type="button" data-action="target-left" aria-label="Adjust ghost left">GHOST ◀</button>
+            <button type="button" data-action="target-right" aria-label="Adjust ghost right">GHOST ▶</button>
+            <button type="button" data-action="place" aria-label="Place the previewed piece">PLACE</button>
+            <button type="button" data-action="mine" aria-label="Mine the piece under the crosshair">MINE</button>
+          </div>
+        </div>
+        <div class="tool-row" aria-label="Construction actions">
+          <button type="button" data-action="rotate-x-right">Rotate X</button>
+          <button type="button" data-action="rotate-y-right">Rotate Y</button>
+          <button type="button" data-action="rotate-z-right">Rotate Z</button>
+          <button type="button" data-action="undo">Undo</button>
+          <button type="button" data-action="reset">Reset world</button>
+        </div>
+      </section>
+
+      <section class="how-to-play" aria-labelledby="controls-heading">
+        <p class="eyebrow">YOUR WORLD, YOUR PACE</p>
+        <h2 id="controls-heading">Move around the idea.</h2>
+        <div class="control-grid">
+          <p><kbd>W A S D</kbd> walk and strafe · <kbd>Q E</kbd> fly down and up</p>
+          <p><kbd>Drag</kbd> look around · <kbd>← → ↑ ↓</kbd> turn the view</p>
+          <p><kbd>I J K L</kbd> adjust the ghost · <kbd>[ ]</kbd> move it nearer or farther</p>
+          <p><kbd>R / F</kbd> rotate X · <kbd>T / G</kbd> rotate Y · <kbd>Y / H</kbd> rotate Z</p>
+          <p><kbd>Enter</kbd> place · <kbd>Backspace</kbd> mine · <kbd>Z</kbd> undo · <kbd>X</kbd> reset</p>
+        </div>
+        <p class="design-note">Every piece is four cubes joined together. It drops as one shape and settles on its first contact. A single cube can hold a wide overhang. Mining removes a piece; the unsupported pieces settle immediately. You can fly through everything.</p>
+      </section>
+      <footer><a href="/manuals/tetracube.md">Read the field guide</a><span>OPEN GROUND · NO OBJECTIVE</span></footer>
+    </main>
+    <script type="module" src="/tetracube/game.js"></script>
+  </body>
+</html>

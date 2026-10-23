@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "TETRA1",
+      "title": "Tetracube — Open Ground",
+      "publicationDate": "2026-10-23",
+      "release": "public",
+      "content": [
+        "Build a tower or an overhanging bridge one four-cube piece at a time. Walk and fly around your construction, adjust the ghost piece, and watch each piece settle instantly. Play at /tetracube/.",
+        {
+          "type": "manual",
+          "id": "TETRA1-manual",
+          "title": "Field guide",
+          "src": "/manuals/tetracube.md"
+        }
+      ],
+      "tags": ["toy", "game", "construction", "3d", "voxel"]
+    },
+    {
       "key": "THRF1",
       "title": "THREEFOLD — The Weight of Water",
       "publicationDate": "2026-10-16",
