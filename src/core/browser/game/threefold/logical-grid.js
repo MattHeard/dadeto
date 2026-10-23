@@ -147,6 +147,34 @@ export function resolveHierarchyActionTarget(entities, scale, targetId) {
 }
 
 /**
+ * Create a pure reducer for a visible scale-specific hierarchy action. Each
+ * stable target identity receives one reducer step in deterministic order.
+ * @template State
+ * @param {ThreefoldHierarchyEntity[]} entities Authored identities and parent links.
+ * @param {number} scale Current player interaction scale.
+ * @param {string} targetId Identity selected by the current-scale interaction.
+ * @param {(currentState: State, affectedEntityId: string) => State} reduceEffect Pure per-identity state reducer.
+ * @returns {(state: State) => {state: State, affectedEntityIds: string[]}} Reducer with the affected identities captured.
+ */
+export function createHierarchyActionReducer(
+  entities,
+  scale,
+  targetId,
+  reduceEffect
+) {
+  if (typeof reduceEffect !== 'function')
+    throw new TypeError('A hierarchy action requires a state reducer.');
+  const target = resolveHierarchyActionTarget(entities, scale, targetId);
+  const affectedEntityIds = target ? target.affectedEntityIds : [];
+  return state => {
+    let nextState = state;
+    for (const entityId of affectedEntityIds)
+      nextState = reduceEffect(nextState, entityId);
+    return { state: nextState, affectedEntityIds };
+  };
+}
+
+/**
  * Resolve one immutable scene into visible hierarchy identities and integer-cell
  * geometry. Semantic hierarchy stays separate from geometric containment.
  * @param {ThreefoldGridEntity[]} entities Canonical scene entities.

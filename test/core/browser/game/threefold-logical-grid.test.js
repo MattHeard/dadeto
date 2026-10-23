@@ -4,6 +4,7 @@ import {
   layoutScene,
   packSceneLayout,
   projectEntity,
+  createHierarchyActionReducer,
   resolveHierarchyActionTarget,
   resolveSceneLayout,
 } from '../../../../src/core/browser/game/threefold/logical-grid.js';
@@ -501,6 +502,72 @@ describe('THREEFOLD scale-specific hierarchy action targets', () => {
     expect(resolveHierarchyActionTarget(cratePile, 0, 'unrelated')).toBeNull();
     expect(resolveHierarchyActionTarget(cratePile, 0, '')).toBeNull();
     expect(resolveHierarchyActionTarget(cratePile, 0, null)).toBeNull();
+  });
+
+  test('reduces one group action over stable descendants and narrows it to a fine child', () => {
+    const cratePile = [
+      { id: 'crate-pile', expandAtScale: -1 },
+      ...Array.from({ length: 9 }, (_, index) => ({
+        id: `crate-${index + 1}`,
+        parentId: 'crate-pile',
+      })),
+    ];
+    const original = JSON.stringify(cratePile);
+    const recordEffect = (affectedIds, entityId) => [...affectedIds, entityId];
+    const coarseReducer = createHierarchyActionReducer(
+      cratePile,
+      0,
+      'crate-pile',
+      recordEffect
+    );
+    const reversedReducer = createHierarchyActionReducer(
+      [...cratePile].reverse(),
+      0,
+      'crate-pile',
+      recordEffect
+    );
+    const fineReducer = createHierarchyActionReducer(
+      cratePile,
+      -1,
+      'crate-4',
+      recordEffect
+    );
+    const hiddenReducer = createHierarchyActionReducer(
+      cratePile,
+      0,
+      'crate-4',
+      recordEffect
+    );
+    const coarse = coarseReducer([]);
+    const reversed = reversedReducer([]);
+    const fine = fineReducer([]);
+
+    expect(coarse.affectedEntityIds).toEqual([
+      'crate-1',
+      'crate-2',
+      'crate-3',
+      'crate-4',
+      'crate-5',
+      'crate-6',
+      'crate-7',
+      'crate-8',
+      'crate-9',
+      'crate-pile',
+    ]);
+    expect(coarse.state).toEqual(coarse.affectedEntityIds);
+    expect(reversed).toEqual(coarse);
+    expect(fine).toEqual({
+      state: ['crate-4'],
+      affectedEntityIds: ['crate-4'],
+    });
+    expect(hiddenReducer([])).toEqual({ state: [], affectedEntityIds: [] });
+    expect(JSON.stringify(cratePile)).toBe(original);
+  });
+
+  test('requires a reducer before trying to resolve an action target', () => {
+    expect(() => createHierarchyActionReducer([], 0, 'target', null)).toThrow(
+      'A hierarchy action requires a state reducer.'
+    );
   });
 });
 

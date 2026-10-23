@@ -1,5 +1,5 @@
 import { isThreefoldInteractableInReach } from './scene-utils.js';
-import { resolveHierarchyActionTarget } from './logical-grid.js';
+import { createHierarchyActionReducer } from './logical-grid.js';
 import {
   EPISODE_CLOSURES,
   FERRY_OUTCOMES,
@@ -178,18 +178,19 @@ export function attemptThreefoldReport(state) {
     .map(({ id, hierarchy }) => ({ id, ...hierarchy }));
   if (
     crisis.stage !== 'aftermath' ||
-    !resolveHierarchyActionTarget(
-      hierarchyEntities,
-      player.scale,
-      'signal-station-console'
-    ) ||
     player.destroyedGeometryIds.includes(
       THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
     ) ||
     !isThreefoldInteractableInReach(state, 'signal-station-console')
   )
     return episode;
-  return { ...episode, closedBy: 'reported' };
+  const applyReportToTarget = createHierarchyActionReducer(
+    hierarchyEntities,
+    player.scale,
+    'signal-station-console',
+    currentEpisode => ({ ...currentEpisode, closedBy: 'reported' })
+  );
+  return applyReportToTarget(episode).state;
 }
 
 /**
