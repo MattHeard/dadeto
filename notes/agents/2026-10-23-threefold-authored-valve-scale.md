@@ -17,5 +17,5 @@
 
 - Focused impact passed 2 suites / 17 tests.
 - Changed-core evaluation passed 36 suites / 504 tests with clean ESLint and core parsing, zero clones, and no uncovered lines or branches in the three changed core modules.
-- The first aggregate check found only the TSDoc nullability issue. After the explicit guard, `npm run tsdoc:check`, focused tests, and `DADETO_CHECK_BASE=origin/main DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed; build passed, manuals validated 79, and diff check passed. Exact-head CI remains pending.
+- The first aggregate check found only the TSDoc nullability issue. After the explicit guard, `npm run tsdoc:check`, focused tests, and `DADETO_CHECK_BASE=origin/main DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed; build passed, manuals validated 79, and diff check passed. PR #2792 is open at `23006e16119eeddbdbad14d814a3159200b72645`; exact-head Terraform Validate 39881066431 passed and Full Check 39881066490 is running.
 - When an authored action scale appears in a simulation gate, trace the entire action through the domain operator; a second scale check may otherwise keep behavior hardcoded.
