@@ -413,13 +413,24 @@ export function createAlgZooPilotRunner(adapters) {
             cost: { ...execution.cost, ...budget.snapshot() },
           };
         } catch (error) {
-          if (error?.code !== 'pilot-budget-exceeded') throw error;
-          execution = {
-            status: 'budget-stopped',
-            failureCode: error.field,
-            submission: { causalEvidence: 'not tested' },
-            cost: budget.snapshot(),
-          };
+          const isBudgetStop = error?.code === 'pilot-budget-exceeded';
+          if (!isBudgetStop) deadline.abort();
+          execution = isBudgetStop
+            ? {
+                status: 'budget-stopped',
+                failureCode: error.field,
+                costMeasurementStatus:
+                  error.field === 'elapsedMillis' ? 'partial' : 'complete',
+                submission: { causalEvidence: 'not tested' },
+                cost: budget.snapshot(),
+              }
+            : {
+                status: 'failed',
+                failureCode: 'investigator-error',
+                costMeasurementStatus: 'partial',
+                submission: { causalEvidence: 'not tested' },
+                cost: budget.snapshot(),
+              };
         } finally {
           deadline.cancel();
         }
@@ -737,6 +748,7 @@ function createAlgZooPilotSessionRecord(
     ...session,
     attemptStatus: execution.status ?? 'submitted',
     ...(execution.failureCode ? { failureCode: execution.failureCode } : {}),
+    costMeasurementStatus: execution.costMeasurementStatus ?? 'complete',
     submission: execution.submission,
     cost,
     exceededBudgetLimits,

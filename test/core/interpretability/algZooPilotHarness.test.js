@@ -643,6 +643,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
     expect(result.sessionRecords[0]).toMatchObject({
       attemptStatus: 'budget-stopped',
       failureCode: 'elapsedMillis',
+      costMeasurementStatus: 'partial',
       cost: { elapsedMillis: pair.sessions.control.budget.elapsedMillis },
     });
     expect(result.blindedSubmissions[0].attemptStatus).toBe('budget-stopped');
@@ -697,18 +698,24 @@ describe('AlgZoo pilot session budget enforcement', () => {
       return runner.runTargetPair(pair, [], []);
     };
 
-    await expect(
-      run(async request => {
-        request.budget.reserve({ investigatorTokens: -1 });
-        return { submission: {} };
-      })
-    ).rejects.toThrow(TypeError);
-    await expect(
-      run(async request => {
-        request.budget.reserve({ toolCalls: 1 }).complete({ toolCalls: -1 });
-        return { submission: {} };
-      })
-    ).rejects.toThrow(TypeError);
+    const invalidReservation = await run(async request => {
+      request.budget.reserve({ investigatorTokens: -1 });
+      return { submission: {} };
+    });
+    expect(invalidReservation.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'failed',
+      failureCode: 'investigator-error',
+      costMeasurementStatus: 'partial',
+    });
+    const invalidUsage = await run(async request => {
+      request.budget.reserve({ toolCalls: 1 }).complete({ toolCalls: -1 });
+      return { submission: {} };
+    });
+    expect(invalidUsage.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'failed',
+      failureCode: 'investigator-error',
+      costMeasurementStatus: 'partial',
+    });
 
     const unmetered = await run(async () => ({
       submission: {},
@@ -777,13 +784,72 @@ describe('AlgZoo pilot session budget enforcement', () => {
       cost: { investigatorTokens: 11 },
     });
 
-    const duplicateSettlement = run(async request => {
+    const duplicateSettlement = await run(async request => {
       const reservation = request.budget.reserve({ toolCalls: 1 });
       reservation.complete({ toolCalls: 1 });
       reservation.cancel();
       return { submission: {} };
     });
-    await expect(duplicateSettlement).rejects.toThrow(TypeError);
+    expect(duplicateSettlement.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'failed',
+      failureCode: 'investigator-error',
+      costMeasurementStatus: 'partial',
+      cost: { toolCalls: 1 },
+    });
+  });
+
+  it('records provider errors with partial cost and continues to the paired arm', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const pair = {
+      ...plan.schedule.pairs[0],
+      sessionOrder: ['control', 'treatment'],
+    };
+    const deadlineFactory = createTestDeadlineFactory();
+    const runner = createAlgZooPilotRunner({
+      createDeadline: deadlineFactory.createDeadline,
+      hashMapSnapshot: async () => 'provider-failure-map-hash',
+      runInvestigator: async request => {
+        const reservation = request.budget.reserve({ investigatorTokens: 12 });
+        reservation.complete({ investigatorTokens: 12 });
+        if (request.session.arm === 'control') {
+          throw new Error('provider unavailable');
+        }
+        return {
+          submission: { hypothesis: 'paired attempt completed' },
+          cost: { investigatorTokens: 12 },
+        };
+      },
+      scoreBlindedSubmissions: async ({ submissions }) => {
+        expect(submissions).toHaveLength(2);
+        return [];
+      },
+    });
+
+    const result = await runner.runTargetPair(pair, [], []);
+
+    expect(result.sessionRecords).toMatchObject([
+      {
+        arm: 'control',
+        attemptStatus: 'failed',
+        failureCode: 'investigator-error',
+        costMeasurementStatus: 'partial',
+        cost: { investigatorTokens: 12 },
+      },
+      {
+        arm: 'treatment',
+        attemptStatus: 'submitted',
+        costMeasurementStatus: 'complete',
+        cost: { investigatorTokens: 12 },
+      },
+    ]);
+    expect(result.blindedSubmissions.map(item => item.attemptStatus)).toEqual([
+      'failed',
+      'submitted',
+    ]);
+    expect(deadlineFactory.deadlines[0].signal.aborted).toBe(true);
+    expect(deadlineFactory.deadlines[0].cancelCount).toBe(1);
+    expect(deadlineFactory.deadlines[1].signal.aborted).toBe(false);
+    expect(deadlineFactory.deadlines[1].cancelCount).toBe(1);
   });
 });
 
