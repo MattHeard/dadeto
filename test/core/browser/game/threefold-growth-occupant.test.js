@@ -243,6 +243,56 @@ function createLargeScaleDistrictGrowthState() {
   return createThreefoldSimulation(THRESHOLDS, scene);
 }
 
+/**
+ * Create a coarse authored crate-pile proxy with two physical child crates.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Test simulation.
+ */
+function createCompositeGrowthState() {
+  const scene = createBrokenGateScene();
+  scene.spawn = createScaleState(
+    { x: 0, y: 0 },
+    {
+      scale: 0,
+      anchor: 8,
+      maximumAnchor: 8,
+      minimumUnlockedScale: -2,
+      maximumUnlockedScale: 1,
+    }
+  );
+  scene.geometry = [
+    {
+      id: 'crate-child-near',
+      hierarchy: { parentId: 'crate-pile' },
+      bounds: {
+        min: { x: 0.3, y: -0.02, z: 0 },
+        max: { x: 0.34, y: 0.02, z: 0.2 },
+      },
+    },
+    {
+      id: 'crate-child-far',
+      hierarchy: { parentId: 'crate-pile' },
+      bounds: {
+        min: { x: 0.7, y: -0.02, z: 0 },
+        max: { x: 0.74, y: 0.02, z: 0.2 },
+      },
+    },
+  ];
+  scene.interactables = [
+    {
+      id: 'crate-pile',
+      position: { x: 0.5, y: 0 },
+      hierarchy: { expandAtScale: -1 },
+      bounds: {
+        min: { x: 0.2, y: -0.1, z: 0 },
+        max: { x: 0.8, y: 0.1, z: 0.3 },
+      },
+    },
+  ];
+  scene.decorations = [];
+  scene.creatures = [];
+  return createThreefoldSimulation(THRESHOLDS, scene);
+}
+
 describe('THREEFOLD growth impact on the known watchkeeper', () => {
   test('keeps the geometry-only preview aligned with the combined growth effects', () => {
     const state = createThreefoldSimulation(THRESHOLDS);
@@ -614,6 +664,37 @@ describe('THREEFOLD growth impact on the known watchkeeper', () => {
         state.scene.geometry
       ).geometry.map(({ id }) => id)
     ).toEqual(remoteIds);
+  });
+
+  test('coarse composite growth damages only the physically intersected child and persists that identity', () => {
+    const state = createCompositeGrowthState();
+    const before = JSON.parse(JSON.stringify(state));
+    const frame = renderThreefoldFrame(state);
+
+    expect(frame.threefold.logicalGridLayout.hierarchy).toMatchObject({
+      visibleEntityIds: ['crate-pile'],
+      hiddenEntities: expect.arrayContaining([
+        { id: 'crate-child-far', proxyId: 'crate-pile', reason: 'proxied' },
+        { id: 'crate-child-near', proxyId: 'crate-pile', reason: 'proxied' },
+      ]),
+    });
+    expect(previewThreefoldGrowthEffects(state)).toEqual({
+      geometryIds: ['crate-child-near'],
+      occupantIds: [],
+      creatureIds: [],
+    });
+    expect(state).toEqual(before);
+
+    const grown = stepThreefoldSimulation(state, { type: 'grow' });
+    const restored = restoreThreefoldSimulation(
+      serializeThreefoldSimulation(grown)
+    );
+
+    expect(grown.player.destroyedGeometryIds).toEqual(['crate-child-near']);
+    expect(restored?.player.destroyedGeometryIds).toEqual(['crate-child-near']);
+    expect(restored?.player.destroyedGeometryIds).not.toContain(
+      'crate-child-far'
+    );
   });
 
   test('shows the high-scale district and resident risk while keeping growth available', () => {
