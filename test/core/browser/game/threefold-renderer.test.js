@@ -533,6 +533,94 @@ describe('THREEFOLD canvas grid', () => {
     expect(JSON.stringify(base)).toBe(before);
   });
 
+  test('resolves authored geometry composites outside the signal-station map', () => {
+    const base = createThreefoldSimulation(THRESHOLDS);
+    const compositeGeometry = [
+      {
+        id: 'authored-house',
+        bounds: {
+          min: { x: 9, y: 4, z: 0 },
+          max: { x: 10, y: 5, z: 2 },
+        },
+        hierarchy: { expandAtScale: -2 },
+      },
+      {
+        id: 'authored-house-wall',
+        bounds: {
+          min: { x: 9.25, y: 4.25, z: 0 },
+          max: { x: 9.75, y: 4.75, z: 1 },
+        },
+        hierarchy: { parentId: 'authored-house' },
+      },
+    ];
+    const state = {
+      ...base,
+      scene: {
+        ...base.scene,
+        geometry: [...base.scene.geometry, ...compositeGeometry],
+      },
+    };
+    const before = JSON.stringify(state);
+    const coarse = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, scale: -1 },
+    });
+    const fine = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, scale: -2 },
+    });
+
+    expect(coarse.threefold.logicalGridLayout.hierarchy).toMatchObject({
+      visibleEntityIds: expect.arrayContaining(['authored-house']),
+      hiddenEntities: expect.arrayContaining([
+        {
+          id: 'authored-house-wall',
+          proxyId: 'authored-house',
+          reason: 'proxied',
+        },
+      ]),
+    });
+    expect(coarse.world.map.objects.map(object => object.id)).toContain(
+      'authored-house'
+    );
+    expect(coarse.world.map.objects.map(object => object.id)).not.toContain(
+      'authored-house-wall'
+    );
+    expect(fine.threefold.logicalGridLayout.hierarchy).toMatchObject({
+      visibleEntityIds: expect.arrayContaining(['authored-house-wall']),
+      hiddenEntities: expect.arrayContaining([
+        { id: 'authored-house', proxyId: null, reason: 'expanded' },
+      ]),
+    });
+    expect(fine.world.map.objects.map(object => object.id)).toContain(
+      'authored-house-wall'
+    );
+    expect(fine.world.map.objects.map(object => object.id)).not.toContain(
+      'authored-house'
+    );
+    expect(JSON.stringify(state)).toBe(before);
+    expect(state.scene.geometry.slice(-2)).toEqual(compositeGeometry);
+
+    const houseDestroyed = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, destroyedGeometryIds: ['authored-house'] },
+    });
+    const wallDestroyed = renderThreefoldFrame({
+      ...state,
+      player: {
+        ...state.player,
+        destroyedGeometryIds: ['authored-house-wall'],
+      },
+    });
+
+    expect(houseDestroyed.world.map.objects.map(object => object.id)).toContain(
+      'authored-house-wall'
+    );
+    expect(wallDestroyed.world.map.objects.map(object => object.id)).toContain(
+      'authored-house'
+    );
+  });
+
   test('bounds every supported Broken Gate layout to its scale-local map viewport', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
 

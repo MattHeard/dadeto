@@ -274,28 +274,60 @@ export function viewAtScale(position, scale) {
  * Project canonical geometry into a scale view, omitting committed rubble.
  * Geometry remains in physical metres so every scale reads the same world.
  * @param {ReturnType<typeof createScaleState>} state Current scale and damage state.
- * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>} geometry Canonical geometry for the loaded region or chunk.
- * @returns {{view: ReturnType<typeof viewAtScale>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>}} Scale view and surviving canonical geometry with authored grid relationships.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} geometry Canonical geometry for the loaded region or chunk.
+ * @returns {{view: ReturnType<typeof viewAtScale>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} } Scale view and surviving canonical geometry with authored grid relationships.
  */
 export function projectGeometryForScale(state, geometry) {
   assertScaleState(state);
   const objects = validateGeometry(geometry);
   const destroyed = new Set(state.destroyedGeometryIds);
+  const geometryIds = new Set(objects.map(object => object.id));
+  const survivingObjects = objects.filter(object => !destroyed.has(object.id));
+  const survivingIds = new Set(survivingObjects.map(object => object.id));
+  const originalCompositeIds = new Set(
+    objects
+      .map(object => object.hierarchy?.parentId)
+      .filter(parentId => parentId !== undefined && geometryIds.has(parentId))
+  );
+  const survivingCompositeIds = new Set(
+    survivingObjects
+      .map(object => object.hierarchy?.parentId)
+      .filter(parentId => parentId !== undefined && survivingIds.has(parentId))
+  );
   return {
     view: viewAtScale(state.position, state.scale),
-    geometry: objects
-      .filter(object => !destroyed.has(object.id))
+    geometry: survivingObjects
       .sort((first, second) => (first.id < second.id ? -1 : 1))
-      .map(object => ({
-        id: object.id,
-        ...(object.overlapGroupId === undefined
-          ? {}
-          : { overlapGroupId: object.overlapGroupId }),
-        bounds: {
-          min: { ...object.bounds.min },
-          max: { ...object.bounds.max },
-        },
-      })),
+      .map(object => {
+        const hierarchy = object.hierarchy
+          ? { ...object.hierarchy }
+          : undefined;
+        if (
+          hierarchy?.parentId &&
+          geometryIds.has(hierarchy.parentId) &&
+          !survivingIds.has(hierarchy.parentId)
+        )
+          delete hierarchy.parentId;
+        if (
+          hierarchy?.expandAtScale !== undefined &&
+          originalCompositeIds.has(object.id) &&
+          !survivingCompositeIds.has(object.id)
+        )
+          delete hierarchy.expandAtScale;
+        return {
+          id: object.id,
+          ...(object.overlapGroupId === undefined
+            ? {}
+            : { overlapGroupId: object.overlapGroupId }),
+          ...(hierarchy && Object.keys(hierarchy).length > 0
+            ? { hierarchy }
+            : {}),
+          bounds: {
+            min: { ...object.bounds.min },
+            max: { ...object.bounds.max },
+          },
+        };
+      }),
   };
 }
 
@@ -356,8 +388,8 @@ function assertWorldBounds(bounds) {
 
 /**
  * Validate canonical geometry bounds and unique identifiers.
- * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>} geometry Candidate geometry.
- * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}>} Validated geometry.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} geometry Candidate geometry.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} Validated geometry.
  */
 function validateGeometry(geometry) {
   if (!Array.isArray(geometry))
