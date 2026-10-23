@@ -1,5 +1,6 @@
 import { previewThreefoldGrowthEffects } from './simulation.js';
 import { isGatehouseRatInReach } from './encounter.js';
+import { isThreefoldInteractableInReach } from './scene-utils.js';
 
 const DIRECTIONS = ['up', 'down', 'left', 'right'];
 const WAIT_MINUTES = 15;
@@ -15,6 +16,10 @@ export function getThreefoldHandheldInput(state, pressed, previousActions) {
   const direction = DIRECTIONS.find(action => pressed.has(action));
   if (direction) return { type: 'move', direction };
   else if (pressed.has('a') && !previousActions.has('a')) {
+    const nearbyInteraction = state.scene.interactables.some(({ id }) =>
+      isThreefoldInteractableInReach(state, id)
+    );
+    if (nearbyInteraction) return { type: 'interact' };
     const growsThroughRat =
       previewThreefoldGrowthEffects(state).creatureIds.includes(
         'gatehouse-rat'
@@ -28,8 +33,6 @@ export function getThreefoldHandheldInput(state, pressed, previousActions) {
     };
   } else if (pressed.has('b') && !previousActions.has('b'))
     return { type: 'shrink' };
-  else if (pressed.has('interact') && !previousActions.has('interact'))
-    return { type: 'interact' };
   else if (pressed.has('x') && !previousActions.has('x'))
     return isGatehouseRatInReach(state)
       ? { type: 'bypass' }

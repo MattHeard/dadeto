@@ -67,7 +67,7 @@ describe('THREEFOLD Wakeform Shoals page', () => {
       '148.13 metres'
     );
     expect(nodes.get('#interact-label').textContent).toContain(
-      'E · DIVERT WAKEFORM'
+      'A · DIVERT WAKEFORM'
     );
     expect(nodes.get('#a-control-label').textContent).toBe('GROW');
     expect(nodes.get('#b-control-label').textContent).toBe('SHRINK');

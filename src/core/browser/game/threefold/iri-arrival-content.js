@@ -9,8 +9,8 @@ export function presentThreefoldIriArrival(outcomes, content) {
   if (outcomes.iriKnowledge !== undefined)
     return {
       ...content,
-      text: 'A shift record remains at the Quay panel. Approach and press E to read what happened here. Reading does not change the machinery or turn back the tide.',
-      hud: 'E READ QUAY SHIFT RECORD',
+      text: 'A shift record remains at the Quay panel. Approach and press A to read what happened here. Reading does not change the machinery or turn back the tide.',
+      hud: 'A READ QUAY SHIFT RECORD',
       action: null,
     };
   const account = arrivalAccount(outcomes.iriFate?.milestoneId);

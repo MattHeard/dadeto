@@ -72,7 +72,7 @@ describe('THREEFOLD Crownback Reach page', () => {
       '49.38 metres'
     );
     expect(nodes.get('#interact-label').textContent).toContain(
-      'E · MEET THARN'
+      'A · MEET THARN'
     );
     expect(nodes.get('#a-control-label').textContent).toBe('GROW');
     expect(nodes.get('#b-control-label').textContent).toBe('SHRINK');

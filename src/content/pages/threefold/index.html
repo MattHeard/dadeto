@@ -15,316 +15,58 @@
     <link rel="stylesheet" href="/threefold/styles.css" />
   </head>
   <body>
-    <main class="game-shell">
-      <header class="masthead">
-        <a class="wordmark" href="/">DADETO <span>AFTER HOURS</span></a>
-        <div class="title-lockup">
-          <p>A SCALE-SHIFTING HANDHELD RPG</p>
-          <h1>THREEFOLD</h1>
-          <span id="chapter-subtitle">The Weight of Water</span>
+    <main class="game-shell" aria-label="THREEFOLD handheld game">
+      <div class="screen-frame">
+        <div class="screen-glow">
+          <canvas
+            id="game-screen"
+            width="160"
+            height="144"
+            aria-label="THREEFOLD 160 by 144 pixel game screen"
+          ></canvas>
         </div>
-        <p class="chapter-tag" id="chapter-tag">
-          HARROWFEN <i>✦</i> THE BROKEN GATE
+        <div class="screen-caption">
+          <span>THREEFOLD · 160 × 144</span>
+          <span id="game-status" aria-live="polite">Starting…</span>
+        </div>
+        <p id="game-load-error" class="game-load-error" role="alert" hidden>
+          The game could not start. <a href="/threefold/">Reload the game</a>
         </p>
-      </header>
-      <section class="play-layout" aria-label="THREEFOLD game">
-        <div class="screen-frame">
-          <div class="screen-glow">
-            <canvas
-              id="game-screen"
-              width="160"
-              height="144"
-              aria-label="THREEFOLD 160 by 144 pixel game screen"
-            ></canvas>
-          </div>
-          <div class="screen-caption">
-            <span>HANDHELD DISPLAY · 160 × 144</span>
-            <span id="game-status" aria-live="polite"
-              >Starting the handheld…</span
-            >
-          </div>
-          <p id="game-load-error" class="game-load-error" role="alert" hidden>
-            The handheld scene could not start.
-            <a href="/threefold/">Return to the Broken Gate</a>
-          </p>
-          <p class="screen-help">
-            Use the arrow keys or touch pad below to move. If the display stays
-            blank, <a href="/threefold/">return to the Broken Gate</a> or
-            reload.
-          </p>
-          <p id="objective-reminder" class="screen-objective">
-            First objective: reach the west wall and grow through it before the
-            surge.
-          </p>
+      </div>
+      <div class="touch-pad" aria-label="Eight-button game controls">
+        <div class="dpad">
+          <button data-action="up" aria-label="Up">▲</button>
+          <button data-action="left" aria-label="Left">◀</button>
+          <button data-action="down" aria-label="Down">▼</button>
+          <button data-action="right" aria-label="Right">▶</button>
         </div>
-        <aside class="side-panel">
-          <div class="chapter-copy">
-            <p class="eyebrow" id="chapter-eyebrow">THE GATE IS FAILING</p>
-            <h2 id="chapter-heading">
-              One place. Four scales. Every action leaves a trace.
-            </h2>
-            <p id="chapter-description">
-              Walk the gatehouse, change size, and study the tide. Grow through
-              the west wall to leave a lasting breach, warn the Latchfolk in the
-              lower settlement, reach the ferry mooring, or withdraw up the road
-              before the surge.
-            </p>
-            <p><a href="/manuals/threefold.md">Field guide</a></p>
+        <div class="touch-actions">
+          <div class="face-buttons" aria-label="A and B buttons">
+            <button data-action="b" aria-label="B">B</button>
+            <button data-action="a" aria-label="A">A</button>
           </div>
-          <div class="control-card">
-            <div><span class="keycap">↑ ↓ ← →</span><b>MOVE</b></div>
-            <div>
-              <span class="keycap">A</span
-              ><b id="a-control-label">GROW · BREAK THROUGH</b>
-            </div>
-            <div>
-              <span class="keycap">B</span><b id="b-control-label">SHRINK</b>
-            </div>
-            <div>
-              <span class="keycap">E</span><b id="e-control-label">INTERACT</b>
-            </div>
-            <div><span class="keycap">X</span><b>WAIT 15 GAME MINUTES</b></div>
-            <div><span class="keycap">Y</span><b>SAVE</b></div>
+          <div class="system-buttons">
+            <button data-action="x" aria-label="X">X</button>
+            <button data-action="y" aria-label="Y">Y</button>
           </div>
-          <div class="touch-pad" aria-label="Touch controls">
-            <div class="dpad">
-              <button data-action="up" aria-label="Move up">▲</button>
-              <button data-action="left" aria-label="Move left">◀</button>
-              <button data-action="down" aria-label="Move down">▼</button>
-              <button data-action="right" aria-label="Move right">▶</button>
-            </div>
-            <div class="touch-actions">
-              <div class="face-buttons" aria-label="A and B buttons">
-                <button data-action="b" aria-label="B button: shrink">B</button>
-                <button data-action="a" aria-label="A button: grow">A</button>
-              </div>
-              <details class="travel-menu">
-                <summary>Travel between regions</summary>
-                <label for="travel-destination">Choose a destination</label>
-                <select id="travel-destination">
-                  <option value="broken-gate">Broken Gate</option>
-                  <option value="sluice">Tidal Archive</option>
-                  <option value="silt-margin">Silt Margin</option>
-                  <option value="hearthgaps">Hearthgaps</option>
-                  <option value="weftways">Weftways</option>
-                  <option value="grainlands">Grainlands</option>
-                  <option value="lantern-ward">Lantern Ward</option>
-                  <option value="belltops">Belltops</option>
-                  <option value="crownback-reach">Crownback Reach</option>
-                  <option value="shoals">Wakeform Shoals</option>
-                </select>
-                <button id="travel-button" type="button">Travel</button>
-                <span id="travel-status" role="status" aria-live="polite"></span>
-              </details>
-              <div class="system-buttons">
-                <button
-                  data-action="x"
-                  aria-label="X button: wait 15 game minutes"
-                >
-                  X
-                </button>
-                <button data-action="y" aria-label="Y button: save">Y</button>
-              </div>
-              <div class="extra-buttons">
-                <button
-                  id="interact-control"
-                  data-action="interact"
-                  aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"
-                >
-                  <span id="interact-label">E · INTERACT</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <p
-            id="logical-grid-warning"
-            class="logical-grid-warning"
-            role="status"
-            aria-live="polite"
-            hidden
-          ></p>
-          <details id="witness-ledger" class="witness-ledger">
-            <summary>Witness ledger</summary>
-            <ol id="witness-ledger-entries" aria-live="polite">
-              <li>No gate events recorded yet.</li>
-            </ol>
-          </details>
-          <details id="campaign-places" class="witness-ledger" hidden>
-            <summary>Campaign status</summary>
-            <p id="campaign-clock-text"></p>
-            <p id="campaign-places-text" aria-live="polite"></p>
-            <p id="campaign-pressure-text" aria-live="polite" hidden></p>
-            <p id="campaign-iri-fate-text" hidden></p>
-          </details>
-          <details id="testimony" class="witness-ledger">
-            <summary>Testimony and unresolved responsibility</summary>
-            <ol id="testimony-accounts" aria-live="polite"></ol>
-            <p id="testimony-responsibility"></p>
-          </details>
-          <details id="iri-repair-log" class="witness-ledger" hidden>
-            <summary>Iri's pressure-regulator log</summary>
-            <p id="iri-repair-log-text"></p>
-          </details>
-          <details id="iri-recorded-confession" class="witness-ledger" hidden>
-            <summary>Iri's recorded confession</summary>
-            <p id="iri-recorded-confession-text"></p>
-          </details>
-          <details id="harbor-memorial" class="witness-ledger" hidden>
-            <summary>Harrowfen ferry memorial</summary>
-            <p id="harbor-memorial-text" aria-live="polite"></p>
-          </details>
-          <details id="belltops-watch-response" class="witness-ledger" hidden>
-            <summary>Orla's harbor response</summary>
-            <p id="belltops-watch-response-text" aria-live="polite"></p>
-          </details>
-          <details
-            id="harbor-engineer-availability"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>Harbor engineering support</summary>
-            <p id="harbor-engineer-availability-text" aria-live="polite"></p>
-          </details>
-          <details id="iri-witness-lead" class="witness-ledger" hidden>
-            <summary>The Watchkeeper's relay account</summary>
-            <p id="iri-witness-lead-text"></p>
-          </details>
-          <details id="ferry-wreck-search" class="witness-ledger" hidden>
-            <summary>Ferry wreck search</summary>
-            <p id="ferry-wreck-search-text"></p>
-          </details>
-          <details
-            id="latchfolk-displacement-aid"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>Help for displaced Latchfolk</summary>
-            <p id="latchfolk-displacement-aid-text"></p>
-          </details>
-          <details id="weftways-relay-record" class="witness-ledger" hidden>
-            <summary>Threadbound relay ledger</summary>
-            <p id="weftways-relay-record-text"></p>
-          </details>
-          <details id="weftways-pell-outcome" class="witness-ledger" hidden>
-            <summary>Pell’s death and the caravan relay keeper</summary>
-            <p id="weftways-pell-outcome-text"></p>
-          </details>
-          <details id="weftways-relay-disclosure" class="witness-ledger" hidden>
-            <summary>What Mara shared with the caravan</summary>
-            <p id="weftways-relay-disclosure-text"></p>
-          </details>
-          <details
-            id="weftways-relay-concealment"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>What Mara kept private</summary>
-            <p id="weftways-relay-concealment-text"></p>
-          </details>
-          <details
-            id="weftways-relay-destruction"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>What happened to the Threadbound ledger</summary>
-            <p id="weftways-relay-destruction-text"></p>
-          </details>
-          <details
-            id="weftways-relay-restitution"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>Threadbound relay restitution</summary>
-            <p id="weftways-relay-restitution-text"></p>
-          </details>
-          <details
-            id="weftways-independent-publication"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>Pell’s independent relay notice</summary>
-            <p id="weftways-independent-publication-text"></p>
-          </details>
-          <details
-            id="tidal-archive-quieting-trace"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>Tidal Archive coil register</summary>
-            <p id="tidal-archive-quieting-trace-text"></p>
-          </details>
-          <details
-            id="silt-margin-quieting-evidence"
-            class="witness-ledger"
-            hidden
-          >
-            <summary>Neme’s translated Choir trace</summary>
-            <p id="silt-margin-quieting-evidence-text"></p>
-          </details>
-          <details id="episode-epilogue" class="witness-ledger" hidden>
-            <summary>After the Broken Gate</summary>
-            <ol id="episode-epilogue-outcomes" aria-live="polite"></ol>
-          </details>
-          <details id="return-tide" class="witness-ledger">
-            <summary>The Return Tide</summary>
-            <p id="return-tide-text" aria-live="polite"></p>
-            <p>
-              Sera and the Assembly seal are northwest in Belltops; the city
-              manifold is east. The root manifold is beside the Choir signal,
-              the coast manifold is northwest of Tharn, and the spillway is
-              northeast in the Shoals. Approach living representatives for
-              explicit evacuation and maintenance agreements. Components can
-              combine or fail; no intervention is compulsory.
-            </p>
-            <ol id="return-tide-epilogue" aria-live="polite"></ol>
-          </details>
-          <p class="campaign-tide-guide">
-            Harbor support shifts at 9 game minutes. At 15, a forced, unrepaired
-            gate can send the surge through the Quay. Surviving ferry engineers,
-            a working crane governor and coordinated relief routes change who
-            can leave.
-          </p>
-          <p id="campaign-persistence" role="status" aria-live="polite"></p>
-          <nav class="utility-actions" aria-label="Save controls">
-            <label class="slot-picker" hidden
-              >SAVE SLOT
-              <select id="save-slot" aria-label="Save slot">
-                <option value="0">01</option>
-                <option value="1">02</option>
-                <option value="2">03</option>
-              </select>
-            </label>
-            <button id="save-game">Save</button>
-            <button id="export-game">Export region</button>
-            <button id="import-button">Import region</button>
-            <button id="export-campaign">Backup campaign</button>
-            <button id="import-campaign-button">Restore campaign</button>
-            <input
-              id="import-campaign"
-              type="file"
-              accept="application/json,.json"
-              hidden
-            />
-            <input
-              id="import-game"
-              type="file"
-              accept="application/json,.json"
-              hidden
-            />
-            <button id="pause-game">Pause</button>
-            <button id="resume-game">Resume</button>
-            <button id="fullscreen-game">Fullscreen</button>
-            <button id="reset-game">Reset</button>
-          </nav>
-        </aside>
+        </div>
+      </div>
+      <p id="logical-grid-warning" hidden></p>
+      <p id="campaign-persistence" hidden></p>
+      <section class="runtime-utilities" hidden aria-hidden="true">
+        <select id="save-slot"><option value="0">01</option></select>
+        <button id="save-game" type="button">Save</button>
+        <button id="export-game" type="button">Export region</button>
+        <button id="import-button" type="button">Import region</button>
+        <button id="export-campaign" type="button">Backup campaign</button>
+        <button id="import-campaign-button" type="button">Restore campaign</button>
+        <input id="import-game" type="file" accept="application/json,.json" />
+        <input id="import-campaign" type="file" accept="application/json,.json" />
+        <button id="pause-game" type="button">Pause</button>
+        <button id="resume-game" type="button">Resume</button>
+        <button id="fullscreen-game" type="button">Fullscreen</button>
+        <button id="reset-game" type="button">Reset</button>
       </section>
-      <footer>
-        <span id="game-footer"
-          >Rescue passengers at the mooring before surge. In-game time advances
-          from deliberate actions, never the browser clock.</span
-        >
-        <span>DETERMINISTIC CONSEQUENCES <i>✦</i></span>
-      </footer>
     </main>
     <script type="module" src="/threefold/game.js"></script>
   </body>

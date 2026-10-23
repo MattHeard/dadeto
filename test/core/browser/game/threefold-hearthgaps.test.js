@@ -75,12 +75,18 @@ describe('THREEFOLD Hearthgaps runoff choice', () => {
       )
     ).toBe(false);
     expect(
-      frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
+      frame.shapes.every(shape => {
+        const grid = shape.spriteGridSize || 8;
+        return shape.x % grid === 0 && shape.y % grid === 0;
+      })
     ).toBe(true);
     expect(
       frame.shapes
         .filter(shape => shape.type === 'rect')
-        .every(shape => shape.width % 8 === 0 && shape.height % 8 === 0)
+        .every(shape => {
+          const grid = shape.spriteGridSize || 8;
+          return shape.width % grid === 0 && shape.height % grid === 0;
+        })
     ).toBe(true);
     expect(scene.spawn).not.toBe(createThreefoldHearthgapsScene().spawn);
     expect(createThreefoldHearthgapsState()).toEqual({

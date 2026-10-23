@@ -283,7 +283,7 @@ describe('THREEFOLD pressure network across real region runtimes', () => {
     );
     const before = nursery.getSnapshot().campaign.network.volumesCubicMeters[1];
     nursery.start();
-    nursery.step(125, ['interact']);
+    nursery.step(125, ['a']);
     expect(nursery.getSnapshot().campaign.network.hatchClosed).toBe(true);
     expect(nursery.frame().threefold.shelterHatchClosed).toBe(true);
     nursery.dispatch({ type: 'wait', elapsedGameMinutes: 15 });
@@ -379,13 +379,15 @@ describe('THREEFOLD pressure network across real region runtimes', () => {
         getThreefoldNurseryWaterDepthMeters(network)
       );
       expect(frame.shapes.some(shape => shape.fill === '#1b8a83')).toBe(true);
-      expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-        true
-      );
       expect(
         frame.shapes
           .filter(shape => shape.type === 'rect')
-          .every(({ width, height }) => width % 8 === 0 && height % 8 === 0)
+          .every(shape => {
+            const grid = shape.spriteGridSize || 8;
+            return [shape.x, shape.y, shape.width, shape.height].every(
+              value => value % grid === 0
+            );
+          })
       ).toBe(true);
       expect(serializeThreefoldPressureNetwork(network)).toBe(before);
     }

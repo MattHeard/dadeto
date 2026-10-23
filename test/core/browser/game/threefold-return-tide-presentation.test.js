@@ -368,7 +368,7 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
       state,
       {
         phase: 'warning',
-        interaction: { label: 'E OPEN ROOT MANIFOLD' },
+        interaction: { label: 'A OPEN ROOT MANIFOLD' },
         notice: '',
         hud: 'RETURN TIDE',
         epilogue: [],

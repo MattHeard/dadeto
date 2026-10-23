@@ -21,7 +21,7 @@ const THRESHOLDS = {
 describe('THREEFOLD optional aid for displaced Latchfolk', () => {
   test('records one optional aid action and preserves it in the save', () => {
     const aftermath = createFloodedSafeLatchfolkAftermath();
-    expect(renderThreefoldFrame(aftermath).toast).toContain('E HELP LATCHFOLK');
+    expect(renderThreefoldFrame(aftermath).toast).toContain('A HELP LATCHFOLK');
 
     const helped = stepThreefoldSimulation(aftermath, { type: 'interact' });
     expect(helped.episode.witnessLedger.at(-1)).toMatchObject({

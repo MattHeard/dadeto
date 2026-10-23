@@ -12,25 +12,25 @@ import { isThreefoldInteractableInReach } from './scene-utils.js';
 const ACTIONS = {
   inspect: {
     label: 'CHECK IRI',
-    hud: 'E CHECK IRI · CRANE HAS A GOVERNOR',
+    hud: 'A CHECK IRI · CRANE HAS A GOVERNOR',
     detail:
       'Iri is holding the manual regulator. Check the panel before attempting a handoff.',
   },
   'recover-governor': {
     label: 'TAKE GOVERNOR',
-    hud: 'E TAKE GOVERNOR · CRANE WILL STOP',
+    hud: 'A TAKE GOVERNOR · CRANE WILL STOP',
     detail:
       'Taking the crane governor permanently disables harbor lifting. Carry it to the Quay panel to replace Iri at the regulator.',
   },
   'install-governor': {
     label: 'FIT GOVERNOR',
-    hud: 'E FIT GOVERNOR · CRANE STAYS IDLE',
+    hud: 'A FIT GOVERNOR · CRANE STAYS IDLE',
     detail:
       'Fit the carried governor at the intact regulator. It will hold the nursery feed when Iri leaves; the crane remains unavailable.',
   },
   rescue: {
     label: 'RELEASE IRI',
-    hud: 'E RELEASE IRI · CHECK FEEDER RISK',
+    hud: 'A RELEASE IRI · CHECK FEEDER RISK',
     detail:
       'Release Iri from the regulator. Without a fitted governor, the feeder will open toward Grainlands. Earlier hatch and relief work can mitigate the water, but cannot undo flood damage.',
   },
@@ -79,7 +79,7 @@ export function getThreefoldQuayInteraction(state, network, iriFate) {
       kind,
       targetId: selected.target.id,
       label: copy.label,
-      hud: 'E RELEASE IRI · GOVERNOR HOLDS',
+      hud: 'A RELEASE IRI · GOVERNOR HOLDS',
       detail:
         'Release Iri safely: the fitted governor holds the nursery feed. The harbor crane remains disabled.',
     };

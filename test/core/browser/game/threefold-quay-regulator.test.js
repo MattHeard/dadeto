@@ -185,12 +185,12 @@ describe('THREEFOLD finite replacement governor and nonlethal rescue', () => {
   test('requires a new controller press for release and does not chain a held press into another operation', () => {
     const runtime = quayRuntime(createStorage());
     runtime.start();
-    runtime.step(125, ['interact']);
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
+    runtime.step(125, ['a']);
     expect(runtime.getSnapshot().campaign.iriFate.outcome).toBe('trapped');
     runtime.step(125, []);
-    runtime.step(125, ['interact']);
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
+    runtime.step(125, ['a']);
     expect(runtime.getSnapshot().campaign.iriFate.outcome).toBe('rescued');
     expect(runtime.getSnapshot().campaign.network.governorState).toBe('crane');
   });
@@ -224,7 +224,7 @@ describe('THREEFOLD finite replacement governor and nonlethal rescue', () => {
     let runtime = quayRuntime(storage);
     runtime.dispatch('left');
     runtime.start();
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(runtime.getSnapshot().campaign.network.governorState).toBe(
       'carried'
     );

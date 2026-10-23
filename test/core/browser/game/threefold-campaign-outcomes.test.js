@@ -384,8 +384,10 @@ describe('THREEFOLD campaign outcomes', () => {
 
   test('records a warned Belltops growth death as a campaign fate', () => {
     const storage = createRuntimeStorage();
+    const scene = createThreefoldBelltopsScene();
+    scene.interactables = [];
     const runtime = createThreefoldRuntime({
-      scene: createThreefoldBelltopsScene(),
+      scene,
       storage,
     });
     runtime.start();

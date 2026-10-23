@@ -314,11 +314,11 @@ describe('THREEFOLD playable arrival discovery', () => {
       scene: createThreefoldBelltopsScene(),
     });
     quay.start();
-    quay.step(500, ['interact']);
+    quay.step(500, ['a']);
     expect(quay.getSnapshot().campaign.iriFate.outcome).toBe('abandoned');
     expect(quay.getSnapshot().campaign.network.operatorReleased).toBe(false);
     quay.step(125, []);
-    quay.step(125, ['interact']);
+    quay.step(125, ['a']);
     expect(quay.getSnapshot().campaign.iriFate.outcome).toBe('rescued');
   });
 
@@ -328,7 +328,7 @@ describe('THREEFOLD playable arrival discovery', () => {
     gate.dispatch({ type: 'wait', elapsedGameMinutes: 9 });
     const before = gate.exportCampaign();
     gate.pause();
-    gate.step(500, ['interact']);
+    gate.step(500, ['a']);
     gate.frame();
     gate.getSnapshot();
     gate.resume();

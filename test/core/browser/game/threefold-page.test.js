@@ -69,37 +69,19 @@ const { createThreefoldLanternWardScene } = await import(
   '../../../../src/core/browser/game/threefold/lantern-ward.js'
 );
 
-test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
+test('keeps the standalone page focused on the handheld and eight controls', () => {
   expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
-  expect(THREEFOLD_CSS).toContain('.campaign-tide-guide,');
-  expect(THREEFOLD_HTML).toContain('Harbor support shifts at 9 game minutes.');
-  expect(THREEFOLD_HTML).toContain('At 15, a forced,');
   expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
-  expect(THREEFOLD_CSS).toContain(
-    'grid-template-columns: repeat(4, minmax(0, 1fr))'
-  );
-  expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
   expect(THREEFOLD_CSS).toContain('transform: none');
-  expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
-  expect(THREEFOLD_HTML).toMatch(
-    /<p\s+id="logical-grid-warning"\s+class="logical-grid-warning"\s+role="status"\s+aria-live="polite"\s+hidden/
-  );
-  expect(THREEFOLD_CSS).toContain('.logical-grid-warning');
-  expect(THREEFOLD_HTML).toContain(
-    '<details id="iri-repair-log" class="witness-ledger" hidden>'
-  );
-  expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid"');
-  expect(THREEFOLD_HTML).toContain('id="latchfolk-displacement-aid-text"');
-  expect(THREEFOLD_HTML).toContain('id="iri-repair-log-text"');
-  expect(THREEFOLD_HTML).toContain('id="campaign-clock-text"');
-  expect(THREEFOLD_HTML).toContain('id="campaign-iri-fate-text"');
-  expect(THREEFOLD_HTML).toContain(
-    '<details id="episode-epilogue" class="witness-ledger" hidden>'
-  );
-  expect(THREEFOLD_HTML).toContain('id="episode-epilogue-outcomes"');
-  expect(THREEFOLD_HTML).toContain('aria-live="polite"');
-  expect(THREEFOLD_HTML).toContain('<details id="testimony"');
-  expect(THREEFOLD_HTML).toContain('id="testimony-responsibility"');
+  expect(THREEFOLD_HTML).toContain('width="160"');
+  expect(THREEFOLD_HTML).toContain('height="144"');
+  expect(THREEFOLD_HTML.match(/data-action=/g)).toHaveLength(8);
+  expect(THREEFOLD_HTML).not.toContain('data-action="interact"');
+  expect(THREEFOLD_HTML).not.toContain('Field guide');
+  expect(THREEFOLD_HTML).not.toContain('Travel between regions');
+  expect(THREEFOLD_HTML).not.toContain('Witness ledger');
+  expect(THREEFOLD_HTML).toContain('id="save-game"');
+  expect(THREEFOLD_HTML).toContain('class="runtime-utilities" hidden');
 });
 
 describe('THREEFOLD page adapter', () => {
@@ -346,7 +328,7 @@ describe('THREEFOLD page adapter', () => {
       'Reroute the dew'
     );
     expect(nodes.get('#interact-label').textContent).toBe(
-      'E · GUIDE · VALVE · SIGNAL · LISTEN'
+      'A · GUIDE · VALVE · SIGNAL · LISTEN'
     );
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
@@ -914,16 +896,14 @@ describe('THREEFOLD Silt Margin evidence page', () => {
 
 describe('THREEFOLD standalone markup', () => {
   test('exposes accessible touch interactions and route links', () => {
-    expect(THREEFOLD_HTML).toContain('data-action="interact"');
-    expect(THREEFOLD_HTML).toContain(
-      'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
-    );
-    expect(THREEFOLD_HTML).toContain('id="travel-destination"');
-    expect(THREEFOLD_HTML).toContain('id="travel-button"');
+    expect(THREEFOLD_HTML).not.toContain('data-action="interact"');
+    expect(THREEFOLD_HTML).not.toContain('keycap\">E');
+    expect(THREEFOLD_HTML.match(/data-action=/g)).toHaveLength(8);
+    expect(THREEFOLD_HTML).not.toContain('id="travel-destination"');
+    expect(THREEFOLD_HTML).not.toContain('id="travel-button"');
     expect(THREEFOLD_HTML).not.toContain('?scene=');
-    expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence"');
-    expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence-text"');
-    expect(THREEFOLD_HTML).toContain('id="campaign-pressure-text"');
+    expect(THREEFOLD_HTML).not.toContain('id="silt-margin-quieting-evidence"');
+    expect(THREEFOLD_HTML).not.toContain('id="campaign-pressure-text"');
   });
 });
 

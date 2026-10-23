@@ -152,7 +152,7 @@ describe('THREEFOLD witness ledger', () => {
     const aftermath = createSafeWatchkeeperAftermath();
     const prompt = renderThreefoldFrame(aftermath);
 
-    expect(prompt.toast).toContain('E SPEAK WITH THE WATCHKEEPER');
+    expect(prompt.toast).toContain('A SPEAK WITH THE WATCHKEEPER');
     expect(prompt.threefold.iriWitnessLead).toBeNull();
 
     const heard = stepThreefoldSimulation(aftermath, { type: 'interact' });
@@ -280,7 +280,7 @@ describe('THREEFOLD witness ledger', () => {
       const aftermath = createFerryWreckAftermath(rescuedGroups);
       expect(aftermath.episode.passengers).toBe(passengerOutcome);
       expect(renderThreefoldFrame(aftermath).toast).toContain(
-        'E SEARCH FERRY WRECK'
+        'A SEARCH FERRY WRECK'
       );
 
       const searched = stepThreefoldSimulation(aftermath, {

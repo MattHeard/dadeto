@@ -37,6 +37,21 @@ function createGrainlandsRun() {
 }
 
 describe('THREEFOLD Grainlands nursery crossing', () => {
+  test('scales Iru relative to Mara as the player changes size', () => {
+    const base = createGrainlandsRun();
+    const renderAt = scale =>
+      renderThreefoldFrame({
+        ...base,
+        player: { ...base.player, scale, minimumUnlockedScale: -4 },
+      }).shapes.find(shape => shape.geometryId === THREEFOLD_GRAINLANDS_IRU_ID);
+
+    const smallerWorld = renderAt(-4);
+    const largerWorld = renderAt(-2);
+    expect(smallerWorld.width).toBeGreaterThan(largerWorld.width);
+    expect(smallerWorld.height).toBeGreaterThan(largerWorld.height);
+    expect(smallerWorld.spriteGridSize).toBe(4);
+    expect(largerWorld.spriteGridSize).toBe(4);
+  });
   test('renders every source identity from a finite camera-centered logical grid', () => {
     const base = createGrainlandsRun();
     base.scene.decorations.push({
@@ -107,8 +122,9 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
         expect(shape.y + shape.height).toBeLessThanOrEqual(
           top + cell.height * 8
         );
-        expect(shape.x % 8).toBe(0);
-        expect(shape.y % 8).toBe(0);
+        const spriteGrid = shape.spriteGridSize || 8;
+        expect(shape.x % spriteGrid).toBe(0);
+        expect(shape.y % spriteGrid).toBe(0);
       }
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
@@ -273,13 +289,19 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
     expect(frame.threefold.growthPreviewCreatureIds).toContain(
       THREEFOLD_GRAINLANDS_SPIDER_ID
     );
-    expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-      true
-    );
+    expect(
+      frame.shapes.every(shape => {
+        const grid = shape.spriteGridSize || 8;
+        return shape.x % grid === 0 && shape.y % grid === 0;
+      })
+    ).toBe(true);
     expect(
       frame.shapes
         .filter(({ type }) => type === 'rect')
-        .every(({ width, height }) => width % 8 === 0 && height % 8 === 0)
+        .every(shape => {
+          const grid = shape.spriteGridSize || 8;
+          return shape.width % grid === 0 && shape.height % grid === 0;
+        })
     ).toBe(true);
     expect(createThreefoldGrainlandsState()).toEqual({
       spiderFate: 'present',
@@ -397,7 +419,10 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
       THREEFOLD_GRAINLANDS_BRIDGE_ID
     );
     expect(
-      clearFrame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)
+      clearFrame.shapes.every(shape => {
+        const grid = shape.spriteGridSize || 8;
+        return shape.x % grid === 0 && shape.y % grid === 0;
+      })
     ).toBe(true);
   });
 

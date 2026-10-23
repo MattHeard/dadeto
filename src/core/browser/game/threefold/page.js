@@ -28,7 +28,7 @@ const SLUICE_PAGE_COPY = {
         'cross once the basin reaches its marked level. On the far bank, inspect ' +
         'the coil register for an optional surviving trace.',
     ],
-    ['#interact-label', 'E · VALVE · READ THE COIL LOG'],
+    ['#interact-label', 'A · VALVE · READ THE COIL LOG'],
     [
       '#objective-reminder',
       'First objective: open the valve and raise the lower basin to reach the far bank.',
@@ -51,11 +51,11 @@ const SILT_MARGIN_PAGE_COPY = {
       'At 2.26 cm tall, Mara can guide the guardian aside, open the fine valve, ' +
         'and send a signal after the dew channel drains. Growing one rung breaks ' +
         'the root arch and crosses the rivulet, but kills the guardian and ' +
-        'disrupts the Choir signal. After a safe crossing, press E again to hear ' +
+        'disrupts the Choir signal. After a safe crossing, press A again to hear ' +
         'Neme translate the Choir’s surviving relay trace. Water and consequences ' +
         'persist in this save.',
     ],
-    ['#interact-label', 'E · GUIDE · VALVE · SIGNAL · LISTEN'],
+    ['#interact-label', 'A · GUIDE · VALVE · SIGNAL · LISTEN'],
     [
       '#game-footer',
       'Every movement and scale change advances the region clock by 15 game seconds.',
@@ -75,7 +75,7 @@ const HEARTHGAPS_PAGE_COPY = {
       'At scale −1 (60.96 cm), Brin can divert the culvert to protect the ' +
         'Latchfolk homes and flood the downstream settlement, or open the ' +
         'shared bypass and let the water reach Brin’s homes instead. Move to ' +
-        'either control before pressing E; the choice and flood damage persist.',
+        'either control before pressing A; the choice and flood damage persist.',
     ],
     [
       '#game-footer',
@@ -96,7 +96,7 @@ const WEFTWAYS_PAGE_COPY = {
       'At scale −2 (20.32 cm), navigator Pell knows a bypass that protects ' +
         'the deep roots and the oversized beetle caravan, but floods the human ' +
         'low quay. The quay-side spill protects those homes and floods the ' +
-        'root crossing. Reach either control before pressing E. Once the ' +
+        'root crossing. Reach either control before pressing A. Once the ' +
         'crossing is set, reach Pell to inspect the optional caravan relay ' +
         'ledger; it records the lost messages without assigning blame. Then ' +
         'visit the marked caravan circle to share it, the knot cache to keep it ' +
@@ -124,7 +124,7 @@ const GRAINLANDS_PAGE_COPY = {
       '#chapter-description',
       'At 6.77 cm, the spider is a formidable predator. Grow to scale −2 to ' +
         'overpower it and break the Threadbound bridge, or help Iru bait it ' +
-        'away so the Nursery Clades keep their eggs and crossing. Approach the hatch above the nursery and press E to close its water inlet before an upstream failure.',
+        'away so the Nursery Clades keep their eggs and crossing. Approach the hatch above the nursery and press A to close its water inlet before an upstream failure.',
     ],
     [
       '#game-footer',
@@ -171,7 +171,7 @@ const BELLTOPS_PAGE_COPY = {
       'The watchtower and harbor crane stand within Mara’s next growth ' +
         'footprint. Iri maintains the pressure regulator beside the Quay ' +
         'control panel; Orla keeps the tower watch, while stormbirds ride the ' +
-        'roofline. E operates the nearest reachable panel or crane drive. ' +
+        'roofline. A operates the nearest reachable panel or crane drive. ' +
         'Check Iri, then release them or fit the crane governor first; taking it disables harbor lifting. ' +
         'The HUD and campaign status show each action and its risk. A still grows into its displayed footprint; B steps down to +1.',
     ],
@@ -192,7 +192,7 @@ const CROWNBACK_REACH_PAGE_COPY = {
     [
       '#chapter-description',
       'At +3 Mara stands 49.38 metres tall, close to elder Tharn’s 44 metres. ' +
-        'Move within reach and press E to meet him; the calf crosses nearby. ' +
+        'Move within reach and press A to meet him; the calf crosses nearby. ' +
         'A previews the root arch, floodwall, and Crownbacks at risk if Mara ' +
         'grows to +4. B steps down to +2.',
     ],
@@ -214,7 +214,7 @@ const WAKEFORM_SHOALS_PAGE_COPY = {
       '#chapter-description',
       'Mara starts at +3 (49.38 metres); A grows to +4 (148.13 metres). ' +
         'The 132-metre Wakeform contests the outer tide wall. Move within ' +
-        'reach and press E to guide it toward the north channel, or use A to ' +
+        'reach and press A to guide it toward the north channel, or use A to ' +
         'grow through the wall and divert the current seaward.',
     ],
     [
@@ -263,7 +263,10 @@ export function startThreefoldPage(options) {
     ...options,
     ...mosslightPresenter.createMosslightPageEnvironment(options),
     createRuntime: (/** @type {Record<string, any>} */ runtimeOptions) =>
-      createThreefoldRuntime({ ...runtimeOptions, storage, scene }),
+      createThreefoldMenuRuntime(
+        createThreefoldRuntime({ ...runtimeOptions, storage, scene }),
+        options.documentObj
+      ),
     describeInput: describeThreefoldInput,
     bindRuntime: (
       /** @type {{runtime: Record<string, any>, documentObj: any, draw: () => void}} */ runtimeBindings
@@ -427,6 +430,315 @@ export function startThreefoldPage(options) {
 }
 
 /**
+ * Add a controller-only menu to the handheld runtime. Y opens or closes it;
+ * the four directions navigate, A confirms, and B returns.
+ * @param {Record<string, any>} runtime THREEFOLD campaign runtime.
+ * @param {any} documentObj Page document for existing file-transfer actions.
+ * @returns {Record<string, any>} Runtime facade with the menu rendered in-frame.
+ */
+export function createThreefoldMenuRuntime(runtime, documentObj) {
+  let open = false;
+  let section = 'main';
+  let cursor = 0;
+  let scroll = 0;
+  let previous = new Set();
+  const baseFrame = runtime.frame.bind(runtime);
+  const baseStep = runtime.step.bind(runtime);
+  const facade = { ...runtime };
+
+  /**
+   * @param {number} action Selected item index.
+   * @param {Record<string, any>} frame Current game frame.
+   */
+  const activate = (action, frame) => {
+    if (section === 'main') {
+      if (action === 0) close();
+      if (action === 1) enter('guide');
+      if (action === 2) enter('travel');
+      if (action === 3) enter('journal');
+      if (action === 4) enter('campaign');
+      if (action === 5) enter('saves');
+      if (action === 6) enter('system');
+      return;
+    }
+    if (section === 'travel') {
+      const destination = Object.keys(SCENE_LABELS)[action];
+      const nextScene = sceneFromTravelDestination(destination);
+      if (nextScene) runtime.travelTo(nextScene);
+      close();
+      return;
+    }
+    if (section === 'saves') {
+      const selectors = [
+        '#save-game',
+        '#export-game',
+        '#import-button',
+        '#export-campaign',
+        '#import-campaign-button',
+      ];
+      if (selectors[action])
+        documentObj.querySelector(selectors[action])?.click();
+      if (action === selectors.length) enter('main');
+      return;
+    }
+    if (section === 'system') {
+      if (action === 0) close();
+      if (action === 1) documentObj.querySelector('#fullscreen-game')?.click();
+      if (action === 2) documentObj.querySelector('#reset-game')?.click();
+      return;
+    }
+    if (action === itemsFor(frame).length - 1) enter('main');
+  };
+
+  /** @param {string} nextSection Menu subsection. */
+  const enter = nextSection => {
+    section = nextSection;
+    cursor = 0;
+    scroll = 0;
+  };
+  const close = () => {
+    open = false;
+    previous.clear();
+    runtime.resume();
+  };
+  /**
+   * @param {Record<string, any>} frame Current game frame.
+   * @returns {string[]} Labels to display in the active section.
+   */
+  const itemsFor = frame => {
+    if (section === 'main')
+      return [
+        'RESUME',
+        'HOW TO PLAY',
+        'TRAVEL',
+        'FIELD NOTES',
+        'CAMPAIGN',
+        'SAVES',
+        'SYSTEM',
+      ];
+    if (section === 'travel') return Object.values(SCENE_LABELS);
+    if (section === 'saves')
+      return [
+        'SAVE REGION',
+        'EXPORT REGION',
+        'IMPORT REGION',
+        'BACKUP CAMPAIGN',
+        'RESTORE CAMPAIGN',
+        'BACK',
+      ];
+    if (section === 'system') return ['RESUME', 'FULL SCREEN', 'RESET REGION'];
+    if (section === 'guide')
+      return [
+        'ARROWS MOVE',
+        'A USE / GROW',
+        'B SHRINK',
+        'X WAIT / BYPASS',
+        'Y OPENS THIS MENU',
+        'B/X BACK OUT',
+        'MOVE NEAR PEOPLE',
+        'PRESS A TO ACT',
+        ...wrapMenuText(
+          SCENE_OBJECTIVES[sceneKey(frame)] || 'EXPLORE THE REGION'
+        ),
+        'BACK',
+      ];
+    if (section === 'journal') {
+      const data = frame.threefold || {};
+      const entries = data.witnessLedger || [];
+      const testimony = data.testimony?.accounts || [];
+      const records = [
+        data.iriRepairLog,
+        data.iriRecordedConfession,
+        data.iriWitnessLead,
+        data.ferryWreckSearch,
+        data.latchfolkAid,
+        data.harborMemorial,
+        data.orlaHarborResponse,
+        data.harborEngineerAvailability,
+        data.threadboundRelayRecord,
+        data.threadboundPellOutcome,
+        data.threadboundRelayDisclosure,
+        data.threadboundRelayConcealment,
+        data.threadboundRelayDestruction,
+        data.threadboundRelayRestitution,
+        data.threadboundIndependentPublication,
+        data.archiveQuietingTrace,
+        data.siltMarginQuietingEvidence,
+      ].filter(Boolean);
+      return [
+        ...entries.flatMap((/** @type {Record<string, any>} */ entry) =>
+          wrapMenuText(
+            `${entry.speaker || 'MARA'}: ${entry.statement || entry.text || entry.action}`
+          )
+        ),
+        ...testimony.flatMap((/** @type {Record<string, any>} */ account) =>
+          wrapMenuText(`${account.speaker}: ${account.statement}`)
+        ),
+        ...records.flatMap(record =>
+          wrapMenuText(
+            `${record.title || 'FIELD NOTE'}: ${record.text || (record.paragraphs || []).join(' ')}`
+          )
+        ),
+        ...(data.testimony?.responsibility
+          ? wrapMenuText(
+              `${data.testimony.responsibility.question} ${data.testimony.responsibility.status}`
+            )
+          : []),
+        ...(data.episodeEpilogue?.paragraphs || []).flatMap(wrapMenuText),
+        ...(entries.length || testimony.length || records.length
+          ? []
+          : ['NO FIELD NOTES YET']),
+        'BACK',
+      ];
+    }
+    const places = frame.threefold?.campaignPlaces || [];
+    const pressure = frame.threefold?.campaignPressure || [];
+    const tide = frame.threefold?.returnTide;
+    return [
+      `CLOCK ${Math.floor(
+        frame.threefold?.campaignClock?.elapsedGameSeconds / 60 || 0
+      )} MIN`,
+      ...places.flatMap((/** @type {Record<string, any>} */ place) =>
+        wrapMenuText(
+          `${place.label || place.id}: ${place.state || (place.active ? 'HERE' : 'VISITED')}`
+        )
+      ),
+      ...pressure.flatMap((/** @type {Record<string, any>} */ site) =>
+        wrapMenuText(`${site.label}: ${site.state}`)
+      ),
+      ...(tide ? wrapMenuText(`${tide.title}: ${tide.text}`) : []),
+      'BACK',
+    ];
+  };
+  /**
+   * @param {string} text Content to wrap to the 18-character game screen.
+   * @returns {string[]} Screen-sized lines.
+   */
+  const wrapMenuText = text => {
+    const words = String(text || '').split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (candidate.length > 18 && line) {
+        lines.push(line);
+        line = word;
+      } else line = candidate;
+    }
+    if (line) lines.push(line);
+    return lines;
+  };
+  /**
+   * @param {Record<string, any>} frame Current game frame.
+   * @returns {string} Canonical key for the visible scene.
+   */
+  const sceneKey = frame => {
+    const name = frame.world?.map?.name || '';
+    return (
+      Object.entries(SCENE_LABELS).find(([, label]) =>
+        name.includes(label.replace(/^The /, '').toUpperCase())
+      )?.[0] || 'broken-gate'
+    );
+  };
+  facade.frame = () => {
+    const frame = baseFrame();
+    if (!open) return frame;
+    const items = itemsFor(frame);
+    if (cursor >= items.length) cursor = Math.max(0, items.length - 1);
+    const header = section === 'main' ? 'THREEFOLD' : section.toUpperCase();
+    frame.shapes.push(
+      { type: 'rect', x: 8, y: 16, width: 144, height: 120, fill: '#102823' },
+      { type: 'rect', x: 8, y: 16, width: 144, height: 8, fill: '#25a9b8' },
+      {
+        type: 'text',
+        x: 16,
+        y: 23,
+        text: header,
+        fill: '#182f36',
+        font: '6px monospace',
+      }
+    );
+    const visibleItems = items.slice(scroll, scroll + 9);
+    visibleItems.forEach((item, index) => {
+      const y = 34 + index * 11;
+      const selected = index + scroll === cursor;
+      frame.shapes.push(
+        ...(selected
+          ? [
+              {
+                type: 'rect',
+                x: 16,
+                y: y - 8,
+                width: 128,
+                height: 8,
+                fill: '#315744',
+              },
+            ]
+          : []),
+        {
+          type: 'text',
+          x: 20,
+          y,
+          text: `${selected ? '>' : ' '} ${item.slice(0, 18).toUpperCase()}`,
+          fill: selected ? '#e9d88d' : '#bfd77c',
+          font: '6px monospace',
+        }
+      );
+    });
+    frame.shapes.push({
+      type: 'text',
+      x: 16,
+      y: 130,
+      text: 'A SELECT · B BACK · Y CLOSE',
+      fill: '#e9d88d',
+      font: '5px monospace',
+    });
+    return frame;
+  };
+  /**
+   * @param {number} delta Elapsed animation time.
+   * @param {string[]} actions Current controller inputs.
+   * @returns {void} Advances the menu or game by one input frame.
+   */
+  facade.step = (delta, actions) => {
+    const pressed = new Set(actions);
+    /**
+     * @param {string} action Controller action.
+     * @returns {boolean} Whether a fresh press occurred.
+     */
+    const edge = action => pressed.has(action) && !previous.has(action);
+    if (!open && edge('y')) {
+      open = true;
+      section = 'main';
+      cursor = 0;
+      scroll = 0;
+      runtime.pause();
+    } else if (open) {
+      const items = itemsFor(baseFrame());
+      if (edge('y')) close();
+      else if (edge('b') || edge('x')) {
+        if (section === 'main') close();
+        else enter('main');
+      } else if (edge('up')) {
+        cursor = (cursor + items.length - 1) % items.length;
+        if (cursor < scroll) scroll = cursor;
+      } else if (edge('down')) {
+        cursor = (cursor + 1) % items.length;
+        if (cursor >= scroll + 9) scroll = cursor - 8;
+      } else if (edge('a')) activate(cursor, baseFrame());
+    } else {
+      baseStep(
+        delta,
+        [...pressed].filter(action => action !== 'y' && action !== 'interact')
+      );
+    }
+    previous = pressed;
+  };
+  facade.isRunning = () => open || runtime.isRunning();
+  return facade;
+}
+
+/**
  * Describe the first newly pressed THREEFOLD action for immediate feedback.
  * @param {string[]} actions Active input actions.
  * @returns {string} Short status-line acknowledgement.
@@ -438,11 +750,10 @@ function describeThreefoldInput(actions) {
     down: 'Input received · MOVE DOWN',
     left: 'Input received · MOVE LEFT',
     right: 'Input received · MOVE RIGHT',
-    a: 'Input received · GROW',
+    a: 'Input received · USE / GROW',
     b: 'Input received · SHRINK',
     x: 'Input received · WAIT',
     y: 'Input received · SAVE',
-    interact: 'Input received · INTERACT',
   });
   return labels[action] || 'Input received';
 }
@@ -630,13 +941,13 @@ function configureAlternateScenePage(documentObj, copy) {
 }
 
 /**
- * Label the shared scale controls beside a route's E interaction.
+ * Label the shared scale controls beside a route's A action.
  * @param {string} interactionLabel Accessible action name.
  * @returns {Array<[string, string]>} Mosslight page control text.
  */
 function createHighWorldInteractionControlUpdates(interactionLabel) {
   return [
-    ['#interact-label', `E · ${interactionLabel} · A · GROW · B · SHRINK`],
+    ['#interact-label', `A · ${interactionLabel} / GROW · B · SHRINK`],
     ['#a-control-label', 'GROW'],
     ['#b-control-label', 'SHRINK'],
     ['#e-control-label', interactionLabel],

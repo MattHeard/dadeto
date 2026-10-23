@@ -73,7 +73,7 @@ describe('THREEFOLD Foldglass rival', () => {
           creature => creature.id === 'belltops-foldglass-rival'
         )
     ).toEqual(initialRival);
-    expect(runtime.frame().toast).not.toContain('E ENGAGE');
+    expect(runtime.frame().toast).not.toContain('A ENGAGE');
 
     const approached = createThreefoldRuntime({
       storage: createStorage(),
@@ -81,7 +81,7 @@ describe('THREEFOLD Foldglass rival', () => {
     });
     approached.dispatch('up');
     approached.dispatch('up');
-    expect(approached.frame().toast).toContain('E ENGAGE');
+    expect(approached.frame().toast).toContain('A ENGAGE');
     approached.dispatch('interact');
     expect(approached.getState().foldglassRival.engaged).toBe(true);
     expect(approached.getState().elapsedGameSeconds).toBeGreaterThan(0);

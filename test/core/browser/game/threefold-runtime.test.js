@@ -376,7 +376,7 @@ describe('THREEFOLD handheld runtime', () => {
       anchor: 8,
       crisisStage: 'rising',
     });
-    expect(openingFrame.dialogue.actorId).toBe('dock-worker');
+    expect(openingFrame.dialogue).toBeNull();
     runtime.step(125, ['up']);
     expect(runtime.frame().dialogue).toBeNull();
     expect(runtime.getState().player.position).toEqual({ x: 3, y: 3.7968 });
@@ -437,20 +437,20 @@ describe('THREEFOLD handheld runtime', () => {
     const runtime = createThreefoldRuntime({ save: { load: () => atMooring } });
     runtime.start();
 
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(runtime.getState().episode.passengers).toBe('partial');
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
 
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(runtime.getState().episode.passengers).toBe('partial');
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0.25);
 
     runtime.step(125, []);
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(runtime.getState().episode.passengers).toBe('evacuated');
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0.5);
 
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(runtime.getState().episode.passengers).toBe('evacuated');
     expect(runtime.getState().crisis.elapsedMinutes).toBe(0.5);
   });

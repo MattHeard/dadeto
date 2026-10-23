@@ -12,6 +12,21 @@ import {
   THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID,
   THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID,
 } from '../../../../src/core/browser/game/threefold/weftways.js';
+
+/**
+ * Check that a rendered shape uses its declared sprite lattice.
+ * @param {{x: number, y: number, width?: number, height?: number, spriteGridSize?: number}} shape Rendered shape.
+ * @returns {boolean} Whether all available coordinates align to the lattice.
+ */
+function isOnSpriteGrid(shape) {
+  const grid = shape.spriteGridSize || 8;
+  return (
+    shape.x % grid === 0 &&
+    shape.y % grid === 0 &&
+    (shape.width === undefined || shape.width % grid === 0) &&
+    (shape.height === undefined || shape.height % grid === 0)
+  );
+}
 import {
   createThreefoldSimulationSaveStore,
   restoreThreefoldSimulation,
@@ -231,14 +246,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       elapsedGameSeconds: 0,
     });
     expect(frame.threefold.packBeetleIds).toEqual(beetles.map(({ id }) => id));
-    expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-      true
-    );
-    expect(
-      frame.shapes
-        .filter(({ type }) => type === 'rect')
-        .every(({ width, height }) => width % 8 === 0 && height % 8 === 0)
-    ).toBe(true);
+    expect(frame.shapes.every(isOnSpriteGrid)).toBe(true);
     expect(createThreefoldWeftwaysState()).toEqual({
       flowChoice: 'undecided',
       floodedGeometryIds: [],
@@ -414,9 +422,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       } else {
         expect(publication).toBeNull();
       }
-      expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-        true
-      );
+      expect(frame.shapes.every(isOnSpriteGrid)).toBe(true);
     }
   );
 
@@ -463,7 +469,7 @@ describe('THREEFOLD Weftways caravan bypass', () => {
       expect(record.text).toContain('who was responsible');
       expect(
         frame.shapes.some(
-          ({ text }) => text === 'E SHARE · REPAIR · KEEP · DESTROY'
+          ({ text }) => text === 'A SHARE · REPAIR · KEEP · DESTROY'
         )
       ).toBe(true);
 
@@ -807,7 +813,7 @@ describe('THREEFOLD Weftways negotiator loss', () => {
       'relay keeper preserves Pell’s crossing choice'
     );
     expect(frame.shapes.map(({ text }) => text)).toContain(
-      'REACH CARAVAN CIRCLE · E READ COPY'
+      'REACH CARAVAN CIRCLE · A READ COPY'
     );
 
     state = interactAtWeftwaysPoint(
@@ -881,9 +887,7 @@ describe('THREEFOLD Threadbound privacy choice', () => {
     expect(
       frame.shapes.some(({ text }) => text === 'MARA KEPT THE RECORD PRIVATE')
     ).toBe(true);
-    expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-      true
-    );
+    expect(frame.shapes.every(isOnSpriteGrid)).toBe(true);
 
     const restored = restoreThreefoldSimulation(
       serializeThreefoldSimulation(state)
@@ -970,14 +974,7 @@ describe('THREEFOLD Threadbound ledger destruction', () => {
         }),
       ])
     );
-    expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-      true
-    );
-    expect(
-      frame.shapes
-        .filter(({ type }) => type === 'rect')
-        .every(({ width, height }) => width % 8 === 0 && height % 8 === 0)
-    ).toBe(true);
+    expect(frame.shapes.every(isOnSpriteGrid)).toBe(true);
 
     const serialized = serializeThreefoldSimulation(state);
     expect(JSON.parse(serialized).schemaVersion).toBe(4);
@@ -1040,9 +1037,7 @@ function assertNegotiatedRestitutionOutcome(context) {
       }),
     ])
   );
-  expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
-    true
-  );
+  expect(frame.shapes.every(isOnSpriteGrid)).toBe(true);
   return { restitution };
 }
 

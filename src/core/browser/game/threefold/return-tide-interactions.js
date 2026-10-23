@@ -23,7 +23,7 @@ export function getThreefoldReturnTideInteraction(state, tide, facts) {
   )
     return {
       id: 'return-tide-survey',
-      label: 'E SURVEY TIDE AFTERMATH',
+      label: 'A SURVEY TIDE AFTERMATH',
       detail:
         'Survey this place and its surviving records. Other regions remain unknown until surveyed.',
       survey: true,
@@ -114,7 +114,7 @@ function describeInteraction(id, tide, facts) {
     return {
       id,
       operation: 'bind-foldglass',
-      label: 'E BIND FOLDGLASS',
+      label: 'A BIND FOLDGLASS',
       detail:
         'Requires all three intact manifolds, two observed evidence routes, engineering support and Assembly/Latchfolk/Choir/Crownback consent. Binding pays with ongoing duty and permanently prevents returning to scale +4 after leaving it; sacrifice-channel homes still flood.',
     };
@@ -132,8 +132,8 @@ function describeInteraction(id, tide, facts) {
       id,
       operation: tide.controls.sealClosed ? 'open-seal' : 'close-seal',
       label: tide.controls.sealClosed
-        ? 'E OPEN CITY SEAL'
-        : 'E CLOSE CITY SEAL',
+        ? 'A OPEN CITY SEAL'
+        : 'A CLOSE CITY SEAL',
       detail:
         'Closing protects the city but permanently severs deep Choir branches and harms the living breakwater. Reopening cannot restore dead branches. A separate spillway can bypass this seal.',
     };
@@ -143,7 +143,7 @@ function describeInteraction(id, tide, facts) {
       : {
           id,
           operation: 'open-spillway',
-          label: 'E OPEN COAST SPILLWAY',
+          label: 'A OPEN COAST SPILLWAY',
           detail:
             'Requires a surveyed Crownback route and guided Wakeform. Opening protects deep roots by flooding the Quay. Human evacuation changes survival; lost buildings remain lost.',
         };
@@ -175,7 +175,7 @@ function manifoldInteraction(id, kind, tide) {
     operation: /** @type {import('./return-tide.js').ReturnTideOperation} */ (
       `fit-${kind}`
     ),
-    label: `E FIT ${kind.toUpperCase()}`,
+    label: `A FIT ${kind.toUpperCase()}`,
     detail: `Fit the finite ${kind} component. It needs its local accord, surviving hardware and real engineering/relief/coastal preparation. Partial construction can still fail at the tide peak.`,
   };
 }

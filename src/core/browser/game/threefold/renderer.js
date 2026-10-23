@@ -60,7 +60,7 @@ const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -120,19 +120,7 @@ export function renderThreefoldFrame(
   const logicalGridLayout = world.logicalGridLayout;
   const frame = createThreefoldFramePayload({
     world,
-    dialogue:
-      !isHighWorld && state.crisis.elapsedMinutes === 0
-        ? {
-            actorId: 'dock-worker',
-            lines: [
-              {
-                text: 'The tide is climbing. That gate will not hold. I shouted that the gate would fail toward the lower path.',
-              },
-            ],
-            index: 0,
-            choices: [],
-          }
-        : null,
+    dialogue: null,
     quickAction: creatureIds.includes('gatehouse-rat')
       ? 'grow'
       : isGatehouseRatInReach(state)
@@ -431,10 +419,15 @@ function renderThreefoldSiltMarginFrame(state) {
   const guardianShapes =
     guardian === 'present'
       ? [
-          createSiltMarginEntityShape(
+          createScaleAwareActorShapeAtBounds(
             logicalEntities.get(THREEFOLD_SILT_MARGIN_GUARDIAN_ID),
+            '#b46b55',
             state.player.scale,
-            '#b46b55'
+            createSiltMarginEntityShape(
+              logicalEntities.get(THREEFOLD_SILT_MARGIN_GUARDIAN_ID),
+              state.player.scale,
+              '#b46b55'
+            )
           ),
         ]
       : [];
@@ -500,10 +493,7 @@ function renderThreefoldSiltMarginFrame(state) {
                 : 'OPEN THE FINE VALVE · WAIT FOR THE DEW'
           : 'GROW THROUGH THE ROOT OR GUIDE THE GUARDIAN'
     ),
-    captionShape(
-      { x: 8, y: 136 },
-      'ARROWS MOVE · A GROW · B SHRINK · E INTERACT'
-    ),
+    captionShape({ x: 8, y: 136 }, 'ARROWS MOVE · A USE / GROW · B SHRINK'),
   ];
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
@@ -818,6 +808,7 @@ function createSiltMarginGridLayout(state, water) {
       .map(entity => ({
         ...entity,
         logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
+        physicalBounds: byId.get(entity.id).bounds,
       }))
       .sort((first, second) => first.id.localeCompare(second.id)),
     overflow: [
@@ -1049,7 +1040,8 @@ function renderThreefoldHearthgapsFrame(state) {
           logicalEntities.get(creature.id)
         ),
         logicalGridLayout,
-        '#b46b55'
+        '#b46b55',
+        state.player.scale
       );
       return shape ? [shape] : [];
     }),
@@ -1083,7 +1075,7 @@ function renderThreefoldHearthgapsFrame(state) {
           ? 'BRIN FLOODS · DOWNSTREAM SAFE'
           : 'CHOOSE WHICH HOMES FLOOD'
     ),
-    captionShape({ x: 8, y: 136 }, 'MOVE · E CHOOSE · A GROW · B SHRINK'),
+    captionShape({ x: 8, y: 136 }, 'MOVE · A CHOOSE / GROW · B SHRINK'),
   ];
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
@@ -1191,6 +1183,7 @@ function createGrainlandsGridLayout(state) {
     ].map(entity => ({
       ...entity,
       logicalGridKinds: [...facetsById.get(entity.id).kinds].sort(),
+      physicalBounds: facetsById.get(entity.id).bounds,
     })),
     overflow: [...packed.overflow, ...resolved.overflow],
     hierarchy: resolved.hierarchy,
@@ -1249,29 +1242,12 @@ function grainlandsEntityRect(entity, layout) {
  * @param {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} entity Projected actor.
  * @param {ReturnType<typeof createGrainlandsGridLayout>} layout Finite camera view.
  * @param {string} fill Actor color.
+ * @param {number} scale Mara's current scale.
  * @returns {ThreefoldSpriteShape|null} Cell-derived actor sprite.
  */
-function grainlandsActorShape(entity, layout, fill) {
-  const rect = grainlandsEntityRect(entity, layout);
-  if (!rect) return null;
-  return {
-    ...createThreefoldRectShape(
-      [
-        rect.x +
-          Math.floor((rect.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
-            GRID_PIXELS,
-        rect.y +
-          Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
-            GRID_PIXELS,
-        GRID_PIXELS,
-        GRID_PIXELS,
-      ],
-      fill
-    ),
-    geometryId: entity.id,
-    logicalCellBounds: entity.cellBounds,
-    logicalGridKinds: entity.logicalGridKinds,
-  };
+function grainlandsActorShape(entity, layout, fill, scale) {
+  if (entity.placement === 'overflow') return null;
+  return createScaleAwareActorShape(entity, layout, fill, scale);
 }
 
 /**
@@ -1471,6 +1447,7 @@ function createHearthgapsGridLayout(state) {
       .map(entity => ({
         ...entity,
         logicalGridKinds: [/** @type {string} */ (kindsById.get(entity.id))],
+        physicalBounds: facets.find(facet => facet.id === entity.id)?.bounds,
       }))
       .sort((first, second) => first.id.localeCompare(second.id)),
     overflow: [...packed.overflow, ...resolved.overflow],
@@ -1583,24 +1560,12 @@ function hearthgapsControlShape(entity, layout) {
  * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected actor.
  * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
  * @param {string} fill Sprite color.
+ * @param {number} scale Mara's current scale.
  * @returns {ThreefoldSpriteShape|null} Cell-sourced actor sprite, omitted for overflow.
  */
-function hearthgapsActorShape(entity, layout, fill) {
+function hearthgapsActorShape(entity, layout, fill, scale) {
   if (entity.placement === 'overflow') return null;
-  const rect = hearthgapsEntityRect(entity, layout);
-  const offset =
-    Math.floor(
-      (Math.min(rect.width, rect.height) - GRID_PIXELS) / (2 * GRID_PIXELS)
-    ) * GRID_PIXELS;
-  return {
-    ...createThreefoldRectShape(
-      [rect.x + offset, rect.y + offset, GRID_PIXELS, GRID_PIXELS],
-      fill
-    ),
-    geometryId: entity.id,
-    logicalGridKinds: /** @type {string[]} */ (entity.logicalGridKinds),
-    logicalCellBounds: entity.cellBounds,
-  };
+  return createScaleAwareActorShape(entity, layout, fill, scale);
 }
 
 /**
@@ -1683,6 +1648,7 @@ function createWeftwaysGridLayout(state) {
     ].map(entity => ({
       ...entity,
       logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
+      physicalBounds: byId.get(entity.id).bounds,
     })),
     overflow: [...packed.overflow, ...resolved.overflow],
     hierarchy: resolved.hierarchy,
@@ -1834,7 +1800,11 @@ function renderThreefoldWeftwaysFrame(state) {
       if (id === weftways.THREEFOLD_WEFTWAYS_PELL_ID)
         return pellDied
           ? []
-          : weftwaysPellShapes(logicalEntities.get(id), logicalGridLayout);
+          : weftwaysPellShapes(
+              logicalEntities.get(id),
+              logicalGridLayout,
+              state.player.scale
+            );
       return sourceShape(
         id,
         id === weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID ||
@@ -1885,7 +1855,7 @@ function renderThreefoldWeftwaysFrame(state) {
     captionShape(
       { x: 8, y: 136 },
       flowChoice === 'undecided'
-        ? 'MOVE · E CHOOSE · A GROW · B SHRINK'
+        ? 'MOVE · A CHOOSE / GROW · B SHRINK'
         : relayRecordShared
           ? 'CARAVAN KNOWS THE RECORD'
           : relayRecordConcealed
@@ -1899,10 +1869,10 @@ function renderThreefoldWeftwaysFrame(state) {
                     ? 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR'
                     : 'PELL DEFERS · ROOT DAMAGE TO ASSESS'
                 : relayRecordRead
-                  ? 'E SHARE · REPAIR · KEEP · DESTROY'
+                  ? 'A SHARE · REPAIR · KEEP · DESTROY'
                   : pellDied
-                    ? 'REACH CARAVAN CIRCLE · E READ COPY'
-                    : 'REACH PELL · E READ RELAY LOG'
+                    ? 'REACH CARAVAN CIRCLE · A READ COPY'
+                    : 'REACH PELL · A READ RELAY LOG'
     ),
     ...(growth.creatureIds.includes(weftways.THREEFOLD_WEFTWAYS_PELL_ID)
       ? [captionShape({ x: 8, y: 24 }, 'A KILLS PELL', true)]
@@ -2143,7 +2113,12 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
           : id === grainlands.THREEFOLD_GRAINLANDS_IRU_ID
             ? '#d28b69'
             : '#bfd77c';
-      const shape = grainlandsActorShape(entity, logicalGridLayout, fill);
+      const shape = grainlandsActorShape(
+        entity,
+        logicalGridLayout,
+        fill,
+        state.player.scale
+      );
       return shape ? [shape] : [];
     }),
     ...(spiderFate === 'baited-away' || !spiderEntity
@@ -2159,7 +2134,8 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
           maraEntity
         ),
         logicalGridLayout,
-        PALETTE[3]
+        PALETTE[3],
+        state.player.scale
       ),
     ].filter(Boolean),
     createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
@@ -2171,7 +2147,7 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
           ? 'SPIDER BEATEN · BRIDGE BROKE'
           : 'IRU · NURSERY · SPIDER'
     ),
-    captionShape({ x: 8, y: 136 }, 'E IRU/HATCH · A GROW'),
+    captionShape({ x: 8, y: 136 }, 'A IRU / HATCH / GROW'),
   ];
   return finishSmallWorldFrame(frame, {
     scale: state.player.scale,
@@ -2191,6 +2167,73 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
     witnessLedger: [],
     logicalGridLayout,
   });
+}
+
+/**
+ * Draw a resident at its authored physical size relative to Mara's height.
+ * A four-pixel sprite lattice keeps smaller people distinct within a world cell.
+ * @param {any} entity Projected identity and its original physical bounds.
+ * @param {any} layout Finite logical camera.
+ * @param {string} fill Sprite color.
+ * @param {number} scale Mara's current scale.
+ * @returns {ThreefoldSpriteShape|null} Scale-aware character sprite.
+ */
+function createScaleAwareActorShape(entity, layout, fill, scale) {
+  if (!entity || entity.placement === 'overflow') return null;
+  return createScaleAwareActorShapeAtBounds(
+    entity,
+    fill,
+    scale,
+    logicalGridEntityRect(entity, layout)
+  );
+}
+
+/**
+ * Render an actor within a supplied screen cell at its physical size.
+ * @param {any} entity Projected identity and original physical bounds.
+ * @param {string} fill Actor color.
+ * @param {number} scale Mara's current scale.
+ * @param {ThreefoldSpriteShape | {x: number, y: number, width?: number, height?: number}} cellRect Screen bounds for the actor.
+ * @returns {ThreefoldSpriteShape|null} Scale-aware character sprite.
+ */
+function createScaleAwareActorShapeAtBounds(entity, fill, scale, cellRect) {
+  const cellWidth = cellRect.width || GRID_PIXELS;
+  const cellHeight = cellRect.height || GRID_PIXELS;
+  if (entity.id === 'mara')
+    return {
+      ...createThreefoldRectShape(
+        [
+          cellRect.x,
+          cellRect.y,
+          Math.min(8, cellWidth),
+          Math.min(8, cellHeight),
+        ],
+        fill
+      ),
+      geometryId: entity.id,
+      logicalCellBounds: entity.cellBounds,
+    };
+  const bounds = entity.physicalBounds;
+  if (!bounds) return null;
+  const cell = heightAtScale(scale);
+  const width = Math.max(
+    4,
+    Math.round((((bounds.max.x - bounds.min.x) / cell) * 8) / 4) * 4
+  );
+  const height = Math.max(
+    4,
+    Math.round((((bounds.max.z - bounds.min.z) / cell) * 8) / 4) * 4
+  );
+  const spriteWidth = Math.min(width, Math.max(4, cellWidth));
+  const spriteHeight = Math.min(height, Math.max(4, cellHeight));
+  const x = Math.round((cellRect.x + (cellWidth - spriteWidth) / 2) / 4) * 4;
+  const y = Math.round((cellRect.y + (cellHeight - spriteHeight) / 2) / 4) * 4;
+  return {
+    ...createThreefoldRectShape([x, y, spriteWidth, spriteHeight], fill),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+    spriteGridSize: 4,
+  };
 }
 
 /**
@@ -2265,22 +2308,13 @@ function weftwaysEntityShape(entity, layout, fill) {
  * Draw Pell within his projected identity cell.
  * @param {ReturnType<typeof createWeftwaysGridLayout>['entities'][number] | undefined} entity Projected Pell identity.
  * @param {ReturnType<typeof createWeftwaysGridLayout>} layout Finite authored view.
+ * @param {number} scale Mara's current scale.
  * @returns {ThreefoldSpriteShape[]} Pell's cell-contained sprite.
  */
-function weftwaysPellShapes(entity, layout) {
+function weftwaysPellShapes(entity, layout, scale) {
   if (!entity || entity.placement === 'overflow') return [];
-  const rect = logicalGridEntityRect(entity, layout);
-  const bodyWidth = Math.min(8, rect.width);
-  const bodyX = rect.x + Math.floor((rect.width - bodyWidth) / 16) * 8;
-  const bodyY = rect.y + Math.floor((rect.height - 8) / 16) * 8;
-  return [
-    {
-      ...createThreefoldRectShape([bodyX, bodyY, bodyWidth, 8], '#d28b69'),
-      geometryId: entity.id,
-      logicalGridKinds: entity.logicalGridKinds,
-      logicalCellBounds: entity.cellBounds,
-    },
-  ];
+  const sprite = createScaleAwareActorShape(entity, layout, '#d28b69', scale);
+  return sprite ? [sprite] : [];
 }
 
 /**
@@ -2386,6 +2420,7 @@ function createSmallWorldFrameWorld(mapId, name, elapsedGameSeconds, player) {
  * @returns {Record<string, any>} Frame with aligned canvas shapes.
  */
 function alignThreefoldFrame(frame) {
+  frame.shapes.push(captionShape({ x: 112, y: 16 }, 'Y MENU'));
   frame.shapes = snapCanvasShapesToGrid(frame.shapes);
   return frame;
 }
@@ -2401,14 +2436,20 @@ function snapCanvasShapesToGrid(shapes) {
   return shapes.map(shape => {
     const snapped = {
       ...shape,
-      x: snapCanvasCoordinate(shape.x),
-      y: snapCanvasCoordinate(shape.y),
+      x: snapCanvasCoordinate(shape.x, shape.spriteGridSize || GRID_PIXELS),
+      y: snapCanvasCoordinate(shape.y, shape.spriteGridSize || GRID_PIXELS),
     };
     if (shape.type !== 'rect') return snapped;
     return {
       ...snapped,
-      width: snapCanvasDimension(/** @type {number} */ (shape.width)),
-      height: snapCanvasDimension(/** @type {number} */ (shape.height)),
+      width: snapCanvasDimension(
+        /** @type {number} */ (shape.width),
+        shape.spriteGridSize || GRID_PIXELS
+      ),
+      height: snapCanvasDimension(
+        /** @type {number} */ (shape.height),
+        shape.spriteGridSize || GRID_PIXELS
+      ),
     };
   });
 }
@@ -2416,20 +2457,22 @@ function snapCanvasShapesToGrid(shapes) {
 /**
  * Snap a canvas coordinate to the nearest eight-pixel line.
  * @param {number} value Logical-screen position.
+ * @param {number} [gridSize] Pixel lattice spacing.
  * @returns {number} Grid-aligned logical-screen position.
  */
-function snapCanvasCoordinate(value) {
-  return Math.round(value / GRID_PIXELS) * GRID_PIXELS;
+function snapCanvasCoordinate(value, gridSize = GRID_PIXELS) {
+  return Math.round(value / gridSize) * gridSize;
 }
 
 /**
  * Snap a positive shape dimension to a visible grid cell.
  * @param {number} value Logical-screen size.
+ * @param {number} [gridSize] Pixel lattice spacing.
  * @returns {number} Grid-aligned dimension, preserving a zero-width bar.
  */
-function snapCanvasDimension(value) {
+function snapCanvasDimension(value, gridSize = GRID_PIXELS) {
   if (value === 0) return 0;
-  return Math.max(GRID_PIXELS, Math.ceil(value / GRID_PIXELS) * GRID_PIXELS);
+  return Math.max(gridSize, Math.ceil(value / gridSize) * gridSize);
 }
 
 /**
@@ -2573,7 +2616,7 @@ function sluiceShapes(state, water, entities, layout) {
     ),
     captionShape(
       { x: 8, y: 136 },
-      'ARROWS MOVE · A/B SCALE · E VALVE · X WAIT'
+      'ARROWS MOVE · A VALVE / GROW · B SHRINK · X WAIT'
     ),
   ];
 }
@@ -2687,11 +2730,11 @@ function getThreefoldToast(state, drainageState) {
     message = getPassengerOutcomeLabel(state.episode);
   else if (drainageState === 'flooded')
     message =
-      'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · E WARN/RESCUE · X WAIT';
+      'LOWER CHANNEL FLOODED · ARROWS MOVE · A GROW · B SHRINK · A WARN/RESCUE · X WAIT';
   else if (drainageState === 'at-risk')
     message = 'GATE FORCED OPEN · LOWER CHANNEL AT RISK · X WAIT';
   else
-    message = `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · E WARN/RESCUE · X WAIT`;
+    message = `${state.crisis.stage.toUpperCase()} · ARROWS MOVE · A GROW · B SHRINK · A WARN/RESCUE · X WAIT`;
 
   const latchfolkStatus =
     state.episode.latchfolk === 'warned'
@@ -2792,11 +2835,11 @@ function addClosurePrompt(state, message, signalStationDestroyed) {
       ? 'SHRINK TO -2 TO REPORT OR DEPART UPLAND'
       : 'STORM PASSED · FILE A REPORT OR DEPART UPLAND';
   const aftermathAction = canHelpThreefoldDisplacedLatchfolk(state)
-    ? ' · E HELP LATCHFOLK'
+    ? ' · A HELP LATCHFOLK'
     : canHearThreefoldLatchfolkLead(state)
-      ? ' · E SPEAK WITH THE WATCHKEEPER'
+      ? ' · A SPEAK WITH THE WATCHKEEPER'
       : canSearchThreefoldFerryWreck(state)
-        ? ' · E SEARCH FERRY WRECK'
+        ? ' · A SEARCH FERRY WRECK'
         : '';
   const aftermathRecord = hasLatchfolkDisplacementAid(state)
     ? ' · LATCHFOLK AID IN JOURNAL'
@@ -3233,15 +3276,15 @@ function getHighWorldToast(state) {
     if (rival.engaged)
       return `FOLDGLASS RIVAL · SCALE ${rival.scale} · MOVE TO WITHDRAW · A/B SCALE`;
     if (isThreefoldBelltopsFoldglassRivalInReach(state))
-      return 'FOLDGLASS RIVAL IN REACH · E ENGAGE · A GROW · B SHRINK';
+      return 'FOLDGLASS RIVAL IN REACH · A ENGAGE / GROW · B SHRINK';
   }
   if (state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID) {
     const crownbackState = /** @type {Record<string, any>} */ (state)
       .crownbackReach;
     if (crownbackState?.tharnMet !== true)
       return isThreefoldCrownbackTharnInReach(/** @type {any} */ (state))
-        ? 'ELDER THARN IN REACH · E MEET'
-        : 'FIND ELDER THARN · E TO MEET';
+        ? 'ELDER THARN IN REACH · A MEET'
+        : 'FIND ELDER THARN · A TO MEET';
   }
   if (state.scene.id === THREEFOLD_WAKEFORM_SHOALS_SCENE_ID) {
     const shoalsState = /** @type {Record<string, any>} */ (state)
@@ -3254,8 +3297,8 @@ function getHighWorldToast(state) {
     if (shoalsState?.wakeformDiverted === true)
       return 'WAKEFORM GUIDED NORTH · CURRENT DIVERTED';
     return isThreefoldWakeformInReach(/** @type {any} */ (state))
-      ? 'WAKEFORM IN REACH · E DIVERT'
-      : 'FIND WAKEFORM · E TO DIVERT';
+      ? 'WAKEFORM IN REACH · A DIVERT'
+      : 'FIND WAKEFORM · A TO DIVERT';
   }
   if (lostResidents.length > 0 || damagedStructures.length > 0)
     return `${region} GROWN · ${damagedStructures.join(' + ')} · ${lostResidents.join(' + ')} LOST`;

@@ -452,7 +452,7 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     expect(runtime.frame().threefold.returnTide.interaction).toBeNull();
   });
 
-  test('a reachable E closes the physical seal once per press and preserves its irreversible root cut', () => {
+  test('a reachable A closes the physical seal once per press and preserves its irreversible root cut', () => {
     const storage = browserStorage();
     const runtime = createThreefoldRuntime({
       storage,
@@ -460,16 +460,16 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     });
     approach(runtime, 'return-tide-seal-control');
     expect(runtime.frame().threefold.returnTide.interaction.label).toBe(
-      'E CLOSE CITY SEAL'
+      'A CLOSE CITY SEAL'
     );
     runtime.resume();
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(actualTide(runtime).controls.sealClosed).toBe(true);
     expect(actualTide(runtime).damageIds).toContain('choir-branches');
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(actualTide(runtime).controls.sealClosed).toBe(true);
     runtime.step(125, []);
-    runtime.step(125, ['interact']);
+    runtime.step(125, ['a']);
     expect(actualTide(runtime).controls.sealClosed).toBe(false);
     expect(actualTide(runtime).damageIds).toContain('choir-branches');
     expect(runtime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(30);

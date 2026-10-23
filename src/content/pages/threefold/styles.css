@@ -495,3 +495,52 @@ footer {
   margin: 0;
   line-height: 24px;
 }
+
+/* Keep Threefold's help, travel, campaign records and saves inside the handheld menu. */
+.game-shell {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.screen-frame {
+  margin: 0 auto 16px;
+}
+
+.screen-glow {
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.touch-pad {
+  justify-content: space-between;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.touch-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.system-buttons button {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #68a884, #315e4b);
+}
+
+@media (max-width: 560px) {
+  .game-shell {
+    padding: 8px;
+  }
+
+  .screen-frame {
+    padding: 8px;
+  }
+
+  .touch-pad {
+    padding: 8px;
+  }
+}

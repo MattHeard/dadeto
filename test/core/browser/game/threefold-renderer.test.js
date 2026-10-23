@@ -105,8 +105,8 @@ function expectHearthgapsCellContainment(frame, sourceIds) {
     expect(shape.logicalCellBounds).toEqual(
       entities.get(shape.geometryId).cellBounds
     );
-    expect(shape.x % 8).toBe(0);
-    expect(shape.y % 8).toBe(0);
+    expect(shape.x % (shape.spriteGridSize || 8)).toBe(0);
+    expect(shape.y % (shape.spriteGridSize || 8)).toBe(0);
     expect(shape.x).toBeGreaterThanOrEqual(bounds.x);
     expect(shape.y).toBeGreaterThanOrEqual(bounds.y);
     expect(shape.x + shape.width).toBeLessThanOrEqual(bounds.x + bounds.width);
@@ -259,8 +259,8 @@ describe('THREEFOLD canvas grid', () => {
         expect.arrayContaining(projectedIds)
       );
       for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
-        expect(shape.width % 8).toBe(0);
-        expect(shape.height % 8).toBe(0);
+        expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
+        expect(shape.height % (shape.spriteGridSize || 8)).toBe(0);
       }
       for (const shape of gridShapes) {
         expect(shape.logicalCellBounds).toEqual(
@@ -689,8 +689,8 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
       );
       expectHearthgapsCellContainment(frame, sourceIds);
       for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
-        expect(shape.width % 8).toBe(0);
-        expect(shape.height % 8).toBe(0);
+        expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
+        expect(shape.height % (shape.spriteGridSize || 8)).toBe(0);
       }
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
@@ -809,15 +809,7 @@ describe('THREEFOLD status display', () => {
         elapsedMinutes: 0,
       },
     });
-    expect(frame.dialogue).toMatchObject({
-      actorId: 'dock-worker',
-      lines: [
-        {
-          text: 'The tide is climbing. That gate will not hold. I shouted that the gate would fail toward the lower path.',
-        },
-      ],
-      index: 0,
-    });
+    expect(frame.dialogue).toBeNull();
     expect(frame.toast).toBe(
       'INVESTIGATE THE FAILING GATE. DECIDE HOW TO RESPOND.'
     );
@@ -961,7 +953,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
 
     const nearby = renderThreefoldFrame(state);
     expect(nearby.toast).toContain('RAT IN REACH · A FIGHT · X BYPASS');
-    expect(nearby.toast).toContain('E WARN/RESCUE');
+    expect(nearby.toast).toContain('A WARN/RESCUE');
     expect(nearby.threefold.ratFate).toBe('present');
     expect(nearby.world.map.objects.map(({ id }) => id)).toContain(
       'gatehouse-rat'

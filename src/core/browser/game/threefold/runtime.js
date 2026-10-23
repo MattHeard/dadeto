@@ -710,7 +710,7 @@ function getVisibleQuayContent(state, outcomes, network) {
 }
 
 /**
- * Identify when a reachable rival interaction owns the shared E action.
+ * Identify when a reachable rival interaction owns the shared A action.
  * @param {ReturnType<typeof createThreefoldSimulation>} state Active region.
  * @param {{type: string}} action Current world command.
  * @returns {boolean} Whether the rival handles this interaction.

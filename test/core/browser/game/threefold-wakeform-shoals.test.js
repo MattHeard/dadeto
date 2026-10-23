@@ -60,7 +60,7 @@ describe('THREEFOLD Wakeform Shoals', () => {
       wakeformDiverted: false,
       outerDefenseBreached: false,
     });
-    expect(frame.toast).toBe('FIND WAKEFORM · E TO DIVERT');
+    expect(frame.toast).toBe('FIND WAKEFORM · A TO DIVERT');
     expect(labels).toContain('A BREAKS OUTER TIDE WALL');
     expect(
       frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
@@ -110,7 +110,7 @@ describe('THREEFOLD Wakeform Shoals', () => {
       });
     expect(isThreefoldWakeformInReach(state)).toBe(true);
     expect(renderThreefoldFrame(state).toast).toBe(
-      'WAKEFORM IN REACH · E DIVERT'
+      'WAKEFORM IN REACH · A DIVERT'
     );
 
     const diverted = stepThreefoldSimulation(state, { type: 'interact' });
