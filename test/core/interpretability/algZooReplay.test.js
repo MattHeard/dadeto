@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { calculateAlgZooM16x10Activation } from '../../../src/core/interpretability/algZooReplay.js';
+import {
+  calculateAlgZooM16x10Activation,
+  calculateAlgZooM16x10ActivationTrace,
+} from '../../../src/core/interpretability/algZooReplay.js';
 
 const fixture = JSON.parse(
   readFileSync(
@@ -41,5 +44,20 @@ describe('pinned AlgZoo M16,10 activation replay', () => {
     expect(input).toEqual([
       0.11, -0.23, 0.71, 0.18, 0.44, -0.52, 0.92, 0.31, 0.63, -0.07,
     ]);
+  });
+
+  it('exposes a deterministic time-major trace matching every scalar replay', () => {
+    const trace = calculateAlgZooM16x10ActivationTrace(input, fixture);
+
+    expect(trace).toHaveLength(10);
+    expect(trace.every(step => step.length === 16)).toBe(true);
+    expect(calculateAlgZooM16x10ActivationTrace(input, fixture)).toEqual(trace);
+    for (let timeStep = 0; timeStep < 10; timeStep += 1) {
+      for (let neuronIndex = 0; neuronIndex < 16; neuronIndex += 1) {
+        expect(
+          calculateAlgZooM16x10Activation(input, fixture, neuronIndex, timeStep)
+        ).toBe(trace[timeStep][neuronIndex]);
+      }
+    }
   });
 });
