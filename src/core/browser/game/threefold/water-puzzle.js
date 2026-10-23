@@ -57,15 +57,20 @@ export function normalizeThreefoldSluicePuzzle(candidate) {
   });
 }
 
-const operateSluiceValveAtScale =
-  createTwoChamberWaterValveOperator(VALVE_SCALE);
 /**
- * Toggle the sluice valve. Its service handle is reachable only at scale -2.
+ * Toggle the sluice valve at its authored service scale.
  * @param {ReturnType<typeof createThreefoldSluicePuzzle>} state Current puzzle.
  * @param {number} playerScale Current rendered player scale.
+ * @param {number} [valveScale] Authored scale; defaults to the canonical valve rung.
  * @returns {ReturnType<typeof createThreefoldSluicePuzzle>} Updated puzzle or the unchanged state when the valve is out of reach.
  */
-export const operateThreefoldSluiceValve = operateSluiceValveAtScale;
+export function operateThreefoldSluiceValve(
+  state,
+  playerScale,
+  valveScale = VALVE_SCALE
+) {
+  return createTwoChamberWaterValveOperator(valveScale)(state, playerScale);
+}
 
 /**
  * Advance the sluice puzzle by an explicit amount of simulation time.

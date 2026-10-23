@@ -38,6 +38,9 @@ describe('THREEFOLD playable small-world sluice', () => {
       THREEFOLD_TIDAL_ARCHIVE_TRACE_ID,
     ]);
     expect(first.geometry[0].id).toBe('sluice-crossing-barrier');
+    expect(first.interactables[0].interactionScale).toBe(-2);
+    first.interactables[0].interactionScale = -1;
+    expect(second.interactables[0].interactionScale).toBe(-2);
     expect(first.geometry[0]).not.toBe(second.geometry[0]);
     expect(first.decorations).not.toBe(second.decorations);
   });
@@ -97,6 +100,28 @@ describe('THREEFOLD playable small-world sluice', () => {
     expect(stepThreefoldSimulation(opened, { type: 'unsupported' })).toBe(
       opened
     );
+  });
+
+  test('reads the authored valve scale for the actual interaction', () => {
+    const scene = createThreefoldSluiceScene();
+    scene.interactables[0].interactionScale = -1;
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
+
+    const wrongScale = stepThreefoldSimulation(initial, { type: 'interact' });
+    expect(wrongScale.sluicePuzzle.port.open).toBe(false);
+
+    const grown = stepThreefoldSimulation(initial, { type: 'grow' });
+    expect(grown.player.scale).toBe(-1);
+    const inReach = {
+      ...grown,
+      player: createScaleState(
+        { x: 2.6, y: 3.1 },
+        { scale: -1, minimumUnlockedScale: -2, maximumUnlockedScale: 1 }
+      ),
+    };
+    const opened = stepThreefoldSimulation(inReach, { type: 'interact' });
+    expect(opened.sluicePuzzle.port.open).toBe(true);
+    expect(opened.elapsedGameSeconds).toBe(30);
   });
 
   test('opens the crossing only when the physical basin is raised and Mara grows', () => {
