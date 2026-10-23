@@ -14,6 +14,12 @@ Every toy/workflow experiment must ship a minimal documentation set so future lo
 Create one folder per toy under `docs/toys/` and include all four files above.
 If a toy graduates to production behavior, retain docs as historical context and link to owning subsystem docs.
 
+## THREEFOLD spec source
+
+The stable requirements in the THREEFOLD Notion page are canonical. Its synchronized section runs inclusively from `Creative north star` through `Reference context`; progress history outside those headings is excluded. Edit that section in Notion, then run `npm run threefold:spec:refresh` to update `docs/toys/threefold/spec.md`. Run `npm run threefold:spec:check` to verify a local copy. The generated file includes its source link and last-edited timestamp and must not be edited directly.
+
+Local refresh and CI check require `NOTION_THREEFOLD_SPEC_READ_TOKEN` from a dedicated Notion integration shared only with the canonical page and granted read-content access. Configure the same variable as a GitHub Actions repository secret. CI fails if the secret is missing or the page cannot be read; it never skips the drift check.
+
 ## How to create a new toy folder
 
 1. Create a new folder at `docs/toys/<toy-name>/`.
