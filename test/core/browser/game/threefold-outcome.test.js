@@ -10,6 +10,7 @@ import {
 } from '../../../../src/core/browser/game/threefold/simulation.js';
 import { createBrokenGateScene } from '../../../../src/core/browser/game/threefold/gatehouse.js';
 import { createScaleState } from '../../../../src/core/browser/game/threefold/spatial.js';
+import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 
 const THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -26,6 +27,15 @@ describe('THREEFOLD gate outcome', () => {
     };
 
     expect(attemptThreefoldGateRepair(unsupportedStage)).toBe(initial.episode);
+  });
+
+  test('does not apply Broken Gate repair to another authored scene', () => {
+    const state = createThreefoldSimulation(
+      THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+
+    expect(attemptThreefoldGateRepair(state)).toBe(state.episode);
   });
 
   test('keeps the lower channel dry when the gate holds through the surge', () => {
@@ -205,6 +215,28 @@ describe('THREEFOLD gate outcome', () => {
     ).toEqual(state);
   });
 
+  test('uses the locking pawl interaction scale authored in scene data', () => {
+    const scene = createBrokenGateScene();
+    const pawl = scene.interactables.find(
+      item => item.id === 'relief-gate-locking-pawl'
+    );
+    pawl.interactionScale = -1;
+    const forcedOpen = forceReliefGateOpen(scene);
+    const atAuthoredPawl = {
+      ...forcedOpen,
+      player: createScaleState(pawl.position, {
+        scale: -1,
+        destroyedGeometryIds: forcedOpen.player.destroyedGeometryIds,
+        maximumUnlockedScale: 1,
+      }),
+    };
+
+    expect(
+      stepThreefoldSimulation(atAuthoredPawl, { type: 'interact' }).episode
+        .gateRepaired
+    ).toBe(true);
+  });
+
   test('does not repair with inconsistent ferry state, wrong scale, or out of range', () => {
     const forcedOpen = forceReliefGateOpen();
     const atPawlBeforeSurge = moveToLockingPawl(forcedOpen);
@@ -320,9 +352,10 @@ describe('THREEFOLD gate outcome', () => {
 
 /**
  * Follow the reachable route that breaks the west wall, then forces the relief gate.
+ * @param {ReturnType<typeof createBrokenGateScene>} [scene] Authored scene to simulate.
  * @returns {ReturnType<typeof createThreefoldSimulation>} State after the final growth action.
  */
-function forceReliefGateOpen() {
+function forceReliefGateOpen(scene = createBrokenGateScene()) {
   const actions = [
     { type: 'grow' },
     { type: 'move', direction: 'up' },
@@ -333,7 +366,7 @@ function forceReliefGateOpen() {
   ];
   return actions.reduce(
     (state, action) => stepThreefoldSimulation(state, action),
-    createThreefoldSimulation(THRESHOLDS)
+    createThreefoldSimulation(THRESHOLDS, scene)
   );
 }
 

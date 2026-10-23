@@ -25,8 +25,12 @@ describe('THREEFOLD Broken Gate scene', () => {
     const repeatedConsole = repeated.interactables.find(
       ({ id }) => id === 'signal-station-console'
     );
+    const pawl = scene.interactables.find(
+      ({ id }) => id === 'relief-gate-locking-pawl'
+    );
     expect(station.hierarchy).toEqual({ expandAtScale: -2 });
     expect(console.hierarchy).toEqual({ parentId: 'signal-station' });
+    expect(pawl.interactionScale).toBe(-2);
     expect(station.hierarchy).not.toBe(repeatedStation.hierarchy);
     expect(console.hierarchy).not.toBe(repeatedConsole.hierarchy);
     expect(scene.id).toBe('broken-gate');
@@ -78,9 +82,15 @@ describe('THREEFOLD Broken Gate scene', () => {
     scene.geometry[0].bounds.min.x = -100;
     scene.areas[0].bounds.min.x = -100;
     scene.creatures[0].bounds.min.x = -100;
+    pawl.interactionScale = -1;
     expect(createBrokenGateScene().geometry[0].bounds.min.x).toBe(3.45);
     expect(createBrokenGateScene().areas[0].bounds.min.x).toBe(2);
     expect(createBrokenGateScene().creatures[0].bounds.min.x).toBe(3.18);
+    expect(
+      createBrokenGateScene().interactables.find(
+        ({ id }) => id === 'relief-gate-locking-pawl'
+      ).interactionScale
+    ).toBe(-2);
   });
 
   test('grows through the authored wall and preserves its rubble in saves and views', () => {
