@@ -5,10 +5,12 @@
 - [x] With injected providers, unknown commands follow propose → build → validate → isolated dry-run → predicted-world comparison → register → execute. Known commands bypass providers, command runs serialize, and registered commands reuse their verified program.
 - [x] Invalid DSL, invalid or mismatched predicted worlds, stale snapshots, failed execution, empty commands, and provider exceptions reject safely without changing the live graph or leaving an unverified command registered.
 - [x] Tests use deterministic injected providers and cover the complete orchestration without making a model or network call.
+- [x] Browser integration reuses the existing credit-billed OpenAI Chat endpoint behind a static config value that is true only when both billing and chat flags are enabled. Requests use the established authenticated, idempotent controller and `AllowEffects` boundary. Mocked tests cover both stages, the default-off gate, known-command bypass, and malformed model output without contacting a provider.
 - [x] Scoped evaluator for `dynamicMud.js`, `game.js`, `page.js`, and `unknownCommandRuntime.js` reports 100% statements, branches, functions, and lines; ESLint/core-parse pass; zero clones.
 - [x] `npm run check` exits 0 (10/10 aggregate checks; local impact test selection runs the four related suites).
 - [x] `npm run build` emits the standalone `/dynamic-mud/` route for this orchestration change.
 - [x] `npm run manuals:check` exits 0 (82 toy manuals).
+- [ ] A funded authenticated live playtest creates a valid novel action through the deployed proxy; no such request has been made and no billable behavior is claimed.
 - [x] `git diff --cached --check` exits 0 after staging.
 
 ## Evidence Collection
@@ -27,3 +29,7 @@
 
 ## Pass/Fail Rules
 This loop adds a provider-injected safe orchestration boundary, but the page still has no deployed provider wired in. Full Notion acceptance remains open until the default-off integration with the billed chat proxy is implemented and safely configured. No model call or billable request has been made.
+
+## Default-off browser provider adapter — local validation passed — 2026-10-23
+
+Bead `dadeto-jzup`'s browser adapter uses the existing authenticated, idempotent chat controller and requires the injected `AllowEffects` capability for each request. The public config exposes chat only when both the chat flag and billing flag are enabled; the feature flag defaults off. Focused evaluation passed 2 suites / 12 tests, complete statements/branches for `openaiProviders.js`, clean ESLint/core-parse, and zero clones. `npm run check` passed all 10 gates across six shards (1,039 suites / 7,533 tests); `npm run build` emitted the `/dynamic-mud/` route, `npm run manuals:check` validated 82 manuals, and `git diff --check` passed. Tests use injected mocks and do not require Zod or call a provider. No live inference, billing, flag enablement, or deployment occurred in this loop. Exact-head CI for these uncommitted changes remains pending; current main Full Check 39972458513 failed before tests because `NOTION_THREEFOLD_SPEC_READ_TOKEN` is not configured. The live funded playtest criterion remains unchecked.

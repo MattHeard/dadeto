@@ -34,6 +34,12 @@ describe('OpenAI chat deployment configuration', () => {
     expect(template).toContain(
       '"openaiChatUrl": ${jsonencode(openai_chat_url)}'
     );
+    expect(main).toContain(
+      'openai_chat_enabled = var.openai_chat_enabled && var.billing_enabled'
+    );
+    expect(template).toContain(
+      '"openaiChatEnabled": ${jsonencode(openai_chat_enabled)}'
+    );
     expect(terraform).toContain('collection = "openai-chat-results"');
     expect(terraform).toContain('field      = "expiresAt"');
     expect(terraform).toContain('ttl_config {}');

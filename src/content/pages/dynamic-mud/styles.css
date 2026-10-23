@@ -24,6 +24,7 @@ input { flex: 1; min-width: 0; padding: 0 12px; }
 button { padding: 0 22px; background: #386a56; cursor: pointer; }
 button:hover { background: #477d65; }
 .controls { color: #b6c4b7; line-height: 1.9; }
+.credit-notice { color: #d9b56c; font-size: .85rem; line-height: 1.5; }
 kbd { color: #e3c887; }
 footer { margin-top: 30px; }
 @media (max-width: 480px) { .scene-heading { flex-direction: column; } .transcript { min-height: 260px; } }

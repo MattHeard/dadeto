@@ -9,11 +9,11 @@
 Explore a data-only command language for graph-backed multiplayer worlds. The first slice establishes how commands can inspect and change a world safely before any language-model adapter is considered.
 
 ## Boundary
-The bounded DSL interpreter remains pure and dependency-free. A browser adapter now wraps it in one playable Harrowfen scene with registered known commands. Unknown commands are rejected without mutation until a reviewed adapter can call the billed chat service and validate generated proposals.
+The bounded DSL interpreter remains pure and dependency-free. A browser adapter wraps it in one playable Harrowfen scene with registered known commands. Unknown commands can use the existing credit-billed OpenAI Chat endpoint for proposal and DSL construction only when both server billing and chat flags are enabled. The default-off deployment value is exposed in static config; generated proposals still pass the existing isolated dry-run and validation pipeline before execution.
 
 ## Scope
-- In scope: versioned AST validation; bounded node/relation graph; get, find, create, set property, add/remove relation, delete, output and broadcast operations; serial execution; all-or-nothing transaction result; output/broadcast intents; one browser-playable scene with known commands and visible state changes.
-- Out of scope for this bounded increment: persistence, multiplayer transport, event sourcing, authorization policy, command scheduling, and model-generated command registration. The full Notion acceptance still requires the deployed billed chat proxy for unknown-command generation; deterministic providers are test-only.
+- In scope: versioned AST validation; bounded node/relation graph; get, find, create, set property, add/remove relation, delete, output and broadcast operations; serial execution; all-or-nothing transaction result; output/broadcast intents; one browser-playable scene with known commands and visible state changes; opt-in injected proposal and builder adapters using the existing billed chat endpoint.
+- Out of scope for this bounded increment: persistence, multiplayer transport, event sourcing, authorization policy, and parallel command scheduling. The full Notion acceptance still requires an enabled, funded runtime and a controlled live playtest; automated tests use mocked responses and never contact the provider.
 
 ## Actors and Interfaces
 - Primary actor: a player at the Rain Causeway, with tests exercising the finite DSL.
@@ -26,4 +26,4 @@ The bounded DSL interpreter remains pure and dependency-free. A browser adapter 
 
 ## Dependencies
 - Internal dependencies: none.
-- External dependencies: none.
+- External dependencies: the existing authenticated and credit-billed OpenAI Chat Cloud Function, enabled only when both `openai_chat_enabled` and `billing_enabled` are true.

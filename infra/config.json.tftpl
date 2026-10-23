@@ -10,6 +10,7 @@
   "errorBeaconUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-errors")},
   "getAuthorUuidUrl": ${jsonencode(get_author_uuid_url)},
   "openaiChatUrl": ${jsonencode(openai_chat_url)},
+  "openaiChatEnabled": ${jsonencode(openai_chat_enabled)},
   "billingPackagesUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-billing-packages")},
   "billingCheckoutUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-create-checkout-session")},
   "billingPurchaseStatusUrl": ${jsonencode("https://${region}-${project_id}.cloudfunctions.net/${environment}-billing-purchase-status")},

@@ -1,4 +1,7 @@
-import { startDynamicMudPage } from '/core/browser/game/dynamic-mud/page.js';
+import { startDynamicMudBrowserPage } from '/browser/dynamicMud.js';
 
-const dispose = startDynamicMudPage({ documentObj: document });
+const dispose = startDynamicMudBrowserPage({
+  documentObj: document,
+  windowObj: window,
+});
 window.addEventListener('pagehide', dispose, { once: true });

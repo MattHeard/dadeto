@@ -1,10 +1,10 @@
 # MUD1 — Dynamic MUD: Safe Command Core
 
-Play the first scene at [/dynamic-mud/](/dynamic-mud/). The Rain Causeway currently understands `look`, `ring the bell`, and `open the floodgate`. Ring the bell to get the ferry's answer, then open the gate. Unknown commands receive a clear response and do not alter the world; model-generated handlers are not enabled yet.
+Play the first scene at [/dynamic-mud/](/dynamic-mud/). The Rain Causeway understands `look`, `ring the bell`, and `open the floodgate`. Ring the bell to get the ferry's answer, then open the gate. When the authenticated, credit-billed chat feature is enabled, an unfamiliar command is proposed and built as a finite DSL program, then dry-run and validated before it can affect the world. The page warns that unfamiliar commands may use account credits. The browser and test environments keep model actions disabled unless both billing and chat are explicitly enabled.
 
 ## What this toy does
 
-This prototype includes a small playable scene over a bounded graph-command language and pure transaction interpreter. Known actions run without a model. Unknown commands are not yet generated; there is no persistence or multiplayer network.
+This prototype includes a small playable scene over a bounded graph-command language and pure transaction interpreter. Known actions always run locally without a model. Unknown commands use the existing DADETO chat proxy only when the public configuration reports that billing and chat are both enabled; the proxy authenticates the user and charges the configured operation price before contacting OpenAI. There is no persistence or multiplayer network.
 
 ## Input
 

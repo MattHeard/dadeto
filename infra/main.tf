@@ -433,6 +433,7 @@ resource "google_storage_bucket_object" "dendrite_static_config" {
     region              = var.region
     get_author_uuid_url = google_cloudfunctions2_function.get_author_uuid_v2.service_config[0].uri
     openai_chat_url     = google_cloudfunctions2_function.openai_chat.service_config[0].uri
+    openai_chat_enabled = var.openai_chat_enabled && var.billing_enabled
   })
   content_type  = "application/json"
   cache_control = "no-store"
