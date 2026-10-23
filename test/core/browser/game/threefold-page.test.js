@@ -412,7 +412,6 @@ describe('THREEFOLD page adapter', () => {
     expect(() =>
       startThreefoldPage({
         documentObj: { querySelector: () => null },
-        windowObj: { location: { search: '?scene=lantern-ward' } },
         navigatorObj: {},
       })
     ).not.toThrow();
@@ -552,28 +551,28 @@ describe('THREEFOLD page adapter', () => {
     assertGrainlandsRoute();
   });
 
-  test('keeps the default page when the route query is different and tolerates missing copy elements', () => {
+  test.each([
+    'broken-gate',
+    'sluice',
+    'silt-margin',
+    'hearthgaps',
+    'weftways',
+    'grainlands',
+    'lantern-ward',
+    'belltops',
+    'crownback-reach',
+    'shoals',
+  ])('does not use ?scene=%s to select a region', destination => {
     startThreefoldPage({
       documentObj: { querySelector: () => null },
-      windowObj: { location: { search: '?scene=broken-gate' } },
+      windowObj: { location: { search: `?scene=${destination}` } },
       navigatorObj: {},
     });
-    const page = mockStartMosslightPage.mock.calls[0][0];
+    const page = mockStartMosslightPage.mock.calls.at(-1)[0];
 
     expect(page.createRuntime({ env: new Map() }).getState().scene.id).toBe(
       'broken-gate'
     );
-
-    mockStartMosslightPage.mockClear();
-    startThreefoldPage({
-      documentObj: { querySelector: () => null },
-      windowObj: { location: { search: '?scene=sluice' } },
-      navigatorObj: {},
-    });
-    const sluicePage = mockStartMosslightPage.mock.calls[0][0];
-    expect(
-      sluicePage.createRuntime({ env: new Map() }).getState().scene.id
-    ).toBe('broken-gate');
   });
 });
 

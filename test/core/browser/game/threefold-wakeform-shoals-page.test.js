@@ -52,7 +52,6 @@ describe('THREEFOLD Wakeform Shoals page', () => {
     );
     startThreefoldPage({
       documentObj: { querySelector: selector => nodes.get(selector) },
-      windowObj: { location: { search: '?scene=shoals' } },
       navigatorObj: {},
       scene: createThreefoldWakeformShoalsScene(),
     });

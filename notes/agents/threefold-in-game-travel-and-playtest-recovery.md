@@ -5,3 +5,11 @@
 - Chosen fix: Ignore scene query parameters, expose all authored regions through the page's in-game travel menu, switch the runtime scene while retaining independent region saves, and update route-specific tests to inject scenes directly. Add immediate input acknowledgments and an accessible startup/render failure recovery message.
 - Verification: Focused Threefold and presenter tests pass (81 tests); `npm run check` passes all 10 gates; `npm run build` succeeds; `git diff --check` is clean.
 - Next-time guidance: Keep query-string regression coverage that confirms `?scene=` leaves the default region selected. Use explicit scene injection only for unit tests of authored region copy; production travel belongs in the game UI.
+
+## 2026-10-23 — Remove URL scene guidance
+
+- Unexpected hurdle: The implementation already ignored scene queries and exposed every authored region in its in-game travel menu, but the manual, harness, spec, acceptance history, failure catalog, and several test fixtures still described or implied URL-based scene selection.
+- Diagnosis: Searched the Threefold source/docs/tests for `?scene=` and found that only a default-scene regression and stale docs/fixtures remained; no runtime URL parser or scene deep links remain.
+- Chosen fix: Document the in-game travel menu as the sole region selector, remove stale query-string fixture data from explicit-scene tests, and expand the regression to assert every former scene slug leaves the default Broken Gate active.
+- Verification: Focused tests passed (5 suites / 53 tests); `npm run check` passed all 10 gates after its six-shard local fallback; `npm run build`, `npm run manuals:check` (79 manuals), and `git diff --check` passed.
+- Next-time guidance: Keep one parameterized regression for all legacy scene slugs and direct callers through in-game controls; don't reintroduce region deep links in docs or UI.

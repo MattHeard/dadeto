@@ -84,7 +84,6 @@ describe('THREEFOLD Weftways page record', () => {
                     : null,
     };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: {
         getItem: () => null,
         setItem: () => {},
@@ -186,7 +185,6 @@ describe('THREEFOLD Weftways page record', () => {
       querySelector: selector => elements.get(selector),
     };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: {
         getItem: () => null,
         setItem: () => {},
@@ -239,7 +237,6 @@ describe('THREEFOLD Weftways page record', () => {
             : null,
     };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: {
         getItem: () => null,
         setItem: () => {},
@@ -285,7 +282,6 @@ describe('THREEFOLD Weftways page record', () => {
             : null,
     };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: {
         getItem: () => null,
         setItem: () => {},
@@ -340,7 +336,6 @@ describe('THREEFOLD Weftways page record', () => {
             : null,
     };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: {
         getItem: () => null,
         setItem: () => {},

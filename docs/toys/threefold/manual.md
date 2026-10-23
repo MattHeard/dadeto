@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Play the Broken Gate at [/threefold/](/threefold/), enter the Tidal Archive at [/threefold/?scene=sluice](/threefold/?scene=sluice), visit Hearthgaps, Weftways, and Grainlands, then continue to the Silt Margin, Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals.
+Explore Harrowfen in a deterministic, scale-shifting handheld RPG prototype. Mara's size changes while the same physical place stays connected. Open [/threefold/](/threefold/) and use the in-game “Travel between regions” menu to visit the Tidal Archive, Hearthgaps, Weftways, Grainlands, Silt Margin, Lantern Ward, Belltops, Crownback Reach, and the offshore Shoals. Regions are not selected by URL.
 
 After you have a saved run in more than one region, the accessible “Places in this campaign” panel lists the current region and the other regions with valid saves. It is derived from the separate region saves; it does not combine them or reveal undiscovered outcomes.
 
@@ -91,7 +91,7 @@ The Tidal Archive save is isolated from the Broken Gate save. Export/import incl
 
 ## Silt Margin
 
-Continue from the Tidal Archive to open [/threefold/?scene=silt-margin](/threefold/?scene=silt-margin). Mara starts at scale −4, 2.26 cm tall. The scene uses the same 160 × 144 Mosslight renderer and eight-pixel screen grid; her movement and the region's physical bounds stay in continuous metres.
+Use the in-game travel menu to enter the Silt Margin. Mara starts at scale −4, 2.26 cm tall. The scene uses the same 160 × 144 Mosslight renderer and eight-pixel screen grid; her movement and the region's physical bounds stay in continuous metres.
 
 Guide the guardian aside, open the fine valve, and wait until the dew crossing is safe before sending the Choir signal. Press E again at the root to hear Neme translate the surviving trace: downstream replies stopped after the emergency pressure-regulator bypass. The accessible record keeps the final sender, Iri's knowledge, and responsibility unresolved. This optional discovery is saved with the route; older saves restore it as unheard.
 
@@ -101,13 +101,13 @@ The Silt Margin saves its branch, conserved water state, and elapsed seconds in 
 
 ## Hearthgaps
 
-From the Broken Gate page, open [/threefold/?scene=hearthgaps](/threefold/?scene=hearthgaps). Mara starts among the culverts at scale −1 (60.96 cm). Move within reach of Brin's runoff gate and press E to divert the flow: Brin's homes stay dry and the downstream homes flood. Move to the far control and press E to open the shared bypass instead: downstream homes stay dry and Brin's homes flood. Only the first reachable choice takes effect; the flood damage is visible and stays with this route's save. Growing through a home still damages that structure under the ordinary scale rules.
+Use the in-game travel menu to enter Hearthgaps. Mara starts among the culverts at scale −1 (60.96 cm). Move within reach of Brin's runoff gate and press E to divert the flow: Brin's homes stay dry and the downstream homes flood. Move to the far control and press E to open the shared bypass instead: downstream homes stay dry and Brin's homes flood. Only the first reachable choice takes effect; the flood damage is visible and stays with this route's save. Growing through a home still damages that structure under the ordinary scale rules.
 
 The route uses the same 160 × 144 Mosslight renderer and eight-pixel grid. Movement and the choice advance 15 seconds of game time; X waits the requested duration, and browser time does not advance the simulation. The branch, physical home damage, and elapsed seconds roundtrip in schema v1 under a storage key isolated from Broken Gate and the other routes. Hearthgaps actions do not advance Broken Gate's crisis or episode outcomes.
 
 ## Weftways
 
-From the Broken Gate page, open [/threefold/?scene=weftways](/threefold/?scene=weftways). Mara starts at scale −2 (20.32 cm) among the Threadbound caravan, navigator Pell, and pack beetles about 60 cm long. Move to Pell's bypass control and press E to protect the deep roots and caravan crossing while flooding the human low quay. The quay-side spill keeps those homes dry but floods the root crossing. Only a reachable first choice takes effect; later interactions cannot reverse it. To explore the growth outcome, shrink to scale −3, move fully inside Pell's marked bounds, and grow; the preview warns that A kills him. His death persists through save/import. The caravan relay keeper then handles crossing discussion and preserves Pell's record: after choosing a flow, reach the caravan circle to read and share the copy. Pell does not return, and the keeper does not claim to know his answer to an offer made after his death. Growing through a structure still damages it under the ordinary scale rules.
+Use the in-game travel menu to enter the Weftways. Mara starts at scale −2 (20.32 cm) among the Threadbound caravan, navigator Pell, and pack beetles about 60 cm long. Move to Pell's bypass control and press E to protect the deep roots and caravan crossing while flooding the human low quay. The quay-side spill keeps those homes dry but floods the root crossing. Only a reachable first choice takes effect; later interactions cannot reverse it. To explore the growth outcome, shrink to scale −3, move fully inside Pell's marked bounds, and grow; the preview warns that A kills him. His death persists through save/import. The caravan relay keeper then handles crossing discussion and preserves Pell's record: after choosing a flow, reach the caravan circle to read and share the copy. Pell does not return, and the keeper does not claim to know his answer to an offer made after his death. Growing through a structure still damages it under the ordinary scale rules.
 
 After either crossing choice, reach Pell and press E again to inspect the optional Threadbound relay ledger. The record shows that downstream messages stopped arriving after an emergency pressure-regulator bypass; it does not identify the final sender or settle what Iri knew or who was responsible. Then choose one response: walk to the marked gathering beside the pack beetles and press E to share the ledger, visit the knot cache and press E to keep it private, visit the brazier and press E to destroy it, or visit the marked repair table and press E to offer replacement relay tokens and help restore the downstream route. Pell accepts the offer after the bypass; after the quay spill, he defers final terms until root-channel damage is assessed. The accessible record reflects the choice without resolving the sender, Iri's knowledge, or responsibility; after destruction, the readable ledger is hidden and an accessible account records what happened.
 
@@ -119,7 +119,7 @@ Pell trusts Mara when the root crossing holds; choosing the quay-side spill make
 
 ## Grainlands
 
-From the Weftways page, open [/threefold/?scene=grainlands](/threefold/?scene=grainlands). Mara starts at scale −3 (6.77 cm) near Iru and the Nursery Clades. The 18 cm spider is a substantial predator at this scale. Press E beside Iru to help bait it away and preserve the Threadbound bridge. A grows Mara to −2, overpowers the spider, and breaks that bridge; the growth preview shows both physical consequences first.
+Use the in-game travel menu to enter the Grainlands. Mara starts at scale −3 (6.77 cm) near Iru and the Nursery Clades. The 18 cm spider is a substantial predator at this scale. Press E beside Iru to help bait it away and preserve the Threadbound bridge. A grows Mara to −2, overpowers the spider, and breaks that bridge; the growth preview shows both physical consequences first.
 
 The route uses the shared 160 × 144 Mosslight renderer and eight-pixel grid. Its choice, broken crossing, and elapsed game seconds persist in schema v1 under a key isolated from the other routes. Movement, growth, and interaction advance explicit game time; the browser clock does not, and the Grainlands actions do not change Broken Gate outcomes.
 
@@ -127,13 +127,13 @@ Iru welcomes Mara when the spider is baited away and the bridge holds. If growth
 
 ## Lantern Ward
 
-Continue from the Silt Margin to open [/threefold/?scene=lantern-ward](/threefold/?scene=lantern-ward). Mara starts at scale +3 with +4 unlocked. The 160 × 144 Mosslight screen previews both canal homes and the glassworks, as well as Mira and Tov, before A grows. A remains growth and commits the displayed building damage and resident losses; B shrinks to +2. The district has its own elapsed game time and does not advance Broken Gate's crisis or episode outcomes.
+Use the in-game travel menu to enter the Lantern Ward. Mara starts at scale +3 with +4 unlocked. The 160 × 144 Mosslight screen previews both canal homes and the glassworks, as well as Mira and Tov, before A grows. A remains growth and commits the displayed building damage and resident losses; B shrinks to +2. The district has its own elapsed game time and does not advance Broken Gate's crisis or episode outcomes.
 
 The Lantern Ward export includes the district's destroyed buildings and resident fates. Its browser save key is separate from Broken Gate, the Tidal Archive, and the Silt Margin. Importing a district save restores the authored Lantern Ward route and rejects unsupported schema versions.
 
 ## Belltops
 
-Continue from the Lantern Ward to open [/threefold/?scene=belltops](/threefold/?scene=belltops). Mara starts at scale +2, 16.46 m tall, with +3 unlocked. The Mosslight screen previews the watchtower, harbor crane, and Quay pressure regulator in Mara's next growth footprint, along with Iri, Orla, and the stormbird. E checks the reachable regulator panel and records that Iri is trapped there; the campaign status remembers the milestone across regions. A remains growth and commits the displayed structural damage and resident fates, including the regulator collapse and Iri's death if Mara grows; B steps down to +1. Belltops uses the shared high-world reducer and local game clock without advancing Broken Gate's episode.
+Use the in-game travel menu to enter Belltops. Mara starts at scale +2, 16.46 m tall, with +3 unlocked. The Mosslight screen previews the watchtower, harbor crane, and Quay pressure regulator in Mara's next growth footprint, along with Iri, Orla, and the stormbird. E checks the reachable regulator panel and records that Iri is trapped there; the campaign status remembers the milestone across regions. A remains growth and commits the displayed structural damage and resident fates, including the regulator collapse and Iri's death if Mara grows; B steps down to +1. Belltops uses the shared high-world reducer and local game clock without advancing Broken Gate's episode.
 
 Belltops exports preserve its damaged harbor structures and resident fates under a save key separate from Lantern Ward, Silt Margin, Tidal Archive, and Broken Gate.
 
@@ -147,13 +147,13 @@ The regulator encounter establishes the reachable trapped state and the growth-c
 
 ## Crownback Reach
 
-Continue from Belltops to open [/threefold/?scene=crownback-reach](/threefold/?scene=crownback-reach). Mara starts at +3, 49.38 metres tall. Elder Tharn stands 44 metres high and the calf is 18 metres tall. Move closer to Tharn and press E once to record their meeting; an out-of-reach or repeated interaction has no effect. The touch interaction button uses the same action. A remains growth and previews the living-root arch, floodwall, and Crownbacks in the +4 footprint; B shrinks to +2.
+Use the in-game travel menu to enter Crownback Reach. Mara starts at +3, 49.38 metres tall. Elder Tharn stands 44 metres high and the calf is 18 metres tall. Move closer to Tharn and press E once to record their meeting; an out-of-reach or repeated interaction has no effect. The touch interaction button uses the same action. A remains growth and previews the living-root arch, floodwall, and Crownbacks in the +4 footprint; B shrinks to +2.
 
 The route uses the shared 160 × 144 Mosslight renderer, high-world reducer, and local game clock. Meeting state, damaged structures, and growth fates persist in the Crownback Reach save, isolated from Belltops and Broken Gate.
 
 ## The Shoals
 
-Continue from Crownback Reach to open [/threefold/?scene=shoals](/threefold/?scene=shoals). Mara starts at +3, 49.38 metres tall, with +4 unlocked at 148.13 metres. The 132-metre Wakeform contests an outer tide wall. Move within reach and press E to guide it toward the north channel; the Wakeform leaves the shoals and the visible flow changes. A previews the wall and the Wakeform if Mara's +4 body will contain it. Growing through the wall opens the seaward current and can kill the Wakeform when it lies inside the physical growth footprint. B steps down to +2.
+Use the in-game travel menu to enter Wakeform Shoals. Mara starts at +3, 49.38 metres tall, with +4 unlocked at 148.13 metres. The 132-metre Wakeform contests an outer tide wall. Move within reach and press E to guide it toward the north channel; the Wakeform leaves the shoals and the visible flow changes. A previews the wall and the Wakeform if Mara's +4 body will contain it. Growing through the wall opens the seaward current and can kill the Wakeform when it lies inside the physical growth footprint. B steps down to +2.
 
 The shoals use the shared 160 × 144 Mosslight renderer and local game clock. The guided Wakeform, breached wall, current outcome, and growth fate persist in a save separate from Crownback Reach, Belltops, and Broken Gate.
 

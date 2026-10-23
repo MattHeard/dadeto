@@ -75,7 +75,6 @@ describe('THREEFOLD Iri confession page', () => {
     const elements = createConfessionElements();
     const documentObj = { querySelector: selector => elements.get(selector) };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: { getItem: () => null, setItem: () => {} },
     };
     elements.get('#iri-recorded-confession').hidden = false;
@@ -93,7 +92,6 @@ describe('THREEFOLD Iri confession page', () => {
   test('configures an alternate scene when disclosure nodes are absent', () => {
     const documentObj = { querySelector: () => null };
     const windowObj = {
-      location: { search: '?scene=weftways' },
       localStorage: { getItem: () => null, setItem: () => {} },
     };
 
