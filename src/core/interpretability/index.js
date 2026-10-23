@@ -3324,6 +3324,218 @@ export function getEvidenceGraphContextV1(graph, query) {
 }
 
 /**
+ * Discover eligible research candidates from a portable bundle without a
+ * known mechanism ID. Results are deterministic and explicitly bounded.
+ * @param {{evidenceGraph: InterpretabilityGraphV1, mechanismIdentityLinks?: Array<Record<string, string>>}} bundle Validated portable bundle.
+ * @param {{modelId?: string, checkpointSha256?: string, mechanismKind?: string, pageSize?: number, cursor?: string|null}} [query] Exact filters and cursor.
+ * @returns {{valid: true, candidates: Array<Record<string, any>>, nextCursor: string|null}|{valid: false, errors: Array<Record<string, string>>}} Candidate page or validation errors.
+ */
+export function discoverResearchCandidatesV1(bundle, query = {}) {
+  if (!bundle || typeof bundle !== 'object')
+    return { valid: false, errors: [{ code: 'invalid-bundle' }] };
+  const graphFailure = validateGraphInput(bundle.evidenceGraph);
+  if (graphFailure) return graphFailure;
+  const parsed = validateCandidateQuery(query);
+  if (!parsed.valid) return parsed;
+
+  const { modelId, checkpointSha256, mechanismKind, pageSize, cursor } = parsed;
+  const identityLinks = bundle.mechanismIdentityLinks ?? [];
+  if (!Array.isArray(identityLinks))
+    return { valid: false, errors: [{ code: 'invalid-identity-links' }] };
+  const linksByLegacyId = new Map();
+  for (const link of identityLinks) {
+    if (
+      !link ||
+      typeof link.legacyMechanismId !== 'string' ||
+      !link.legacyMechanismId.trim() ||
+      typeof link.componentId !== 'string' ||
+      !link.componentId.trim()
+    ) {
+      return { valid: false, errors: [{ code: 'invalid-identity-link' }] };
+    }
+    if (linksByLegacyId.has(link.legacyMechanismId))
+      return {
+        valid: false,
+        errors: [
+          {
+            code: 'ambiguous-identity-link',
+            legacyMechanismId: link.legacyMechanismId,
+          },
+        ],
+      };
+    linksByLegacyId.set(link.legacyMechanismId, link);
+  }
+  const candidates = (bundle.evidenceGraph.mechanisms ?? [])
+    .filter(mechanism =>
+      matchesCandidateFilters(
+        mechanism,
+        modelId,
+        checkpointSha256,
+        mechanismKind
+      )
+    )
+    .map(mechanism =>
+      buildResearchCandidate(bundle.evidenceGraph, mechanism, linksByLegacyId)
+    )
+    .filter(
+      candidate =>
+        candidate.hypothesisIds.length && candidate.evidenceIds.length
+    )
+    .sort((left, right) => left.candidateId.localeCompare(right.candidateId));
+
+  const cursorIndex = cursor
+    ? candidates.findIndex(candidate => candidate.candidateId === cursor)
+    : -1;
+  if (cursor && cursorIndex < 0)
+    return { valid: false, errors: [{ code: 'unknown-cursor' }] };
+  const start = cursorIndex + 1;
+  const page = candidates.slice(start, start + pageSize);
+  const hasMore = start + page.length < candidates.length;
+  return {
+    valid: true,
+    candidates: page,
+    nextCursor: hasMore ? page[page.length - 1].candidateId : null,
+  };
+}
+
+/**
+ * Validate candidate-discovery filters and pagination bounds.
+ * @param {any} query Candidate query.
+ * @returns {{valid: true, modelId?: string, checkpointSha256?: string, mechanismKind?: string, pageSize: number, cursor: string|null}|{valid: false, errors: Array<Record<string, string>>}} Normalized query or errors.
+ */
+function validateCandidateQuery(query) {
+  if (!query || typeof query !== 'object' || Array.isArray(query))
+    return { valid: false, errors: [{ code: 'invalid-query' }] };
+  if (
+    Object.keys(query).some(
+      key =>
+        ![
+          'modelId',
+          'checkpointSha256',
+          'mechanismKind',
+          'pageSize',
+          'cursor',
+        ].includes(key)
+    )
+  )
+    return { valid: false, errors: [{ code: 'unknown-query-field' }] };
+  const pageSize = query.pageSize ?? 20;
+  const cursor = query.cursor ?? null;
+  const validKinds = [
+    'native-neuron',
+    'sae-feature',
+    'attention-head',
+    'recurrent-state',
+  ];
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100)
+    return { valid: false, errors: [{ code: 'invalid-page-size' }] };
+  if (cursor !== null && (typeof cursor !== 'string' || !cursor.trim()))
+    return { valid: false, errors: [{ code: 'invalid-cursor' }] };
+  if (
+    query.modelId !== undefined &&
+    (typeof query.modelId !== 'string' || !query.modelId.trim())
+  )
+    return { valid: false, errors: [{ code: 'invalid-model-filter' }] };
+  if (
+    query.checkpointSha256 !== undefined &&
+    (typeof query.checkpointSha256 !== 'string' ||
+      !/^[a-f0-9]{64}$/i.test(query.checkpointSha256))
+  )
+    return { valid: false, errors: [{ code: 'invalid-checkpoint-filter' }] };
+  if (
+    query.mechanismKind !== undefined &&
+    !validKinds.includes(query.mechanismKind)
+  )
+    return { valid: false, errors: [{ code: 'invalid-mechanism-kind' }] };
+  return {
+    valid: true,
+    ...(query.modelId === undefined ? {} : { modelId: query.modelId }),
+    ...(query.checkpointSha256 === undefined
+      ? {}
+      : { checkpointSha256: query.checkpointSha256.toLowerCase() }),
+    ...(query.mechanismKind === undefined
+      ? {}
+      : { mechanismKind: query.mechanismKind }),
+    pageSize,
+    cursor,
+  };
+}
+
+/**
+ * Check exact model, checkpoint, and mechanism-kind filters.
+ * @param {InterpretabilityRecord} mechanism Candidate mechanism.
+ * @param {string|undefined} modelId Exact model filter.
+ * @param {string|undefined} checkpointSha256 Exact checkpoint filter.
+ * @param {string|undefined} mechanismKind Exact kind filter.
+ * @returns {boolean} Whether all supplied filters match.
+ */
+function matchesCandidateFilters(
+  mechanism,
+  modelId,
+  checkpointSha256,
+  mechanismKind
+) {
+  return (
+    (modelId === undefined || mechanism.model.modelId === modelId) &&
+    (checkpointSha256 === undefined ||
+      mechanism.model.checkpoint?.sha256?.toLowerCase() === checkpointSha256) &&
+    (mechanismKind === undefined || mechanism.kind === mechanismKind)
+  );
+}
+
+/**
+ * Build compact provenance and evidence counts for one eligible mechanism.
+ * @param {InterpretabilityGraphV1} graph Validated graph.
+ * @param {InterpretabilityRecord} mechanism Candidate mechanism.
+ * @param {Map<string, Record<string, string>>} linksByLegacyId Identity links.
+ * @returns {Record<string, any>} Candidate summary.
+ */
+function buildResearchCandidate(graph, mechanism, linksByLegacyId) {
+  const linkedHypotheses = (graph.hypotheses ?? []).filter(record =>
+    record.mechanismIds.includes(mechanism.id)
+  );
+  const hypothesisIds = linkedHypotheses.map(record => record.id).sort();
+  const linkedHypothesisIds = new Set(hypothesisIds);
+  const linkedEvidenceIds = new Set(
+    linkedHypotheses.flatMap(record => record.evidenceIds)
+  );
+  const evidence = (graph.evidence ?? []).filter(
+    record =>
+      record.mechanismIds.includes(mechanism.id) ||
+      record.hypothesisIds.some((/** @type {string} */ id) =>
+        linkedHypothesisIds.has(id)
+      ) ||
+      linkedEvidenceIds.has(record.id)
+  );
+  const evidenceIds = evidence.map(record => record.id).sort();
+  const evidenceCounts = Object.fromEntries(
+    ['prediction', 'observation', 'null', 'negative', 'contradictory'].map(
+      kind => [kind, evidence.filter(record => record.kind === kind).length]
+    )
+  );
+  const identityLink = linksByLegacyId.get(mechanism.id);
+  const candidateId = identityLink?.componentId ?? mechanism.id;
+  return {
+    candidateId,
+    canonicalMechanismId: identityLink ? identityLink.componentId : null,
+    activationPositionId: identityLink?.activationPositionId ?? null,
+    legacyMechanismId: mechanism.id,
+    identityStatus: identityLink ? 'resolved' : 'unresolved',
+    mechanismKind: mechanism.kind,
+    model: mechanism.model,
+    sourceIds: {
+      mechanismId: mechanism.id,
+      hypothesisIds,
+      evidenceIds,
+    },
+    hypothesisIds,
+    evidenceIds,
+    hypothesisCount: hypothesisIds.length,
+    evidenceCounts,
+  };
+}
+
+/**
  * Present one bounded context page as separate hypothesis, evidence, experiment,
  * and relationship collections while retaining its raw items and pagination.
  * @param {ReturnType<typeof getEvidenceGraphContextV1>} context Context page or failure.
