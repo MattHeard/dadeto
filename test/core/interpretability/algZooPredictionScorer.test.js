@@ -323,6 +323,17 @@ describe('AlgZoo deterministic held-out scoring', () => {
           },
         },
         { targetUnit: 16, restrictedRule: currentInputRule },
+        {
+          targetUnit: 2,
+          attemptStatus: 'invalid-submission',
+          failureCode: 'invalid-causal-intervention-result',
+          restrictedRule: currentInputRule,
+        },
+        {
+          targetUnit: 2,
+          attemptStatus: 'invalid-submission',
+          restrictedRule: currentInputRule,
+        },
       ],
       heldOut
     );
@@ -356,6 +367,16 @@ describe('AlgZoo deterministic held-out scoring', () => {
       targetUnit: 16,
       predictionStatus: 'invalid',
       errors: [{ code: 'invalid-target-unit' }],
+    });
+    expect(results[4]).toMatchObject({
+      targetUnit: 2,
+      predictionStatus: 'invalid',
+      errors: [{ code: 'invalid-causal-intervention-result' }],
+    });
+    expect(results[5]).toMatchObject({
+      targetUnit: 2,
+      predictionStatus: 'invalid',
+      errors: [{ code: 'invalid-submission' }],
     });
   });
 

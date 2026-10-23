@@ -399,6 +399,9 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
     ...(sessionRecord.attemptStatus
       ? { attemptStatus: sessionRecord.attemptStatus }
       : {}),
+    ...(sessionRecord.failureCode
+      ? { failureCode: sessionRecord.failureCode }
+      : {}),
     hypothesis: submission.hypothesis,
     restrictedRule: submission.restrictedRule,
     predictions: submission.predictions,
@@ -423,6 +426,7 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
  * @property {(request: Record<string, any>) => Promise<Array<Record<string, any>>>} scoreBlindedSubmissions Blinded evaluator.
  * @property {(entries: Array<Record<string, any>>) => string|Promise<string>} hashMapSnapshot Snapshot hasher.
  * @property {(elapsedMillis: number) => AlgZooPilotDeadline} createDeadline Per-session deadline adapter.
+ * @property {(result: unknown) => boolean} validateCausalInterventionResult Strict parser for a new submission's typed causal record.
  */
 
 /**
@@ -435,10 +439,11 @@ export function createAlgZooPilotRunner(adapters) {
     typeof adapters?.runInvestigator !== 'function' ||
     typeof adapters?.scoreBlindedSubmissions !== 'function' ||
     typeof adapters?.hashMapSnapshot !== 'function' ||
-    typeof adapters?.createDeadline !== 'function'
+    typeof adapters?.createDeadline !== 'function' ||
+    typeof adapters?.validateCausalInterventionResult !== 'function'
   ) {
     throw new TypeError(
-      'Pilot adapters must supply investigator, scorer, snapshot hasher, and deadline factory.'
+      'Pilot adapters must supply investigator, scorer, snapshot hasher, deadline factory, and causal-result validator.'
     );
   }
   return Object.freeze({
@@ -484,6 +489,17 @@ export function createAlgZooPilotRunner(adapters) {
             ...execution,
             cost: { ...execution.cost, ...budget.snapshot() },
           };
+          if (
+            adapters.validateCausalInterventionResult(
+              execution.submission?.causalInterventionResult
+            ) !== true
+          ) {
+            execution = {
+              ...execution,
+              status: 'invalid-submission',
+              failureCode: 'invalid-causal-intervention-result',
+            };
+          }
         } catch (error) {
           const isBudgetStop = error?.code === 'pilot-budget-exceeded';
           if (!isBudgetStop) deadline.abort();

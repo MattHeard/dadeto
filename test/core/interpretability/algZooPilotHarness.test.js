@@ -11,6 +11,43 @@ import {
   getAlgZooPilotMapContext,
 } from '../../../src/core/interpretability/algZooPilotHarness/index.js';
 
+const validateTestCausalInterventionResult = result => {
+  if (result?.schemaVersion !== 1) return false;
+  if (result.status === 'not-tested') {
+    return (
+      Object.keys(result).every(key =>
+        ['schemaVersion', 'status', 'reason'].includes(key)
+      ) &&
+      (result.reason === undefined || typeof result.reason === 'string')
+    );
+  }
+  return (
+    result.status === 'tested' &&
+    Object.keys(result).sort().join(',') ===
+      'artifactSha256,baselineOutputIndex,causalScore,inputSequenceSha256,intervenedOutputIndex,operation,predictedOutputIndex,schemaVersion,status,targetMechanismId,timeStepIndex' &&
+    typeof result.targetMechanismId === 'string' &&
+    result.targetMechanismId.length > 0 &&
+    result.operation === 'set-activation-zero' &&
+    Number.isInteger(result.timeStepIndex) &&
+    result.timeStepIndex >= 0 &&
+    result.timeStepIndex <= 9 &&
+    /^[a-f0-9]{64}$/.test(result.inputSequenceSha256) &&
+    [
+      result.predictedOutputIndex,
+      result.baselineOutputIndex,
+      result.intervenedOutputIndex,
+      result.causalScore,
+    ].every(value => Number.isInteger(value) && value >= 0 && value <= 9) &&
+    (result.causalScore === 0 || result.causalScore === 1) &&
+    /^[a-f0-9]{64}$/.test(result.artifactSha256)
+  );
+};
+const createTestAlgZooPilotRunner = adapters =>
+  createAlgZooPilotRunner({
+    validateCausalInterventionResult: validateTestCausalInterventionResult,
+    ...adapters,
+  });
+
 const fixture = JSON.parse(
   readFileSync(
     new URL(
@@ -500,7 +537,9 @@ describe('AlgZoo shared-map pilot harness', () => {
       TypeError
     );
   });
+});
 
+describe('AlgZoo pilot runner', () => {
   it('keeps held-out values out of investigators and strips arm metadata before scoring', async () => {
     const plan = createAlgZooPilotPlan(configuration, fixture);
     const pair = plan.schedule.pairs[1];
@@ -511,7 +550,7 @@ describe('AlgZoo shared-map pilot harness', () => {
       { normalizedRmse: 0.14, perStepMaximum: 0.31 },
     ];
     const deadlineFactory = createTestDeadlineFactory();
-    const runner = createAlgZooPilotRunner({
+    const runner = createTestAlgZooPilotRunner({
       createDeadline: deadlineFactory.createDeadline,
       hashMapSnapshot: async entries => `hash-${entries.length}`,
       runInvestigator: async request => {
@@ -528,6 +567,10 @@ describe('AlgZoo shared-map pilot harness', () => {
             restrictedRule: { operation: 'relu' },
             predictions: [{ input: 'x', output: 'y' }],
             causalEvidence: 'not tested',
+            causalInterventionResult: {
+              schemaVersion: 1,
+              status: 'not-tested',
+            },
             backgroundClaimIds: ['map-entry-private'],
             evidence: [{ observation: 'controlled' }],
           },
@@ -638,13 +681,20 @@ describe('AlgZoo shared-map pilot harness', () => {
     ).toEqual([]);
     expect(() => createAlgZooPilotRunner({})).toThrow(TypeError);
 
-    const noCostRunner = createAlgZooPilotRunner({
+    const noCostRunner = createTestAlgZooPilotRunner({
       createDeadline: createTestDeadlineFactory().createDeadline,
       hashMapSnapshot: async () => 'empty-map-hash',
       runInvestigator: async request => {
         request.budget.reserve({ investigatorTokens: 2 }).cancel();
         request.budget.reserve().complete();
-        return { submission: {} };
+        return {
+          submission: {
+            causalInterventionResult: {
+              schemaVersion: 1,
+              status: 'not-tested',
+            },
+          },
+        };
       },
       scoreBlindedSubmissions: async () => [],
     });
@@ -663,6 +713,107 @@ describe('AlgZoo shared-map pilot harness', () => {
   });
 });
 
+describe('AlgZoo typed causal result enforcement', () => {
+  it('keeps explanations without a typed causal record out of scoring', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const runner = createTestAlgZooPilotRunner({
+      createDeadline: createTestDeadlineFactory().createDeadline,
+      hashMapSnapshot: async () => 'missing-causal-map-hash',
+      runInvestigator: async request => {
+        const reservation = request.budget.reserve({ investigatorTokens: 4 });
+        reservation.complete({ investigatorTokens: 4 });
+        return {
+          submission: {
+            hypothesis: 'An explanation without its causal label',
+            restrictedRule: { op: 'constant', value: 0 },
+            causalInterventionResult:
+              request.session.arm === 'control'
+                ? undefined
+                : { schemaVersion: 1, status: 'tested' },
+          },
+          cost: { investigatorTokens: 4 },
+        };
+      },
+      scoreBlindedSubmissions: async ({ submissions }) =>
+        submissions.map(submission => ({
+          attemptStatus: submission.attemptStatus,
+          failureCode: submission.failureCode,
+        })),
+    });
+
+    const result = await runner.runTargetPair(
+      {
+        ...plan.schedule.pairs[0],
+        sessionOrder: ['control', 'treatment'],
+      },
+      [],
+      []
+    );
+
+    expect(result.sessionRecords).toMatchObject([
+      {
+        attemptStatus: 'invalid-submission',
+        failureCode: 'invalid-causal-intervention-result',
+        cost: { investigatorTokens: 4 },
+      },
+      {
+        attemptStatus: 'invalid-submission',
+        failureCode: 'invalid-causal-intervention-result',
+        cost: { investigatorTokens: 4 },
+      },
+    ]);
+    expect(result.blindedScores).toEqual([
+      {
+        attemptStatus: 'invalid-submission',
+        failureCode: 'invalid-causal-intervention-result',
+      },
+      {
+        attemptStatus: 'invalid-submission',
+        failureCode: 'invalid-causal-intervention-result',
+      },
+    ]);
+  });
+
+  it('accepts a complete tested causal record', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const runner = createTestAlgZooPilotRunner({
+      createDeadline: createTestDeadlineFactory().createDeadline,
+      hashMapSnapshot: async () => 'tested-causal-map-hash',
+      runInvestigator: async request => {
+        const reservation = request.budget.reserve({ investigatorTokens: 4 });
+        reservation.complete({ investigatorTokens: 4 });
+        return {
+          submission: {
+            causalInterventionResult: {
+              schemaVersion: 1,
+              status: 'tested',
+              targetMechanismId: 'mechanism-1',
+              operation: 'set-activation-zero',
+              timeStepIndex: 0,
+              inputSequenceSha256: 'a'.repeat(64),
+              predictedOutputIndex: 1,
+              baselineOutputIndex: 1,
+              intervenedOutputIndex: 0,
+              causalScore: 1,
+              artifactSha256: 'b'.repeat(64),
+            },
+          },
+          cost: { investigatorTokens: 4 },
+        };
+      },
+      scoreBlindedSubmissions: async () => [],
+    });
+
+    const result = await runner.runTargetPair(
+      { ...plan.schedule.pairs[0], sessionOrder: ['control'] },
+      [],
+      []
+    );
+
+    expect(result.sessionRecords[0].attemptStatus).toBe('submitted');
+  });
+});
+
 describe('AlgZoo pilot session budget enforcement', () => {
   it('bounds both arms independently and retains earlier submissions', async () => {
     for (const field of [
@@ -676,7 +827,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
         sessionOrder: ['control', 'treatment'],
       };
       const deadlineFactory = createTestDeadlineFactory();
-      const runner = createAlgZooPilotRunner({
+      const runner = createTestAlgZooPilotRunner({
         createDeadline: deadlineFactory.createDeadline,
         hashMapSnapshot: async () => 'independent-arm-budget-hash',
         runInvestigator: async request => {
@@ -687,7 +838,15 @@ describe('AlgZoo pilot session budget enforcement', () => {
           if (request.session.arm === 'treatment') {
             request.budget.reserve({ [field]: 1 });
           }
-          return { submission: { result: request.session.arm } };
+          return {
+            submission: {
+              result: request.session.arm,
+              causalInterventionResult: {
+                schemaVersion: 1,
+                status: 'not-tested',
+              },
+            },
+          };
         },
         scoreBlindedSubmissions: async ({ submissions }) => {
           expect(submissions).toHaveLength(2);
@@ -735,7 +894,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
       const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
       const deadlineFactory = createTestDeadlineFactory();
       let unbudgetedWorkStarted = false;
-      const runner = createAlgZooPilotRunner({
+      const runner = createTestAlgZooPilotRunner({
         createDeadline: deadlineFactory.createDeadline,
         hashMapSnapshot: async () => 'budget-map-hash',
         runInvestigator: async request => {
@@ -771,7 +930,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
       const plan = createAlgZooPilotPlan(configuration, fixture);
       const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
       const deadlineFactory = createTestDeadlineFactory();
-      const runner = createAlgZooPilotRunner({
+      const runner = createTestAlgZooPilotRunner({
         createDeadline: deadlineFactory.createDeadline,
         hashMapSnapshot: async () => 'provider-overrun-hash',
         runInvestigator: async request => {
@@ -797,7 +956,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
     const plan = createAlgZooPilotPlan(configuration, fixture);
     const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
     const deadlineFactory = createTestDeadlineFactory();
-    const runner = createAlgZooPilotRunner({
+    const runner = createTestAlgZooPilotRunner({
       createDeadline: deadlineFactory.createDeadline,
       hashMapSnapshot: async () => 'deadline-map-hash',
       runInvestigator: async request => {
@@ -823,7 +982,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
   it('rejects invalid deadline adapters and records elapsed overruns', async () => {
     const plan = createAlgZooPilotPlan(configuration, fixture);
     const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
-    const invalidRunner = createAlgZooPilotRunner({
+    const invalidRunner = createTestAlgZooPilotRunner({
       createDeadline: () => null,
       hashMapSnapshot: async () => 'invalid-deadline-hash',
       runInvestigator: async () => ({ submission: {} }),
@@ -834,7 +993,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
     );
 
     const deadlineFactory = createTestDeadlineFactory();
-    const runner = createAlgZooPilotRunner({
+    const runner = createTestAlgZooPilotRunner({
       createDeadline: deadlineFactory.createDeadline,
       hashMapSnapshot: async () => 'elapsed-overrun-hash',
       runInvestigator: async () => {
@@ -860,7 +1019,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
     const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
     const run = async execute => {
       const deadlineFactory = createTestDeadlineFactory();
-      const runner = createAlgZooPilotRunner({
+      const runner = createTestAlgZooPilotRunner({
         createDeadline: deadlineFactory.createDeadline,
         hashMapSnapshot: async () => 'invalid-usage-hash',
         runInvestigator: execute,
@@ -899,7 +1058,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
     });
 
     const nonfiniteDeadlineFactory = createTestDeadlineFactory();
-    const nonfiniteDeadlineRunner = createAlgZooPilotRunner({
+    const nonfiniteDeadlineRunner = createTestAlgZooPilotRunner({
       createDeadline: nonfiniteDeadlineFactory.createDeadline,
       hashMapSnapshot: async () => 'nonfinite-deadline-hash',
       runInvestigator: async request => {
@@ -926,7 +1085,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
     const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
     const run = async execute => {
       const deadlineFactory = createTestDeadlineFactory();
-      const runner = createAlgZooPilotRunner({
+      const runner = createTestAlgZooPilotRunner({
         createDeadline: deadlineFactory.createDeadline,
         hashMapSnapshot: async () => 'reservation-outcome-hash',
         runInvestigator: execute,
@@ -976,7 +1135,7 @@ describe('AlgZoo pilot session budget enforcement', () => {
       sessionOrder: ['control', 'treatment'],
     };
     const deadlineFactory = createTestDeadlineFactory();
-    const runner = createAlgZooPilotRunner({
+    const runner = createTestAlgZooPilotRunner({
       createDeadline: deadlineFactory.createDeadline,
       hashMapSnapshot: async () => 'provider-failure-map-hash',
       runInvestigator: async request => {
@@ -986,7 +1145,13 @@ describe('AlgZoo pilot session budget enforcement', () => {
           throw new Error('provider unavailable');
         }
         return {
-          submission: { hypothesis: 'paired attempt completed' },
+          submission: {
+            hypothesis: 'paired attempt completed',
+            causalInterventionResult: {
+              schemaVersion: 1,
+              status: 'not-tested',
+            },
+          },
           cost: { investigatorTokens: 12 },
         };
       },

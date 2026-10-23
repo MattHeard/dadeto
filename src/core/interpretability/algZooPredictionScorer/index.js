@@ -391,6 +391,13 @@ export function scoreAlgZooBlindedSubmissions(
   );
   return submissions.map(submission => {
     const targetUnit = submission?.targetUnit;
+    if (submission?.attemptStatus === 'invalid-submission') {
+      return {
+        targetUnit,
+        predictionStatus: 'invalid',
+        errors: [{ code: submission.failureCode ?? 'invalid-submission' }],
+      };
+    }
     if (
       !Number.isSafeInteger(targetUnit) ||
       targetUnit < 0 ||
