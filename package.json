@@ -47,6 +47,7 @@
     "function-graph": "node src/local/function-dependency-graph.js",
     "agents:reuse-report": "node src/local/agentReuseReport.js",
     "interpretability:algzoo:render-accuracy-report": "node src/local/render-algzoo-accuracy-report.js",
+    "interpretability:algzoo:render-coverage-cost-report": "node src/local/render-algzoo-coverage-cost-report.js",
     "core-parse": "npm run parse-not-validate && npm run parse-boundary",
     "parse-not-validate": "node src/local/check-parse-not-validate.js",
     "parse-boundary": "node src/local/check-parse-boundary.js",

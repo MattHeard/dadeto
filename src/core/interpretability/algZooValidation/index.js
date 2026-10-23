@@ -8,6 +8,16 @@ export function isRecord(value) {
 }
 
 /**
+ * Create one stable indexed or unindexed validation error.
+ * @param {string} code Error code.
+ * @param {number} [index] Optional failing record index.
+ * @returns {Array<{code: string, index?: number}>} One validation error.
+ */
+export function createValidationError(code, index) {
+  return index === undefined ? [{ code }] : [{ code, index }];
+}
+
+/**
  * Check for a finite nonnegative measurement.
  * @param {unknown} value Candidate numeric value.
  * @returns {value is number} Whether value is finite and nonnegative.

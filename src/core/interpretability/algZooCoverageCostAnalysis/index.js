@@ -1,8 +1,12 @@
-import { isNonnegativeFinite, isRecord } from '../algZooValidation/index.js';
+import {
+  createValidationError,
+  isNonnegativeFinite,
+  isRecord,
+} from '../algZooValidation/index.js';
 
 const TARGET_COUNT = 16;
 const MAX_BOOTSTRAP_REPLICATE_COUNT = 100000;
-const RESOURCE_METRICS = Object.freeze([
+export const ALG_ZOO_COVERAGE_COST_RESOURCE_METRICS = Object.freeze([
   'investigatorTokens',
   'elapsedMillis',
   'toolCalls',
@@ -24,7 +28,7 @@ export function analyzeAlgZooCoverageCostTrendV1(input) {
 
   const records = /** @type {Record<string, any>} */ (input);
   const pairs = /** @type {Array<Record<string, any>>} */ (records.pairs);
-  const trends = RESOURCE_METRICS.map(metric =>
+  const trends = ALG_ZOO_COVERAGE_COST_RESOURCE_METRICS.map(metric =>
     analyzeResourceTrend(
       pairs,
       metric,
@@ -62,42 +66,42 @@ export function analyzeAlgZooCoverageCostTrendV1(input) {
  * @returns {Array<{code: string, index?: number}>} Stable validation errors.
  */
 function validateInput(input) {
-  if (!isRecord(input)) return [{ code: 'invalid-analysis-input' }];
+  if (!isRecord(input)) return createValidationError('invalid-analysis-input');
   if (
     typeof input.protocolVersion !== 'string' ||
     input.protocolVersion.trim() === '' ||
     !Array.isArray(input.pairs) ||
     input.pairs.length !== TARGET_COUNT
   ) {
-    return [{ code: 'invalid-analysis-metadata' }];
+    return createValidationError('invalid-analysis-metadata');
   }
   if (
     !Number.isInteger(input.bootstrapSeed) ||
     input.bootstrapSeed <= 0 ||
     input.bootstrapSeed > 0xffffffff
   ) {
-    return [{ code: 'invalid-bootstrap-seed' }];
+    return createValidationError('invalid-bootstrap-seed');
   }
   if (
     !Number.isInteger(input.bootstrapReplicateCount) ||
     input.bootstrapReplicateCount < 1 ||
     input.bootstrapReplicateCount > MAX_BOOTSTRAP_REPLICATE_COUNT
   ) {
-    return [{ code: 'invalid-bootstrap-replicate-count' }];
+    return createValidationError('invalid-bootstrap-replicate-count');
   }
 
   const seenTargetIds = new Set();
   let previousCoverage = -1;
   for (let index = 0; index < input.pairs.length; index += 1) {
     const pair = input.pairs[index];
-    if (!isRecord(pair)) return [{ code: 'invalid-pair', index }];
+    if (!isRecord(pair)) return createValidationError('invalid-pair', index);
     if (
       !Number.isInteger(pair.targetId) ||
       pair.targetId < 0 ||
       pair.targetId >= TARGET_COUNT ||
       seenTargetIds.has(pair.targetId)
     ) {
-      return [{ code: 'invalid-target-id', index }];
+      return createValidationError('invalid-target-id', index);
     }
     seenTargetIds.add(pair.targetId);
     if (
@@ -107,7 +111,7 @@ function validateInput(input) {
       !Number.isInteger(pair.mapCoverage * TARGET_COUNT) ||
       pair.mapCoverage < previousCoverage
     ) {
-      return [{ code: 'invalid-map-coverage', index }];
+      return createValidationError('invalid-map-coverage', index);
     }
     previousCoverage = pair.mapCoverage;
 
@@ -134,14 +138,14 @@ function validateArm(value, index, armName) {
     !['complete', 'partial'].includes(value.costMeasurementStatus) ||
     !isRecord(value.chargedCost)
   ) {
-    return [{ code: `invalid-${armName}-arm`, index }];
+    return createValidationError(`invalid-${armName}-arm`, index);
   }
-  for (const metric of RESOURCE_METRICS) {
-    if (!isNonnegativeFinite(value.chargedCost[metric])) {
-      return [{ code: `invalid-${armName}-cost`, index }];
-    }
-  }
-  return [];
+  const invalidMetric = ALG_ZOO_COVERAGE_COST_RESOURCE_METRICS.find(
+    metric => !isNonnegativeFinite(value.chargedCost[metric])
+  );
+  return invalidMetric
+    ? createValidationError(`invalid-${armName}-cost`, index)
+    : [];
 }
 
 /**
@@ -343,7 +347,10 @@ function copyArmRecord(arm) {
     attemptStatus: arm.attemptStatus,
     costMeasurementStatus: arm.costMeasurementStatus,
     chargedCost: Object.fromEntries(
-      RESOURCE_METRICS.map(metric => [metric, arm.chargedCost[metric]])
+      ALG_ZOO_COVERAGE_COST_RESOURCE_METRICS.map(metric => [
+        metric,
+        arm.chargedCost[metric],
+      ])
     ),
   };
 }
