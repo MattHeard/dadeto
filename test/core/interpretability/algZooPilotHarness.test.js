@@ -85,6 +85,47 @@ function syntheticWholeModelEvaluation(mechanisticEstimateOffset = -0.01) {
   };
 }
 
+/**
+ * Create controllable per-session deadlines for harness tests.
+ * @returns {{deadlines: Array<Record<string, any>>, createDeadline: (limit: number) => Record<string, any>}} Deadline factory and its test handles.
+ */
+function createTestDeadlineFactory() {
+  const deadlines = [];
+  return {
+    deadlines,
+    createDeadline(limit) {
+      const controller = new AbortController();
+      let resolveExpired;
+      let elapsed = 0;
+      let cancelCount = 0;
+      const deadline = {
+        signal: controller.signal,
+        expired: new Promise(resolve => {
+          resolveExpired = resolve;
+        }),
+        elapsedMillis: () => elapsed,
+        abort: () => controller.abort(),
+        cancel: () => {
+          cancelCount += 1;
+        },
+        setElapsed(value) {
+          elapsed = value;
+        },
+        get cancelCount() {
+          return cancelCount;
+        },
+        expire(value = limit) {
+          elapsed = value;
+          controller.abort();
+          resolveExpired();
+        },
+      };
+      deadlines.push(deadline);
+      return deadline;
+    },
+  };
+}
+
 describe('AlgZoo shared-map pilot harness', () => {
   it('creates a deterministic census permutation and paired session order', () => {
     const first = createAlgZooPilotSchedule(721);
@@ -315,10 +356,17 @@ describe('AlgZoo shared-map pilot harness', () => {
       { normalizedRmse: 0.08, perStepMaximum: 0.2 },
       { normalizedRmse: 0.14, perStepMaximum: 0.31 },
     ];
+    const deadlineFactory = createTestDeadlineFactory();
     const runner = createAlgZooPilotRunner({
+      createDeadline: deadlineFactory.createDeadline,
       hashMapSnapshot: async entries => `hash-${entries.length}`,
       runInvestigator: async request => {
         calls.push({ type: 'investigator', request });
+        if (request.session.arm === 'treatment') {
+          request.budget.reserve({ investigatorTokens: 20001 });
+        }
+        const reservation = request.budget.reserve({ investigatorTokens: 12 });
+        reservation.complete({ investigatorTokens: 12 });
         return {
           submissionId: `private-${request.session.arm}`,
           submission: {
@@ -329,16 +377,7 @@ describe('AlgZoo shared-map pilot harness', () => {
             backgroundClaimIds: ['map-entry-private'],
             evidence: [{ observation: 'controlled' }],
           },
-          cost:
-            request.session.arm === 'treatment'
-              ? {
-                  investigatorTokens: 20001,
-                  elapsedMillis: 1800001,
-                  toolCalls: 101,
-                  targetForwardPasses: 10001,
-                  monetaryCostUsd: 0.01,
-                }
-              : { investigatorTokens: 12 },
+          cost: { investigatorTokens: 12 },
         };
       },
       scoreBlindedSubmissions: async request => {
@@ -395,8 +434,9 @@ describe('AlgZoo shared-map pilot harness', () => {
       result.sessionRecords.map(record => record.submission.causalEvidence)
     ).toEqual(['not tested', 'not tested']);
     expect(
-      result.sessionRecords.map(record => record.submission.hypothesis)
-    ).toEqual(['A reproducible hypothesis', 'A reproducible hypothesis']);
+      result.sessionRecords.find(record => record.arm === 'control').submission
+        .hypothesis
+    ).toBe('A reproducible hypothesis');
     expect(
       result.sessionRecords.every(
         record => !('blindedScores' in record.submission)
@@ -406,10 +446,12 @@ describe('AlgZoo shared-map pilot harness', () => {
       true
     );
     expect(
-      result.sessionRecords.some(
-        record => record.exceededBudgetLimits.length === 4
-      )
-    ).toBe(true);
+      result.sessionRecords.find(record => record.arm === 'treatment')
+    ).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'investigatorTokens',
+      cost: { investigatorTokens: 0 },
+    });
     expect(
       result.sessionRecords.find(record => record.arm === 'control').cost
     ).toMatchObject({
@@ -426,8 +468,13 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(() => createAlgZooPilotRunner({})).toThrow(TypeError);
 
     const noCostRunner = createAlgZooPilotRunner({
+      createDeadline: createTestDeadlineFactory().createDeadline,
       hashMapSnapshot: async () => 'empty-map-hash',
-      runInvestigator: async () => ({ submission: {} }),
+      runInvestigator: async request => {
+        request.budget.reserve({ investigatorTokens: 2 }).cancel();
+        request.budget.reserve().complete();
+        return { submission: {} };
+      },
       scoreBlindedSubmissions: async () => [],
     });
     const noCostResult = await noCostRunner.runTargetPair(
@@ -443,7 +490,243 @@ describe('AlgZoo shared-map pilot harness', () => {
       monetaryCostUsd: null,
     });
   });
+});
 
+describe('AlgZoo pilot session budget enforcement', () => {
+  it('refuses further investigator work at each exact session usage limit', async () => {
+    for (const field of [
+      'investigatorTokens',
+      'toolCalls',
+      'targetForwardPasses',
+    ]) {
+      const plan = createAlgZooPilotPlan(configuration, fixture);
+      const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
+      const deadlineFactory = createTestDeadlineFactory();
+      let unbudgetedWorkStarted = false;
+      const runner = createAlgZooPilotRunner({
+        createDeadline: deadlineFactory.createDeadline,
+        hashMapSnapshot: async () => 'budget-map-hash',
+        runInvestigator: async request => {
+          const limit = request.session.budget[field];
+          const reservation = request.budget.reserve({ [field]: limit });
+          reservation.complete({ [field]: limit });
+          request.budget.reserve({ [field]: 1 });
+          unbudgetedWorkStarted = true;
+          return { submission: {} };
+        },
+        scoreBlindedSubmissions: async () => [],
+      });
+      const result = await runner.runTargetPair(pair, [], []);
+
+      expect(unbudgetedWorkStarted).toBe(false);
+      expect(result.sessionRecords[0]).toMatchObject({
+        attemptStatus: 'budget-stopped',
+        failureCode: field,
+        cost: { [field]: pair.sessions.control.budget[field] },
+      });
+      expect(deadlineFactory.deadlines[0].signal.aborted).toBe(true);
+      expect(deadlineFactory.deadlines[0].cancelCount).toBe(1);
+      expect(result.blindedSubmissions[0].attemptStatus).toBe('budget-stopped');
+    }
+  });
+
+  it('records provider-reported usage that exceeds a reserved global limit', async () => {
+    for (const field of [
+      'investigatorTokens',
+      'toolCalls',
+      'targetForwardPasses',
+    ]) {
+      const plan = createAlgZooPilotPlan(configuration, fixture);
+      const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
+      const deadlineFactory = createTestDeadlineFactory();
+      const runner = createAlgZooPilotRunner({
+        createDeadline: deadlineFactory.createDeadline,
+        hashMapSnapshot: async () => 'provider-overrun-hash',
+        runInvestigator: async request => {
+          const limit = request.session.budget[field];
+          const reservation = request.budget.reserve({ [field]: limit });
+          reservation.complete({ [field]: limit + 1 });
+          return { submission: {} };
+        },
+        scoreBlindedSubmissions: async () => [],
+      });
+      const result = await runner.runTargetPair(pair, [], []);
+
+      expect(result.sessionRecords[0]).toMatchObject({
+        attemptStatus: 'budget-stopped',
+        failureCode: field,
+        exceededBudgetLimits: [field],
+        cost: { [field]: pair.sessions.control.budget[field] + 1 },
+      });
+    }
+  });
+
+  it('aborts and retains a failed attempt when the elapsed deadline expires', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
+    const deadlineFactory = createTestDeadlineFactory();
+    const runner = createAlgZooPilotRunner({
+      createDeadline: deadlineFactory.createDeadline,
+      hashMapSnapshot: async () => 'deadline-map-hash',
+      runInvestigator: async request => {
+        deadlineFactory.deadlines.at(-1).expire();
+        expect(request.signal.aborted).toBe(true);
+        expect(() => request.budget.reserve({})).toThrow();
+        return new Promise(() => {});
+      },
+      scoreBlindedSubmissions: async () => [],
+    });
+
+    const result = await runner.runTargetPair(pair, [], []);
+
+    expect(result.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'elapsedMillis',
+      cost: { elapsedMillis: pair.sessions.control.budget.elapsedMillis },
+    });
+    expect(result.blindedSubmissions[0].attemptStatus).toBe('budget-stopped');
+  });
+
+  it('rejects invalid deadline adapters and records elapsed overruns', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
+    const invalidRunner = createAlgZooPilotRunner({
+      createDeadline: () => null,
+      hashMapSnapshot: async () => 'invalid-deadline-hash',
+      runInvestigator: async () => ({ submission: {} }),
+      scoreBlindedSubmissions: async () => [],
+    });
+    await expect(invalidRunner.runTargetPair(pair, [], [])).rejects.toThrow(
+      'invalid deadline'
+    );
+
+    const deadlineFactory = createTestDeadlineFactory();
+    const runner = createAlgZooPilotRunner({
+      createDeadline: deadlineFactory.createDeadline,
+      hashMapSnapshot: async () => 'elapsed-overrun-hash',
+      runInvestigator: async () => {
+        deadlineFactory.deadlines
+          .at(-1)
+          .expire(pair.sessions.control.budget.elapsedMillis + 1);
+        return new Promise(() => {});
+      },
+      scoreBlindedSubmissions: async () => [],
+    });
+    const result = await runner.runTargetPair(pair, [], []);
+
+    expect(result.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'elapsedMillis',
+      cost: { elapsedMillis: pair.sessions.control.budget.elapsedMillis + 1 },
+      exceededBudgetLimits: ['elapsedMillis'],
+    });
+  });
+
+  it('rejects invalid reservations, usage, and unmetered adapter cost', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
+    const run = async execute => {
+      const deadlineFactory = createTestDeadlineFactory();
+      const runner = createAlgZooPilotRunner({
+        createDeadline: deadlineFactory.createDeadline,
+        hashMapSnapshot: async () => 'invalid-usage-hash',
+        runInvestigator: execute,
+        scoreBlindedSubmissions: async () => [],
+      });
+      return runner.runTargetPair(pair, [], []);
+    };
+
+    await expect(
+      run(async request => {
+        request.budget.reserve({ investigatorTokens: -1 });
+        return { submission: {} };
+      })
+    ).rejects.toThrow(TypeError);
+    await expect(
+      run(async request => {
+        request.budget.reserve({ toolCalls: 1 }).complete({ toolCalls: -1 });
+        return { submission: {} };
+      })
+    ).rejects.toThrow(TypeError);
+
+    const unmetered = await run(async () => ({
+      submission: {},
+      cost: { investigatorTokens: 1 },
+    }));
+    expect(unmetered.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'unmetered-investigatorTokens',
+      cost: { investigatorTokens: 0 },
+    });
+
+    const nonfiniteDeadlineFactory = createTestDeadlineFactory();
+    const nonfiniteDeadlineRunner = createAlgZooPilotRunner({
+      createDeadline: nonfiniteDeadlineFactory.createDeadline,
+      hashMapSnapshot: async () => 'nonfinite-deadline-hash',
+      runInvestigator: async request => {
+        nonfiniteDeadlineFactory.deadlines[0].setElapsed(Number.NaN);
+        request.budget.reserve({});
+        return { submission: {} };
+      },
+      scoreBlindedSubmissions: async () => [],
+    });
+    const nonfiniteDeadline = await nonfiniteDeadlineRunner.runTargetPair(
+      pair,
+      [],
+      []
+    );
+    expect(nonfiniteDeadline.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'elapsedMillis',
+      cost: { elapsedMillis: 0 },
+    });
+  });
+
+  it('retains unsettled and over-reservation attempts with measured usage', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const pair = { ...plan.schedule.pairs[0], sessionOrder: ['control'] };
+    const run = async execute => {
+      const deadlineFactory = createTestDeadlineFactory();
+      const runner = createAlgZooPilotRunner({
+        createDeadline: deadlineFactory.createDeadline,
+        hashMapSnapshot: async () => 'reservation-outcome-hash',
+        runInvestigator: execute,
+        scoreBlindedSubmissions: async () => [],
+      });
+      return runner.runTargetPair(pair, [], []);
+    };
+
+    const unsettled = await run(async request => {
+      request.budget.reserve({ toolCalls: 1 });
+      return { submission: {} };
+    });
+    expect(unsettled.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'unsettled-reservation',
+    });
+
+    const overReservation = await run(async request => {
+      const reservation = request.budget.reserve({ investigatorTokens: 10 });
+      reservation.complete({ investigatorTokens: 11 });
+      return { submission: {} };
+    });
+    expect(overReservation.sessionRecords[0]).toMatchObject({
+      attemptStatus: 'budget-stopped',
+      failureCode: 'investigatorTokens',
+      cost: { investigatorTokens: 11 },
+    });
+
+    const duplicateSettlement = run(async request => {
+      const reservation = request.budget.reserve({ toolCalls: 1 });
+      reservation.complete({ toolCalls: 1 });
+      reservation.cancel();
+      return { submission: {} };
+    });
+    await expect(duplicateSettlement).rejects.toThrow(TypeError);
+  });
+});
+
+describe('AlgZoo whole-model accuracy comparison', () => {
   it('validates equal compute for whole-model estimator comparisons', () => {
     expect(compareAlgZooWholeModelAccuracy(null)).toMatchObject({
       valid: false,

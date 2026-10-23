@@ -15,6 +15,11 @@ const PILOT_BUDGET = Object.freeze({
   toolCalls: 100,
   targetForwardPasses: 10000,
 });
+const METERED_BUDGET_FIELDS = Object.freeze([
+  'investigatorTokens',
+  'toolCalls',
+  'targetForwardPasses',
+]);
 const PILOT_TARGETS = Object.freeze(
   Array.from({ length: TARGET_COUNT }, (_, index) => index)
 );
@@ -319,6 +324,9 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
   const submission = sessionRecord.submission ?? {};
   return {
     targetUnit: sessionRecord.unitIndex,
+    ...(sessionRecord.attemptStatus
+      ? { attemptStatus: sessionRecord.attemptStatus }
+      : {}),
     hypothesis: submission.hypothesis,
     restrictedRule: submission.restrictedRule,
     predictions: submission.predictions,
@@ -329,18 +337,36 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
 }
 
 /**
+ * @typedef {object} AlgZooPilotDeadline Deadline adapter for one session.
+ * @property {{aborted: boolean}} signal Abort signal passed to external providers.
+ * @property {Promise<unknown>} expired Promise that resolves at the hard deadline.
+ * @property {() => number} elapsedMillis Current elapsed session time.
+ * @property {() => void} abort Stop the active provider request.
+ * @property {() => void} cancel Release deadline resources after the session.
+ */
+
+/**
+ * @typedef {object} AlgZooPilotRunnerAdapters Injected pilot dependencies.
+ * @property {(request: Record<string, any>) => Promise<Record<string, any>>} runInvestigator Research session adapter.
+ * @property {(request: Record<string, any>) => Promise<Array<Record<string, any>>>} scoreBlindedSubmissions Blinded evaluator.
+ * @property {(entries: Array<Record<string, any>>) => string|Promise<string>} hashMapSnapshot Snapshot hasher.
+ * @property {(elapsedMillis: number) => AlgZooPilotDeadline} createDeadline Per-session deadline adapter.
+ */
+
+/**
  * Create the pilot runner around injected investigator and blinded-score adapters.
- * @param {{runInvestigator: (request: Record<string, any>) => Promise<Record<string, any>>, scoreBlindedSubmissions: (request: Record<string, any>) => Promise<Array<Record<string, any>>>, hashMapSnapshot: (entries: Array<Record<string, any>>) => string|Promise<string>}} adapters Live or stubbed research adapters.
+ * @param {AlgZooPilotRunnerAdapters} adapters Investigator adapters must reserve usage before external work and honor the abort signal.
  * @returns {{runTargetPair: (pair: Record<string, any>, mapEntries: Array<Record<string, any>>, heldOutEvaluationData: unknown) => Promise<Record<string, any>>}} Pair runner that never passes held-out values to investigators.
  */
 export function createAlgZooPilotRunner(adapters) {
   if (
     typeof adapters?.runInvestigator !== 'function' ||
     typeof adapters?.scoreBlindedSubmissions !== 'function' ||
-    typeof adapters?.hashMapSnapshot !== 'function'
+    typeof adapters?.hashMapSnapshot !== 'function' ||
+    typeof adapters?.createDeadline !== 'function'
   ) {
     throw new TypeError(
-      'Pilot adapters must supply investigator, scorer, and snapshot hasher.'
+      'Pilot adapters must supply investigator, scorer, snapshot hasher, and deadline factory.'
     );
   }
   return Object.freeze({
@@ -352,11 +378,51 @@ export function createAlgZooPilotRunner(adapters) {
         const mapSnapshotHash = await adapters.hashMapSnapshot(
           retrieval.entries
         );
-        const execution = await adapters.runInvestigator({
-          session,
-          mapEntries: retrieval.entries,
-          fixtureSha256: pair.fixtureSha256,
-        });
+        const deadline = adapters.createDeadline(session.budget.elapsedMillis);
+        if (
+          !deadline ||
+          typeof deadline.signal?.aborted !== 'boolean' ||
+          typeof deadline.expired?.then !== 'function' ||
+          typeof deadline.elapsedMillis !== 'function' ||
+          typeof deadline.abort !== 'function' ||
+          typeof deadline.cancel !== 'function'
+        ) {
+          throw new TypeError(
+            'Pilot deadline adapter returned an invalid deadline.'
+          );
+        }
+        const budget = createPilotSessionBudget(session.budget, deadline);
+        /** @type {Record<string, any>} */
+        let execution;
+        try {
+          const expired = Promise.resolve(deadline.expired).then(() => {
+            throw createPilotBudgetError('elapsedMillis');
+          });
+          const investigator = adapters.runInvestigator({
+            session,
+            mapEntries: retrieval.entries,
+            fixtureSha256: pair.fixtureSha256,
+            budget: budget.api,
+            signal: deadline.signal,
+          });
+          execution = await Promise.race([expired, investigator]);
+          budget.assertSettled();
+          assertInvestigatorCostWasMetered(execution.cost, budget.snapshot());
+          execution = {
+            ...execution,
+            cost: { ...execution.cost, ...budget.snapshot() },
+          };
+        } catch (error) {
+          if (error?.code !== 'pilot-budget-exceeded') throw error;
+          execution = {
+            status: 'budget-stopped',
+            failureCode: error.field,
+            submission: { causalEvidence: 'not tested' },
+            cost: budget.snapshot(),
+          };
+        } finally {
+          deadline.cancel();
+        }
         sessionRecords.push(
           createAlgZooPilotSessionRecord(
             session,
@@ -646,12 +712,12 @@ function createAlgZooPilotSessionRecord(
   execution,
   mapSnapshotHash
 ) {
-  const measuredCost = execution.cost ?? {};
+  const measuredCost = execution.cost;
   const cost = {
-    investigatorTokens: measuredCost.investigatorTokens ?? 0,
-    elapsedMillis: measuredCost.elapsedMillis ?? 0,
-    toolCalls: measuredCost.toolCalls ?? 0,
-    targetForwardPasses: measuredCost.targetForwardPasses ?? 0,
+    investigatorTokens: measuredCost.investigatorTokens,
+    elapsedMillis: measuredCost.elapsedMillis,
+    toolCalls: measuredCost.toolCalls,
+    targetForwardPasses: measuredCost.targetForwardPasses,
     monetaryCostUsd: measuredCost.monetaryCostUsd ?? null,
   };
   const exceededBudgetLimits = [];
@@ -669,6 +735,8 @@ function createAlgZooPilotSessionRecord(
   }
   return {
     ...session,
+    attemptStatus: execution.status ?? 'submitted',
+    ...(execution.failureCode ? { failureCode: execution.failureCode } : {}),
     submission: execution.submission,
     cost,
     exceededBudgetLimits,
@@ -677,6 +745,154 @@ function createAlgZooPilotSessionRecord(
     mapSnapshotHash,
     retrievalAccessLog: retrieval.accessLog,
   };
+}
+
+/**
+ * Create a per-session reservation ledger that adapters consult before work.
+ * @param {Record<string, number>} limits Frozen preregistered session limits.
+ * @param {{signal: {aborted: boolean}, elapsedMillis: () => number, abort: () => void}} deadline Enforced session deadline.
+ * @returns {{api: Record<string, Function>, snapshot: () => Record<string, number>, assertSettled: () => void}} Metered usage interface and final cost snapshot.
+ */
+function createPilotSessionBudget(limits, deadline) {
+  const used = Object.fromEntries(
+    METERED_BUDGET_FIELDS.map(field => [field, 0])
+  );
+  const reserved = Object.fromEntries(
+    METERED_BUDGET_FIELDS.map(field => [field, 0])
+  );
+  const snapshot = () => ({
+    investigatorTokens: used.investigatorTokens,
+    elapsedMillis: Number.isFinite(deadline.elapsedMillis())
+      ? Math.max(0, deadline.elapsedMillis())
+      : 0,
+    toolCalls: used.toolCalls,
+    targetForwardPasses: used.targetForwardPasses,
+  });
+  /**
+   * Abort the session after reaching a hard budget boundary.
+   * @param {string} field Budget field that stopped the session.
+   * @returns {never} Always throws the stable budget error.
+   */
+  const stop = field => {
+    deadline.abort();
+    throw createPilotBudgetError(field);
+  };
+  const assertWithinDeadline = () => {
+    const elapsedMillis = deadline.elapsedMillis();
+    if (
+      deadline.signal.aborted ||
+      !Number.isFinite(elapsedMillis) ||
+      elapsedMillis >= limits.elapsedMillis
+    ) {
+      stop('elapsedMillis');
+    }
+  };
+  /**
+   * Reserve usage before starting an external provider action.
+   * @param {Record<string, number>} [requested] Maximum usage for the action.
+   * @returns {{complete: (actual?: Record<string, number>) => void, cancel: () => void}} Reservation settlement handle.
+   */
+  const reserve = requested => {
+    assertWithinDeadline();
+    const reservation = /** @type {Record<string, number>} */ ({});
+    for (const field of METERED_BUDGET_FIELDS) {
+      const amount = requested?.[field] ?? 0;
+      if (!Number.isSafeInteger(amount) || amount < 0) {
+        throw new TypeError(
+          `Pilot budget reservation ${field} must be a nonnegative integer.`
+        );
+      }
+      if (used[field] + reserved[field] + amount > limits[field]) {
+        stop(field);
+      }
+      reservation[field] = amount;
+    }
+    for (const field of METERED_BUDGET_FIELDS) {
+      reserved[field] += reservation[field];
+    }
+    let settled = false;
+    /**
+     * Release the reservation exactly once.
+     * @returns {void}
+     */
+    const release = () => {
+      if (settled) {
+        throw new TypeError('Pilot budget reservation is already settled.');
+      }
+      settled = true;
+      for (const field of METERED_BUDGET_FIELDS) {
+        reserved[field] -= reservation[field];
+      }
+    };
+    return Object.freeze({
+      /**
+       * Settle a completed provider action with its measured usage.
+       * @param {Record<string, number>} [actual] Measured usage for the action.
+       * @returns {void}
+       */
+      complete(actual = {}) {
+        assertWithinDeadline();
+        for (const field of METERED_BUDGET_FIELDS) {
+          const amount = actual[field] ?? 0;
+          if (!Number.isSafeInteger(amount) || amount < 0) {
+            throw new TypeError(
+              `Pilot budget usage ${field} must be a nonnegative integer.`
+            );
+          }
+        }
+        release();
+        for (const field of METERED_BUDGET_FIELDS) {
+          used[field] += actual[field] ?? 0;
+          if (
+            used[field] > limits[field] ||
+            actual[field] > reservation[field]
+          ) {
+            stop(field);
+          }
+        }
+      },
+      cancel() {
+        release();
+      },
+    });
+  };
+  return {
+    api: Object.freeze({ reserve }),
+    snapshot,
+    assertSettled() {
+      if (METERED_BUDGET_FIELDS.some(field => reserved[field] !== 0)) {
+        stop('unsettled-reservation');
+      }
+    },
+  };
+}
+
+/**
+ * Create the stable error for a budget reservation or deadline stop.
+ * @param {string} field Budget field that stopped the session.
+ * @returns {Error & {code: string, field: string}} Budget stop error.
+ */
+function createPilotBudgetError(field) {
+  const error = /** @type {Error & {code: string, field: string}} */ (
+    new Error('Preregistered pilot session budget reached.')
+  );
+  error.code = 'pilot-budget-exceeded';
+  error.field = field;
+  return error;
+}
+
+/**
+ * Reject provider usage reports that bypass the reservation ledger.
+ * @param {Record<string, number>|undefined} reported Provider-reported usage.
+ * @param {Record<string, number>} metered Usage settled through reservations.
+ * @returns {void}
+ */
+function assertInvestigatorCostWasMetered(reported, metered) {
+  for (const field of METERED_BUDGET_FIELDS) {
+    if (reported?.[field] !== undefined && reported[field] !== metered[field]) {
+      throw createPilotBudgetError(`unmetered-${field}`);
+    }
+  }
 }
 
 /**
