@@ -5,6 +5,7 @@ import {
   appendExperimentSubmissionV1,
   exportInterpretabilityResearchBundleV6,
   getEvidenceGraphContextV1,
+  getEvidenceGraphContextSnapshotV1,
   importInterpretabilityResearchBundleV2,
   summarizeIdentityReferencesV1,
 } from './index.js';
@@ -12,8 +13,12 @@ import {
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {Parameters<typeof importInterpretabilityResearchBundleV2>[1]} ResearchSchemas */
 /** @typedef {Parameters<typeof getEvidenceGraphContextV1>[1]} EvidenceContextQuery */
+/** @typedef {Parameters<typeof getEvidenceGraphContextSnapshotV1>[1]} EvidenceContextSnapshotQuery */
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: true}> & {mechanismIdentityLink: Record<string, string>|null}} ResearchContextPage */
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: false}>} ResearchContextFailure */
+/** @typedef {Extract<Awaited<ReturnType<typeof getEvidenceGraphContextSnapshotV1>>, {valid: true}> & {mechanismIdentityLink: Record<string, string>|null}} ResearchContextSnapshotPage */
+/** @typedef {Extract<Awaited<ReturnType<typeof getEvidenceGraphContextSnapshotV1>>, {valid: false}>} ResearchContextSnapshotFailure */
+/** @typedef {ResearchContextSnapshotFailure|ResearchContextSnapshotPage} ResearchContextSnapshotServiceResult */
 /** @typedef {Parameters<typeof appendExperimentSubmissionV1>[1]} ExperimentSubmission */
 /** @typedef {Parameters<typeof appendMechanisticEstimateV1>[1]} MechanisticEstimate */
 /** @typedef {Parameters<typeof appendAccuracyEvaluationV1>[1]} AccuracyEvaluation */
@@ -30,13 +35,14 @@ import {
 
 /**
  * Create the pure Atlas read/submission service over injected bundle storage.
- * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas}} options Storage capabilities and caller-provided schema adapters.
- * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, readIdentityReferences: (allowEffects: AllowEffects) => Promise<IdentityReferenceServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>, submitIdentityReference: (allowEffects: AllowEffects, reference: IdentityReference) => Promise<ResearchServiceResult>}} Permission-aware service methods.
+ * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas, hashContextSnapshot?: (canonicalSnapshot: string) => string|Promise<string>}} options Storage capabilities, caller-provided schema adapters, and pure hash function.
+ * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readContextSnapshot: (allowEffects: AllowEffects, query: EvidenceContextSnapshotQuery) => Promise<ResearchContextSnapshotServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, readIdentityReferences: (allowEffects: AllowEffects) => Promise<IdentityReferenceServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>, submitIdentityReference: (allowEffects: AllowEffects, reference: IdentityReference) => Promise<ResearchServiceResult>}} Permission-aware service methods.
  */
 export function createInterpretabilityResearchServiceV1({
   loadBundle,
   saveBundle,
   schemas,
+  hashContextSnapshot,
 }) {
   /**
    * @param {AllowEffects} allowEffects Permission token forwarded to storage.
@@ -83,16 +89,43 @@ export function createInterpretabilityResearchServiceV1({
       submission
     );
 
+  /**
+   * Attach an optional canonical identity link without changing invalid context results.
+   * @param {ResearchBundle} bundle Validated portable research bundle.
+   * @param {any} context Retrieved graph context.
+   * @returns {any} Context with the linked canonical identity when available.
+   */
+  function withMechanismIdentityLink(bundle, context) {
+    if (!context.valid) return context;
+    const mechanismIdentityLink =
+      bundle.mechanismIdentityLinks.find(
+        link => link.legacyMechanismId === context.mechanism.id
+      ) ?? null;
+    return Object.assign({}, context, { mechanismIdentityLink });
+  }
+
   return Object.freeze({
     readContext: (allowEffects, query) =>
-      withBundle(allowEffects, bundle => {
-        const context = getEvidenceGraphContextV1(bundle.evidenceGraph, query);
-        if (!context.valid) return context;
-        const mechanismIdentityLink =
-          bundle.mechanismIdentityLinks.find(
-            link => link.legacyMechanismId === context.mechanism.id
-          ) ?? null;
-        return { ...context, mechanismIdentityLink };
+      withBundle(
+        allowEffects,
+        bundle =>
+          /** @type {ResearchContextServiceResult} */ (
+            withMechanismIdentityLink(
+              bundle,
+              getEvidenceGraphContextV1(bundle.evidenceGraph, query)
+            )
+          )
+      ),
+    readContextSnapshot: (allowEffects, query) =>
+      withBundle(allowEffects, async bundle => {
+        const context = await getEvidenceGraphContextSnapshotV1(
+          bundle.evidenceGraph,
+          query,
+          hashContextSnapshot
+        );
+        return /** @type {ResearchContextSnapshotServiceResult} */ (
+          withMechanismIdentityLink(bundle, context)
+        );
       }),
     readEvaluations: allowEffects =>
       withBundle(allowEffects, bundle => ({

@@ -230,9 +230,14 @@ function createEstimate() {
  * Create an in-memory storage adapter that records permission forwarding.
  * @param {string} initialJson Initial portable research bundle.
  * @param {Record<string, any>} [serviceSchemas] Optional service schema adapters.
+ * @param {(canonicalSnapshot: string) => string|Promise<string>} [hashContextSnapshot] Optional pure context hash adapter.
  * @returns {Record<string, any>} Service, observed permissions, and stored JSON.
  */
-function createMemoryAdapter(initialJson, serviceSchemas = schemas) {
+function createMemoryAdapter(
+  initialJson,
+  serviceSchemas = schemas,
+  hashContextSnapshot
+) {
   let storedJson = initialJson;
   const loadPermissions = [];
   const savePermissions = [];
@@ -247,6 +252,7 @@ function createMemoryAdapter(initialJson, serviceSchemas = schemas) {
         storedJson = json;
       },
       schemas: serviceSchemas,
+      hashContextSnapshot,
     });
   return {
     service: createService(),
@@ -367,6 +373,57 @@ function createPythiaNativePortableBundle() {
 }
 
 describe('permission-aware interpretability research service V1', () => {
+  it('loads snapshot context with AllowEffects while keeping hashing pure', async () => {
+    const allowEffects = createAllowEffects();
+    const json = createPortableBundle(createEvidenceGraph());
+    const hashedInputs = [];
+    const hashContextSnapshot = canonical => {
+      hashedInputs.push(canonical);
+      return `fixture:${canonical.length}`;
+    };
+    const memory = createMemoryAdapter(json, schemas, hashContextSnapshot);
+    const snapshot = await memory.service.readContextSnapshot(allowEffects, {
+      mechanismId: 'mechanism-a',
+      pageSize: 1,
+      maxItems: 2,
+    });
+    expect(snapshot).toMatchObject({
+      valid: true,
+      snapshotId: expect.stringMatching(/^atlas:context:v1:fixture:/),
+      mechanismIdentityLink: expect.objectContaining({
+        legacyMechanismId: 'mechanism-a',
+      }),
+    });
+    expect(memory.loadPermissions).toEqual([allowEffects]);
+    expect(memory.savePermissions).toEqual([]);
+    expect(hashedInputs).toHaveLength(1);
+    expect(hashedInputs[0]).toContain('evidence-a');
+  });
+
+  it('returns snapshot validation failures and explicit unresolved identity links', async () => {
+    const allowEffects = createAllowEffects();
+    const memory = createMemoryAdapter(
+      createPortableBundle(createEvidenceGraph(), false),
+      schemas,
+      canonical => `fixture:${canonical.length}`
+    );
+    const unknown = await memory.service.readContextSnapshot(allowEffects, {
+      mechanismId: 'unknown-mechanism',
+    });
+    expect(unknown).toEqual({
+      valid: false,
+      errors: [{ code: 'unknown-mechanism', mechanismId: 'unknown-mechanism' }],
+    });
+    const snapshot = await memory.service.readContextSnapshot(allowEffects, {
+      mechanismId: 'mechanism-a',
+    });
+    expect(snapshot).toMatchObject({
+      valid: true,
+      mechanismIdentityLink: null,
+    });
+    expect(memory.loadPermissions).toEqual([allowEffects, allowEffects]);
+  });
+
   it('returns a Pythia native context linked to its canonical V2 component', async () => {
     const allowEffects = createAllowEffects();
     const { json, mechanism, component } = createPythiaNativePortableBundle();
