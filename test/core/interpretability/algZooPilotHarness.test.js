@@ -493,6 +493,67 @@ describe('AlgZoo shared-map pilot harness', () => {
 });
 
 describe('AlgZoo pilot session budget enforcement', () => {
+  it('bounds both arms independently and retains earlier submissions', async () => {
+    for (const field of [
+      'investigatorTokens',
+      'toolCalls',
+      'targetForwardPasses',
+    ]) {
+      const plan = createAlgZooPilotPlan(configuration, fixture);
+      const pair = {
+        ...plan.schedule.pairs[0],
+        sessionOrder: ['control', 'treatment'],
+      };
+      const deadlineFactory = createTestDeadlineFactory();
+      const runner = createAlgZooPilotRunner({
+        createDeadline: deadlineFactory.createDeadline,
+        hashMapSnapshot: async () => 'independent-arm-budget-hash',
+        runInvestigator: async request => {
+          const limit = request.session.budget[field];
+          request.budget
+            .reserve({ [field]: limit })
+            .complete({ [field]: limit });
+          if (request.session.arm === 'treatment') {
+            request.budget.reserve({ [field]: 1 });
+          }
+          return { submission: { result: request.session.arm } };
+        },
+        scoreBlindedSubmissions: async ({ submissions }) => {
+          expect(submissions).toHaveLength(2);
+          return [];
+        },
+      });
+
+      const result = await runner.runTargetPair(pair, [], []);
+
+      expect(result.sessionRecords.map(record => record.arm)).toEqual([
+        'control',
+        'treatment',
+      ]);
+      expect(result.sessionRecords).toMatchObject([
+        {
+          attemptStatus: 'submitted',
+          cost: { [field]: pair.sessions.control.budget[field] },
+        },
+        {
+          attemptStatus: 'budget-stopped',
+          failureCode: field,
+          cost: { [field]: pair.sessions.treatment.budget[field] },
+        },
+      ]);
+      expect(result.blindedSubmissions.map(item => item.attemptStatus)).toEqual(
+        ['submitted', 'budget-stopped']
+      );
+      expect(
+        result.blindedSubmissions.every(item => !Object.hasOwn(item, 'arm'))
+      ).toBe(true);
+      expect(deadlineFactory.deadlines).toHaveLength(2);
+      expect(
+        deadlineFactory.deadlines.every(deadline => deadline.cancelCount === 1)
+      ).toBe(true);
+    }
+  });
+
   it('refuses further investigator work at each exact session usage limit', async () => {
     for (const field of [
       'investigatorTokens',
