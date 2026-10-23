@@ -12,10 +12,10 @@
 - [x] `git diff --cached --check` exits 0 after staging.
 
 ## Evidence Collection
-- Command log path: Bead `dadeto-jzup` comment and CI run for the commit.
+- Command log path: Bead `dadeto-vd2q` comments and GitHub Actions run for the implementation commit.
 - Generated artifacts: Jest and check output under ignored `reports/` paths.
 - Test report path: `reports/check/` as emitted by the repository check runner.
-- Exact-head full CI is expected after this change is pushed; the local fast check is not full-coverage evidence.
+- Exact-head GitHub Full Check `39957239921` failed before test execution at `npm run threefold:spec:check`: Actions has no `NOTION_THREEFOLD_SPEC_READ_TOKEN`. Terraform Validate `39957239945` passed. Full CI coverage remains unverified until the dedicated read-only Notion token is configured.
 
 ## 2026-10-23 Unknown-command orchestration slice
 - Bead: `dadeto-vd2q`.
@@ -23,7 +23,7 @@
 - `npm run check` passed all 10 local gates. It selected the same four related suites; this is the fast local check, not full CI coverage.
 - `npm run build` passed and copied the `/dynamic-mud/` page and all core modules. `npm run manuals:check` passed (82 toy manuals).
 - The combined MUD and Threefold navigation test run passed six suites / 93 tests. Threefold route coverage confirms each destination is reached through the in-game travel control without changing the URL, and `?scene=` does not select a region.
-- Exact-head GitHub Full Check is pending after the implementation commit is pushed.
+- Exact-head GitHub Full Check `39957239921` failed before test execution at `npm run threefold:spec:check`: Actions has no `NOTION_THREEFOLD_SPEC_READ_TOKEN`. Terraform Validate `39957239945` passed. The local fast check is not full-coverage evidence; full CI coverage remains unavailable until the dedicated read-only Notion token is configured.
 
 ## Pass/Fail Rules
 This loop adds a provider-injected safe orchestration boundary, but the page still has no deployed provider wired in. Full Notion acceptance remains open until the default-off integration with the billed chat proxy is implemented and safely configured. No model call or billable request has been made.
