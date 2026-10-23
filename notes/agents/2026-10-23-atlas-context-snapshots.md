@@ -1,0 +1,7 @@
+# Atlas context snapshots loop retrospective — 2026-10-23
+
+- Unexpected hurdle: `npm run check` rejected the service helper because the core parser-boundary classifier treats a helper returning an object literal as parser logic, even though it only adds an optional identity link to an already-parsed context result.
+- Diagnosis: read the `core-parse` failure and traced its classifier signal to the helper's direct object return. The helper did not interpret raw input; the gate responds to construction syntax in non-boundary core functions.
+- Chosen fix: preserve the pure copy semantics with `Object.assign({}, context, { mechanismIdentityLink })`, then rerun the complete fast check. Added snapshot assertions that contradictory edges and unreviewed-evidence warnings survive pagination.
+- Evidence: 21 interpretability suites / 165 tests passed with 100% statements, branches, functions, and lines for `index.js` and `researchService.js`; all 10 `npm run check` gates passed across 1,042 suites / 7,585 tests, with zero clones and zero audit vulnerabilities; TSDoc, ESLint, manuals validation, build, and `git diff --check` passed. Exact-head GitHub Full Check is pending push.
+- Next-time guidance: when core parsing/presentation helpers trip `core-parse`, inspect classifier signals before changing the behavior or adding an exemption. In this case `Object.assign` preserves the context object without a validator/parser exemption. Keep bounded snapshots separate from the next experiment-design schema loop.

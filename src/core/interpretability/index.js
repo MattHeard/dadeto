@@ -3324,6 +3324,107 @@ export function getEvidenceGraphContextV1(graph, query) {
 }
 
 /**
+ * Return a deterministic, content-addressed context snapshot page.
+ * The snapshot digest covers the full reachable context, while each request
+ * returns at most pageSize items and maxItems items per bounded window.
+ * @param {InterpretabilityGraphV1} graph Versioned graph collections.
+ * @param {ContextSnapshotQueryV1} query Context snapshot query and cursor.
+ * @param {(canonicalSnapshot: string) => string|Promise<string>} [hashCanonicalSnapshot] Injected pure SHA-256 adapter.
+ * @returns {Promise<ContextSnapshotResultV1>} Stable snapshot page or validation errors.
+ */
+export async function getEvidenceGraphContextSnapshotV1(
+  graph,
+  query,
+  hashCanonicalSnapshot
+) {
+  const validationFailure = validateGraphInput(graph);
+  if (validationFailure) return validationFailure;
+  if (typeof hashCanonicalSnapshot !== 'function') {
+    return { valid: false, errors: [{ code: 'missing-snapshot-hasher' }] };
+  }
+
+  const parsedQuery = validateContextSnapshotQueryV1(query);
+  if (!parsedQuery.valid) return parsedQuery;
+  const { mechanismId, maxDepth, pageSize, maxItems, cursor } = parsedQuery;
+  const recordsById = indexGraphRecords(graph);
+  const mechanismEntry = recordsById.get(mechanismId);
+  if (!mechanismEntry || mechanismEntry.collection !== 'mechanisms') {
+    return {
+      valid: false,
+      errors: [{ code: 'unknown-mechanism', mechanismId }],
+    };
+  }
+
+  const context = collectGraphContext(
+    graph,
+    mechanismId,
+    maxDepth,
+    recordsById
+  );
+  const warnings = buildContextWarnings(mechanismId, context.records);
+  const canonicalSnapshot = JSON.stringify(
+    canonicalizeSnapshotValue({
+      version: 1,
+      mechanism: mechanismEntry.record,
+      maxDepth,
+      items: context.items,
+      warnings,
+    })
+  );
+  const digest = await hashCanonicalSnapshot(canonicalSnapshot);
+  if (typeof digest !== 'string' || digest.trim() === '') {
+    return { valid: false, errors: [{ code: 'invalid-snapshot-digest' }] };
+  }
+  const snapshotId = `atlas:context:v1:${digest}`;
+  if (cursor && cursor.snapshotId !== snapshotId) {
+    return { valid: false, errors: [{ code: 'snapshot-changed' }] };
+  }
+
+  const totalItems = context.items.length;
+  const windowStart = cursor?.windowStart ?? 0;
+  const windowEnd = cursor?.windowEnd ?? Math.min(maxItems, totalItems);
+  const offset = cursor?.offset ?? 0;
+  if (
+    windowStart > totalItems ||
+    windowEnd > totalItems ||
+    windowStart % maxItems !== 0 ||
+    windowEnd !== Math.min(windowStart + maxItems, totalItems) ||
+    offset > windowEnd
+  ) {
+    return { valid: false, errors: [{ code: 'invalid-snapshot-cursor' }] };
+  }
+
+  const items = context.items.slice(
+    offset,
+    Math.min(offset + pageSize, windowEnd)
+  );
+  const pageEnd = offset + items.length;
+  const continuationCursor =
+    windowEnd < totalItems
+      ? {
+          snapshotId,
+          offset: windowEnd,
+          windowStart: windowEnd,
+          windowEnd: Math.min(windowEnd + maxItems, totalItems),
+        }
+      : null;
+  return {
+    valid: true,
+    snapshotId,
+    mechanism: mechanismEntry.record,
+    items,
+    totalItems,
+    contextStatus: continuationCursor ? 'capped' : 'complete',
+    nextCursor:
+      pageEnd < windowEnd
+        ? { snapshotId, offset: pageEnd, windowStart, windowEnd }
+        : null,
+    continuationCursor,
+    warnings,
+  };
+}
+
+/**
  * Discover eligible research candidates from a portable bundle without a
  * known mechanism ID. Results are deterministic and explicitly bounded.
  * @param {{evidenceGraph: InterpretabilityGraphV1, mechanismIdentityLinks?: Array<Record<string, string>>}} bundle Validated portable bundle.
@@ -3602,6 +3703,45 @@ function validateContextQueryV1(query) {
 }
 
 /**
+ * Validate bounded snapshot windows and their content-bound cursor.
+ * @param {any} query Candidate context snapshot request.
+ * @returns {{valid: true, mechanismId: string, maxDepth: number, pageSize: number, maxItems: number, cursor: {snapshotId: string, offset: number, windowStart: number, windowEnd: number}|null}|{valid: false, errors: Array<Record<string, string>>}} Normalized request or errors.
+ */
+function validateContextSnapshotQueryV1(query) {
+  if (!query || typeof query !== 'object') {
+    return { valid: false, errors: [{ code: 'invalid-query' }] };
+  }
+  const maxItems = query.maxItems ?? 200;
+  const cursor = query.cursor ?? null;
+  const errors = [];
+  if (!Number.isInteger(maxItems) || maxItems < 1 || maxItems > 1000) {
+    errors.push({ code: 'invalid-item-bound' });
+  }
+  if (cursor !== null && !isContextSnapshotCursor(cursor)) {
+    errors.push({ code: 'invalid-snapshot-cursor' });
+  }
+  const parsed = validateContextQueryV1({
+    mechanismId: query.mechanismId,
+    maxDepth: query.maxDepth,
+    pageSize: query.pageSize,
+    cursor: null,
+  });
+  if (!parsed.valid) errors.push(...parsed.errors);
+  if (parsed.valid && parsed.pageSize > maxItems) {
+    errors.push({ code: 'invalid-page-size' });
+  }
+  if (errors.length > 0 || !parsed.valid) return { valid: false, errors };
+  return {
+    valid: true,
+    mechanismId: parsed.mechanismId,
+    maxDepth: parsed.maxDepth,
+    pageSize: parsed.pageSize,
+    maxItems,
+    cursor,
+  };
+}
+
+/**
  * @param {any} cursor Candidate page cursor.
  * @returns {boolean} Whether the cursor has the supported shape.
  */
@@ -3612,6 +3752,42 @@ function isContextCursor(cursor) {
     typeof cursor.id === 'string' &&
     cursor.id.trim() !== ''
   );
+}
+
+/**
+ * @param {any} cursor Context snapshot cursor candidate.
+ * @returns {boolean} Whether the cursor has a supported, bounded window.
+ */
+function isContextSnapshotCursor(cursor) {
+  return (
+    typeof cursor === 'object' &&
+    typeof cursor.snapshotId === 'string' &&
+    cursor.snapshotId.trim() !== '' &&
+    Number.isInteger(cursor.offset) &&
+    Number.isInteger(cursor.windowStart) &&
+    Number.isInteger(cursor.windowEnd) &&
+    cursor.offset >= 0 &&
+    cursor.windowStart >= 0 &&
+    cursor.windowStart <= cursor.offset &&
+    cursor.offset <= cursor.windowEnd
+  );
+}
+
+/**
+ * Sort object keys recursively without reordering arrays for stable hashing.
+ * @param {any} value JSON-compatible snapshot value.
+ * @returns {any} Canonical value.
+ */
+function canonicalizeSnapshotValue(value) {
+  if (Array.isArray(value)) return value.map(canonicalizeSnapshotValue);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map(key => [key, canonicalizeSnapshotValue(value[key])])
+    );
+  }
+  return value;
 }
 
 /**
@@ -3793,6 +3969,9 @@ function addStatusWarning(warnings, record, warningCode) {
 /** @typedef {{id: string, collection: string, record: InterpretabilityRecord}} GraphRecordEntryV1 */
 /** @typedef {({itemType: 'record', id: string, depth: number}&GraphRecordEntryV1)|{itemType: 'edge', id: string, record: InterpretabilityRecord}} ContextItemV1 */
 /** @typedef {{code: string, mechanismId?: string, id?: string, status?: string, validationState?: string}} ContextWarningV1 */
+/** @typedef {{snapshotId: string, offset: number, windowStart: number, windowEnd: number}} ContextSnapshotCursorV1 */
+/** @typedef {{mechanismId: string, maxDepth?: number, pageSize?: number, maxItems?: number, cursor?: ContextSnapshotCursorV1|null}} ContextSnapshotQueryV1 */
+/** @typedef {{valid: true, snapshotId: string, mechanism: InterpretabilityRecord, items: Array<ContextItemV1>, totalItems: number, contextStatus: 'complete'|'capped', nextCursor: ContextSnapshotCursorV1|null, continuationCursor: ContextSnapshotCursorV1|null, warnings: Array<ContextWarningV1>}|{valid: false, errors: Array<Record<string, string>>}} ContextSnapshotResultV1 */
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: true}>} EvidenceGraphContextPageV1 */
 /** @typedef {EvidenceGraphContextPageV1 & {hypotheses: Array<InterpretabilityRecord>, evidence: Array<InterpretabilityRecord>, experiments: Array<InterpretabilityRecord>, relationships: Array<InterpretabilityRecord>}} PresentedEvidenceGraphContextPageV1 */
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: false}>|PresentedEvidenceGraphContextPageV1} PresentedEvidenceGraphContextResultV1 */

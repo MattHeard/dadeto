@@ -17,6 +17,22 @@
       "tags": ["toy", "agriculture", "robotics", "decision-support"]
     },
     {
+      "key": "ATLS1",
+      "title": "Atlas Research Context",
+      "publicationDate": "2026-10-23",
+      "release": "beta",
+      "content": [
+        "Inspect a stable, provenance-preserving snapshot of the hypotheses, experiments, evidence, and relationships linked to an Atlas mechanism.",
+        {
+          "type": "manual",
+          "id": "ATLS1-manual",
+          "title": "Field guide",
+          "src": "/manuals/atlas.md"
+        }
+      ],
+      "tags": ["toy", "interpretability", "research", "atlas"]
+    },
+    {
       "key": "CHAT1",
       "title": "OpenAI Chat",
       "publicationDate": "2026-10-23",

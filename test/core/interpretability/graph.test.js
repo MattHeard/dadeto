@@ -5,6 +5,7 @@ import {
   createInterpretabilitySchemasV1,
   exportEvidenceGraphV1,
   getEvidenceGraphContextV1,
+  getEvidenceGraphContextSnapshotV1,
   importEvidenceGraphV1,
   presentEvidenceGraphContextV1,
   validateEvidenceGraphV1,
@@ -1054,5 +1055,258 @@ describe('getEvidenceGraphContextV1', () => {
         { mechanismId: 'mechanism-a' }
       ).valid
     ).toBe(false);
+  });
+});
+
+describe('getEvidenceGraphContextSnapshotV1', () => {
+  const digest = async canonical => `sha256:${canonical.length}:${canonical}`;
+
+  it('returns stable pages that preserve every typed record and edge once', async () => {
+    const graph = connectedContextGraph();
+    graph.evidence[0].kind = 'negative';
+    graph.evidence.push({
+      id: 'evidence-null',
+      kind: 'null',
+      validationState: 'unreviewed',
+    });
+    graph.edges.push({
+      id: 'edge-null',
+      fromId: 'hypothesis-a',
+      toId: 'evidence-null',
+      relation: 'supports',
+    });
+    const first = await getEvidenceGraphContextSnapshotV1(
+      graph,
+      {
+        mechanismId: 'mechanism-a',
+        pageSize: 2,
+        maxItems: 3,
+      },
+      digest
+    );
+    expect(first.valid).toBe(true);
+    if (!first.valid) return;
+    expect(first.contextStatus).toBe('capped');
+    expect(first.items).toHaveLength(2);
+    expect(first.nextCursor).not.toBeNull();
+    const firstRepeat = await getEvidenceGraphContextSnapshotV1(
+      graph,
+      {
+        mechanismId: 'mechanism-a',
+        pageSize: 2,
+        maxItems: 3,
+      },
+      digest
+    );
+    expect(firstRepeat.valid && firstRepeat.snapshotId).toBe(first.snapshotId);
+
+    const all = [...first.items];
+    let nextCursor = first.nextCursor;
+    while (nextCursor) {
+      const page = await getEvidenceGraphContextSnapshotV1(
+        graph,
+        {
+          mechanismId: 'mechanism-a',
+          pageSize: 2,
+          maxItems: 3,
+          cursor: nextCursor,
+        },
+        digest
+      );
+      expect(page.valid).toBe(true);
+      if (!page.valid) return;
+      expect(page.snapshotId).toBe(first.snapshotId);
+      all.push(...page.items);
+      nextCursor = page.nextCursor;
+      if (!nextCursor && page.continuationCursor) {
+        const continuation = await getEvidenceGraphContextSnapshotV1(
+          graph,
+          {
+            mechanismId: 'mechanism-a',
+            pageSize: 2,
+            maxItems: 3,
+            cursor: page.continuationCursor,
+          },
+          digest
+        );
+        expect(continuation.valid).toBe(true);
+        if (!continuation.valid) return;
+        expect(continuation.snapshotId).toBe(first.snapshotId);
+        all.push(...continuation.items);
+        nextCursor = continuation.nextCursor;
+        if (!nextCursor && continuation.continuationCursor) {
+          nextCursor = continuation.continuationCursor;
+        }
+      }
+    }
+    expect(new Set(all.map(item => `${item.itemType}:${item.id}`)).size).toBe(
+      all.length
+    );
+    expect(all.map(item => item.id)).toEqual(
+      [...all.map(item => item.id)].sort()
+    );
+    expect(all.find(item => item.id === 'evidence-a')).toMatchObject({
+      itemType: 'record',
+      record: { kind: 'negative' },
+    });
+    expect(all.find(item => item.id === 'evidence-null')).toMatchObject({
+      itemType: 'record',
+      record: { kind: 'null' },
+    });
+    expect(all.find(item => item.id === 'edge-b')).toMatchObject({
+      itemType: 'edge',
+      record: { relation: 'contradicts' },
+    });
+    expect(first.warnings).toContainEqual({
+      code: 'evidence-not-reproduced',
+      id: 'evidence-a',
+      validationState: 'unreviewed',
+    });
+  });
+
+  it('marks empty and completed snapshots explicitly and changes ID with source data', async () => {
+    const graph = connectedContextGraph();
+    const complete = await getEvidenceGraphContextSnapshotV1(
+      graph,
+      {
+        mechanismId: 'mechanism-a',
+        pageSize: 20,
+      },
+      digest
+    );
+    expect(complete).toMatchObject({
+      valid: true,
+      contextStatus: 'complete',
+      continuationCursor: null,
+    });
+    if (!complete.valid) return;
+    graph.evidence[0].summary = 'Source changed';
+    const changed = await getEvidenceGraphContextSnapshotV1(
+      graph,
+      {
+        mechanismId: 'mechanism-a',
+        pageSize: 20,
+      },
+      digest
+    );
+    expect(changed.valid && changed.snapshotId).not.toBe(complete.snapshotId);
+    const empty = await getEvidenceGraphContextSnapshotV1(
+      { mechanisms: [mechanismRecord('mechanism-a')] },
+      {
+        mechanismId: 'mechanism-a',
+      },
+      digest
+    );
+    expect(empty).toMatchObject({
+      valid: true,
+      items: [],
+      contextStatus: 'complete',
+      nextCursor: null,
+      continuationCursor: null,
+    });
+  });
+
+  it('rejects missing hash adapters, invalid bounds, changed snapshots and invalid windows', async () => {
+    const graph = connectedContextGraph();
+    expect(
+      await getEvidenceGraphContextSnapshotV1(graph, {
+        mechanismId: 'mechanism-a',
+      })
+    ).toEqual({
+      valid: false,
+      errors: [{ code: 'missing-snapshot-hasher' }],
+    });
+    for (const query of [
+      { mechanismId: 'mechanism-a', maxItems: 0 },
+      { mechanismId: 'mechanism-a', maxItems: 1001 },
+      { mechanismId: 'mechanism-a', maxDepth: 5 },
+      { mechanismId: 'mechanism-a', pageSize: 101 },
+      { mechanismId: 'mechanism-a', pageSize: 5, maxItems: 4 },
+      {
+        mechanismId: 'mechanism-a',
+        cursor: { snapshotId: 'x', offset: -1, windowStart: 0, windowEnd: 1 },
+      },
+    ]) {
+      expect(
+        (await getEvidenceGraphContextSnapshotV1(graph, query, digest)).valid
+      ).toBe(false);
+    }
+    const page = await getEvidenceGraphContextSnapshotV1(
+      graph,
+      {
+        mechanismId: 'mechanism-a',
+        pageSize: 1,
+        maxItems: 2,
+      },
+      digest
+    );
+    expect(page.valid).toBe(true);
+    if (!page.valid) return;
+    expect(
+      await getEvidenceGraphContextSnapshotV1(
+        graph,
+        {
+          mechanismId: 'mechanism-a',
+          pageSize: 1,
+          maxItems: 2,
+          cursor: { ...page.nextCursor, snapshotId: 'unknown-snapshot' },
+        },
+        digest
+      )
+    ).toMatchObject({ valid: false, errors: [{ code: 'snapshot-changed' }] });
+    expect(
+      await getEvidenceGraphContextSnapshotV1(
+        graph,
+        {
+          mechanismId: 'mechanism-a',
+          pageSize: 1,
+          maxItems: 2,
+          cursor: {
+            snapshotId: page.snapshotId,
+            offset: 1,
+            windowStart: 1,
+            windowEnd: 2,
+          },
+        },
+        digest
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-snapshot-cursor' }],
+    });
+  });
+
+  it('reports invalid graph, query, mechanism, and digest states', async () => {
+    expect(
+      await getEvidenceGraphContextSnapshotV1(
+        null,
+        { mechanismId: 'mechanism-a' },
+        digest
+      )
+    ).toMatchObject({ valid: false, errors: [{ code: 'invalid-graph' }] });
+    expect(
+      await getEvidenceGraphContextSnapshotV1(
+        connectedContextGraph(),
+        null,
+        digest
+      )
+    ).toMatchObject({ valid: false, errors: [{ code: 'invalid-query' }] });
+    expect(
+      await getEvidenceGraphContextSnapshotV1(
+        connectedContextGraph(),
+        { mechanismId: 'unknown-mechanism' },
+        digest
+      )
+    ).toMatchObject({ valid: false, errors: [{ code: 'unknown-mechanism' }] });
+    expect(
+      await getEvidenceGraphContextSnapshotV1(
+        connectedContextGraph(),
+        { mechanismId: 'mechanism-a' },
+        async () => null
+      )
+    ).toEqual({
+      valid: false,
+      errors: [{ code: 'invalid-snapshot-digest' }],
+    });
   });
 });
