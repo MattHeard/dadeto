@@ -195,6 +195,68 @@ test('newly pressed input is acknowledged in the live status line', async () => 
   stop();
 });
 
+test('page-specific action allowlists reject keyboard, touch, and gamepad actions', async () => {
+  const page = pageOptions();
+  const accepted = [];
+  let tick = 0;
+  const runtime = {
+    start() {},
+    getSlot: () => 0,
+    frame: () => ({}),
+    getSnapshot: () => ({
+      tick,
+      world: { map: { name: 'Test' }, day: 1, time: 0 },
+    }),
+    isRunning: () => true,
+    pause() {},
+    resume() {},
+    step(_delta, actions) {
+      accepted.push(actions);
+      if (actions.length) tick += 1;
+    },
+  };
+  page.options.createRuntime = () => runtime;
+  page.options.drawFrame = () => {};
+  page.options.allowedActions = [
+    'up',
+    'down',
+    'left',
+    'right',
+    'a',
+    'b',
+    'x',
+    'y',
+  ];
+  page.options.browser.navigatorObj.getGamepads = () => [
+    {
+      axes: [],
+      buttons: Array.from({ length: 5 }, (_, index) => ({
+        pressed: index === 4,
+      })),
+    },
+  ];
+
+  const stop = startMosslightPage(page.options);
+  page.callbacks[0](0);
+  const preventDefault = jest.fn();
+  await page.documentObj.emit('keydown', { key: 'e', preventDefault });
+  await page.touchButtons[1].emit('pointerdown', {
+    preventDefault: jest.fn(),
+    pointerId: 8,
+  });
+  page.callbacks[0](16);
+
+  expect(preventDefault).not.toHaveBeenCalled();
+  expect(accepted.flat()).not.toContain('interact');
+
+  const allowedKey = { key: 'ArrowRight', preventDefault: jest.fn() };
+  await page.documentObj.emit('keydown', allowedKey);
+  page.callbacks[0](32);
+  expect(allowedKey.preventDefault).toHaveBeenCalled();
+  expect(accepted.at(-1)).toContain('right');
+  stop();
+});
+
 test.each(['export', 'import', 'fullscreen', 'unknown'])(
   'controller save utility %s reaches its browser adapter',
   command => {
