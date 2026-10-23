@@ -78,7 +78,7 @@ describe('get-author-uuid-v2 temporary Playwright coverage', () => {
     expect(testFile).not.toContain('console.log');
   });
 
-  it('gates gcp-test on the Playwright result and preserves the successful gcp-prod chain', async () => {
+  it('gates gcp-test on Playwright and excludes manual test runs from production apply', async () => {
     const [testWorkflow, prodWorkflow] = await Promise.all([
       readFile('.github/workflows/gcp-test.yml', 'utf8'),
       readFile('.github/workflows/gcp-prod.yml', 'utf8'),
@@ -94,6 +94,10 @@ describe('get-author-uuid-v2 temporary Playwright coverage', () => {
     expect(prodWorkflow).toContain(
       "github.event.workflow_run.conclusion == 'success'"
     );
+    expect(prodWorkflow).toContain(
+      "github.event.workflow_run.event == 'schedule'"
+    );
+    expect(prodWorkflow).toContain('workflow_dispatch:');
     expect(prodWorkflow).not.toContain('get-author-uuid-v2-deployment');
     expect(prodWorkflow).not.toContain('smoke deployment metadata');
 
