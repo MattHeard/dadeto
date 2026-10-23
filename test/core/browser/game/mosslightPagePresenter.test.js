@@ -75,6 +75,40 @@ test('runtime startup failure displays an accessible recovery state', () => {
   stop();
 });
 
+test('runtime startup failure is safe when the recovery panel is absent', () => {
+  const page = pageOptions();
+  page.options.browser.documentObj.querySelector = selector =>
+    selector === '#game-load-error' ? null : page.selectors[selector];
+  page.options.createRuntime = () => {
+    throw new Error('scene failed');
+  };
+
+  const stop = startMosslightPage(page.options);
+
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'could not start'
+  );
+  expect(page.callbacks).toHaveLength(0);
+  stop();
+});
+
+test('runtime binding failure displays the accessible recovery state', () => {
+  const page = pageOptions();
+  page.selectors['#game-load-error'].hidden = true;
+  page.options.bindRuntime = () => {
+    throw new Error('runtime binding failed');
+  };
+
+  const stop = startMosslightPage(page.options);
+
+  expect(page.selectors['#game-load-error'].hidden).toBe(false);
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'could not start'
+  );
+  expect(page.callbacks).toHaveLength(0);
+  stop();
+});
+
 test('initial frame rendering failure displays the accessible recovery state', () => {
   const page = pageOptions();
   page.selectors['#game-load-error'].hidden = true;
@@ -89,6 +123,58 @@ test('initial frame rendering failure displays the accessible recovery state', (
     'could not start'
   );
   expect(page.callbacks).toHaveLength(0);
+  stop();
+});
+
+test('animation frame failure displays recovery and stops scheduling frames', () => {
+  const page = pageOptions();
+  page.selectors['#game-load-error'].hidden = true;
+  let drawCount = 0;
+  page.options.drawFrame = () => {
+    drawCount += 1;
+    if (drawCount > 1) throw new Error('later frame failed');
+  };
+
+  const stop = startMosslightPage(page.options);
+  page.callbacks[0](16);
+
+  expect(page.selectors['#game-load-error'].hidden).toBe(false);
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'could not start'
+  );
+  expect(page.callbacks).toHaveLength(1);
+  stop();
+});
+
+test('simulation step failure displays recovery and pauses the runtime', () => {
+  const page = pageOptions();
+  page.selectors['#game-load-error'].hidden = true;
+  const runtime = {
+    start: jest.fn(),
+    getSlot: () => 0,
+    frame: () => ({}),
+    getSnapshot: () => ({
+      tick: 0,
+      world: { map: { name: 'Test' }, day: 1, time: 0 },
+    }),
+    isRunning: () => true,
+    pause: jest.fn(),
+    step: () => {
+      throw new Error('simulation failed');
+    },
+  };
+  page.options.createRuntime = () => runtime;
+  page.options.drawFrame = () => {};
+
+  const stop = startMosslightPage(page.options);
+  page.callbacks[0](16);
+
+  expect(page.selectors['#game-load-error'].hidden).toBe(false);
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'could not start'
+  );
+  expect(runtime.pause).toHaveBeenCalled();
+  expect(page.callbacks).toHaveLength(1);
   stop();
 });
 

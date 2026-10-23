@@ -29,5 +29,10 @@ describe('THREEFOLD in-game travel', () => {
     expect(runtime.getState().player.position).toEqual(
       sluiceAfterMove.player.position
     );
+
+    const currentFrame = runtime.frame();
+    expect(runtime.travelTo(createThreefoldSluiceScene())).toEqual(
+      currentFrame
+    );
   });
 });

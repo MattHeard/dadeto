@@ -299,7 +299,8 @@ export function startMosslightPage(options) {
     },
   });
   draw();
-  if (!failed) frameId = requestFrame(loop);
+  if (failed) showLoadError();
+  else frameId = requestFrame(loop);
   return () => {
     disposed = true;
     disposePageControls();

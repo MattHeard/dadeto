@@ -514,10 +514,10 @@ function bindThreefoldTravel(runtime, documentObj, draw) {
     const scene = sceneFromTravelDestination(select.value);
     if (!scene) return;
     runtime.travelTo(scene);
-    const title = SCENE_LABELS[select.value] || 'The Broken Gate';
+    const title = SCENE_LABELS[select.value];
     if (status) status.textContent = `Arrived at ${title}.`;
     if (objective)
-      objective.textContent = `Current objective: ${SCENE_OBJECTIVES[select.value] || 'Explore this region and interact with reachable objects.'}`;
+      objective.textContent = `Current objective: ${SCENE_OBJECTIVES[select.value]}`;
     draw();
   };
   button.addEventListener('click', travel);

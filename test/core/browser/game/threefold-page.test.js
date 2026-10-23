@@ -537,6 +537,7 @@ describe('THREEFOLD page adapter', () => {
     expect(elements.get('#witness-ledger').hidden).toBe(true);
     expect(elements.get('#testimony').hidden).toBe(true);
     expect(page.describeInput(['right'])).toBe('Input received · MOVE RIGHT');
+    expect(page.describeInput(['not-an-action'])).toBe('Input received');
   });
 
   test('selects the Hearthgaps route and labels its reachable runoff choice', () => {
