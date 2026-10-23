@@ -40,6 +40,7 @@ export default defineConfig({
     '**/payment-webhook.spec.ts',
     '**/search-function.spec.ts',
     '**/get-author-uuid-v2.spec.ts',
+    '**/tetracube.spec.ts',
   ],
   projects: [
     {
