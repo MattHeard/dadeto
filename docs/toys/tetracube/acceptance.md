@@ -35,3 +35,9 @@
 ## Pass/fail rules
 
 The current pure-model loop passes only when every model criterion has automated evidence, changed-core coverage is complete, and required local gates pass. The full Notion spec remains in progress until the browser toy is playable, its first tower/bridge playtest is recorded, and a follow-up design direction is documented.
+
+## Isolating manual Cloud Run playtests — 2026-10-24
+
+- The production workflow now applies after a successful scheduled `gcp-test` run only. A manually dispatched `gcp-test` run remains an isolated temporary deployment and does not chain into production Terraform apply; direct `gcp-prod` dispatch remains available.
+- Workflow regression tests passed (2 suites / 8 tests). `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates after an elevated retry; six serial impact shards passed 1,042 suites / 7,585 tests, and duplication reported zero clones.
+- No cloud playtest has been dispatched yet. After this guard is merged, run `gcp-test` manually, inspect its current-head Tetracube screenshot and interaction record, and record the observed mechanics. Do not infer enjoyment; a human playtest and design proposal remain outstanding.

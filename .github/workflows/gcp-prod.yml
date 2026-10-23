@@ -10,7 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    # A successful nightly test remains the promotion trigger. Manual gcp-test
+    # runs are isolated validation runs; production can still be dispatched
+    # directly through this workflow when intended.
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.event == 'schedule')
+      }}
     defaults:
       run:
         working-directory: infra
