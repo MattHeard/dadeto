@@ -569,6 +569,32 @@ describe('THREEFOLD scale-specific hierarchy action targets', () => {
       'A hierarchy action requires a state reducer.'
     );
   });
+
+  test('does not let callers mutate the targets captured by a reusable reducer', () => {
+    const entities = [
+      { id: 'assembly', expandAtScale: -1 },
+      { id: 'component', parentId: 'assembly' },
+    ];
+    const reducer = createHierarchyActionReducer(
+      entities,
+      0,
+      'assembly',
+      (state, id) => [...state, id]
+    );
+    const first = reducer([]);
+    first.affectedEntityIds.splice(0, first.affectedEntityIds.length, 'forged');
+    const second = reducer([]);
+
+    expect(second).toEqual({
+      state: ['assembly', 'component'],
+      affectedEntityIds: ['assembly', 'component'],
+    });
+    expect(first.affectedEntityIds).not.toBe(second.affectedEntityIds);
+    expect(entities).toEqual([
+      { id: 'assembly', expandAtScale: -1 },
+      { id: 'component', parentId: 'assembly' },
+    ]);
+  });
 });
 
 describe('THREEFOLD resolved scene layout', () => {

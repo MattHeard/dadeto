@@ -165,12 +165,12 @@ export function createHierarchyActionReducer(
   if (typeof reduceEffect !== 'function')
     throw new TypeError('A hierarchy action requires a state reducer.');
   const target = resolveHierarchyActionTarget(entities, scale, targetId);
-  const affectedEntityIds = target ? target.affectedEntityIds : [];
+  const affectedEntityIds = target ? [...target.affectedEntityIds] : [];
   return state => {
     let nextState = state;
     for (const entityId of affectedEntityIds)
       nextState = reduceEffect(nextState, entityId);
-    return { state: nextState, affectedEntityIds };
+    return { state: nextState, affectedEntityIds: [...affectedEntityIds] };
   };
 }
 
