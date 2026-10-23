@@ -37,13 +37,15 @@ describe('gcp-prod workflow database selection', () => {
     );
   });
 
-  it('keeps production deployment chained to a successful gcp-test without smoke metadata', async () => {
+  it('promotes only successful scheduled gcp-test runs and keeps direct dispatch available', async () => {
     const source = readFileSync('.github/workflows/gcp-prod.yml', 'utf8');
 
     expect(source).toContain('workflows: ["gcp-test"]');
     expect(source).toContain(
       "github.event.workflow_run.conclusion == 'success'"
     );
+    expect(source).toContain("github.event.workflow_run.event == 'schedule'");
+    expect(source).toContain('workflow_dispatch:');
     expect(source).not.toContain('get-author-uuid-v2-deployment');
     expect(source).not.toContain('smoke deployment metadata');
     expect(source).not.toContain('id-token: write');
