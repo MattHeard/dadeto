@@ -36,7 +36,7 @@ const CROSSING_BARRIER = {
 
 /**
  * Create the separate small-world scene that contains the hydraulic puzzle.
- * @returns {{id: 'small-world-sluice', bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, decorations: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: []}} Authored sluice chamber and reachable crossing.
+ * @returns {{id: 'small-world-sluice', bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, decorations: Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, interactionScale?: number, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: []}} Authored sluice chamber and reachable crossing.
  */
 export function createThreefoldSluiceScene() {
   return {
@@ -61,6 +61,7 @@ export function createThreefoldSluiceScene() {
     interactables: [
       {
         id: 'sluice-service-valve',
+        interactionScale: -2,
         position: { ...VALVE_POSITION },
         bounds: {
           min: { x: 2.48, y: 2.97, z: 0 },

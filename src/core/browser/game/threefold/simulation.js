@@ -652,14 +652,22 @@ function describeChosenAction(action) {
 function stepSluiceScene(state, action) {
   return commitSmallWorldSceneAction(state, action, prepared => {
     let sluicePuzzle = state.sluicePuzzle;
+    const serviceValve = state.scene.interactables.find(
+      item => item.id === 'sluice-service-valve'
+    );
     const crossingAvailable = getThreefoldSluicePuzzleStatus(
       sluicePuzzle,
       state.player.scale
     ).crossingAvailable;
-    if (action.type === 'interact' && canReachSluiceValve(state))
+    if (
+      action.type === 'interact' &&
+      serviceValve &&
+      canReachSluiceValve(state)
+    )
       sluicePuzzle = operateThreefoldSluiceValve(
         sluicePuzzle,
-        prepared.player.scale
+        prepared.player.scale,
+        serviceValve.interactionScale
       );
     return {
       sluicePuzzle: advanceThreefoldSluicePuzzle(
@@ -1137,8 +1145,11 @@ function commitSmallWorldAction(state, player, durationSeconds, sceneChanges) {
  * @returns {boolean} Whether the player can reach the valve.
  */
 function canReachSluiceValve(state) {
+  const valve = state.scene.interactables.find(
+    item => item.id === 'sluice-service-valve'
+  );
   return (
-    state.player.scale === -2 &&
+    valve?.interactionScale === state.player.scale &&
     isThreefoldInteractableInReach(state, 'sluice-service-valve')
   );
 }
