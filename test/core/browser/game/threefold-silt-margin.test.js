@@ -1,8 +1,12 @@
 import {
   createThreefoldSiltMarginScene,
   normalizeThreefoldSiltMarginState,
+  THREEFOLD_SILT_MARGIN_FINE_VALVE_ID,
 } from '../../../../src/core/browser/game/threefold/silt-margin.js';
-import { createThreefoldSiltMarginWaterPuzzle } from '../../../../src/core/browser/game/threefold/silt-margin-water.js';
+import {
+  createThreefoldSiltMarginWaterPuzzle,
+  operateThreefoldSiltMarginValve,
+} from '../../../../src/core/browser/game/threefold/silt-margin-water.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import {
   createThreefoldSimulationSaveStore,
@@ -540,6 +544,46 @@ describe('THREEFOLD Silt Margin crossing', () => {
     expect(gateStore.load().scene.id).toBe('broken-gate');
     expect(archiveStore.load().scene.id).toBe('small-world-sluice');
     expect(siltStore.load().scene.id).toBe('silt-margin');
+  });
+});
+
+describe('THREEFOLD Silt Margin authored valve scale', () => {
+  test('uses the authored scale for the actual fine-valve interaction', () => {
+    const scene = createThreefoldSiltMarginScene();
+    const fineValve = scene.interactables.find(
+      ({ id }) => id === THREEFOLD_SILT_MARGIN_FINE_VALVE_ID
+    );
+    expect(fineValve?.interactionScale).toBe(-4);
+    if (!fineValve) throw new Error('The authored fine valve is required.');
+    fineValve.interactionScale = -3;
+    const initial = createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
+    const guided = stepThreefoldSimulation(initial, { type: 'interact' });
+    expect(guided.siltMargin.guardian).toBe('guided-aside');
+
+    const wrongScale = stepThreefoldSimulation(guided, { type: 'interact' });
+    expect(wrongScale.siltMargin.waterPuzzle.port.open).toBe(false);
+
+    const atAuthoredScale = {
+      ...wrongScale,
+      player: { ...wrongScale.player, scale: -3 },
+    };
+    const opened = stepThreefoldSimulation(atAuthoredScale, {
+      type: 'interact',
+    });
+    expect(opened.siltMargin.waterPuzzle.port.open).toBe(true);
+    expect(
+      opened.siltMargin.waterPuzzle.chambers[0].volumeCubicMeters
+    ).toBeLessThan(0.00004);
+    expect(opened.elapsedGameSeconds).toBe(45);
+  });
+
+  test('preserves the fine valve default scale', () => {
+    const opened = operateThreefoldSiltMarginValve(
+      createThreefoldSiltMarginWaterPuzzle(),
+      -4
+    );
+
+    expect(opened.port.open).toBe(true);
   });
 });
 

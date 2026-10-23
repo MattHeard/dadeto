@@ -59,15 +59,23 @@ export function normalizeThreefoldSiltMarginWaterPuzzle(candidate) {
   });
 }
 
-const operateFineValveAtScale =
-  water.createTwoChamberWaterValveOperator(VALVE_SCALE);
 /**
- * Toggle the Silt Margin fine valve, reachable only at scale -4.
+ * Toggle the Silt Margin fine valve at its authored interaction scale.
  * @param {SiltMarginWaterPuzzle} state Current water puzzle.
  * @param {number} playerScale Current player scale.
+ * @param {number} [valveScale] Authored scale; defaults to the canonical fine rung.
  * @returns {SiltMarginWaterPuzzle} Updated or unchanged water state.
  */
-export const operateThreefoldSiltMarginValve = operateFineValveAtScale;
+export function operateThreefoldSiltMarginValve(
+  state,
+  playerScale,
+  valveScale = VALVE_SCALE
+) {
+  return water.createTwoChamberWaterValveOperator(valveScale)(
+    state,
+    playerScale
+  );
+}
 
 /**
  * Advance the dew channel only by explicit simulated time.

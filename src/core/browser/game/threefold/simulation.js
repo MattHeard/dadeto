@@ -699,6 +699,9 @@ function stepSiltMarginScene(state, action) {
       let siltMargin = state.siltMargin;
       let waterPuzzle = siltMargin.waterPuzzle;
       let encounter = state.encounter;
+      const fineValve = state.scene.interactables.find(
+        item => item.id === THREEFOLD_SILT_MARGIN_FINE_VALVE_ID
+      );
       if (prepared.creatureIds.includes(THREEFOLD_SILT_MARGIN_GUARDIAN_ID)) {
         encounter = recordThreefoldGrowthDeaths(
           encounter,
@@ -718,6 +721,8 @@ function stepSiltMarginScene(state, action) {
         ) {
           siltMargin = { ...siltMargin, guardian: 'guided-aside' };
         } else if (
+          fineValve &&
+          fineValve.interactionScale === state.player.scale &&
           isThreefoldInteractableInReach(
             state,
             THREEFOLD_SILT_MARGIN_FINE_VALVE_ID
@@ -725,7 +730,8 @@ function stepSiltMarginScene(state, action) {
         ) {
           waterPuzzle = operateThreefoldSiltMarginValve(
             waterPuzzle,
-            state.player.scale
+            state.player.scale,
+            fineValve.interactionScale
           );
         } else if (
           siltMargin.guardian === 'guided-aside' &&
