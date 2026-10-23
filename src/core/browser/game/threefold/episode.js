@@ -8,24 +8,11 @@ import {
 } from './episode-values.js';
 import { normalizeThreefoldWitnessLedger } from './witness-ledger.js';
 import { createThreefoldTestimony } from './testimony.js';
-export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
-/** The smallest scale at which the signal-station console is exposed. */
-export const THREEFOLD_SIGNAL_STATION_DETAIL_SCALE = -2;
-/** Authored render and interaction hierarchy for the signal-station console. */
-export const THREEFOLD_SIGNAL_STATION_HIERARCHY = Object.freeze([
-  Object.freeze({
-    id: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
-    hierarchy: Object.freeze({
-      expandAtScale: THREEFOLD_SIGNAL_STATION_DETAIL_SCALE,
-    }),
-  }),
-  Object.freeze({
-    id: 'signal-station-console',
-    hierarchy: Object.freeze({
-      parentId: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
-    }),
-  }),
-]);
+import { THREEFOLD_SIGNAL_STATION_GEOMETRY_ID } from './gatehouse.js';
+export {
+  THREEFOLD_SIGNAL_STATION_DETAIL_SCALE,
+  THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
+} from './gatehouse.js';
 /** Stable identifier for the authored Latchfolk watchkeeper interactable. */
 export const THREEFOLD_LATCHFOLK_INTERACTABLE_ID = 'latchfolk-watchkeeper';
 export const THREEFOLD_GATE_REPAIR_GEOMETRY_IDS = [
@@ -182,13 +169,17 @@ export function attemptThreefoldWithdrawal(state) {
  */
 export function attemptThreefoldReport(state) {
   const { episode, crisis, player } = state;
+  if (state.scene.id !== 'broken-gate') return episode;
+  const hierarchyEntities = [
+    ...state.scene.geometry,
+    ...state.scene.interactables,
+  ]
+    .filter(({ hierarchy }) => hierarchy !== undefined)
+    .map(({ id, hierarchy }) => ({ id, ...hierarchy }));
   if (
     crisis.stage !== 'aftermath' ||
     !resolveHierarchyActionTarget(
-      THREEFOLD_SIGNAL_STATION_HIERARCHY.map(({ id, hierarchy }) => ({
-        id,
-        ...hierarchy,
-      })),
+      hierarchyEntities,
       player.scale,
       'signal-station-console'
     ) ||

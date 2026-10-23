@@ -15,6 +15,20 @@ describe('THREEFOLD Broken Gate scene', () => {
     expect(scene).toEqual(repeated);
     expect(scene).not.toBe(repeated);
     expect(scene.geometry).not.toBe(repeated.geometry);
+    const station = scene.geometry.find(({ id }) => id === 'signal-station');
+    const repeatedStation = repeated.geometry.find(
+      ({ id }) => id === 'signal-station'
+    );
+    const console = scene.interactables.find(
+      ({ id }) => id === 'signal-station-console'
+    );
+    const repeatedConsole = repeated.interactables.find(
+      ({ id }) => id === 'signal-station-console'
+    );
+    expect(station.hierarchy).toEqual({ expandAtScale: -2 });
+    expect(console.hierarchy).toEqual({ parentId: 'signal-station' });
+    expect(station.hierarchy).not.toBe(repeatedStation.hierarchy);
+    expect(console.hierarchy).not.toBe(repeatedConsole.hierarchy);
     expect(scene.id).toBe('broken-gate');
     expect(scene.bounds).toEqual({
       min: { x: 0, y: 0 },

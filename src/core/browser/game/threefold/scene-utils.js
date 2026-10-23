@@ -41,8 +41,8 @@ export function isThreefoldInteractableInReach(state, id) {
 
 /**
  * Copy authored physical geometry without sharing mutable coordinate records.
- * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}} geometry Authored scene geometry.
- * @returns {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string}} Independent geometry value.
+ * @param {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}} geometry Authored scene geometry.
+ * @returns {{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}} Independent geometry value.
  */
 export function copyThreefoldGeometry(geometry) {
   return {
@@ -50,6 +50,9 @@ export function copyThreefoldGeometry(geometry) {
     ...(geometry.overlapGroupId === undefined
       ? {}
       : { overlapGroupId: geometry.overlapGroupId }),
+    ...(geometry.hierarchy === undefined
+      ? {}
+      : { hierarchy: { ...geometry.hierarchy } }),
     bounds: copyThreefoldBounds(geometry.bounds),
   };
 }
@@ -80,8 +83,8 @@ export function copyThreefoldCreature(creature) {
 
 /**
  * Copy a list of authored structures into an independent scene.
- * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} geometries Authored structures.
- * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} Independent geometry values.
+ * @param {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} geometries Authored structures.
+ * @returns {Array<{id: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}}>} Independent geometry values.
  */
 export function copyThreefoldGeometryList(geometries) {
   return geometries.map(copyThreefoldGeometry);

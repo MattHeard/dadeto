@@ -636,6 +636,32 @@ describe('THREEFOLD canvas grid', () => {
   });
 });
 
+describe('THREEFOLD scene-authored station hierarchy', () => {
+  test('renderer visibility follows the Broken Gate scene expansion scale', () => {
+    const scene = createBrokenGateScene();
+    scene.geometry.find(({ id }) => id === 'signal-station').hierarchy = {
+      expandAtScale: -1,
+    };
+    const state = createThreefoldSimulation(THRESHOLDS, scene);
+
+    const frame = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, scale: -1 },
+    });
+
+    expect(
+      frame.threefold.logicalGridLayout.hierarchy.visibleEntityIds
+    ).toContain('signal-station-console');
+    expect(
+      frame.threefold.logicalGridLayout.hierarchy.hiddenEntities
+    ).toContainEqual({
+      id: 'signal-station',
+      proxyId: null,
+      reason: 'expanded',
+    });
+  });
+});
+
 describe('THREEFOLD Hearthgaps logical grid', () => {
   test('renders homes, controls and Mara from finite logical cells', () => {
     const base = createThreefoldSimulation(
