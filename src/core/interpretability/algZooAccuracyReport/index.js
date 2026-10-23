@@ -3,6 +3,7 @@ import {
   WHOLE_MODEL_SAMPLE_COUNT,
   WHOLE_MODEL_VARIANT_COUNT,
 } from '../algZooPilotHarness/index.js';
+import { isNonnegativeFinite, isRecord } from '../algZooValidation/index.js';
 
 /**
  * Render a validated whole-model accuracy report as deterministic Markdown.
@@ -236,10 +237,6 @@ function approximatelyEqual(actual, expected) {
  * @param {unknown} value Candidate value.
  * @returns {value is Record<string, any>} Whether the value is a record.
  */
-function isRecord(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /**
  * Check for a finite probability value.
  * @param {unknown} value Candidate numeric value.
@@ -256,11 +253,6 @@ function isProbability(value) {
  * @param {unknown} value Candidate numeric value.
  * @returns {value is number} Whether the value is finite and nonnegative.
  */
-function isNonnegativeFinite(value) {
-  if (!Number.isFinite(value)) return false;
-  return /** @type {number} */ (value) >= 0;
-}
-
 /**
  * Format a numeric value without rounding or locale dependence.
  * @param {number} value Finite report value.
