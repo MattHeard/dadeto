@@ -4,6 +4,9 @@ import {
   createThreefoldPlayerSpawn,
 } from './scene-utils.js';
 
+export const THREEFOLD_SIGNAL_STATION_GEOMETRY_ID = 'signal-station';
+export const THREEFOLD_SIGNAL_STATION_DETAIL_SCALE = -2;
+
 const GATEHOUSE_AREAS = [
   {
     id: 'gatehouse',
@@ -62,8 +65,9 @@ const GATEHOUSE_GEOMETRY = [
     },
   },
   {
-    id: 'signal-station',
+    id: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
     overlapGroupId: 'signal-station-assembly',
+    hierarchy: { expandAtScale: THREEFOLD_SIGNAL_STATION_DETAIL_SCALE },
     bounds: {
       min: { x: 8.7, y: 2.8, z: 0 },
       max: { x: 9.1, y: 3.2, z: 6 },
@@ -81,6 +85,7 @@ const GATEHOUSE_RAT = {
   interactionRadiusMeters: 0.12,
 };
 
+/** @type {Array<{id: string, position: {x: number, y: number}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>} */
 const GATEHOUSE_INTERACTABLES = [
   {
     id: 'ferry-mooring-line',
@@ -118,6 +123,7 @@ const GATEHOUSE_INTERACTABLES = [
   {
     id: 'signal-station-console',
     overlapGroupId: 'signal-station-assembly',
+    hierarchy: { parentId: THREEFOLD_SIGNAL_STATION_GEOMETRY_ID },
     position: { x: 8.35, y: 3 },
     bounds: {
       min: { x: 8.25, y: 2.9, z: 0 },
@@ -129,7 +135,7 @@ const GATEHOUSE_INTERACTABLES = [
 /**
  * Create the contiguous canonical scene for THREEFOLD's first gatehouse.
  * Coordinates and geometry bounds use physical metres at every scale.
- * @returns {{id: 'broken-gate', bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, overlapGroupId?: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, overlapGroupId?: string, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
+ * @returns {{id: 'broken-gate', bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, spawn: ReturnType<typeof import('./spatial.js').createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}}>, geometry: Array<{id: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, interactables: Array<{id: string, position: {x: number, y: number}, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, bounds: {min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}}>, creatures: Array<typeof GATEHOUSE_RAT>}} Authored Broken Gate scene data.
  */
 export function createBrokenGateScene() {
   return {
@@ -154,6 +160,9 @@ function copyInteractable(item) {
     ...(item.overlapGroupId === undefined
       ? {}
       : { overlapGroupId: item.overlapGroupId }),
+    ...(item.hierarchy === undefined
+      ? {}
+      : { hierarchy: { ...item.hierarchy } }),
     position: { ...item.position },
     bounds: { min: { ...item.bounds.min }, max: { ...item.bounds.max } },
   };

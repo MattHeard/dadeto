@@ -6,6 +6,8 @@ import {
   createThreefoldSimulation,
   stepThreefoldSimulation,
 } from '../../../../src/core/browser/game/threefold/simulation.js';
+import { attemptThreefoldReport } from '../../../../src/core/browser/game/threefold/episode.js';
+import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 
 const RESCUE_THRESHOLDS = {
   urgentAtMinutes: 4,
@@ -155,5 +157,38 @@ describe('THREEFOLD post-storm closure simulation', () => {
       closedBy: 'departed',
     });
     expect(departed.player.destroyedGeometryIds).toContain('signal-station');
+  });
+});
+
+describe('THREEFOLD scene-authored report hierarchy', () => {
+  test('a different scene cannot file a Broken Gate aftermath report', () => {
+    const state = createThreefoldSimulation(
+      RESCUE_THRESHOLDS,
+      createThreefoldSluiceScene()
+    );
+
+    expect(attemptThreefoldReport(state)).toBe(state.episode);
+  });
+
+  test('report eligibility follows the station expansion scale in scene data', () => {
+    const initial = createThreefoldSimulation(RESCUE_THRESHOLDS);
+    initial.scene.geometry.find(
+      ({ id }) => id === 'signal-station'
+    ).hierarchy.expandAtScale = -1;
+    const console = initial.scene.interactables.find(
+      item => item.id === 'signal-station-console'
+    );
+    const atConsole = {
+      ...initial,
+      player: createScaleState(console.position, { scale: -1 }),
+    };
+    const aftermath = stepThreefoldSimulation(atConsole, {
+      type: 'wait',
+      elapsedGameMinutes: RESCUE_THRESHOLDS.aftermathAtMinutes,
+    });
+
+    expect(
+      stepThreefoldSimulation(aftermath, { type: 'interact' }).episode.closedBy
+    ).toBe('reported');
   });
 });

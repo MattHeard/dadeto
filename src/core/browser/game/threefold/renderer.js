@@ -12,7 +12,6 @@ import {
   canSearchThreefoldFerryWreck,
   THREEFOLD_SIGNAL_STATION_DETAIL_SCALE,
   THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
-  THREEFOLD_SIGNAL_STATION_HIERARCHY,
 } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
 import {
@@ -2877,13 +2876,6 @@ function hasLatchfolkIriLead(state) {
  */
 function createRenderWorld(state, heightMeters, growthPreviewIds) {
   const { scene, player, crisis } = state;
-  /** @type {Map<string, {parentId?: string, expandAtScale?: number}>} */
-  const stationHierarchy = new Map(
-    THREEFOLD_SIGNAL_STATION_HIERARCHY.map(({ id, hierarchy }) => [
-      id,
-      hierarchy,
-    ])
-  );
   const drainageState = isHighWorldSimulationState(state)
     ? 'dry'
     : getThreefoldGateOutcome(state).drainageState;
@@ -2910,17 +2902,11 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
           THREEFOLD_SIGNAL_STATION_GEOMETRY_ID
         )
     )
-    .map(object => {
-      const hierarchy = stationHierarchy.get(object.id);
-      return {
-        ...object,
-        ...(hierarchy === undefined ? {} : { hierarchy }),
-        logicalGridKind: /** @type {ThreefoldGridRenderKind} */ (
-          'interactable'
-        ),
-        growthPreview: growthPreviewIds.has(object.id),
-      };
-    });
+    .map(object => ({
+      ...object,
+      logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('interactable'),
+      growthPreview: growthPreviewIds.has(object.id),
+    }));
   const mapWidth = Math.max(
     14,
     Math.ceil((scene.bounds.max.x - scene.bounds.min.x) / heightMeters) +
@@ -2936,9 +2922,6 @@ function createRenderWorld(state, heightMeters, growthPreviewIds) {
     [
       ...geometry.map(object => ({
         ...object,
-        ...(object.hierarchy === undefined && stationHierarchy.has(object.id)
-          ? { hierarchy: stationHierarchy.get(object.id) }
-          : {}),
         logicalGridKind: /** @type {ThreefoldGridRenderKind} */ ('structure'),
         growthPreview: growthPreviewIds.has(object.id),
       })),
