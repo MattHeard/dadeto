@@ -6,6 +6,7 @@ export {
 } from '../algZooPredictionScorer/index.js';
 
 const TARGET_COUNT = 16;
+const ALG_ZOO_PILOT_PROTOCOL_VERSION = '1.0.4';
 const HELD_OUT_SEQUENCE_COUNT = 1024;
 const SEQUENCE_LENGTH = 10;
 export const WHOLE_MODEL_VARIANT_COUNT = 32;
@@ -88,7 +89,12 @@ export function createAlgZooPilotSchedule(seed) {
       },
     };
   });
-  return { valid: true, protocolVersion: '1.0.3', targetOrder, pairs };
+  return {
+    valid: true,
+    protocolVersion: ALG_ZOO_PILOT_PROTOCOL_VERSION,
+    targetOrder,
+    pairs,
+  };
 }
 
 /**
