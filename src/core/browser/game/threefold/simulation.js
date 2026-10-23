@@ -82,7 +82,7 @@ const ANCHOR_RECOVERY_MINUTES = 15;
 /** @typedef {{scene: ReturnType<typeof weftways.createThreefoldWeftwaysScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, weftways: ReturnType<typeof weftways.createThreefoldWeftwaysState>, elapsedGameSeconds: number}} WeftwaysSimulationState */
 /** @typedef {{scene: ReturnType<typeof grainlands.createThreefoldGrainlandsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, grainlands: ReturnType<typeof grainlands.createThreefoldGrainlandsState>, elapsedGameSeconds: number}} GrainlandsSimulationState */
 /** @typedef {{scene: ReturnType<typeof lanternWard.createThreefoldLanternWardScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} LanternWardSimulationState */
-/** @typedef {{scene: ReturnType<typeof belltops.createThreefoldBelltopsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, elapsedGameSeconds: number}} BelltopsSimulationState */
+/** @typedef {{scene: ReturnType<typeof belltops.createThreefoldBelltopsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, foldglassRival: {scale: number, engaged: boolean}, elapsedGameSeconds: number}} BelltopsSimulationState */
 /** @typedef {{scene: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, crownbackReach: ReturnType<typeof crownbackReach.createThreefoldCrownbackReachState>, elapsedGameSeconds: number}} CrownbackReachSimulationState */
 /** @typedef {{scene: ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsScene>, player: ReturnType<typeof import('./spatial.js').createScaleState>, crisis: ReturnType<typeof createCrisisClock>, episode: ReturnType<typeof createThreefoldEpisodeState>, encounter: ReturnType<typeof createThreefoldEncounter>, wakeformShoals: ReturnType<typeof wakeformShoals.createThreefoldWakeformShoalsState>, elapsedGameSeconds: number}} WakeformShoalsSimulationState */
 /** @typedef {LanternWardSimulationState|BelltopsSimulationState|CrownbackReachSimulationState|WakeformShoalsSimulationState} HighWorldSimulationState */
@@ -213,6 +213,11 @@ export function createThreefoldSimulation(
   }
   if (isThreefoldHighWorldSceneId(scene.id)) {
     const highWorldState = { ...state, elapsedGameSeconds: 0 };
+    if (scene.id === belltops.THREEFOLD_BELLTOPS_SCENE_ID)
+      return /** @type {BelltopsSimulationState} */ ({
+        ...highWorldState,
+        foldglassRival: { scale: 3, engaged: false },
+      });
     if (scene.id === crownbackReach.THREEFOLD_CROWNBACK_REACH_SCENE_ID)
       return /** @type {CrownbackReachSimulationState} */ ({
         ...highWorldState,
@@ -982,6 +987,25 @@ function stepHighWorldScene(state, action) {
   if (action.type === 'interact') {
     if (
       state.scene.id === belltops.THREEFOLD_BELLTOPS_SCENE_ID &&
+      !state.encounter.growthDeaths?.some(
+        ({ creatureId }) =>
+          creatureId === belltops.THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID
+      ) &&
+      belltops.isThreefoldBelltopsFoldglassRivalInReach(state)
+    )
+      return /** @type {HighWorldSimulationState} */ ({
+        ...state,
+        foldglassRival: {
+          .../** @type {BelltopsSimulationState} */ (state).foldglassRival,
+          engaged: !(
+            /** @type {BelltopsSimulationState} */ (state).foldglassRival
+              .engaged
+          ),
+        },
+        elapsedGameSeconds: state.elapsedGameSeconds + ACTION_GAME_MINUTES * 60,
+      });
+    if (
+      state.scene.id === belltops.THREEFOLD_BELLTOPS_SCENE_ID &&
       belltops.isThreefoldBelltopsRegulatorInReach(state)
     )
       return /** @type {HighWorldSimulationState} */ ({
@@ -1026,13 +1050,44 @@ function stepHighWorldScene(state, action) {
     commitSmallWorldSceneAction(
       state,
       action,
-      ({ creatureIds, geometryIds }) => {
+      ({ creatureIds, geometryIds, player }) => {
         const changes = /** @type {Record<string, any>} */ ({
           encounter:
             creatureIds.length > 0
               ? recordThreefoldGrowthDeaths(state.encounter, creatureIds)
               : state.encounter,
         });
+        if (state.scene.id === belltops.THREEFOLD_BELLTOPS_SCENE_ID) {
+          const rival = /** @type {BelltopsSimulationState} */ (state)
+            .foldglassRival;
+          const rivalDied = creatureIds.includes(
+            belltops.THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID
+          );
+          let engaged = rival.engaged && !rivalDied;
+          let scale = rival.scale;
+          if (
+            engaged &&
+            action.type === 'move' &&
+            !belltops.isThreefoldBelltopsFoldglassRivalInReach({
+              ...state,
+              player,
+            })
+          )
+            engaged = false;
+          if (
+            engaged &&
+            ['grow', 'shrink'].includes(action.type) &&
+            player !== state.player
+          )
+            scale = belltops.normalizeFoldglassRivalScale(player.scale + 1);
+          changes.foldglassRival = { scale, engaged };
+          if (scale !== rival.scale)
+            changes.scene = attachThreefoldReturnTideScene(
+              belltops.createThreefoldBelltopsScene({
+                foldglassRivalScale: scale,
+              })
+            );
+        }
         if (
           state.scene.id ===
             wakeformShoals.THREEFOLD_WAKEFORM_SHOALS_SCENE_ID &&

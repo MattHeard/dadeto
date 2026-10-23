@@ -12,7 +12,10 @@ import { parseJsonOrNull } from '../../validation.js';
 import { advanceCrisisClock, createCrisisClock } from './crisis.js';
 import { createBrokenGateScene } from './gatehouse.js';
 import { isThreefoldHighWorldSceneId } from './high-world-scenes.js';
-import { createThreefoldBelltopsScene } from './belltops.js';
+import {
+  createThreefoldBelltopsScene,
+  normalizeThreefoldBelltopsFoldglassRival,
+} from './belltops.js';
 import {
   createThreefoldCrownbackReachScene,
   normalizeThreefoldCrownbackReachState,
@@ -234,6 +237,10 @@ export function serializeThreefoldSimulation(simulation) {
     state.wakeformShoals = normalizeThreefoldWakeformShoalsState(
       /** @type {Record<string, any>} */ (simulation).wakeformShoals
     );
+  if (simulation.scene.id === 'belltops')
+    state.foldglassRival = normalizeThreefoldBelltopsFoldglassRival(
+      /** @type {Record<string, any>} */ (simulation).foldglassRival
+    );
   const elapsedGameSeconds = getSimulationElapsedGameSeconds(simulation);
   if (elapsedGameSeconds !== null)
     state.elapsedGameSeconds = normalizeThreefoldElapsedGameSeconds(
@@ -401,7 +408,11 @@ export function restoreThreefoldSimulation(serialized) {
       }
       const highWorldScene =
         envelope.sceneId === 'belltops'
-          ? createThreefoldBelltopsScene()
+          ? createThreefoldBelltopsScene({
+              foldglassRivalScale: normalizeThreefoldBelltopsFoldglassRival(
+                state.foldglassRival
+              ).scale,
+            })
           : envelope.sceneId === THREEFOLD_CROWNBACK_REACH_SCENE_ID
             ? createThreefoldCrownbackReachScene()
             : createThreefoldLanternWardScene();
@@ -409,6 +420,12 @@ export function restoreThreefoldSimulation(serialized) {
         return restoreTimedScene(restoredState, state, highWorldScene, {
           crownbackReach: normalizeThreefoldCrownbackReachState(
             state.crownbackReach
+          ),
+        });
+      if (envelope.sceneId === 'belltops')
+        return restoreTimedScene(restoredState, state, highWorldScene, {
+          foldglassRival: normalizeThreefoldBelltopsFoldglassRival(
+            state.foldglassRival
           ),
         });
       return restoreTimedScene(restoredState, state, highWorldScene);

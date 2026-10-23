@@ -14,6 +14,7 @@ import {
   THREEFOLD_SIGNAL_STATION_GEOMETRY_ID,
 } from './episode.js';
 import { isGatehouseRatInReach } from './encounter.js';
+import { isThreefoldBelltopsFoldglassRivalInReach } from './belltops.js';
 import {
   isThreefoldCrownbackTharnInReach,
   THREEFOLD_CROWNBACK_REACH_SCENE_ID,
@@ -3220,6 +3221,20 @@ function getHighWorldToast(state) {
   const damagedStructures = state.scene.geometry
     .filter(object => state.player.destroyedGeometryIds.includes(object.id))
     .map(object => /** @type {{displayName?: string}} */ (object).displayName);
+  if (state.scene.id === 'belltops') {
+    const rivalId = 'belltops-foldglass-rival';
+    const rivalLost = (state.encounter.growthDeaths ?? []).some(
+      ({ creatureId }) => creatureId === rivalId
+    );
+    if (rivalLost) return 'FOLDGLASS RIVAL LOST TO GROWTH';
+    const rival = /** @type {{scale: number, engaged: boolean}} */ (
+      /** @type {Record<string, any>} */ (state).foldglassRival
+    );
+    if (rival.engaged)
+      return `FOLDGLASS RIVAL · SCALE ${rival.scale} · MOVE TO WITHDRAW · A/B SCALE`;
+    if (isThreefoldBelltopsFoldglassRivalInReach(state))
+      return 'FOLDGLASS RIVAL IN REACH · E ENGAGE · A GROW · B SHRINK';
+  }
   if (state.scene.id === THREEFOLD_CROWNBACK_REACH_SCENE_ID) {
     const crownbackState = /** @type {Record<string, any>} */ (state)
       .crownbackReach;

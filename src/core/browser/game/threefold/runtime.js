@@ -33,6 +33,7 @@ import {
   describeThreefoldPressureNetwork,
 } from './pressure-network.js';
 import { THREEFOLD_GRAINLANDS_HATCH_ID } from './grainlands.js';
+import { recordThreefoldGrowthDeaths } from './encounter.js';
 import { isThreefoldInteractableInReach } from './scene-utils.js';
 import {
   createThreefoldPressureNetworkSaveStore,
@@ -63,7 +64,12 @@ import {
 import { renderThreefoldFrame } from './renderer.js';
 import { presentThreefoldWitnessEntry } from './witness-ledger.js';
 import {
+  createThreefoldBelltopsScene,
   THREEFOLD_BELLTOPS_SCENE_ID,
+  THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID,
+  THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_INTERACTABLE_ID,
+  normalizeThreefoldBelltopsFoldglassRival,
+  isThreefoldBelltopsFoldglassRivalInReach,
   isThreefoldBelltopsRegulatorInReach,
 } from './belltops.js';
 import {
@@ -222,10 +228,7 @@ export function createThreefoldRuntime(options = {}) {
       state.scene.id
     );
   const quayContent = () =>
-    presentThreefoldIriArrival(
-      campaignOutcomes,
-      getThreefoldQuayContent(state, pressureNetwork, campaignOutcomes.iriFate)
-    );
+    getVisibleQuayContent(state, campaignOutcomes, pressureNetwork);
   const knownIriFate = () => getKnownThreefoldIriFate(campaignOutcomes);
   const campaignPressure = () => {
     const sites = getThreefoldCampaignPressureState({
@@ -339,10 +342,11 @@ export function createThreefoldRuntime(options = {}) {
       state,
       action
     );
+    const rivalOwnsInteraction = isFoldglassRivalAction(state, action);
     finaleNotice = '';
     const priorTideFacts = tideFacts();
     const finaleInteraction =
-      action.type === 'interact'
+      !rivalOwnsInteraction && action.type === 'interact'
         ? interactThreefoldFinale(state, campaignOutcomes, priorTideFacts)
         : null;
     if (finaleInteraction) {
@@ -376,8 +380,9 @@ export function createThreefoldRuntime(options = {}) {
       projectCampaignState();
     }
     const readArrival =
-      action.type === 'interact' &&
+      !rivalOwnsInteraction &&
       !finaleInteraction?.handled &&
+      action.type === 'interact' &&
       campaignOutcomes.iriKnowledge !== undefined &&
       isThreefoldBelltopsRegulatorInReach(state);
     if (readArrival)
@@ -386,7 +391,10 @@ export function createThreefoldRuntime(options = {}) {
         campaignClock
       );
     const quayAction =
-      action.type === 'interact' && !readArrival && !finaleInteraction?.handled
+      !rivalOwnsInteraction &&
+      action.type === 'interact' &&
+      !readArrival &&
+      !finaleInteraction?.handled
         ? applyThreefoldQuayInteraction(
             state,
             pressureNetwork,
@@ -544,7 +552,10 @@ export function createThreefoldRuntime(options = {}) {
     },
     resetSave() {
       campaignAction(() => {
-        state = createInitialState();
+        state = resetRegionPreservingFoldglassOutcome(
+          state,
+          createInitialState()
+        );
         synchronizePressureNetwork({ type: 'reset' }, 0);
       });
       return resetInputFrame();
@@ -594,6 +605,81 @@ export function createThreefoldRuntime(options = {}) {
     frame,
     isRunning: () => running,
   };
+}
+
+/**
+ * Reset regional progress without restoring a rival already killed by growth.
+ * @param {ReturnType<typeof createThreefoldSimulation>} previous Prior regional state.
+ * @param {ReturnType<typeof createThreefoldSimulation>} fresh Authored reset state.
+ * @returns {ReturnType<typeof createThreefoldSimulation>} Reset state with durable rival outcome.
+ */
+function resetRegionPreservingFoldglassOutcome(previous, fresh) {
+  if (previous.scene.id !== THREEFOLD_BELLTOPS_SCENE_ID) return fresh;
+  const priorRival = normalizeThreefoldBelltopsFoldglassRival(
+    /** @type {Record<string, any>} */ (previous).foldglassRival
+  );
+  const authored = createThreefoldBelltopsScene({
+    foldglassRivalScale: priorRival.scale,
+  });
+  const dead = (previous.encounter.growthDeaths || []).some(
+    ({ creatureId }) => creatureId === THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID
+  );
+  const encounter = dead
+    ? recordThreefoldGrowthDeaths(fresh.encounter, [
+        THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID,
+      ])
+    : fresh.encounter;
+  return /** @type {ReturnType<typeof createThreefoldSimulation>} */ ({
+    ...fresh,
+    scene: {
+      ...fresh.scene,
+      creatures: fresh.scene.creatures.map(creature =>
+        creature.id === THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID
+          ? authored.creatures.find(
+              item => item.id === THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_ID
+            )
+          : creature
+      ),
+      interactables: fresh.scene.interactables.map(item =>
+        item.id === THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_INTERACTABLE_ID
+          ? authored.interactables.find(
+              target =>
+                target.id === THREEFOLD_BELLTOPS_FOLDGLASS_RIVAL_INTERACTABLE_ID
+            )
+          : item
+      ),
+    },
+    encounter,
+    foldglassRival: { ...priorRival, engaged: false },
+  });
+}
+
+/**
+ * Prefer the rival's reachable control prompt over overlapping Quay prompts.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Active region.
+ * @param {ReturnType<typeof createThreefoldCampaignOutcomes>} outcomes Campaign history.
+ * @param {ReturnType<typeof createThreefoldPressureNetwork>} network Shared machinery.
+ * @returns {ReturnType<typeof getThreefoldQuayContent>} Visible Quay interaction.
+ */
+function getVisibleQuayContent(state, outcomes, network) {
+  if (isThreefoldBelltopsFoldglassRivalInReach(state)) return null;
+  return presentThreefoldIriArrival(
+    outcomes,
+    getThreefoldQuayContent(state, network, outcomes.iriFate)
+  );
+}
+
+/**
+ * Identify when a reachable rival interaction owns the shared E action.
+ * @param {ReturnType<typeof createThreefoldSimulation>} state Active region.
+ * @param {{type: string}} action Current world command.
+ * @returns {boolean} Whether the rival handles this interaction.
+ */
+function isFoldglassRivalAction(state, action) {
+  return (
+    action.type === 'interact' &&
+    isThreefoldBelltopsFoldglassRivalInReach(state)
+  );
 }
 
 /**
