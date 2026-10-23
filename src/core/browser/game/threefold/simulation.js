@@ -729,10 +729,8 @@ function stepSiltMarginScene(state, action) {
           )
         ) {
           waterPuzzle = operateThreefoldSiltMarginValve(
-            waterPuzzle,
-            state.player.scale,
             fineValve.interactionScale
-          );
+          )(waterPuzzle, state.player.scale);
         } else if (
           siltMargin.guardian === 'guided-aside' &&
           siltMargin.signal === 'blocked' &&

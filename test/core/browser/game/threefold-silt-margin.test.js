@@ -578,7 +578,7 @@ describe('THREEFOLD Silt Margin authored valve scale', () => {
   });
 
   test('preserves the fine valve default scale', () => {
-    const opened = operateThreefoldSiltMarginValve(
+    const opened = operateThreefoldSiltMarginValve()(
       createThreefoldSiltMarginWaterPuzzle(),
       -4
     );
