@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "MUD1",
+      "title": "Dynamic MUD — Safe Command Core",
+      "publicationDate": "2026-10-23",
+      "release": "beta",
+      "content": [
+        "A first implementation slice for a graph-backed multiplayer text world: define a finite command language, validate it, and run commands atomically against a world snapshot. This is core groundwork, not yet a playable MUD.",
+        {
+          "type": "manual",
+          "id": "MUD1-manual",
+          "title": "Field guide",
+          "src": "/manuals/dynamic-mud.md"
+        }
+      ],
+      "tags": ["toy", "game", "mud", "prototype"]
+    },
+    {
       "key": "TETRA1",
       "title": "Tetracube — Open Ground",
       "publicationDate": "2026-10-23",
