@@ -3,7 +3,8 @@
 ## Local Run Instructions
 1. Install prerequisites with `npm install` if dependencies are absent.
 2. No external service or credentials are required; test fixtures are inline.
-3. Run `npx jest --runInBand test/core/browser/game/dynamicMud.test.js`, then `npm run check`.
+3. Run `npm run test:impact -- --files test/core/browser/game/dynamicMud.test.js test/core/browser/game/dynamicMud-game.test.js test/core/browser/game/dynamicMud-page.test.js`, then `npm run check`.
+4. Run `npm run build` and open `/dynamic-mud/` to play the Rain Causeway scene.
 
 ## Expected Observable Outputs
 - Terminal output should show the focused Jest suite passing and the check runner reporting success.
@@ -11,6 +12,6 @@
 - Exit code: `0` for each accepted command.
 
 ## Troubleshooting Hooks
-- Verbose mode command: `npx jest --runInBand --verbose test/core/browser/game/dynamicMud.test.js`.
+- Verbose mode command: `npx jest --runInBand --verbose test/core/browser/game/dynamicMud.test.js test/core/browser/game/dynamicMud-game.test.js test/core/browser/game/dynamicMud-page.test.js`.
 - Log location: direct terminal output and the Bead comment.
 - Cleanup command: no persistent state is created.

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#142521" />
+    <meta name="description" content="A small text adventure about a rain causeway, a distant ferry, and a bell that answers." />
+    <title>Dynamic MUD — The Rain Causeway</title>
+    <link rel="stylesheet" href="/dynamic-mud/styles.css" />
+  </head>
+  <body>
+    <main class="mud-shell">
+      <header>
+        <a class="back-link" href="/">← Dadeto</a>
+        <p class="eyebrow">DYNAMIC MUD · FIRST SCENE</p>
+        <h1>The Rain Causeway</h1>
+        <p class="intro">A floodgate blocks the old crossing. A brass bell hangs beside it; a ferry lamp flickers across the water.</p>
+      </header>
+      <section class="scene" aria-label="Text adventure">
+        <div class="scene-heading">
+          <span>HARROWFEN · DUSK</span>
+          <span id="mud-world-state" aria-live="polite">FLOODGATE · CLOSED</span>
+        </div>
+        <ol id="mud-transcript" class="transcript" aria-live="polite"></ol>
+        <p id="mud-status" class="status" role="status" aria-live="polite">Try: look, ring the bell, open the floodgate.</p>
+        <form id="mud-command-form" class="command-form">
+          <label for="mud-command">What do you do?</label>
+          <div class="command-row">
+            <input id="mud-command" name="command" maxlength="120" autocomplete="off" placeholder="Try “ring the bell”" required />
+            <button type="submit">Act</button>
+          </div>
+        </form>
+      </section>
+      <p class="controls">Known actions: <kbd>look</kbd> · <kbd>ring the bell</kbd> · <kbd>open the floodgate</kbd></p>
+      <footer><a href="/manuals/dynamic-mud.md">Field guide</a><span>One scene · actions change the world</span></footer>
+    </main>
+    <script type="module" src="/dynamic-mud/game.js"></script>
+  </body>
+</html>

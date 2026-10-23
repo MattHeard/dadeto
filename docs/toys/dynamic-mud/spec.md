@@ -9,16 +9,16 @@
 Explore a data-only command language for graph-backed multiplayer worlds. The first slice establishes how commands can inspect and change a world safely before any language-model adapter is considered.
 
 ## Boundary
-The boundary is a pure core interpreter between a validated finite AST and an immutable graph snapshot. It has no browser, persistence, network, clock, or model dependency.
+The bounded DSL interpreter remains pure and dependency-free. A browser adapter now wraps it in one playable Harrowfen scene with registered known commands. Unknown commands are rejected without mutation until a reviewed adapter can call the billed chat service and validate generated proposals.
 
 ## Scope
-- In scope: versioned AST validation; bounded node/relation graph; get, find, create, set property, add/remove relation, delete, output and broadcast operations; serial execution; all-or-nothing transaction result; output/broadcast intents.
-- Out of scope: UI, natural-language parsing, model-generated commands, adapters, persistence, multiplayer transport, event sourcing, authorization policy, command scheduling, and deployment. This slice does not claim a playable end-to-end MUD.
+- In scope: versioned AST validation; bounded node/relation graph; get, find, create, set property, add/remove relation, delete, output and broadcast operations; serial execution; all-or-nothing transaction result; output/broadcast intents; one browser-playable scene with known commands and visible state changes.
+- Out of scope for this bounded increment: persistence, multiplayer transport, event sourcing, authorization policy, command scheduling, and model-generated command registration. The full Notion acceptance still requires the deployed billed chat proxy for unknown-command generation; deterministic providers are test-only.
 
 ## Actors and Interfaces
-- Primary actor(s): tests and a future trusted command adapter.
+- Primary actor: a player at the Rain Causeway, with tests exercising the finite DSL.
 - Inputs: a plain JSON-like world snapshot and version 1 command program.
-- Outputs: either a new world and ordered results/intents, or an error with the untouched original world.
+- Outputs: visible text and a changed in-memory world for known actions; otherwise an explicit unknown-action response with the graph unchanged.
 
 ## Assumptions and Constraints
 - Assumptions: callers own persistence and may commit the returned snapshot only when `ok` is true.

@@ -24,11 +24,11 @@
     },
     {
       "key": "MUD1",
-      "title": "Dynamic MUD — Safe Command Core",
+      "title": "Dynamic MUD — The Rain Causeway",
       "publicationDate": "2026-10-23",
       "release": "beta",
       "content": [
-        "A first implementation slice for a graph-backed multiplayer text world: define a finite command language, validate it, and run commands atomically against a world snapshot. This is core groundwork, not yet a playable MUD.",
+        "A playable text scene set on a rain-soaked causeway. Ring the brass bell to get the ferry's answer, then open the floodgate. Known actions run through a bounded, validated command language; unknown actions cannot mutate the world. Play at /dynamic-mud/.",
         {
           "type": "manual",
           "id": "MUD1-manual",

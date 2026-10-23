@@ -1,8 +1,10 @@
 # MUD1 — Dynamic MUD: Safe Command Core
 
+Play the first scene at [/dynamic-mud/](/dynamic-mud/). The Rain Causeway currently understands `look`, `ring the bell`, and `open the floodgate`. Ring the bell to get the ferry's answer, then open the gate. Unknown commands receive a clear response and do not alter the world; model-generated handlers are not enabled yet.
+
 ## What this toy does
 
-This prototype slice defines a bounded graph-command language and a pure transaction interpreter. It is groundwork for a future multiplayer text world, not yet a playable game. There is no natural-language model, browser UI, persistence, or network adapter.
+This prototype includes a small playable scene over a bounded graph-command language and pure transaction interpreter. Known actions run without a model. Unknown commands are not yet generated; there is no persistence or multiplayer network.
 
 ## Input
 
