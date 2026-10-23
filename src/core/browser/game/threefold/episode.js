@@ -199,13 +199,18 @@ export function attemptThreefoldReport(state) {
  */
 export function attemptThreefoldGateRepair(state) {
   const { episode, crisis } = state;
+  if (state.scene.id !== 'broken-gate') return episode;
   if (episode.gateRepaired === true) return episode;
   const beforeSurge = crisis.stage === 'rising' || crisis.stage === 'urgent';
   const afterSurge = crisis.stage === 'surge' || crisis.stage === 'aftermath';
   if (!beforeSurge && !afterSurge) return episode;
   if (beforeSurge ? episode.ferry === 'lost' : episode.ferry !== 'lost')
     return episode;
-  if (state.player.scale !== -2) return episode;
+  const requiredScale = state.scene.interactables.find(
+    ({ id }) => id === GATE_REPAIR_ID
+  )?.interactionScale;
+  if (requiredScale === undefined || state.player.scale !== requiredScale)
+    return episode;
   const gateWasForcedOpen = THREEFOLD_GATE_REPAIR_GEOMETRY_IDS.some(id =>
     state.player.destroyedGeometryIds.includes(id)
   );
