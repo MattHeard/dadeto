@@ -33,7 +33,7 @@ const DEW_CROSSING_BOUNDS = {
 /** @typedef {{min: {x: number, y: number}, max: {x: number, y: number}}} ThreefoldPlanarBounds */
 /** @typedef {{min: {x: number, y: number, z: number}, max: {x: number, y: number, z: number}}} ThreefoldSolidBounds */
 /** @typedef {{id: string, bounds: ThreefoldSolidBounds}} ThreefoldSolidObject */
-/** @typedef {{id: string, position: {x: number, y: number}, bounds: ThreefoldSolidBounds}} ThreefoldInteractable */
+/** @typedef {{id: string, position: {x: number, y: number}, interactionScale?: number, bounds: ThreefoldSolidBounds}} ThreefoldInteractable */
 /** @typedef {{id: string, bounds: ThreefoldSolidBounds}} ThreefoldSiltMarginCreature */
 /** @typedef {{id: 'silt-margin', bounds: ThreefoldPlanarBounds, spawn: ReturnType<typeof createScaleState>, baseBodyWidthMeters: number, areas: Array<{id: string, bounds: ThreefoldPlanarBounds}>, geometry: ThreefoldSolidObject[], decorations: ThreefoldSolidObject[], interactables: ThreefoldInteractable[], creatures: ThreefoldSiltMarginCreature[]}} ThreefoldSiltMarginScene */
 
@@ -83,6 +83,7 @@ export function createThreefoldSiltMarginScene() {
     interactables: [
       {
         id: THREEFOLD_SILT_MARGIN_FINE_VALVE_ID,
+        interactionScale: -4,
         position: { x: 0.138, y: 0.09 },
         bounds: {
           min: { x: 0.135, y: 0.087, z: 0 },
