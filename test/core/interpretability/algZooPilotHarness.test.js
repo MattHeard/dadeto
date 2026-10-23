@@ -48,6 +48,66 @@ const configuration = {
 };
 
 /**
+ * Assert both cross-arm and future-target canaries stay out of unauthorized requests.
+ * @param {Record<string, any>} result Paired-runner result.
+ * @param {Array<Record<string, any>>} investigatorCalls Captured adapter requests.
+ * @returns {void} No value.
+ */
+function assertSyntheticCanaryIsolation(result, investigatorCalls) {
+  const controlRequest = investigatorCalls.find(
+    call => call.request.session.arm === 'control'
+  ).request;
+  const treatmentRequest = investigatorCalls.find(
+    call => call.request.session.arm === 'treatment'
+  ).request;
+  expect(JSON.stringify(controlRequest)).not.toContain(
+    'synthetic-treatment-only-canary-secret'
+  );
+  expect(JSON.stringify(treatmentRequest)).toContain(
+    'synthetic-treatment-only-canary-secret'
+  );
+  expect(
+    investigatorCalls.every(
+      call =>
+        !JSON.stringify(call.request).includes('synthetic-future-canary-secret')
+    )
+  ).toBe(true);
+  expect(controlRequest.mapEntries).toEqual([]);
+  expect(treatmentRequest.mapEntries.map(entry => entry.id)).toEqual([
+    'earlier-map-entry',
+    'treatment-only-canary',
+  ]);
+  const controlLog = result.sessionRecords.find(
+    record => record.arm === 'control'
+  ).retrievalAccessLog;
+  const treatmentLog = result.sessionRecords.find(
+    record => record.arm === 'treatment'
+  ).retrievalAccessLog;
+  expect(controlLog).toContainEqual({
+    entryId: 'treatment-only-canary',
+    outcome: 'denied',
+    reason: 'control-isolated',
+  });
+  expect(treatmentLog).toContainEqual({
+    entryId: 'treatment-only-canary',
+    outcome: 'returned',
+  });
+  expect(controlLog).toContainEqual({
+    entryId: 'future-treatment-canary',
+    outcome: 'denied',
+    reason: 'control-isolated',
+  });
+  expect(treatmentLog).toContainEqual({
+    entryId: 'future-treatment-canary',
+    outcome: 'denied',
+    reason: 'not-prior',
+  });
+  expect(JSON.stringify(result.sessionRecords)).not.toContain(
+    'synthetic-future-canary-secret'
+  );
+}
+
+/**
  * Build deterministic synthetic measurements matching the frozen 32-variant design.
  * @param {number} [mechanisticEstimateOffset] Offset from reference accuracy.
  * @returns {Record<string, any>} Complete synthetic accuracy evaluation input.
@@ -396,6 +456,26 @@ describe('AlgZoo shared-map pilot harness', () => {
         evidence: ['evidence'],
         status: 'uncertain',
       },
+      {
+        id: 'treatment-only-canary',
+        arm: 'treatment',
+        pairOrder: 0,
+        completed: true,
+        targetUnit: 6,
+        claim: 'synthetic-treatment-only-canary-secret',
+        evidence: ['synthetic-prior-evidence'],
+        status: 'validated',
+      },
+      {
+        id: 'future-treatment-canary',
+        arm: 'treatment',
+        pairOrder: 15,
+        completed: true,
+        targetUnit: 12,
+        claim: 'synthetic-future-canary-secret',
+        evidence: ['synthetic-private-evidence'],
+        status: 'validated',
+      },
     ];
 
     const result = await runner.runTargetPair(pair, earlierMap, heldOut);
@@ -415,10 +495,6 @@ describe('AlgZoo shared-map pilot harness', () => {
         call => !JSON.stringify(call.request).includes('held-out-only')
       )
     ).toBe(true);
-    expect(
-      investigatorCalls.find(call => call.request.session.arm === 'control')
-        .request.mapEntries
-    ).toEqual([]);
     expect(scorerCall.request.heldOutEvaluationData).toBe(heldOut);
     expect(scorerCall.request.submissions).toHaveLength(2);
     expect(result.blindedScores).toBe(scoreResults);
@@ -430,6 +506,7 @@ describe('AlgZoo shared-map pilot harness', () => {
       expect(submission).not.toHaveProperty('mapSnapshotHash');
     }
     expect(result.sessionRecords).toHaveLength(2);
+    assertSyntheticCanaryIsolation(result, investigatorCalls);
     expect(
       result.sessionRecords.map(record => record.submission.causalEvidence)
     ).toEqual(['not tested', 'not tested']);
