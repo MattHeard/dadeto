@@ -6,9 +6,9 @@ export {
 const TARGET_COUNT = 16;
 const HELD_OUT_SEQUENCE_COUNT = 1024;
 const SEQUENCE_LENGTH = 10;
-const WHOLE_MODEL_VARIANT_COUNT = 32;
-const WHOLE_MODEL_SAMPLE_COUNT = 100000;
-const WHOLE_MODEL_NOISE_SCALES = Object.freeze([0.01, 0.05, 0.1, 0.2]);
+export const WHOLE_MODEL_VARIANT_COUNT = 32;
+export const WHOLE_MODEL_SAMPLE_COUNT = 100000;
+export const WHOLE_MODEL_NOISE_SCALES = Object.freeze([0.01, 0.05, 0.1, 0.2]);
 const PILOT_BUDGET = Object.freeze({
   investigatorTokens: 20000,
   elapsedMillis: 30 * 60 * 1000,

@@ -1,0 +1,6 @@
+# AlgZoo accuracy report renderer
+
+- **Unexpected hurdle:** The first renderer pass duplicated whole-model protocol constants, trusted stored aggregate values without reconciling them to the 32 variants, and left the local CLI above the repository's thin-wrapper limit. The first focused check also exposed missing branches and a test regex typo.
+- **Diagnosis:** `npm run check:impact:run` reported the clone, then the fast aggregate check identified the non-core wrapper and JSDoc type errors. Comparing the renderer with the evaluator showed that MSE and reference range can be recomputed from stored variant records.
+- **Fix:** Reuse the evaluator's protocol constants, reject aggregate values that do not match measurements, keep the reference-accuracy interval explicitly unavailable instead of inventing one, and route CLI effects through an injected `src/core/local` command handler. Tests exercise valid, malformed, and inconsistent records.
+- **Next-time guidance:** For result renderers, validate every published aggregate against the source rows and state unavailable uncertainty plainly. Keep local entrypoints as small effect adapters; put parsing and decisions behind an injected core handler.
