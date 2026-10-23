@@ -9,6 +9,20 @@ const TARGET_COUNT = 16;
 const ALG_ZOO_PILOT_PROTOCOL_VERSION = '1.0.4';
 const HELD_OUT_SEQUENCE_COUNT = 1024;
 const SEQUENCE_LENGTH = 10;
+const PINNED_MODEL_METADATA = Object.freeze({
+  architecture: 'DistRNN',
+  activation: 'relu',
+  hiddenSize: 16,
+  sequenceLength: SEQUENCE_LENGTH,
+  outputSize: 10,
+  bias: false,
+});
+/** @type {Array<{name: string, shape: Array<number>}>} */
+const PINNED_PARAMETER_SHAPES = [
+  { name: 'inputToHidden', shape: [16, 1] },
+  { name: 'recurrent', shape: [16, 16] },
+  { name: 'output', shape: [10, 16] },
+];
 export const WHOLE_MODEL_VARIANT_COUNT = 32;
 export const WHOLE_MODEL_SAMPLE_COUNT = 100000;
 export const WHOLE_MODEL_NOISE_SCALES = Object.freeze([0.01, 0.05, 0.1, 0.2]);
@@ -211,8 +225,10 @@ export function createAlgZooPilotPlan(configuration, fixture) {
     fixture?.source?.checkpointSha256 !==
       '498bd9a87c469e18e824a78e55c22843c7595776f1bfc2dfe07c36e5616218bb' ||
     fixture?.model?.id !== 'arc-algzoo/m16-10-second-argmax' ||
-    fixture?.model?.hiddenSize !== 16 ||
-    fixture?.model?.sequenceLength !== SEQUENCE_LENGTH
+    !Object.entries(PINNED_MODEL_METADATA).every(
+      ([field, value]) => fixture?.model?.[field] === value
+    ) ||
+    !hasPinnedParameterTensors(fixture?.parameters)
   ) {
     errors.push({ code: 'fixture-does-not-match-preregistration' });
   }
@@ -289,6 +305,32 @@ export function createAlgZooPilotPlan(configuration, fixture) {
     manifest,
     json: JSON.stringify(sortObjectKeys(manifest), null, 2),
   };
+}
+
+/**
+ * Verify the checked-in recurrent model tensors match the pinned architecture.
+ * @param {unknown} parameters Candidate model parameters.
+ * @returns {boolean} Whether all pinned tensors have their exact finite values.
+ */
+function hasPinnedParameterTensors(parameters) {
+  return (
+    isRecord(parameters) &&
+    Object.keys(parameters).length === PINNED_PARAMETER_SHAPES.length &&
+    PINNED_PARAMETER_SHAPES.every(({ name, shape: expectedShape }) => {
+      const tensor = parameters[name];
+      return (
+        Array.isArray(tensor?.shape) &&
+        tensor.shape.length === expectedShape.length &&
+        expectedShape.every(
+          (dimension, index) => tensor.shape[index] === dimension
+        ) &&
+        Array.isArray(tensor.values) &&
+        tensor.values.length ===
+          expectedShape.reduce((count, dimension) => count * dimension, 1) &&
+        tensor.values.every(Number.isFinite)
+      );
+    })
+  );
 }
 
 /**

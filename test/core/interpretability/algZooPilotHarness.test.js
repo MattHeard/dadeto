@@ -313,8 +313,12 @@ describe('AlgZoo shared-map pilot harness', () => {
       ['source', 'revision', 'wrong-revision'],
       ['source', 'checkpointSha256', 'wrong-checkpoint'],
       ['model', 'id', 'wrong-model'],
+      ['model', 'architecture', 'wrong-architecture'],
+      ['model', 'activation', 'tanh'],
       ['model', 'hiddenSize', 15],
       ['model', 'sequenceLength', 9],
+      ['model', 'outputSize', 9],
+      ['model', 'bias', true],
     ]) {
       const changedFixture = {
         ...fixture,
@@ -322,6 +326,45 @@ describe('AlgZoo shared-map pilot harness', () => {
       };
       expect(
         createAlgZooPilotPlan(configuration, changedFixture).errors
+      ).toContainEqual({ code: 'fixture-does-not-match-preregistration' });
+    }
+    const invalidParameterSets = [
+      null,
+      { ...fixture.parameters, extra: { shape: [1], values: [1] } },
+      { ...fixture.parameters, inputToHidden: null },
+      {
+        ...fixture.parameters,
+        inputToHidden: {
+          shape: [],
+          values: fixture.parameters.inputToHidden.values,
+        },
+      },
+      {
+        ...fixture.parameters,
+        inputToHidden: {
+          shape: [15, 1],
+          values: fixture.parameters.inputToHidden.values,
+        },
+      },
+      {
+        ...fixture.parameters,
+        inputToHidden: { shape: [16, 1] },
+      },
+      {
+        ...fixture.parameters,
+        inputToHidden: { shape: [16, 1], values: [] },
+      },
+      {
+        ...fixture.parameters,
+        inputToHidden: {
+          shape: [16, 1],
+          values: fixture.parameters.inputToHidden.values.map(() => Infinity),
+        },
+      },
+    ];
+    for (const parameters of invalidParameterSets) {
+      expect(
+        createAlgZooPilotPlan(configuration, { ...fixture, parameters }).errors
       ).toContainEqual({ code: 'fixture-does-not-match-preregistration' });
     }
 
