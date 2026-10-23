@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Compare a hypothetical weeding rover fleet with your current field-work process."
+    />
+    <title>Agricultural Rover Feasibility</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">D A D E T O · PILOT PLANNER</p>
+        <h1>Agricultural Rover Feasibility</h1>
+        <p>
+          Compare a hypothetical weeding fleet with your current process. Start
+          with the example, then change any assumption.
+        </p>
+      </header>
+      <p class="notice">
+        <strong>Planning model only.</strong> Numbers are assumptions unless you
+        mark the baseline as observed. This does not predict field performance
+        or endorse a vendor.
+      </p>
+      <form id="rover-form">
+        <section aria-labelledby="field-heading">
+          <h2 id="field-heading">The job</h2>
+          <label
+            >Field area <span>(m²)</span
+            ><input
+              name="areaSquareMeters"
+              type="number"
+              min="0.01"
+              step="any"
+              required
+          /></label>
+          <label
+            >Available work window <span>(hours)</span
+            ><input
+              name="operatingWindowHours"
+              type="number"
+              min="0.01"
+              step="any"
+              required
+          /></label>
+        </section>
+        <section aria-labelledby="baseline-heading">
+          <h2 id="baseline-heading">Current manual process</h2>
+          <label
+            >Worker-hours per hectare<input
+              name="laborHoursPerHectare"
+              type="number"
+              min="0"
+              step="any"
+              required
+          /></label>
+          <label
+            >Labor cost <span>(€/worker-hour)</span
+            ><input
+              name="baselineHourlyEuro"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+          /></label>
+          <label
+            >Baseline evidence<select name="evidence">
+              <option value="assumed">Assumed</option>
+              <option value="observed">Observed</option>
+            </select></label
+          >
+        </section>
+        <section aria-labelledby="rover-heading">
+          <h2 id="rover-heading">Hypothetical rover fleet</h2>
+          <label
+            >Number of rovers<input
+              name="machineCount"
+              type="number"
+              min="1"
+              step="1"
+              required
+          /></label>
+          <label
+            >Effective coverage <span>(m²/rover-hour)</span
+            ><input
+              name="coverage"
+              type="number"
+              min="0.01"
+              step="any"
+              required
+          /></label>
+          <label
+            >Battery runtime <span>(minutes)</span
+            ><input
+              name="batteryRuntimeMinutes"
+              type="number"
+              min="0.01"
+              step="any"
+              required
+          /></label>
+          <label
+            >Charge time <span>(minutes per cycle)</span
+            ><input
+              name="chargeMinutes"
+              type="number"
+              min="0"
+              step="any"
+              required
+          /></label>
+          <label
+            >Other downtime <span>(%)</span
+            ><input
+              name="downtimePercent"
+              type="number"
+              min="0"
+              max="99.99"
+              step="any"
+              required
+          /></label>
+          <label
+            >Supervision <span>(worker-hours/rover-hour)</span
+            ><input
+              name="supervisionHoursPerMachineHour"
+              type="number"
+              min="0"
+              step="any"
+              required
+          /></label>
+          <label
+            >Interventions <span>(events/rover-hour)</span
+            ><input
+              name="interventionsPerMachineHour"
+              type="number"
+              min="0"
+              step="any"
+              required
+          /></label>
+          <label
+            >Time per intervention <span>(minutes)</span
+            ><input
+              name="interventionMinutes"
+              type="number"
+              min="0"
+              step="any"
+              required
+          /></label>
+          <label
+            >Operator labor cost <span>(€/worker-hour)</span
+            ><input
+              name="operatorHourlyEuro"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+          /></label>
+          <label
+            >Rover running cost <span>(€/rover-hour)</span
+            ><input
+              name="operatingCostEuro"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+          /></label>
+          <label
+            >Hypothetical purchase cost <span>(€)</span
+            ><input
+              name="upfrontEuro"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+          /></label>
+          <label
+            >Comparable jobs to spread purchase cost<input
+              name="comparableJobs"
+              type="number"
+              min="1"
+              step="1"
+              required
+          /></label>
+        </section>
+        <div class="actions">
+          <button type="submit">Update comparison</button>
+          <button id="export-button" type="button">
+            Download readiness brief
+          </button>
+          <label class="import-button"
+            >Import brief<input
+              id="import-file"
+              type="file"
+              accept="application/json,.json"
+          /></label>
+          <button id="print-button" type="button">Print</button>
+        </div>
+      </form>
+      <p id="status" role="status" aria-live="polite"></p>
+      <section
+        id="results"
+        aria-labelledby="results-heading"
+        aria-live="polite"
+      >
+        <h2 id="results-heading">Your comparison</h2>
+        <div id="result-content"></div>
+      </section>
+      <details>
+        <summary>What to ask before a pilot</summary>
+        <ul>
+          <li>
+            Was effective coverage measured in fields like yours, and what
+            conditions were recorded?
+          </li>
+          <li>
+            What is included in downtime, charging, maintenance, and operator
+            intervention figures?
+          </li>
+          <li>
+            What task-quality and crop-safety evidence supports the claimed weed
+            removal rate?
+          </li>
+          <li>
+            Which setup, transport, training, support, and seasonal costs are
+            missing from this estimate?
+          </li>
+        </ul>
+      </details>
+      <footer>
+        Deterministic scenario arithmetic · no sign-up · no external services
+      </footer>
+    </main>
+    <script type="module" src="rover.js"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+# Agricultural Rover feasibility toy retrospective — 2026-10-23
+
+- Unexpected hurdle: the first focused evaluator caught formatting/JSDoc warnings and three uncovered branches in the public invalid-input paths; the first full `npm run check` then failed because a toy directory also requires its manual and a separate blog-manifest reference. The page loader also exceeded the repository's thin non-core JS limit until its controller moved into core, and TypeScript rejected a nullable file-input collection access.
+- Diagnosis: scoped impact output identified lint and coverage gaps; `scripts/check-toy-manuals.js` exposed manual/catalogue invariants; `npm run check` and TSDoc checks identified presenter constraints.
+- Chosen fix: complete the deterministic model, move the presenter to core and leave a tiny page loader, provide import/export and synthetic scenario defaults, document all toy assumptions, and add model plus DOM tests. No runtime dependencies or external services were added.
+- Evidence: focused impact evaluator passed 2 suites / 40 tests with 100% changed-core line and branch coverage; `npm run manuals:check` validated 83 manuals; `npm run build` completed; `npm run tsdoc:check` passed; final `npm run check` passed all 10 gates; `git diff --check` passed.
+- Remaining acceptance: novice-under-two-minute usability and live published-page discoverability still need a browser playtest/deployment. No production publish was performed. The shared Dolt lock prevents updating the owning Bead `dadeto-krfo`; retry `bd` when the lock clears and never rebuild from stale JSONL.
+- Next guidance: preserve the pure client-side deterministic model and explicit synthetic/vendor limits. Record field-playtest findings before claiming the full spec complete.

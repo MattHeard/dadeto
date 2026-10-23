@@ -1,6 +1,22 @@
 {
   "posts": [
     {
+      "key": "AGRR1",
+      "title": "Agricultural Rover Feasibility",
+      "publicationDate": "2026-10-23",
+      "release": "beta",
+      "content": [
+        "Compare a hypothetical autonomous weeding fleet with your current process. Edit the assumptions, review three scenarios and break-even thresholds, and export or reimport a pilot-readiness brief. Play at /agricultural-rover/.",
+        {
+          "type": "manual",
+          "id": "AGRR1-manual",
+          "title": "Field guide",
+          "src": "/manuals/agricultural-rover.md"
+        }
+      ],
+      "tags": ["toy", "agriculture", "robotics", "decision-support"]
+    },
+    {
       "key": "CHAT1",
       "title": "OpenAI Chat",
       "publicationDate": "2026-10-23",

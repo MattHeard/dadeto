@@ -1,0 +1,156 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+  color: #1d2922;
+  background: #edf2eb;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 1rem;
+}
+main {
+  max-width: 980px;
+  margin: 0 auto;
+}
+header {
+  padding: 1.5rem 0 0.5rem;
+}
+h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: clamp(2rem, 6vw, 3.25rem);
+}
+h2 {
+  margin-top: 0;
+}
+.eyebrow {
+  color: #466b55;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.notice {
+  padding: 1rem;
+  border-left: 4px solid #b1832c;
+  background: #fff7df;
+}
+form,
+#results,
+details {
+  padding: 1.25rem;
+  margin: 1rem 0;
+  border: 1px solid #bdc9bd;
+  border-radius: 0.8rem;
+  background: #fff;
+}
+form section {
+  padding: 1rem 0;
+  border-bottom: 1px solid #d9e0d8;
+}
+form section:first-child {
+  padding-top: 0;
+}
+form section:last-of-type {
+  border-bottom: 0;
+}
+form section label {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: min(100%, 18rem);
+  margin: 0.4rem 0.75rem 0.4rem 0;
+  font-weight: 600;
+}
+label span {
+  color: #5e6a61;
+  font-size: 0.88rem;
+  font-weight: 400;
+}
+input,
+select,
+button,
+.import-button {
+  min-height: 2.7rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #8b9b8d;
+  border-radius: 0.4rem;
+  font: inherit;
+}
+button,
+.import-button {
+  cursor: pointer;
+  color: #fff;
+  background: #315c42;
+  font-weight: 650;
+}
+button:hover,
+.import-button:hover {
+  background: #244833;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-top: 1rem;
+}
+.import-button {
+  display: inline-flex;
+  align-items: center;
+}
+.import-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+#status {
+  min-height: 1.5rem;
+  color: #87392c;
+  font-weight: 650;
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+.card {
+  padding: 1rem;
+  border-radius: 0.6rem;
+  background: #eef4ed;
+}
+.card h3 {
+  margin-top: 0;
+}
+.metric {
+  margin: 0.4rem 0;
+}
+.metric strong {
+  display: block;
+  font-size: 1.15rem;
+}
+.threshold {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-left: 4px solid #315c42;
+  background: #eef4ed;
+}
+footer {
+  padding: 1rem 0;
+  color: #59675d;
+  font-size: 0.9rem;
+}
+@media print {
+  body {
+    background: #fff;
+  }
+  form,
+  .actions,
+  footer {
+    display: none;
+  }
+  main {
+    max-width: none;
+  }
+}
