@@ -47,6 +47,27 @@ jest.unstable_mockModule(
 const { startThreefoldPage } = await import(
   '../../../../src/core/browser/game/threefold/page.js'
 );
+const { createThreefoldSiltMarginScene } = await import(
+  '../../../../src/core/browser/game/threefold/silt-margin.js'
+);
+const { createThreefoldBelltopsScene } = await import(
+  '../../../../src/core/browser/game/threefold/belltops.js'
+);
+const { createThreefoldHearthgapsScene } = await import(
+  '../../../../src/core/browser/game/threefold/hearthgaps.js'
+);
+const { createThreefoldWeftwaysScene } = await import(
+  '../../../../src/core/browser/game/threefold/weftways.js'
+);
+const { createThreefoldGrainlandsScene } = await import(
+  '../../../../src/core/browser/game/threefold/grainlands.js'
+);
+const { createThreefoldSluiceScene } = await import(
+  '../../../../src/core/browser/game/threefold/sluice-scene.js'
+);
+const { createThreefoldLanternWardScene } = await import(
+  '../../../../src/core/browser/game/threefold/lantern-ward.js'
+);
 
 test('keeps handheld page spacing and touch controls on an eight-pixel grid', () => {
   expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
@@ -60,8 +81,8 @@ test('keeps handheld page spacing and touch controls on an eight-pixel grid', ()
   expect(THREEFOLD_CSS).toContain('grid-template-columns: 120px 112px');
   expect(THREEFOLD_CSS).toContain('transform: none');
   expect(THREEFOLD_HTML).toContain('<details id="witness-ledger"');
-  expect(THREEFOLD_HTML).toContain(
-    'id="logical-grid-warning" class="logical-grid-warning" role="status" aria-live="polite" hidden'
+  expect(THREEFOLD_HTML).toMatch(
+    /<p\s+id="logical-grid-warning"\s+class="logical-grid-warning"\s+role="status"\s+aria-live="polite"\s+hidden/
   );
   expect(THREEFOLD_CSS).toContain('.logical-grid-warning');
   expect(THREEFOLD_HTML).toContain(
@@ -311,7 +332,8 @@ describe('THREEFOLD page adapter', () => {
     const documentObj = { querySelector: selector => nodes.get(selector) };
     startThreefoldPage({
       documentObj,
-      windowObj: { location: { search: '?scene=silt-margin' } },
+      scene: createThreefoldSiltMarginScene(),
+      windowObj: {},
       navigatorObj: {},
     });
     const page = mockStartMosslightPage.mock.calls[0][0];
@@ -326,10 +348,6 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#interact-label').textContent).toBe(
       'E · GUIDE · VALVE · SIGNAL · LISTEN'
     );
-    expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Continue to the Lantern Ward',
-      href: '/threefold/?scene=lantern-ward',
-    });
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
     expect(nodes.get('#iri-repair-log').hidden).toBe(true);
@@ -368,7 +386,8 @@ describe('THREEFOLD page adapter', () => {
     const documentObj = { querySelector: selector => nodes.get(selector) };
     startThreefoldPage({
       documentObj,
-      windowObj: { location: { search: '?scene=lantern-ward' } },
+      scene: createThreefoldLanternWardScene(),
+      windowObj: {},
       navigatorObj: {},
     });
     const page = mockStartMosslightPage.mock.calls[0][0];
@@ -383,10 +402,6 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#chapter-description').textContent).toContain(
       'Mira and Tov'
     );
-    expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Continue to the Belltops',
-      href: '/threefold/?scene=belltops',
-    });
     expect(nodes.get('#a-control-label').textContent).toBe('GROW');
     expect(nodes.get('#b-control-label').textContent).toBe('SHRINK');
     expect(nodes.get('#interact-control').hidden).toBe(true);
@@ -404,7 +419,8 @@ describe('THREEFOLD page adapter', () => {
 
     startThreefoldPage({
       documentObj,
-      windowObj: { location: { search: '?scene=belltops' } },
+      scene: createThreefoldBelltopsScene(),
+      windowObj: {},
       navigatorObj: {},
     });
     const belltopsPage = mockStartMosslightPage.mock.calls.at(-1)[0];
@@ -416,10 +432,6 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#chapter-description').textContent).toMatch(
       /Iri.*pressure regulator/
     );
-    expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Continue to Crownback Reach',
-      href: '/threefold/?scene=crownback-reach',
-    });
     expect(nodes.get('#interact-control').hidden).toBe(false);
     expect(nodes.get('#e-control-label').textContent).toBe('QUAY ACTION');
   });
@@ -476,7 +488,7 @@ describe('THREEFOLD page adapter', () => {
     );
   });
 
-  test('selects the standalone sluice route and updates its Mosslight page copy', () => {
+  test('configures an internally supplied sluice scene without URL navigation', () => {
     const elements = new Map(
       [
         '#chapter-subtitle',
@@ -485,6 +497,7 @@ describe('THREEFOLD page adapter', () => {
         '#chapter-heading',
         '#chapter-description',
         '#interact-label',
+        '#objective-reminder',
         '#scene-link',
         '#game-footer',
         '#interact-control',
@@ -496,14 +509,18 @@ describe('THREEFOLD page adapter', () => {
       querySelector: selector => elements.get(selector),
     };
     const windowObj = {
-      location: { search: '?scene=sluice' },
       localStorage: {
         getItem: () => null,
         setItem: () => {},
         removeItem: () => {},
       },
     };
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      scene: createThreefoldSluiceScene(),
+      navigatorObj: {},
+    });
     const page = mockStartMosslightPage.mock.calls[0][0];
     const state = page.createRuntime({ env: new Map() }).getState();
 
@@ -511,8 +528,8 @@ describe('THREEFOLD page adapter', () => {
     expect(elements.get('#chapter-subtitle').textContent).toBe(
       'The Tidal Archive'
     );
-    expect(elements.get('#scene-link').href).toBe(
-      '/threefold/?scene=silt-margin'
+    expect(elements.get('#objective-reminder').textContent).toContain(
+      'raise the lower basin'
     );
     expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
       'aria-label',
@@ -520,6 +537,7 @@ describe('THREEFOLD page adapter', () => {
     );
     expect(elements.get('#witness-ledger').hidden).toBe(true);
     expect(elements.get('#testimony').hidden).toBe(true);
+    expect(page.describeInput(['right'])).toBe('Input received · MOVE RIGHT');
   });
 
   test('selects the Hearthgaps route and labels its reachable runoff choice', () => {
@@ -555,7 +573,7 @@ describe('THREEFOLD page adapter', () => {
     const sluicePage = mockStartMosslightPage.mock.calls[0][0];
     expect(
       sluicePage.createRuntime({ env: new Map() }).getState().scene.id
-    ).toBe('small-world-sluice');
+    ).toBe('broken-gate');
   });
 });
 
@@ -900,10 +918,9 @@ describe('THREEFOLD standalone markup', () => {
     expect(THREEFOLD_HTML).toContain(
       'aria-label="Warn the Latchfolk, rescue ferry passengers, or withdraw up the upland road"'
     );
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=sluice"');
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=hearthgaps"');
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=weftways"');
-    expect(THREEFOLD_HTML).toContain('href="/threefold/?scene=grainlands"');
+    expect(THREEFOLD_HTML).toContain('id="travel-destination"');
+    expect(THREEFOLD_HTML).toContain('id="travel-button"');
+    expect(THREEFOLD_HTML).not.toContain('?scene=');
     expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence"');
     expect(THREEFOLD_HTML).toContain('id="silt-margin-quieting-evidence-text"');
     expect(THREEFOLD_HTML).toContain('id="campaign-pressure-text"');
@@ -1175,14 +1192,18 @@ function assertHearthgapsRoute() {
   );
   const documentObj = { querySelector: selector => elements.get(selector) };
   const windowObj = {
-    location: { search: '?scene=hearthgaps' },
     localStorage: {
       getItem: () => null,
       setItem: () => {},
       removeItem: () => {},
     },
   };
-  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  startThreefoldPage({
+    documentObj,
+    windowObj,
+    scene: createThreefoldHearthgapsScene(),
+    navigatorObj: {},
+  });
   const page = mockStartMosslightPage.mock.calls[0][0];
   const state = page.createRuntime({ env: new Map() }).getState();
 
@@ -1192,7 +1213,6 @@ function assertHearthgapsRoute() {
   expect(elements.get('#chapter-description').textContent).toContain(
     'downstream settlement'
   );
-  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=weftways');
   expect(elements.get('#e-control-label').textContent).toBe('CHOOSE RUNOFF');
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(
     'aria-label',
@@ -1232,14 +1252,18 @@ function assertWeftwaysRoute() {
   );
   const documentObj = { querySelector: selector => elements.get(selector) };
   const windowObj = {
-    location: { search: '?scene=weftways' },
     localStorage: {
       getItem: () => null,
       setItem: () => {},
       removeItem: () => {},
     },
   };
-  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  startThreefoldPage({
+    documentObj,
+    windowObj,
+    scene: createThreefoldWeftwaysScene(),
+    navigatorObj: {},
+  });
   const page = mockStartMosslightPage.mock.calls[0][0];
   const state = page.createRuntime({ env: new Map() }).getState();
 
@@ -1249,7 +1273,6 @@ function assertWeftwaysRoute() {
   expect(elements.get('#chapter-description').textContent).toContain(
     'protects the deep roots'
   );
-  expect(elements.get('#scene-link').href).toBe('/threefold/?scene=grainlands');
   expect(elements.get('#e-control-label').textContent).toBe(
     'CHOOSE · READ · SHARE · REPAIR · PRIVATE · DESTROY'
   );
@@ -1290,14 +1313,18 @@ function assertGrainlandsRoute() {
   );
   const documentObj = { querySelector: selector => elements.get(selector) };
   const windowObj = {
-    location: { search: '?scene=grainlands' },
     localStorage: {
       getItem: () => null,
       setItem: () => {},
       removeItem: () => {},
     },
   };
-  startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+  startThreefoldPage({
+    documentObj,
+    windowObj,
+    scene: createThreefoldGrainlandsScene(),
+    navigatorObj: {},
+  });
   const page = mockStartMosslightPage.mock.calls[0][0];
   const state = page.createRuntime({ env: new Map() }).getState();
 
@@ -1306,9 +1333,6 @@ function assertGrainlandsRoute() {
   expect(elements.get('#chapter-subtitle').textContent).toBe('Grainlands');
   expect(elements.get('#chapter-description').textContent).toContain(
     'overpower it and break the Threadbound bridge'
-  );
-  expect(elements.get('#scene-link').href).toBe(
-    '/threefold/?scene=silt-margin'
   );
   expect(elements.get('#e-control-label').textContent).toBe('IRU / HATCH');
   expect(elements.get('#interact-control').setAttribute).toHaveBeenCalledWith(

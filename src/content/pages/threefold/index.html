@@ -40,9 +40,22 @@
           <div class="screen-caption">
             <span>HANDHELD DISPLAY · 160 × 144</span>
             <span id="game-status" aria-live="polite"
-              >The tide is climbing.</span
+              >Starting the handheld…</span
             >
           </div>
+          <p id="game-load-error" class="game-load-error" role="alert" hidden>
+            The handheld scene could not start.
+            <a href="/threefold/">Return to the Broken Gate</a>
+          </p>
+          <p class="screen-help">
+            Use the arrow keys or touch pad below to move. If the display stays
+            blank, <a href="/threefold/">return to the Broken Gate</a> or
+            reload.
+          </p>
+          <p id="objective-reminder" class="screen-objective">
+            First objective: reach the west wall and grow through it before the
+            surge.
+          </p>
         </div>
         <aside class="side-panel">
           <div class="chapter-copy">
@@ -57,26 +70,6 @@
               before the surge.
             </p>
             <p><a href="/manuals/threefold.md">Field guide</a></p>
-            <p>
-              <a id="scene-link" href="/threefold/?scene=sluice"
-                >Explore the small-world sluice</a
-              >
-            </p>
-            <p id="hearthgaps-entry">
-              <a href="/threefold/?scene=hearthgaps"
-                >Explore the Hearthgaps culverts</a
-              >
-            </p>
-            <p id="weftways-entry">
-              <a href="/threefold/?scene=weftways"
-                >Enter the Weftways caravan crossing</a
-              >
-            </p>
-            <p id="grainlands-entry">
-              <a href="/threefold/?scene=grainlands"
-                >Enter the Grainlands nursery crossing</a
-              >
-            </p>
           </div>
           <div class="control-card">
             <div><span class="keycap">↑ ↓ ← →</span><b>MOVE</b></div>
@@ -105,6 +98,24 @@
                 <button data-action="b" aria-label="B button: shrink">B</button>
                 <button data-action="a" aria-label="A button: grow">A</button>
               </div>
+              <details class="travel-menu">
+                <summary>Travel between regions</summary>
+                <label for="travel-destination">Choose a destination</label>
+                <select id="travel-destination">
+                  <option value="broken-gate">Broken Gate</option>
+                  <option value="sluice">Tidal Archive</option>
+                  <option value="silt-margin">Silt Margin</option>
+                  <option value="hearthgaps">Hearthgaps</option>
+                  <option value="weftways">Weftways</option>
+                  <option value="grainlands">Grainlands</option>
+                  <option value="lantern-ward">Lantern Ward</option>
+                  <option value="belltops">Belltops</option>
+                  <option value="crownback-reach">Crownback Reach</option>
+                  <option value="shoals">Wakeform Shoals</option>
+                </select>
+                <button id="travel-button" type="button">Travel</button>
+                <span id="travel-status" role="status" aria-live="polite"></span>
+              </details>
               <div class="system-buttons">
                 <button
                   data-action="x"
@@ -125,7 +136,13 @@
               </div>
             </div>
           </div>
-          <p id="logical-grid-warning" class="logical-grid-warning" role="status" aria-live="polite" hidden></p>
+          <p
+            id="logical-grid-warning"
+            class="logical-grid-warning"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></p>
           <details id="witness-ledger" class="witness-ledger">
             <summary>Witness ledger</summary>
             <ol id="witness-ledger-entries" aria-live="polite">

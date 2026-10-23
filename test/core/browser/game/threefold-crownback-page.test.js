@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { createThreefoldCrownbackReachScene } from '../../../../src/core/browser/game/threefold/crownback-reach.js';
 
 const mockStartMosslightPage = jest.fn(() => () => {});
 
@@ -35,7 +36,6 @@ describe('THREEFOLD Crownback Reach page', () => {
       '#chapter-heading',
       '#chapter-description',
       '#interact-label',
-      '#scene-link',
       '#game-footer',
       '#a-control-label',
       '#b-control-label',
@@ -59,6 +59,7 @@ describe('THREEFOLD Crownback Reach page', () => {
       documentObj: { querySelector: selector => nodes.get(selector) },
       windowObj: { location: { search: '?scene=crownback-reach' } },
       navigatorObj: {},
+      scene: createThreefoldCrownbackReachScene(),
     });
     const page = mockStartMosslightPage.mock.calls[0][0];
     const runtime = page.createRuntime({});
@@ -71,10 +72,6 @@ describe('THREEFOLD Crownback Reach page', () => {
     expect(nodes.get('#chapter-description').textContent).toContain(
       '49.38 metres'
     );
-    expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Continue to the Shoals',
-      href: '/threefold/?scene=shoals',
-    });
     expect(nodes.get('#interact-label').textContent).toContain(
       'E · MEET THARN'
     );

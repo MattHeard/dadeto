@@ -32,7 +32,7 @@ export function startMosslightPage(options) {
   const { browser, animation } = options;
   const { documentObj, windowObj, navigatorObj } = browser;
   const { requestFrame, cancelFrame } = animation;
-  const { context, status } = pageCanvasElements(documentObj);
+  const { context, status, loadError } = pageCanvasElements(documentObj);
   const keys = { held: new Set(), pressed: new Set() };
   const touch = new Set();
   const touchPulse = new Set();
@@ -40,6 +40,10 @@ export function startMosslightPage(options) {
   let frameId = null;
   let lastTime = 0;
   let disposed = false;
+  let failed = false;
+  let inputFeedback = '';
+  let inputFeedbackUntil = 0;
+  let disposePageBindings = () => {};
   /** @type {any} */
   let audioContext = null;
   const permanent = () => {
@@ -76,19 +80,16 @@ export function startMosslightPage(options) {
     ])
   );
   const runtimeFactory = options.createRuntime || createMosslightRuntime;
-  const runtime = runtimeFactory({
-    env,
-    audio: options.audio,
-    onControllerCommand: (/** @type {string} */ command) => {
-      const selector = /** @type {Record<string, string>} */ ({
-        export: '#export-game',
-        import: '#import-button',
-        fullscreen: '#fullscreen-game',
-      })[command];
-      if (selector) documentObj.querySelector(selector).click();
-    },
-  });
-  runtime.start();
+  const showLoadError = () => {
+    failed = true;
+    status.textContent = 'The game could not start. Use the recovery link.';
+    if (loadError) loadError.hidden = false;
+  };
+  const runtime = startPageRuntime(runtimeFactory, env, options, documentObj);
+  if (!runtime) {
+    showLoadError();
+    return () => {};
+  }
 
   /**
    *
@@ -122,17 +123,32 @@ export function startMosslightPage(options) {
     }
   }
   /**
-   *
+   * Draw the current game frame.
+   * @param {number} time Animation frame timestamp.
    */
-  function draw() {
-    documentObj.querySelector('#save-slot').value = String(runtime.getSlot());
-    (options.drawFrame || drawGameFrame)(context, runtime.frame());
-    const world = runtime.getSnapshot().world;
-    const clock = `${world.map.name} · Day ${world.day} · ${Math.floor(world.time)}:00`;
-    status.textContent =
-      runtime.isRunning() && runtime.getSnapshot().menu?.page !== 'paused'
-        ? clock
-        : `${clock} · Paused · resume when ready.`;
+  function draw(/** @type {number} */ time = 0) {
+    try {
+      documentObj.querySelector('#save-slot').value = String(runtime.getSlot());
+      (options.drawFrame || drawGameFrame)(context, runtime.frame());
+      const world = runtime.getSnapshot().world;
+      const clock = `${world.map.name} · Day ${world.day} · ${Math.floor(world.time)}:00`;
+      status.textContent =
+        inputFeedback && time < inputFeedbackUntil
+          ? `${inputFeedback} · ${clock}`
+          : runtime.isRunning() && runtime.getSnapshot().menu?.page !== 'paused'
+            ? clock
+            : `${clock} · Paused · resume when ready.`;
+    } catch {
+      showLoadError();
+      runtime.pause();
+    }
+  }
+  try {
+    disposePageBindings =
+      options.bindRuntime?.({ runtime, documentObj, draw, status }) ||
+      (() => {});
+  } catch {
+    showLoadError();
   }
   /**
    *
@@ -152,19 +168,31 @@ export function startMosslightPage(options) {
    * @param {number} time Animation frame timestamp.
    */
   function loop(time) {
-    if (disposed) return;
+    if (disposed || failed) return;
     const delta = lastTime ? time - lastTime : 16;
     const previousTick = runtime.getSnapshot().tick;
     const frameActions = actions();
     if (frameActions.length && !documentObj.hidden && !runtime.isRunning())
       runtime.resume();
-    runtime.step(delta, frameActions);
+    const newlyPressed = [...keys.pressed, ...touchPulse];
+    if (newlyPressed.length) {
+      inputFeedback = options.describeInput?.([...new Set(newlyPressed)]) || '';
+      inputFeedbackUntil = time + 1500;
+    }
+    try {
+      runtime.step(delta, frameActions);
+    } catch {
+      showLoadError();
+      runtime.pause();
+      return;
+    }
     lastTime = time;
     if (runtime.getSnapshot().tick > previousTick) {
       keys.pressed.clear();
       clearTouchPulse();
     }
-    draw();
+    draw(time);
+    if (failed) return;
     frameId = requestFrame(loop);
   }
   /**
@@ -248,74 +276,156 @@ export function startMosslightPage(options) {
   function onFocus() {
     resumeAfterFocus();
   }
-  bindTouchControls(documentObj, touch, touchPulse, () => {
-    options.audio?.unlock();
-    runtime.resume();
-  });
-  const registerTools = options.registerTools || registerMosslightTools;
-  const disposeAgentTools = registerTools({
-    modelContext: documentObj.modelContext,
+  const disposePageControls = bindPageControls({
+    documentObj,
+    windowObj,
     runtime,
-    redraw: draw,
-  });
-  windowObj.addEventListener('pointerup', releaseTouch);
-  windowObj.addEventListener('pointercancel', releaseTouch);
-  bindUtilityControls({
-    browser: { documentObj, windowObj },
-    runtime,
-    page: {
-      status,
-      draw,
-      onReset: () => {
-        keys.held.clear();
-        keys.pressed.clear();
-        resetTouch();
-        lastTime = 0;
-      },
-      onResume: () => {
-        runtime.resume();
-        lastTime = 0;
-        draw();
-      },
+    options,
+    closeAudio: () => audioContext?.close?.(),
+    status,
+    draw,
+    keys,
+    touch,
+    touchPulse,
+    releaseTouch,
+    onKeyDown,
+    onKeyUp,
+    onVisibility,
+    onBlur,
+    onFocus,
+    resetTouch,
+    resetFocus: () => {
+      lastTime = 0;
     },
-    saveFilename: options.saveFilename || 'mosslight-valley-save.json',
-    saveTransfers: options.saveTransfers || [],
   });
-  documentObj.addEventListener('keydown', onKeyDown);
-  documentObj.addEventListener('keyup', onKeyUp);
-  documentObj.addEventListener('visibilitychange', onVisibility);
-  windowObj.addEventListener('blur', onBlur);
-  windowObj.addEventListener('focus', onFocus);
   draw();
-  frameId = requestFrame(loop);
+  if (!failed) frameId = requestFrame(loop);
   return () => {
     disposed = true;
-    disposeAgentTools();
+    disposePageControls();
     if (frameId !== null) cancelFrame(frameId);
+    disposePageBindings();
     runtime.pause();
-    documentObj.removeEventListener('keydown', onKeyDown);
-    documentObj.removeEventListener('keyup', onKeyUp);
-    documentObj.removeEventListener('visibilitychange', onVisibility);
-    windowObj.removeEventListener('blur', onBlur);
-    windowObj.removeEventListener('focus', onFocus);
-    windowObj.removeEventListener('pointerup', releaseTouch);
-    windowObj.removeEventListener('pointercancel', releaseTouch);
-    audioContext?.close?.();
     options.audio?.dispose();
+  };
+}
+
+/**
+ * Bind keyboard, touch, tool, and utility controls for the page lifecycle.
+ * @param {any} options Presenter dependencies and event handlers.
+ * @returns {() => void} Remove installed listeners and page tools.
+ */
+function bindPageControls(options) {
+  const pageOptions = options.options;
+  bindTouchControls(
+    options.documentObj,
+    options.touch,
+    options.touchPulse,
+    () => {
+      pageOptions.audio?.unlock();
+      options.runtime.resume();
+    }
+  );
+  const registerTools = pageOptions.registerTools || registerMosslightTools;
+  const disposeAgentTools = registerTools({
+    modelContext: options.documentObj.modelContext,
+    runtime: options.runtime,
+    redraw: options.draw,
+  });
+  options.windowObj.addEventListener('pointerup', options.releaseTouch);
+  options.windowObj.addEventListener('pointercancel', options.releaseTouch);
+  bindUtilityControls({
+    browser: {
+      documentObj: options.documentObj,
+      windowObj: options.windowObj,
+    },
+    runtime: options.runtime,
+    page: {
+      status: options.status,
+      draw: options.draw,
+      onReset: () => {
+        options.keys.held.clear();
+        options.keys.pressed.clear();
+        options.resetTouch();
+        options.resetFocus();
+      },
+      onResume: () => {
+        options.runtime.resume();
+        options.resetFocus();
+        options.draw();
+      },
+    },
+    saveFilename: pageOptions.saveFilename || 'mosslight-valley-save.json',
+    saveTransfers: pageOptions.saveTransfers || [],
+  });
+  options.documentObj.addEventListener('keydown', options.onKeyDown);
+  options.documentObj.addEventListener('keyup', options.onKeyUp);
+  options.documentObj.addEventListener(
+    'visibilitychange',
+    options.onVisibility
+  );
+  options.windowObj.addEventListener('blur', options.onBlur);
+  options.windowObj.addEventListener('focus', options.onFocus);
+  return () => {
+    disposeAgentTools();
+    options.documentObj.removeEventListener('keydown', options.onKeyDown);
+    options.documentObj.removeEventListener('keyup', options.onKeyUp);
+    options.documentObj.removeEventListener(
+      'visibilitychange',
+      options.onVisibility
+    );
+    options.windowObj.removeEventListener('blur', options.onBlur);
+    options.windowObj.removeEventListener('focus', options.onFocus);
+    options.windowObj.removeEventListener('pointerup', options.releaseTouch);
+    options.windowObj.removeEventListener(
+      'pointercancel',
+      options.releaseTouch
+    );
+    options.closeAudio();
   };
 }
 
 /**
  * Resolve the canvas drawing context and status element for a game page.
  * @param {any} documentObj Page document adapter.
- * @returns {{context: any, status: any}} Drawing and status elements.
+ * @returns {{context: any, status: any, loadError: any}} Drawing and status elements.
  */
 function pageCanvasElements(documentObj) {
   const canvas = documentObj.querySelector('#game-screen');
   return {
     context: canvas.getContext('2d'),
     status: documentObj.querySelector('#game-status'),
+    loadError: documentObj.querySelector('#game-load-error'),
   };
+}
+
+/**
+ * Create and start the page runtime, returning null if startup throws.
+ * @param {Function} runtimeFactory Runtime constructor.
+ * @param {Map<string, (...args: any[]) => any>} env Runtime environment.
+ * @param {any} options Page options.
+ * @param {any} documentObj Page document adapter.
+ * @returns {any|null} Started runtime or null after a startup failure.
+ */
+function startPageRuntime(runtimeFactory, env, options, documentObj) {
+  try {
+    const runtime = runtimeFactory({
+      env,
+      audio: options.audio,
+      onControllerCommand: (/** @type {string} */ command) => {
+        const selector = /** @type {Record<string, string>} */ ({
+          export: '#export-game',
+          import: '#import-button',
+          fullscreen: '#fullscreen-game',
+        })[command];
+        if (selector) documentObj.querySelector(selector).click();
+      },
+    });
+    runtime.start();
+    return runtime;
+  } catch {
+    return null;
+  }
 }
 
 /**

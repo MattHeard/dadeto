@@ -1,6 +1,7 @@
 import { describeKnownThreefoldIriFate } from './iri-arrival-content.js';
 import * as mosslightPresenter from '../mosslight-valley/pagePresenter.js';
 import { createThreefoldRuntime } from './runtime.js';
+import { createBrokenGateScene } from './gatehouse.js';
 import { createThreefoldSluiceScene } from './sluice-scene.js';
 import { createThreefoldSiltMarginScene } from './silt-margin.js';
 import { createThreefoldBelltopsScene } from './belltops.js';
@@ -28,13 +29,15 @@ const SLUICE_PAGE_COPY = {
         'the coil register for an optional surviving trace.',
     ],
     ['#interact-label', 'E · VALVE · READ THE COIL LOG'],
-    ['#scene-link', 'Continue into the Silt Margin'],
+    [
+      '#objective-reminder',
+      'First objective: open the valve and raise the lower basin to reach the far bank.',
+    ],
     [
       '#game-footer',
       'Water moves only during explicit game actions, never from the browser clock.',
     ],
   ]),
-  href: '/threefold/?scene=silt-margin',
   ariaLabel: 'Operate the sluice valve or inspect the far-bank coil register',
 };
 const SILT_MARGIN_PAGE_COPY = {
@@ -53,13 +56,11 @@ const SILT_MARGIN_PAGE_COPY = {
         'persist in this save.',
     ],
     ['#interact-label', 'E · GUIDE · VALVE · SIGNAL · LISTEN'],
-    ['#scene-link', 'Continue to the Lantern Ward'],
     [
       '#game-footer',
       'Every movement and scale change advances the region clock by 15 game seconds.',
     ],
   ]),
-  href: '/threefold/?scene=lantern-ward',
   ariaLabel:
     'Guide the guardian, open the fine valve, send the Choir signal, or hear Neme’s reply',
 };
@@ -76,13 +77,11 @@ const HEARTHGAPS_PAGE_COPY = {
         'shared bypass and let the water reach Brin’s homes instead. Move to ' +
         'either control before pressing E; the choice and flood damage persist.',
     ],
-    ['#scene-link', 'Continue to the Weftways'],
     [
       '#game-footer',
       'Movement and runoff choices advance 15 seconds of explicit game time.',
     ],
   ]),
-  href: '/threefold/?scene=weftways',
   ariaLabel: 'Choose the Brin diversion or shared runoff bypass',
   interactionLabel: 'CHOOSE RUNOFF',
 };
@@ -106,13 +105,11 @@ const WEFTWAYS_PAGE_COPY = {
         'the bypass or defers terms until root-channel damage is assessed ' +
         'after the quay spill.',
     ],
-    ['#scene-link', 'Continue into the Grainlands'],
     [
       '#game-footer',
       'Route choice, physical effects, and optional relay discovery and response persist in this isolated save.',
     ],
   ]),
-  href: '/threefold/?scene=grainlands',
   ariaLabel:
     'Choose a water route, inspect Pell’s relay ledger, then share it at the caravan circle, negotiate repairs at the marked table, keep it private at the knot cache, or destroy it at the brazier',
   interactionLabel: 'CHOOSE · READ · SHARE · REPAIR · PRIVATE · DESTROY',
@@ -129,13 +126,11 @@ const GRAINLANDS_PAGE_COPY = {
         'overpower it and break the Threadbound bridge, or help Iru bait it ' +
         'away so the Nursery Clades keep their eggs and crossing. Approach the hatch above the nursery and press E to close its water inlet before an upstream failure.',
     ],
-    ['#scene-link', 'Continue to the Silt Margin'],
     [
       '#game-footer',
       'Regional progress and shared water consequences persist across visits.',
     ],
   ]),
-  href: '/threefold/?scene=silt-margin',
   ariaLabel: 'Help Iru bait the spider or close the nearby nursery inlet hatch',
   interactionLabel: 'IRU / HATCH',
 };
@@ -158,13 +153,11 @@ const LANTERN_WARD_PAGE_COPY = {
         'footprint. Mira and Tov live there. A shows the buildings and people ' +
         'at risk while keeping growth available; B lets Mara step down to +2.',
     ],
-    ['#scene-link', 'Continue to the Belltops'],
     [
       '#game-footer',
       'City geometry and resident fates persist in the Lantern Ward save.',
     ],
   ]),
-  href: '/threefold/?scene=belltops',
   ariaLabel: 'No district interaction is available',
 };
 const BELLTOPS_PAGE_COPY = {
@@ -182,13 +175,11 @@ const BELLTOPS_PAGE_COPY = {
         'Check Iri, then release them or fit the crane governor first; taking it disables harbor lifting. ' +
         'The HUD and campaign status show each action and its risk. A still grows into its displayed footprint; B steps down to +1.',
     ],
-    ['#scene-link', 'Continue to Crownback Reach'],
     [
       '#game-footer',
       'Regional geometry and shared machinery/fates persist across visits.',
     ],
   ]),
-  href: '/threefold/?scene=crownback-reach',
   ariaLabel: 'Use the nearest reachable Quay panel or crane drive',
   interactionLabel: 'QUAY ACTION',
 };
@@ -205,13 +196,11 @@ const CROWNBACK_REACH_PAGE_COPY = {
         'A previews the root arch, floodwall, and Crownbacks at risk if Mara ' +
         'grows to +4. B steps down to +2.',
     ],
-    ['#scene-link', 'Continue to the Shoals'],
     [
       '#game-footer',
       'The meeting, migration ground, and growth outcomes persist in this route’s save.',
     ],
   ]),
-  href: '/threefold/?scene=shoals',
   ariaLabel: 'Meet elder Tharn when Mara is within reach',
   interactionLabel: 'MEET THARN',
 };
@@ -228,13 +217,11 @@ const WAKEFORM_SHOALS_PAGE_COPY = {
         'reach and press E to guide it toward the north channel, or use A to ' +
         'grow through the wall and divert the current seaward.',
     ],
-    ['#scene-link', 'Return to Crownback Reach'],
     [
       '#game-footer',
       'Wakeform and tide-wall outcomes persist in this route’s isolated save.',
     ],
   ]),
-  href: '/threefold/?scene=crownback-reach',
   ariaLabel: 'Guide the Wakeform away when Mara is within reach',
   interactionLabel: 'DIVERT WAKEFORM',
 };
@@ -245,7 +232,7 @@ const WAKEFORM_SHOALS_PAGE_COPY = {
  * @returns {() => void} Page lifecycle disposer.
  */
 export function startThreefoldPage(options) {
-  const scene = options.scene || sceneFromLocation(options.windowObj);
+  const scene = options.scene;
   if (scene?.id === 'small-world-sluice')
     configureSluicePage(options.documentObj);
   else if (scene?.id === 'silt-margin')
@@ -277,6 +264,15 @@ export function startThreefoldPage(options) {
     ...mosslightPresenter.createMosslightPageEnvironment(options),
     createRuntime: (/** @type {Record<string, any>} */ runtimeOptions) =>
       createThreefoldRuntime({ ...runtimeOptions, storage, scene }),
+    describeInput: describeThreefoldInput,
+    bindRuntime: (
+      /** @type {{runtime: Record<string, any>, documentObj: any, draw: () => void}} */ runtimeBindings
+    ) =>
+      bindThreefoldTravel(
+        runtimeBindings.runtime,
+        runtimeBindings.documentObj,
+        runtimeBindings.draw
+      ),
     drawFrame: (
       /** @type {any} */ context,
       /** @type {Record<string, any>} */ frame
@@ -431,26 +427,101 @@ export function startThreefoldPage(options) {
 }
 
 /**
- * Select the optional small-world region from the standalone route query.
- * @param {any} windowObj Injected browser window.
- * @returns {ReturnType<typeof createThreefoldSluiceScene>|ReturnType<typeof createThreefoldSiltMarginScene>|ReturnType<typeof createThreefoldHearthgapsScene>|ReturnType<typeof createThreefoldWeftwaysScene>|ReturnType<typeof createThreefoldGrainlandsScene>|ReturnType<typeof lanternWard.createThreefoldLanternWardScene>|ReturnType<typeof createThreefoldBelltopsScene>|ReturnType<typeof createThreefoldCrownbackReachScene>|ReturnType<typeof createThreefoldWakeformShoalsScene>|undefined} Authored scene for its route, otherwise the runtime default.
+ * Describe the first newly pressed THREEFOLD action for immediate feedback.
+ * @param {string[]} actions Active input actions.
+ * @returns {string} Short status-line acknowledgement.
  */
-function sceneFromLocation(windowObj) {
-  const search = windowObj?.location?.search;
-  if (typeof search !== 'string') return undefined;
-  const sceneId = new URLSearchParams(search).get('scene');
-  if (sceneId === 'sluice') return createThreefoldSluiceScene();
-  if (sceneId === 'silt-margin') return createThreefoldSiltMarginScene();
-  if (sceneId === 'hearthgaps') return createThreefoldHearthgapsScene();
-  if (sceneId === 'weftways') return createThreefoldWeftwaysScene();
-  if (sceneId === 'grainlands') return createThreefoldGrainlandsScene();
-  if (sceneId === 'lantern-ward')
-    return lanternWard.createThreefoldLanternWardScene();
-  if (sceneId === 'belltops') return createThreefoldBelltopsScene();
-  if (sceneId === 'crownback-reach')
-    return createThreefoldCrownbackReachScene();
-  if (sceneId === 'shoals') return createThreefoldWakeformShoalsScene();
-  return undefined;
+function describeThreefoldInput(actions) {
+  const action = actions[0];
+  const labels = /** @type {Record<string, string>} */ ({
+    up: 'Input received · MOVE UP',
+    down: 'Input received · MOVE DOWN',
+    left: 'Input received · MOVE LEFT',
+    right: 'Input received · MOVE RIGHT',
+    a: 'Input received · GROW',
+    b: 'Input received · SHRINK',
+    x: 'Input received · WAIT',
+    y: 'Input received · SAVE',
+    interact: 'Input received · INTERACT',
+  });
+  return labels[action] || 'Input received';
+}
+
+/** @type {Record<string, string>} */
+const SCENE_OBJECTIVES = {
+  'broken-gate': 'Reach the west wall and grow through it before the surge.',
+  sluice: 'Open the service valve and raise the lower basin to cross.',
+  'silt-margin':
+    'Guide the guardian, reroute the dew, or break through the root.',
+  hearthgaps: 'Choose which settlement receives the culvert runoff.',
+  weftways: 'Choose which side of the roots takes the water.',
+  grainlands:
+    'Reach the nursery hatch and decide how to cross the spider field.',
+  'lantern-ward': 'Explore the ward and follow its current leads.',
+  belltops: 'Explore the harbor district and its pressure regulator.',
+  'crownback-reach': 'Find Tharn and decide whether to guide the encounter.',
+  shoals: 'Explore the shoals and respond to the Wakeform and tide wall.',
+};
+/** @type {Record<string, string>} */
+const SCENE_LABELS = {
+  'broken-gate': 'The Broken Gate',
+  sluice: 'The Tidal Archive',
+  'silt-margin': 'The Silt Margin',
+  hearthgaps: 'Hearthgaps',
+  weftways: 'The Weftways',
+  grainlands: 'The Grainlands',
+  'lantern-ward': 'The Lantern Ward',
+  belltops: 'Belltops',
+  'crownback-reach': 'Crownback Reach',
+  shoals: 'Wakeform Shoals',
+};
+
+/**
+ * Resolve an in-game travel selection to an authored region.
+ * @param {string} destination Selected menu value.
+ * @returns {any} Fresh authored scene, or null for an unknown destination.
+ */
+function sceneFromTravelDestination(destination) {
+  const scenes = /** @type {Record<string, () => any>} */ ({
+    'broken-gate': createBrokenGateScene,
+    sluice: createThreefoldSluiceScene,
+    'silt-margin': createThreefoldSiltMarginScene,
+    hearthgaps: createThreefoldHearthgapsScene,
+    weftways: createThreefoldWeftwaysScene,
+    grainlands: createThreefoldGrainlandsScene,
+    'lantern-ward': lanternWard.createThreefoldLanternWardScene,
+    belltops: createThreefoldBelltopsScene,
+    'crownback-reach': createThreefoldCrownbackReachScene,
+    shoals: createThreefoldWakeformShoalsScene,
+  });
+  return scenes[destination]?.() || null;
+}
+
+/**
+ * Bind the in-game travel menu to the persistent multi-region runtime.
+ * @param {Record<string, any>} runtime THREEFOLD runtime.
+ * @param {any} documentObj Page document.
+ * @param {() => void} draw Draw the current game frame.
+ * @returns {() => void} Remove travel control listeners.
+ */
+function bindThreefoldTravel(runtime, documentObj, draw) {
+  const select = documentObj.querySelector('#travel-destination');
+  const button = documentObj.querySelector('#travel-button');
+  const status = documentObj.querySelector('#travel-status');
+  const objective = documentObj.querySelector('#objective-reminder');
+  if (!select || !button || !runtime.travelTo) return () => {};
+  const travel = () => {
+    const scene = sceneFromTravelDestination(select.value);
+    if (!scene) return;
+    runtime.travelTo(scene);
+    const title = SCENE_LABELS[select.value] || 'The Broken Gate';
+    if (status) status.textContent = `Arrived at ${title}.`;
+    if (objective)
+      objective.textContent = `Current objective: ${SCENE_OBJECTIVES[select.value] || 'Explore this region and interact with reachable objects.'}`;
+    draw();
+  };
+  button.addEventListener('click', travel);
+  return () => button.removeEventListener('click', travel);
 }
 
 /**
@@ -474,7 +545,7 @@ function configureSiltMarginPage(documentObj) {
 /**
  * Replace default Broken Gate copy and controls for an authored high-world route.
  * @param {any} documentObj Injected browser document.
- * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string, interactionLabel?: string}} copy Route-specific copy and next location.
+ * @param {{updates: Array<[string, string]>, ariaLabel: string, interactionLabel?: string}} copy Route-specific copy and interaction.
  * @returns {void}
  */
 function configureHighWorldPage(documentObj, copy) {
@@ -494,17 +565,15 @@ function configureHighWorldPage(documentObj, copy) {
 /**
  * Apply route-specific copy and hide Broken Gate-only records.
  * @param {any} documentObj Injected browser document.
- * @param {{updates: Array<[string, string]>, href: string, ariaLabel: string, interactionLabel?: string}} copy Alternate scene copy and route.
+ * @param {{updates: Array<[string, string]>, ariaLabel: string, interactionLabel?: string}} copy Alternate scene copy.
  * @returns {void}
  */
 function configureAlternateScenePage(documentObj, copy) {
-  const { updates, href, ariaLabel } = copy;
+  const { updates, ariaLabel } = copy;
   updates.forEach(([selector, text]) => {
     const element = documentObj?.querySelector?.(selector);
     if (element) element.textContent = text;
   });
-  const sceneLink = documentObj?.querySelector?.('#scene-link');
-  if (sceneLink) sceneLink.href = href;
   const interactControl = documentObj?.querySelector?.('#interact-control');
   interactControl?.setAttribute?.('aria-label', ariaLabel);
   const witnessLedger = documentObj?.querySelector?.('#witness-ledger');

@@ -36,6 +36,36 @@ body {
   gap: 8px;
 }
 
+.travel-menu {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.travel-menu summary {
+  grid-column: 1 / -1;
+  cursor: pointer;
+}
+
+.travel-menu label {
+  grid-column: 1 / -1;
+}
+
+.travel-menu select,
+.travel-menu button {
+  min-height: 40px;
+  font: inherit;
+}
+
+#travel-status {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
 /* Keep the standalone page on an 8px layout grid around the 4px canvas grid. */
 :root {
   --threefold-layout-grid: 8px;
@@ -66,6 +96,31 @@ body {
 .screen-caption {
   gap: 16px;
   margin: 16px 0 0;
+}
+
+.screen-help,
+.screen-objective,
+.game-load-error {
+  margin: 12px 0 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.screen-help {
+  color: var(--muted);
+}
+
+.game-load-error {
+  border-color: #d98c74;
+}
+
+.game-load-error a {
+  color: inherit;
+  text-decoration-thickness: 2px;
 }
 
 .side-panel {

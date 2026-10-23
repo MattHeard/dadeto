@@ -58,6 +58,57 @@ test('gamepad face buttons resume agent pauses only while the page is visible', 
   stop();
 });
 
+test('runtime startup failure displays an accessible recovery state', () => {
+  const page = pageOptions();
+  page.selectors['#game-load-error'].hidden = true;
+  page.options.createRuntime = () => {
+    throw new Error('scene failed');
+  };
+
+  const stop = startMosslightPage(page.options);
+
+  expect(page.selectors['#game-load-error'].hidden).toBe(false);
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'could not start'
+  );
+  expect(page.callbacks).toHaveLength(0);
+  stop();
+});
+
+test('initial frame rendering failure displays the accessible recovery state', () => {
+  const page = pageOptions();
+  page.selectors['#game-load-error'].hidden = true;
+  page.options.drawFrame = () => {
+    throw new Error('frame failed');
+  };
+
+  const stop = startMosslightPage(page.options);
+
+  expect(page.selectors['#game-load-error'].hidden).toBe(false);
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'could not start'
+  );
+  expect(page.callbacks).toHaveLength(0);
+  stop();
+});
+
+test('newly pressed input is acknowledged in the live status line', async () => {
+  const page = pageOptions();
+  page.options.describeInput = actions => `Input received · ${actions[0]}`;
+  const stop = startMosslightPage(page.options);
+
+  await page.documentObj.emit('keydown', {
+    key: 'ArrowRight',
+    preventDefault() {},
+  });
+  page.callbacks[0](0);
+
+  expect(page.selectors['#game-status'].textContent).toContain(
+    'Input received · right'
+  );
+  stop();
+});
+
 test.each(['export', 'import', 'fullscreen', 'unknown'])(
   'controller save utility %s reaches its browser adapter',
   command => {
@@ -94,11 +145,13 @@ function pageOptions() {
   const canvas = new FakeElement();
   canvas.getContext = () => context;
   const status = new FakeElement();
+  const loadError = new FakeElement();
   const slot = new FakeElement();
   const importInput = new FakeElement();
   const selectors = {
     '#game-screen': canvas,
     '#game-status': status,
+    '#game-load-error': loadError,
     '#save-slot': slot,
     '#import-game': importInput,
     '#save-game': new FakeElement(),

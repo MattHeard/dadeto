@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { readFileSync } from 'node:fs';
+import { createThreefoldWeftwaysScene } from '../../../../src/core/browser/game/threefold/weftways.js';
 
 const THREEFOLD_HTML = readFileSync(
   new URL(
@@ -79,7 +80,12 @@ describe('THREEFOLD Iri confession page', () => {
     };
     elements.get('#iri-recorded-confession').hidden = false;
 
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      navigatorObj: {},
+      scene: createThreefoldWeftwaysScene(),
+    });
 
     expect(elements.get('#iri-recorded-confession').hidden).toBe(true);
   });
@@ -92,7 +98,12 @@ describe('THREEFOLD Iri confession page', () => {
     };
 
     expect(() =>
-      startThreefoldPage({ documentObj, windowObj, navigatorObj: {} })
+      startThreefoldPage({
+        documentObj,
+        windowObj,
+        navigatorObj: {},
+        scene: createThreefoldWeftwaysScene(),
+      })
     ).not.toThrow();
   });
 });

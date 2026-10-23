@@ -95,13 +95,13 @@ const DIRECTIONS = ['up', 'down', 'left', 'right'];
 export function createThreefoldRuntime(options = {}) {
   const opts = options instanceof Map ? { env: options } : options;
   const env = opts.env || new Map();
-  const scene = opts.scene;
+  let scene = opts.scene;
   const storage = createThreefoldCampaignStorage(
     'storage' in opts ? opts.storage : createMapStorage(env)
   );
   const createInitialState = () =>
     createThreefoldSimulation(CRISIS_THRESHOLDS, scene);
-  const save =
+  let save =
     opts.save || createThreefoldSimulationSaveStore(storage, scene?.id);
   const campaignClockSave = createThreefoldCampaignClockSaveStore(storage);
   const pressureSave = createThreefoldPressureNetworkSaveStore(storage);
@@ -230,26 +230,14 @@ export function createThreefoldRuntime(options = {}) {
   const quayContent = () =>
     getVisibleQuayContent(state, campaignOutcomes, pressureNetwork);
   const knownIriFate = () => getKnownThreefoldIriFate(campaignOutcomes);
-  const campaignPressure = () => {
-    const sites = getThreefoldCampaignPressureState({
-      ...savedCampaignRuns,
-      [state.scene.id]: state,
+  const campaignPressure = () =>
+    getRuntimeCampaignPressure({
+      savedCampaignRuns,
+      state,
+      campaignPlaces,
+      pressureNetwork,
+      quayContent,
     });
-    if (campaignPlaces().some(place => place.id === 'grainlands'))
-      sites.push({
-        id: 'grainlands-shelter',
-        label: describeThreefoldPressureNetwork(pressureNetwork),
-        state: pressureNetwork.nurseryFlooded ? 'flooded' : 'dry',
-      });
-    const quay = quayContent();
-    if (quay)
-      sites.push({
-        id: 'quay-machinery',
-        label: quay.text,
-        state: quay.craneAvailable ? 'available' : 'unavailable',
-      });
-    return sites;
-  };
 
   const frame = () => {
     refreshCampaign();
@@ -520,10 +508,7 @@ export function createThreefoldRuntime(options = {}) {
       return frame();
     },
     getSnapshot: snapshot,
-    getState: () => {
-      refreshCampaign();
-      return state;
-    },
+    getState: () => refreshThen(refreshCampaign, () => state),
     recordIriFate: (
       /** @type {import('./campaign-outcomes.js').ThreefoldIriOutcome} */ outcome,
       /** @type {string} */ milestoneId
@@ -531,12 +516,10 @@ export function createThreefoldRuntime(options = {}) {
       const changed = campaignAction(() => recordIriFate(outcome, milestoneId));
       return changed && !storage.getStatus().dirty;
     },
-    getJournal: () => {
-      refreshCampaign();
-      return (state.episode.witnessLedger || []).map(
-        presentThreefoldWitnessEntry
-      );
-    },
+    getJournal: () =>
+      refreshThen(refreshCampaign, () =>
+        (state.episode.witnessLedger || []).map(presentThreefoldWitnessEntry)
+      ),
     getPersistenceStatus: storage.getStatus,
     save() {
       campaignAction(() => state);
@@ -559,6 +542,25 @@ export function createThreefoldRuntime(options = {}) {
         synchronizePressureNetwork({ type: 'reset' }, 0);
       });
       return resetInputFrame();
+    },
+    /**
+     * Travel between authored regions while preserving each region's save.
+     * @param {any} nextScene Destination region definition.
+     * @returns {Record<string, any>} Frame for the destination.
+     */
+    travelTo(/** @type {any} */ nextScene) {
+      if (nextScene?.id === state.scene.id) return frame();
+      campaignAction(() => state);
+      scene = nextScene;
+      save = createThreefoldSimulationSaveStore(storage, scene?.id);
+      state = loadInitialState();
+      savedCampaignRuns = loadSavedCampaignRuns(storage, state.scene.id);
+      harborCampaign = loadHarborCampaign(storage, state.scene.id);
+      previousActions.clear();
+      finaleNotice = '';
+      accumulator = tick = 0;
+      projectCampaignState();
+      return frame();
     },
     exportSave: () => {
       refreshCampaign();
@@ -605,6 +607,44 @@ export function createThreefoldRuntime(options = {}) {
     frame,
     isRunning: () => running,
   };
+}
+
+/**
+ * Refresh campaign state before returning a derived runtime value.
+ * @param {() => void} refresh Refresh shared campaign state.
+ * @param {() => any} read Read the requested value.
+ * @returns {any} Refreshed value.
+ */
+function refreshThen(refresh, read) {
+  refresh();
+  return read();
+}
+
+/**
+ * Combine authored route pressure with active regional machinery status.
+ * @param {{state: ReturnType<typeof createThreefoldSimulation>, savedCampaignRuns: Record<string, any>, campaignPlaces: () => Array<{id: string}>, pressureNetwork: ReturnType<typeof createThreefoldPressureNetwork>, quayContent: () => any}} options Current campaign snapshots and projection helpers.
+ * @returns {Array<{id: string, label: string, state: string}>} Visible pressure sites.
+ */
+function getRuntimeCampaignPressure(options) {
+  const { state, savedCampaignRuns, campaignPlaces, pressureNetwork } = options;
+  const sites = getThreefoldCampaignPressureState({
+    ...savedCampaignRuns,
+    [state.scene.id]: state,
+  });
+  if (campaignPlaces().some(place => place.id === 'grainlands'))
+    sites.push({
+      id: 'grainlands-shelter',
+      label: describeThreefoldPressureNetwork(pressureNetwork),
+      state: pressureNetwork.nurseryFlooded ? 'flooded' : 'dry',
+    });
+  const quay = options.quayContent();
+  if (quay)
+    sites.push({
+      id: 'quay-machinery',
+      label: quay.text,
+      state: quay.craneAvailable ? 'available' : 'unavailable',
+    });
+  return sites;
 }
 
 /**

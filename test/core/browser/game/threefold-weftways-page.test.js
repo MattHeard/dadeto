@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { readFileSync } from 'node:fs';
+import { createThreefoldWeftwaysScene } from '../../../../src/core/browser/game/threefold/weftways.js';
 
 const THREEFOLD_HTML = readFileSync(
   new URL(
@@ -101,7 +102,12 @@ describe('THREEFOLD Weftways page record', () => {
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-disclosure-text"');
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-concealment"');
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-concealment-text"');
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      navigatorObj: {},
+      scene: createThreefoldWeftwaysScene(),
+    });
     const page = mockStartMosslightPage.mock.calls[0][0];
     expect(panel.hidden).toBe(true);
 
@@ -194,7 +200,12 @@ describe('THREEFOLD Weftways page record', () => {
 
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-destruction"');
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-destruction-text"');
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      navigatorObj: {},
+      scene: createThreefoldWeftwaysScene(),
+    });
     const page = mockStartMosslightPage.mock.calls[0][0];
     page.drawFrame(
       {},
@@ -242,7 +253,12 @@ describe('THREEFOLD Weftways page record', () => {
 
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-restitution"');
     expect(THREEFOLD_HTML).toContain('id="weftways-relay-restitution-text"');
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      navigatorObj: {},
+      scene: createThreefoldWeftwaysScene(),
+    });
     const page = mockStartMosslightPage.mock.calls[0][0];
     page.drawFrame({}, { threefold: { threadboundRelayRestitution: outcome } });
 
@@ -285,7 +301,12 @@ describe('THREEFOLD Weftways page record', () => {
     expect(THREEFOLD_HTML).toContain(
       'id="weftways-independent-publication-text"'
     );
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      navigatorObj: {},
+      scene: createThreefoldWeftwaysScene(),
+    });
     const page = mockStartMosslightPage.mock.calls[0][0];
     expect(publicationPanel.hidden).toBe(true);
     page.drawFrame(
@@ -333,7 +354,12 @@ describe('THREEFOLD Weftways page record', () => {
 
     expect(THREEFOLD_HTML).toContain('id="weftways-pell-outcome"');
     expect(THREEFOLD_HTML).toContain('id="weftways-pell-outcome-text"');
-    startThreefoldPage({ documentObj, windowObj, navigatorObj: {} });
+    startThreefoldPage({
+      documentObj,
+      windowObj,
+      navigatorObj: {},
+      scene: createThreefoldWeftwaysScene(),
+    });
     const page = mockStartMosslightPage.mock.calls[0][0];
     expect(outcomePanel.hidden).toBe(true);
     page.drawFrame({}, { threefold: { threadboundPellOutcome: outcome } });

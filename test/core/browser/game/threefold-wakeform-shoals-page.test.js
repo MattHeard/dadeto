@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import { createThreefoldWakeformShoalsScene } from '../../../../src/core/browser/game/threefold/wakeform-shoals.js';
 
 const mockStartMosslightPage = jest.fn(() => () => {});
 
@@ -35,7 +36,6 @@ describe('THREEFOLD Wakeform Shoals page', () => {
       '#chapter-heading',
       '#chapter-description',
       '#interact-label',
-      '#scene-link',
       '#game-footer',
       '#a-control-label',
       '#b-control-label',
@@ -54,6 +54,7 @@ describe('THREEFOLD Wakeform Shoals page', () => {
       documentObj: { querySelector: selector => nodes.get(selector) },
       windowObj: { location: { search: '?scene=shoals' } },
       navigatorObj: {},
+      scene: createThreefoldWakeformShoalsScene(),
     });
     const page = mockStartMosslightPage.mock.calls[0][0];
     const runtime = page.createRuntime({});
@@ -66,10 +67,6 @@ describe('THREEFOLD Wakeform Shoals page', () => {
     expect(nodes.get('#chapter-description').textContent).toContain(
       '148.13 metres'
     );
-    expect(nodes.get('#scene-link')).toMatchObject({
-      textContent: 'Return to Crownback Reach',
-      href: '/threefold/?scene=crownback-reach',
-    });
     expect(nodes.get('#interact-label').textContent).toContain(
       'E · DIVERT WAKEFORM'
     );
