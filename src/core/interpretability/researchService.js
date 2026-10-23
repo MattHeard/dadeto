@@ -3,7 +3,7 @@ import {
   appendAccuracyEvaluationV1,
   appendMechanisticEstimateV1,
   appendExperimentSubmissionV1,
-  exportInterpretabilityResearchBundleV5,
+  exportInterpretabilityResearchBundleV6,
   getEvidenceGraphContextV1,
   importInterpretabilityResearchBundleV2,
   summarizeIdentityReferencesV1,
@@ -23,7 +23,7 @@ import {
 /** @typedef {ReturnType<typeof summarizeIdentityReferencesV1>|Extract<BundleImportResult, {valid: false}>} IdentityReferenceServiceResult */
 /** @typedef {{valid: true, evaluations: Array<AccuracyEvaluation>}|Extract<BundleImportResult, {valid: false}>} AccuracyEvaluationsServiceResult */
 /** @typedef {(bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference, schemas: ResearchSchemas) => any} ResearchAppender */
-/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof appendIdentityReferenceV1>|ReturnType<typeof exportInterpretabilityResearchBundleV5>} BundleOperationResult */
+/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof appendIdentityReferenceV1>|ReturnType<typeof exportInterpretabilityResearchBundleV6>} BundleOperationResult */
 /** @typedef {BundleImportResult|BundleOperationResult} ResearchServiceResult */
 /** @typedef {Extract<BundleImportResult, {valid: false}>|ResearchContextFailure|ResearchContextPage} ResearchContextServiceResult */
 /** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference, append: ResearchAppender}} ResearchWrite */
@@ -177,7 +177,7 @@ function createResearchWriter(schemas, saveBundle) {
     const appended = append(bundle, submission, schemas);
     if (!appended.valid) return appended;
 
-    const exported = exportInterpretabilityResearchBundleV5(
+    const exported = exportInterpretabilityResearchBundleV6(
       appended.bundle,
       schemas
     );

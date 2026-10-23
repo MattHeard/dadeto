@@ -1,7 +1,8 @@
 # Atlas additive identity references
 
-Portable V5 research bundles carry `identityReferences`, an append-only list of
-versioned claims for entities that may not be indexed when a submission arrives.
+Portable V6 research bundles carry a V3 identity graph. Its `identityReferences`
+collection is an append-only list of versioned claims for entities that may not
+be indexed when a submission arrives.
 Each claim retains its typed entity ID, author, source, optional source-record
 ID, and recording time. Model, checkpoint, component, activation-position,
 observation, experiment, structural-connection, circuit, circuit-snapshot, and
@@ -15,13 +16,19 @@ multiple descriptors disagree. The summary is derived; original claims and
 their provenance remain unchanged. Canonical V2 component IDs are parsed and
 checked against an optional JSON-encoded structured identity descriptor.
 
-V2, V3, and V4 bundle imports remain supported and initialize the reference
-collection as empty. Research-service writes use V5, carrying forward evidence,
-identity records, mechanism links, evaluations, and references. Direct V2–V4
-export functions retain their original envelope shapes.
+V3 identity graphs allow a missing target only when a claim matches the exact
+entity type and ID and names the referring record in `sourceRecordId`. This
+applies to activation-position components, observation positions and
+experiments, structural-connection endpoints, and circuit snapshot members and
+boundaries. Existing targets still undergo the V2 coordinate, checkpoint, and
+snapshot-digest checks. A claim for a different record, entity type, or ID does
+not satisfy the link. V2 graph validation remains strict.
 
-This slice establishes an additive reference ledger and service round trip. The
-identity graph's existing V2 relationships still require indexed components,
-positions, connections, and circuits. The next implementation step is a
-versioned graph representation that can point to these claims while targets
-are unresolved, then resolve those links without rewriting earlier evidence.
+V6 embeds the V3 graph in the research bundle. Research-service writes use V6;
+V2–V5 imports remain supported and normalize their reference claims into the
+service bundle shape. Direct V2–V5 export functions retain their original
+envelope formats. V3 graph export sorts records and claims deterministically,
+preserving unresolved identifiers and provenance through export/import. When
+compatible identifying metadata arrives, the existing reference summary
+resolves it without mutating earlier claims; incompatible descriptors remain
+an explicit conflict.

@@ -102,9 +102,15 @@ describe('additive identity-reference service', () => {
     expect(first.valid).toBe(true);
     expect(memory.savePermissions).toEqual([allowEffects]);
     expect(JSON.parse(memory.getStoredJson())).toMatchObject({
-      schemaVersion: 5,
-      identityReferences: [unresolvedReference],
+      schemaVersion: 6,
+      identityGraph: {
+        schemaVersion: 3,
+        identityReferences: [unresolvedReference],
+      },
     });
+    expect(JSON.parse(memory.getStoredJson())).not.toHaveProperty(
+      'identityReferences'
+    );
     expect(
       await memory.service.readIdentityReferences(allowEffects)
     ).toMatchObject({ valid: true, entities: [{ state: 'unresolved' }] });
