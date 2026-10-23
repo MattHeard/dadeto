@@ -1,3 +1,5 @@
+import { isRecord } from '../algZooValidation/index.js';
+
 export {
   evaluateAlgZooRestrictedRule,
   scoreAlgZooBlindedSubmissions,
@@ -45,6 +47,12 @@ const MANIFEST_FIELDS = Object.freeze([
 ]);
 const SHA256_PATTERN = /^[a-f0-9]{64}$/i;
 const COMMIT_PATTERN = /^[a-f0-9]{40}$/i;
+const ACCESS_CONTROL_CHECKS = Object.freeze([
+  'controlCanaryDenied',
+  'futureCanaryDenied',
+  'canaryPromptLeakageCheckPassed',
+  'heldOutPromptLeakageCheckPassed',
+]);
 
 /**
  * Create the fixed census schedule using a reproducible target and session order.
@@ -248,9 +256,9 @@ export function createAlgZooPilotPlan(configuration, fixture) {
     mapSchemaHash: configuration.mapSchemaHash,
     commonBackgroundHash: configuration.commonBackgroundHash,
     accessControlConfiguration: configuration.accessControlConfiguration,
-    launchReady:
-      configuration.accessControlConfiguration.controlCanaryDenied === true &&
-      configuration.accessControlConfiguration.futureCanaryDenied === true,
+    launchReady: hasAccessControlEvidence(
+      configuration.accessControlConfiguration
+    ),
   };
   const planPairs = schedule.pairs.map(pair => ({
     ...pair,
@@ -275,6 +283,22 @@ export function createAlgZooPilotPlan(configuration, fixture) {
     manifest,
     json: JSON.stringify(sortObjectKeys(manifest), null, 2),
   };
+}
+
+/**
+ * Require recorded isolation checks and a retrievable hashed probe log.
+ * @param {unknown} configuration Candidate access-control evidence.
+ * @returns {boolean} Whether the prelaunch probe evidence is complete.
+ */
+function hasAccessControlEvidence(configuration) {
+  if (!isRecord(configuration)) return false;
+  return (
+    ACCESS_CONTROL_CHECKS.every(field => configuration[field] === true) &&
+    typeof configuration.probeLogArtifact === 'string' &&
+    configuration.probeLogArtifact.trim() !== '' &&
+    typeof configuration.probeLogSha256 === 'string' &&
+    SHA256_PATTERN.test(configuration.probeLogSha256)
+  );
 }
 
 /**

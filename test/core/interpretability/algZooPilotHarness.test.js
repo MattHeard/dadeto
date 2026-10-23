@@ -43,7 +43,10 @@ const configuration = {
   accessControlConfiguration: {
     controlCanaryDenied: true,
     futureCanaryDenied: true,
-    heldOutProbeArtifact: null,
+    canaryPromptLeakageCheckPassed: true,
+    heldOutPromptLeakageCheckPassed: true,
+    probeLogArtifact: 'synthetic://algzoo-access-probe-log-v1',
+    probeLogSha256: '0'.repeat(64),
   },
 };
 
@@ -318,6 +321,43 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(
       mappedSnapshotPlan.schedule.pairs[0].sessions.treatment.mapSnapshotHash
     ).toBe(sha256);
+  });
+
+  it('keeps launch readiness false until every access probe has hashed evidence', () => {
+    const incompleteEvidence = [
+      { controlCanaryDenied: false },
+      { futureCanaryDenied: false },
+      { canaryPromptLeakageCheckPassed: false },
+      { heldOutPromptLeakageCheckPassed: false },
+      { probeLogArtifact: '' },
+      { probeLogArtifact: null },
+      { probeLogSha256: 'not-a-sha256' },
+    ];
+
+    for (const change of incompleteEvidence) {
+      const accessControlConfiguration = {
+        ...configuration.accessControlConfiguration,
+        ...change,
+      };
+      const plan = createAlgZooPilotPlan(
+        { ...configuration, accessControlConfiguration },
+        fixture
+      );
+
+      expect(plan.valid).toBe(true);
+      expect(plan.manifest.status).toBe('prelaunch-not-launched');
+      expect(plan.manifest.launchReady).toBe(false);
+    }
+
+    const malformedEvidencePlan = createAlgZooPilotPlan(
+      { ...configuration, accessControlConfiguration: ['not-a-record'] },
+      fixture
+    );
+    expect(malformedEvidencePlan.valid).toBe(true);
+    expect(malformedEvidencePlan.manifest.launchReady).toBe(false);
+
+    const readyPlan = createAlgZooPilotPlan(configuration, fixture);
+    expect(readyPlan.manifest.launchReady).toBe(true);
   });
 
   it('isolates control and returns only completed earlier treatment findings', () => {

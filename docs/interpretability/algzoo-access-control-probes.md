@@ -21,3 +21,14 @@ protocol's control-canary and future-canary probes against the configured runtim
 verify the provider and service logs contain no canary or held-out content in an
 investigator prompt, and preserve the raw log artifact and its hash in the launch
 manifest. Do not treat this unit test as evidence that a real pilot is launch-ready.
+
+`createAlgZooPilotPlan` now reports `launchReady: true` only when the access
+configuration records all four passed checks (`controlCanaryDenied`,
+`futureCanaryDenied`, `canaryPromptLeakageCheckPassed`, and
+`heldOutPromptLeakageCheckPassed`) plus a nonempty `probeLogArtifact` reference
+and a 64-character hexadecimal `probeLogSha256`. Missing or failed evidence keeps
+the manifest at `prelaunch-not-launched` and sets `launchReady` to false. The
+harness validates that these evidence fields are present and well-formed; it does
+not retrieve the artifact, recompute its hash, or independently establish that the
+recorded checks happened. The real probe artifact must be reviewed and verified
+before its result is entered into a launch manifest.
