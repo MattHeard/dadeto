@@ -1,10 +1,12 @@
 import {
+  appendIdentityReferenceV1,
   appendAccuracyEvaluationV1,
   appendMechanisticEstimateV1,
   appendExperimentSubmissionV1,
-  exportInterpretabilityResearchBundleV4,
+  exportInterpretabilityResearchBundleV5,
   getEvidenceGraphContextV1,
   importInterpretabilityResearchBundleV2,
+  summarizeIdentityReferencesV1,
 } from './index.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
@@ -15,19 +17,21 @@ import {
 /** @typedef {Parameters<typeof appendExperimentSubmissionV1>[1]} ExperimentSubmission */
 /** @typedef {Parameters<typeof appendMechanisticEstimateV1>[1]} MechanisticEstimate */
 /** @typedef {Parameters<typeof appendAccuracyEvaluationV1>[1]} AccuracyEvaluation */
+/** @typedef {Parameters<typeof appendIdentityReferenceV1>[1]} IdentityReference */
 /** @typedef {ReturnType<typeof importInterpretabilityResearchBundleV2>} BundleImportResult */
 /** @typedef {Extract<BundleImportResult, {valid: true}>['bundle']} ResearchBundle */
+/** @typedef {ReturnType<typeof summarizeIdentityReferencesV1>|Extract<BundleImportResult, {valid: false}>} IdentityReferenceServiceResult */
 /** @typedef {{valid: true, evaluations: Array<AccuracyEvaluation>}|Extract<BundleImportResult, {valid: false}>} AccuracyEvaluationsServiceResult */
-/** @typedef {(bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation, schemas: ResearchSchemas) => any} ResearchAppender */
-/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof exportInterpretabilityResearchBundleV4>} BundleOperationResult */
+/** @typedef {(bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference, schemas: ResearchSchemas) => any} ResearchAppender */
+/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof appendIdentityReferenceV1>|ReturnType<typeof exportInterpretabilityResearchBundleV5>} BundleOperationResult */
 /** @typedef {BundleImportResult|BundleOperationResult} ResearchServiceResult */
 /** @typedef {Extract<BundleImportResult, {valid: false}>|ResearchContextFailure|ResearchContextPage} ResearchContextServiceResult */
-/** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation, append: ResearchAppender}} ResearchWrite */
+/** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference, append: ResearchAppender}} ResearchWrite */
 
 /**
  * Create the pure Atlas read/submission service over injected bundle storage.
  * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas}} options Storage capabilities and caller-provided schema adapters.
- * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>}} Permission-aware service methods.
+ * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, readIdentityReferences: (allowEffects: AllowEffects) => Promise<IdentityReferenceServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>, submitIdentityReference: (allowEffects: AllowEffects, reference: IdentityReference) => Promise<ResearchServiceResult>}} Permission-aware service methods.
  */
 export function createInterpretabilityResearchServiceV1({
   loadBundle,
@@ -46,7 +50,7 @@ export function createInterpretabilityResearchServiceV1({
   /**
    * @param {AllowEffects} allowEffects Permission token forwarded to storage.
    * @param {ResearchAppender} append Bundle append operation.
-   * @param {ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation} submission Submitted record.
+   * @param {ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference} submission Submitted record.
    * @returns {Promise<ResearchServiceResult>} Export result or validation failure.
    */
   const submit = (allowEffects, append, submission) =>
@@ -95,13 +99,34 @@ export function createInterpretabilityResearchServiceV1({
         valid: true,
         evaluations: bundle.accuracyEvaluations,
       })),
+    readIdentityReferences: allowEffects =>
+      withBundle(allowEffects, bundle =>
+        summarizeIdentityReferencesV1(
+          bundle.identityReferences,
+          identityReferenceSchema(schemas)
+        )
+      ),
     submitExperiment: (allowEffects, submission) =>
       submitGraphRecord(allowEffects, appendExperimentSubmissionV1, submission),
     submitEstimate: (allowEffects, estimate) =>
       submitGraphRecord(allowEffects, appendMechanisticEstimateV1, estimate),
     submitEvaluation: (allowEffects, evaluation) =>
       submit(allowEffects, appendAccuracyEvaluationV1, evaluation),
+    submitIdentityReference: (allowEffects, reference) =>
+      submit(allowEffects, appendIdentityReferenceV1, reference),
   });
+}
+
+/**
+ * Resolve the injected reference schema from the supported schema adapters.
+ * @param {ResearchSchemas} schemas Schema adapters supplied to the service.
+ * @returns {any} Identity-reference validator.
+ */
+function identityReferenceSchema(schemas) {
+  return (
+    schemas?.identityGraphSchemasV2?.identityReferenceSchemaV1 ??
+    schemas?.identityReferenceSchemaV1
+  );
 }
 
 /**
@@ -152,7 +177,7 @@ function createResearchWriter(schemas, saveBundle) {
     const appended = append(bundle, submission, schemas);
     if (!appended.valid) return appended;
 
-    const exported = exportInterpretabilityResearchBundleV4(
+    const exported = exportInterpretabilityResearchBundleV5(
       appended.bundle,
       schemas
     );

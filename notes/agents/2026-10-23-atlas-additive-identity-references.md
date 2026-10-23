@@ -1,0 +1,7 @@
+# Atlas additive identity references
+
+- Unexpected hurdle: the V2 identity graph correctly rejects missing targets, while the research service persisted only V4 bundles. Loosening V2 would silently change an established portable contract.
+- Diagnosis: the Rank 2 Notion criterion explicitly requires unknown references to retain IDs and provenance through persistence and later resolution; the existing Rank 4 canonical-submission Bead excludes schema-version changes.
+- Chosen fix: add versioned reference claims and a V5 outer bundle. Claims are append-only and attributable; summaries derive unresolved/resolved/conflict state from distinct structured identity descriptors. Legacy V2–V4 imports remain readable, and service writes carry records forward into V5.
+- Validation so far: `npm run check:impact:run -- --files src/core/interpretability/index.js src/core/interpretability/researchService.js test/core/interpretability/identityReferencesV1.test.js test/core/interpretability/identityReferenceServiceV1.test.js test/core/interpretability/researchBundleV2.test.js` passed 14 suites / 119 tests, with 100% statements, branches, functions, and lines for both changed core files; ESLint, core parse, and zero-clone duplication checks passed.
+- Next: finish the versioned graph-link representation so activation positions, observations, structural connections, and circuit snapshots can refer to these unresolved entities. Preserve strict V2 behavior and prove later resolution plus unchanged prior evidence. The Rank 2 spec remains Partial / Active.

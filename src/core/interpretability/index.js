@@ -554,6 +554,7 @@ export function createInterpretabilitySchemasV2(z, hashCanonicalIdentity) {
   );
 
   return Object.freeze({
+    identityReferenceSchemaV1: createIdentityReferenceSchemaV1(z),
     recurrentNeuronComponentSchemaV2,
     nativeNeuronComponentSchemaV2,
     recurrentActivationPositionSchemaV2,
@@ -1598,6 +1599,202 @@ export function importInterpretabilityIdentityGraphV2(
   );
 }
 
+const IDENTITY_REFERENCE_ENTITY_TYPES_V1 = Object.freeze([
+  'model',
+  'checkpoint',
+  'component',
+  'activation-position',
+  'observation',
+  'experiment',
+  'structural-connection',
+  'circuit',
+  'circuit-snapshot',
+  'other',
+]);
+
+/**
+ * Build an injected validator for attributable references to entities that may
+ * not have been indexed yet.
+ * @param {Record<string, any>} z Injected Zod-compatible API.
+ * @returns {any} Strict versioned reference schema.
+ */
+export function createIdentityReferenceSchemaV1(z) {
+  return z
+    .object({
+      schemaVersion: z.literal(1),
+      claimId: z.string().min(1),
+      entityType: z.enum(IDENTITY_REFERENCE_ENTITY_TYPES_V1),
+      entityId: z.string().min(1),
+      authorId: z.string().min(1),
+      source: z.string().min(1),
+      sourceRecordId: z.string().min(1).optional(),
+      recordedAt: z.string().min(1),
+      identityDescriptor: z.string().min(1).optional(),
+    })
+    .strict()
+    .refine(identityReferenceIdentityIsCanonical);
+}
+
+/**
+ * Validate canonical component IDs when a structured identity is available.
+ * @param {Record<string, any>} claim Identity reference claim.
+ * @returns {boolean} Whether any V2 component identity is well formed.
+ */
+function identityReferenceIdentityIsCanonical(claim) {
+  const prefix = 'atlas:v2:component:';
+  if (claim.entityType !== 'component' || !claim.entityId.startsWith(prefix)) {
+    return true;
+  }
+  try {
+    const identity = JSON.parse(
+      decodeURIComponent(claim.entityId.slice(prefix.length))
+    );
+    return (
+      Array.isArray(identity) &&
+      claim.entityId === canonicalIdentityId('component', identity) &&
+      (claim.identityDescriptor === undefined ||
+        claim.identityDescriptor === JSON.stringify(identity))
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Validate and summarize attributable entity-reference claims without
+ * rewriting their IDs or provenance.
+ * @param {Array<Record<string, any>>} claims Reference claims.
+ * @param {any} identityReferenceSchemaV1 Injected reference validator.
+ * @returns {{valid: true, entities: Array<Record<string, any>>, claims: Array<Record<string, any>>}|{valid: false, errors: Array<{code: string}>}} Summary or validation failure.
+ */
+export function summarizeIdentityReferencesV1(
+  claims,
+  identityReferenceSchemaV1
+) {
+  if (!Array.isArray(claims)) {
+    return { valid: false, errors: [{ code: 'invalid-identity-references' }] };
+  }
+  if (typeof identityReferenceSchemaV1?.safeParse !== 'function') {
+    return { valid: false, errors: [{ code: 'missing-schema-validator' }] };
+  }
+  /** @type {Array<Record<string, any>>} */
+  const parsedClaims = [];
+  const claimIds = new Set();
+  for (const claim of claims) {
+    const parsed = identityReferenceSchemaV1.safeParse(claim);
+    if (!parsed.success || claimIds.has(parsed.data?.claimId)) {
+      return {
+        valid: false,
+        errors: [{ code: 'invalid-identity-references' }],
+      };
+    }
+    const parsedClaim = /** @type {Record<string, any>} */ (parsed.data);
+    claimIds.add(parsedClaim.claimId);
+    parsedClaims.push(parsedClaim);
+  }
+  /** @type {Map<string, Array<Record<string, any>>>} */
+  const groups = new Map();
+  for (const claim of parsedClaims) {
+    const key = JSON.stringify([claim.entityType, claim.entityId]);
+    const group = groups.get(key) ?? [];
+    group.push(claim);
+    groups.set(key, group);
+  }
+  const entities = [...groups.values()]
+    .map(entityClaims => {
+      const canonicalIdentities = [
+        ...new Set(
+          entityClaims
+            .map(claim => claim.identityDescriptor)
+            .filter(identity => identity !== undefined)
+        ),
+      ].sort();
+      return {
+        entityType: entityClaims[0].entityType,
+        entityId: entityClaims[0].entityId,
+        state:
+          canonicalIdentities.length === 0
+            ? 'unresolved'
+            : canonicalIdentities.length === 1
+              ? 'resolved'
+              : 'conflict',
+        ...(canonicalIdentities.length === 1
+          ? { identityDescriptor: canonicalIdentities[0] }
+          : {}),
+        ...(canonicalIdentities.length > 1
+          ? { conflictingIdentities: canonicalIdentities }
+          : {}),
+        claims: entityClaims.sort((left, right) =>
+          left.claimId.localeCompare(right.claimId)
+        ),
+      };
+    })
+    .sort((left, right) =>
+      JSON.stringify([left.entityType, left.entityId]).localeCompare(
+        JSON.stringify([right.entityType, right.entityId])
+      )
+    );
+  return {
+    valid: true,
+    entities,
+    claims: parsedClaims.sort((left, right) =>
+      left.claimId.localeCompare(right.claimId)
+    ),
+  };
+}
+
+/**
+ * Export reference claims in a deterministic, versioned portable envelope.
+ * @param {Array<Record<string, any>>} claims Reference claims.
+ * @param {any} identityReferenceSchemaV1 Injected reference validator.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<{code: string}>}} Export result.
+ */
+export function exportIdentityReferencesV1(claims, identityReferenceSchemaV1) {
+  const result = summarizeIdentityReferencesV1(
+    claims,
+    identityReferenceSchemaV1
+  );
+  if (!result.valid) return result;
+  return {
+    valid: true,
+    json: JSON.stringify({ schemaVersion: 1, claims: result.claims }),
+  };
+}
+
+/**
+ * Import a portable reference envelope and deterministically summarize its
+ * unresolved, resolved, and conflicting entity claims.
+ * @param {string} json Portable JSON envelope.
+ * @param {any} identityReferenceSchemaV1 Injected reference validator.
+ * @returns {ReturnType<typeof summarizeIdentityReferencesV1>} Import result.
+ */
+export function importIdentityReferencesV1(json, identityReferenceSchemaV1) {
+  if (typeof json !== 'string') {
+    return { valid: false, errors: [{ code: 'invalid-json' }] };
+  }
+  let envelope;
+  try {
+    envelope = JSON.parse(json);
+  } catch {
+    return { valid: false, errors: [{ code: 'invalid-json' }] };
+  }
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
+    return { valid: false, errors: [{ code: 'invalid-document' }] };
+  }
+  if (
+    envelope.schemaVersion !== 1 ||
+    Object.keys(envelope).some(
+      key => !['schemaVersion', 'claims'].includes(key)
+    )
+  ) {
+    return { valid: false, errors: [{ code: 'unsupported-version' }] };
+  }
+  return summarizeIdentityReferencesV1(
+    envelope.claims,
+    identityReferenceSchemaV1
+  );
+}
+
 /**
  * Sort all validated V2 graph collections without changing their records.
  * @param {Record<string, any>} graph Parsed graph envelope.
@@ -1643,10 +1840,20 @@ export function exportInterpretabilityResearchBundleV4(bundle, schemas) {
 }
 
 /**
+ * Export a portable V5 bundle with additive identity-reference claims.
+ * @param {{evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, accuracyEvaluations: Array<AccuracyEvaluationRecordV1>, identityReferences: Array<Record<string, any>>}} bundle Portable research subgraphs and references.
+ * @param {Record<string, any>} schemas Injected subgraph and reference schemas.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
+ */
+export function exportInterpretabilityResearchBundleV5(bundle, schemas) {
+  return exportInterpretabilityResearchBundle(bundle, schemas, 5);
+}
+
+/**
  * Validate portable subgraphs and serialize the selected outer envelope version.
  * @param {Record<string, any>} bundle Portable research subgraphs.
  * @param {Record<string, any>} schemas Injected subgraph schemas.
- * @param {2|3|4} version Outer bundle version.
+ * @param {2|3|4|5} version Outer bundle version.
  * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} Bundle export result.
  */
 function exportInterpretabilityResearchBundle(bundle, schemas, version) {
@@ -1727,7 +1934,7 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
   }
   /** @type {ReturnType<typeof validateAccuracyEvaluationCollection>} */
   const accuracyResult =
-    version === 4
+    version >= 4
       ? validateAccuracyEvaluationCollection(
           evidenceResult.graph,
           bundle.accuracyEvaluations,
@@ -1740,6 +1947,20 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
       accuracyResult.errors
     );
   }
+  /** @type {ReturnType<typeof summarizeIdentityReferencesV1>} */
+  const identityReferencesResult =
+    version === 5
+      ? summarizeIdentityReferencesV1(
+          bundle.identityReferences,
+          identityReferenceSchema(schemas)
+        )
+      : { valid: true, entities: [], claims: [] };
+  if (!identityReferencesResult.valid) {
+    return researchBundleFailure(
+      'invalid-identity-references',
+      identityReferencesResult.errors
+    );
+  }
   return {
     valid: true,
     json: JSON.stringify({
@@ -1747,7 +1968,10 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
       evidenceGraph: { schemaVersion: 1, ...evidenceResult.graph },
       identityGraph: { schemaVersion: 2, ...identityResult.graph },
       mechanismIdentityLinks: lineageResult.links,
-      ...(version === 4 ? { accuracyEvaluations: accuracyResult.records } : {}),
+      ...(version >= 4 ? { accuracyEvaluations: accuracyResult.records } : {}),
+      ...(version === 5
+        ? { identityReferences: identityReferencesResult.claims }
+        : {}),
     }),
   };
 }
@@ -1755,8 +1979,8 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
 /**
  * Import and validate both subgraphs in a portable research bundle.
  * @param {string} json Portable research bundle JSON.
- * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, nativeNeuronComponentSchemaV2?: any, recurrentActivationPositionSchemaV2: any}}} schemas Injected subgraph schemas.
- * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, string>>, accuracyEvaluations: Array<AccuracyEvaluationRecordV1>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
+ * @param {{evidenceGraphSchemasV1: InterpretabilitySchemasV1, identityGraphSchemasV2: {identityGraphSchemaV2: any, recurrentNeuronComponentSchemaV2: any, nativeNeuronComponentSchemaV2?: any, recurrentActivationPositionSchemaV2: any, identityReferenceSchemaV1?: any}, identityReferenceSchemaV1?: any}} schemas Injected subgraph schemas.
+ * @returns {{valid: true, bundle: {evidenceGraph: InterpretabilityGraphV1, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, string>>, accuracyEvaluations: Array<AccuracyEvaluationRecordV1>, identityReferences: Array<Record<string, any>>}}|{valid: false, errors: Array<Record<string, any>>}} Bundle import result.
  */
 export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (typeof json !== 'string') return researchBundleFailure('invalid-json');
@@ -1769,7 +1993,7 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
     return researchBundleFailure('invalid-document');
   }
-  if (![2, 3, 4].includes(envelope.schemaVersion)) {
+  if (![2, 3, 4, 5].includes(envelope.schemaVersion)) {
     return researchBundleFailure('unsupported-version');
   }
   const allowedKeys =
@@ -1782,13 +2006,22 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
             'identityGraph',
             'mechanismIdentityLinks',
           ]
-        : [
-            'schemaVersion',
-            'evidenceGraph',
-            'identityGraph',
-            'mechanismIdentityLinks',
-            'accuracyEvaluations',
-          ];
+        : envelope.schemaVersion === 4
+          ? [
+              'schemaVersion',
+              'evidenceGraph',
+              'identityGraph',
+              'mechanismIdentityLinks',
+              'accuracyEvaluations',
+            ]
+          : [
+              'schemaVersion',
+              'evidenceGraph',
+              'identityGraph',
+              'mechanismIdentityLinks',
+              'accuracyEvaluations',
+              'identityReferences',
+            ];
   if (Object.keys(envelope).some(key => !allowedKeys.includes(key))) {
     return researchBundleFailure('invalid-research-bundle');
   }
@@ -1852,7 +2085,7 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   }
   /** @type {ReturnType<typeof validateAccuracyEvaluationCollection>} */
   const accuracyResult =
-    envelope.schemaVersion === 4
+    envelope.schemaVersion >= 4
       ? validateAccuracyEvaluationCollection(
           evidenceResult.graph,
           envelope.accuracyEvaluations,
@@ -1865,6 +2098,20 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
       accuracyResult.errors
     );
   }
+  /** @type {ReturnType<typeof summarizeIdentityReferencesV1>} */
+  const identityReferencesResult =
+    envelope.schemaVersion === 5
+      ? summarizeIdentityReferencesV1(
+          envelope.identityReferences,
+          identityReferenceSchema(schemas)
+        )
+      : { valid: true, entities: [], claims: [] };
+  if (!identityReferencesResult.valid) {
+    return researchBundleFailure(
+      'invalid-identity-references',
+      identityReferencesResult.errors
+    );
+  }
   return {
     valid: true,
     bundle: {
@@ -1872,8 +2119,21 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
       identityGraph: identityResult.graph,
       mechanismIdentityLinks,
       accuracyEvaluations: accuracyResult.records,
+      identityReferences: identityReferencesResult.claims,
     },
   };
+}
+
+/**
+ * Resolve the injected V1 reference schema from the supported schema adapters.
+ * @param {Record<string, any>} schemas Injected research schemas.
+ * @returns {any} Reference validator.
+ */
+function identityReferenceSchema(schemas) {
+  return (
+    schemas?.identityGraphSchemasV2?.identityReferenceSchemaV1 ??
+    schemas?.identityReferenceSchemaV1
+  );
 }
 
 /**
@@ -2669,6 +2929,35 @@ export function appendAccuracyEvaluationV1(bundle, evaluation, schemas) {
         },
       }
     : { valid: false, errors: candidateValidation.errors };
+}
+
+/**
+ * Append an attributable additive identity-reference claim without mutating
+ * the submitted bundle or any earlier claim.
+ * @param {Record<string, any>} bundle Portable research bundle.
+ * @param {Record<string, any>} claim Submitted identity-reference claim.
+ * @param {Record<string, any>} schemas Injected identity-reference schema.
+ * @returns {{valid: true, bundle: Record<string, any>}|{valid: false, errors: Array<{code: string}>}} Appended bundle or validation errors.
+ */
+export function appendIdentityReferenceV1(bundle, claim, schemas) {
+  if (!bundle || typeof bundle !== 'object' || Array.isArray(bundle)) {
+    return { valid: false, errors: [{ code: 'invalid-research-bundle' }] };
+  }
+  const current = summarizeIdentityReferencesV1(
+    bundle.identityReferences ?? [],
+    identityReferenceSchema(schemas)
+  );
+  if (!current.valid) return current;
+  const appended = summarizeIdentityReferencesV1(
+    [...current.claims, claim],
+    identityReferenceSchema(schemas)
+  );
+  return appended.valid
+    ? {
+        valid: true,
+        bundle: { ...bundle, identityReferences: appended.claims },
+      }
+    : appended;
 }
 
 /**

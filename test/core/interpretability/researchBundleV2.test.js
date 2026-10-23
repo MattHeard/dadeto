@@ -1027,7 +1027,7 @@ describe('portable research bundle validation', () => {
       errors: [{ code: 'invalid-document' }],
     });
     expect(
-      importInterpretabilityResearchBundleV2('{"schemaVersion":5}', schemas)
+      importInterpretabilityResearchBundleV2('{"schemaVersion":6}', schemas)
     ).toEqual({
       valid: false,
       errors: [{ code: 'unsupported-version' }],
@@ -1053,6 +1053,17 @@ describe('portable research bundle validation', () => {
     );
     expect(validBundle.valid).toBe(true);
     if (!validBundle.valid) return;
+    const unsupportedIdentityGraph = JSON.parse(validBundle.json);
+    unsupportedIdentityGraph.identityGraph.schemaVersion = 1;
+    expect(
+      importInterpretabilityResearchBundleV2(
+        JSON.stringify(unsupportedIdentityGraph),
+        schemas
+      )
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'invalid-identity-graph' }],
+    });
     const wrongIdentityVersion = JSON.parse(validBundle.json);
     wrongIdentityVersion.identityGraph.schemaVersion = 1;
     expect(
