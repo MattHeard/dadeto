@@ -262,6 +262,7 @@ export function startThreefoldPage(options) {
   return mosslightPresenter.startMosslightPage({
     ...options,
     ...mosslightPresenter.createMosslightPageEnvironment(options),
+    allowedActions: ['up', 'down', 'left', 'right', 'a', 'b', 'x', 'y'],
     createRuntime: (/** @type {Record<string, any>} */ runtimeOptions) =>
       createThreefoldMenuRuntime(
         createThreefoldRuntime({ ...runtimeOptions, storage, scene }),
@@ -753,7 +754,7 @@ function describeThreefoldInput(actions) {
     a: 'Input received · USE / GROW',
     b: 'Input received · SHRINK',
     x: 'Input received · WAIT',
-    y: 'Input received · SAVE',
+    y: 'Input received · OPEN MENU',
   });
   return labels[action] || 'Input received';
 }

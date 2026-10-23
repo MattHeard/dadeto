@@ -397,7 +397,10 @@ describe('THREEFOLD canvas grid', () => {
         const top = Math.round(screenY / 8) * 8;
         const right = left + Math.ceil((width * 12) / 8) * 8;
         const bottom = top + Math.ceil((height * 12) / 8) * 8;
-        if (entity.logicalGridKind === 'creature') {
+        if (
+          entity.logicalGridKind === 'creature' ||
+          shape.spriteGridSize === 8
+        ) {
           expect(shape.x).toBeGreaterThanOrEqual(left);
           expect(shape.y).toBeGreaterThanOrEqual(top);
           expect(shape.x + shape.width).toBeLessThanOrEqual(right);
@@ -1269,6 +1272,43 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     const outcome = renderThreefoldFrame(surge);
     expect(outcome.threefold.latchfolk).toBe('safe');
     expect(outcome.toast).toContain('LATCHFOLK SAFE');
+  });
+
+  test('scales the Broken Gate watchkeeper sprite with Mara', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    scene.spawn = createScaleState(watchkeeper.position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const tallMara = renderThreefoldFrame({
+      ...initial,
+      player: { ...initial.player, scale: 0 },
+    });
+    const smallerMara = renderThreefoldFrame({
+      ...initial,
+      player: { ...initial.player, scale: -2 },
+    });
+    const spriteBounds = frame => {
+      const pixels = frame.shapes.filter(
+        shape => shape.geometryId === 'latchfolk-watchkeeper'
+      );
+      return {
+        width:
+          Math.max(...pixels.map(shape => shape.x + shape.width)) -
+          Math.min(...pixels.map(shape => shape.x)),
+        height:
+          Math.max(...pixels.map(shape => shape.y + shape.height)) -
+          Math.min(...pixels.map(shape => shape.y)),
+      };
+    };
+
+    expect(spriteBounds(smallerMara).width).toBeGreaterThan(
+      spriteBounds(tallMara).width
+    );
+    expect(spriteBounds(smallerMara).height).toBeGreaterThan(
+      spriteBounds(tallMara).height
+    );
   });
 
   test('renders the upland road and persistent withdrawal outcome', () => {

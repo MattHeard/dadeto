@@ -60,7 +60,18 @@ const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number}} ThreefoldSpriteShape */
+const PERSON_ACTOR_IDS = new Set([
+  'latchfolk-watchkeeper',
+  'lantern-ward-mira',
+  'lantern-ward-tov',
+  'belltops-iri',
+  'belltops-sentry-orla',
+  'crownback-elder-tharn',
+  'weftways-pell',
+  'belltops-foldglass-rival',
+  'grainlands-iru',
+]);
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -145,24 +156,32 @@ export function renderThreefoldFrame(
           actor
         );
       const bounds = worldActor.bounds;
-      if (typeof worldActor.id === 'string' && bounds)
-        return worldActor.id === 'gatehouse-rat'
-          ? ratSprite(
-              {
-                ...worldActor,
-                bounds,
-                logicalGridKind: /** @type {ThreefoldGridRenderKind} */ (
-                  worldActor.logicalGridKind
+      if (typeof worldActor.id === 'string' && bounds) {
+        if (PERSON_ACTOR_IDS.has(worldActor.id))
+          return personSprite(
+            { ...worldActor, bounds },
+            camera,
+            tick,
+            heightMeters
+          );
+        if (worldActor.id === 'gatehouse-rat')
+          return ratSprite(
+            {
+              ...worldActor,
+              bounds,
+              logicalGridKind: /** @type {ThreefoldGridRenderKind} */ (
+                worldActor.logicalGridKind
+              ),
+              logicalCellBounds:
+                /** @type {{x: number, y: number, width: number, height: number}} */ (
+                  worldActor.logicalCellBounds
                 ),
-                logicalCellBounds:
-                  /** @type {{x: number, y: number, width: number, height: number}} */ (
-                    worldActor.logicalCellBounds
-                  ),
-              },
-              camera,
-              heightMeters
-            )
-          : geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
+            },
+            camera,
+            heightMeters
+          );
+        return geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
+      }
       return spriteShapes(actor, camera, tick).map(shape => ({
         ...shape,
         actorId: 'mara',
@@ -2421,8 +2440,66 @@ function createSmallWorldFrameWorld(mapId, name, elapsedGameSeconds, player) {
  */
 function alignThreefoldFrame(frame) {
   frame.shapes.push(captionShape({ x: 112, y: 16 }, 'Y MENU'));
+  frame.shapes = frame.shapes.map(
+    (/** @type {ThreefoldSpriteShape} */ shape) =>
+      shape.type === 'text' && shape.y === 133
+        ? { ...shape, text: 'ARROWS MOVE · A GROW / USE' }
+        : shape.type === 'text' && shape.y === 142
+          ? { ...shape, text: 'B SHRINK · X WAIT · Y MENU' }
+          : shape
+  );
   frame.shapes = snapCanvasShapesToGrid(frame.shapes);
   return frame;
+}
+
+/**
+ * Render a person from their 12px shared Mosslight sprite at their physical size.
+ * @param {{id: string, x: number, y: number, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, physicalBounds?: {min: {z?: number}, max: {z?: number}}, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} actor Projected person with original physical bounds.
+ * @param {{x: number, y: number}} camera Mosslight tile camera.
+ * @param {number} tick Animation tick.
+ * @param {number} heightMeters Mara's current physical height.
+ * @returns {ThreefoldSpriteShape[]} Person pixels quantized to the 4px handheld grid.
+ */
+function personSprite(actor, camera, tick, heightMeters) {
+  const bounds = actor.physicalBounds;
+  if (!bounds)
+    return geometrySprite(
+      /** @type {Parameters<typeof geometrySprite>[0]} */ (actor),
+      camera,
+      heightMeters
+    );
+  const centerX = (actor.x - camera.x) * TILE_PIXELS;
+  const centerY = (actor.y - camera.y) * TILE_PIXELS;
+  const sourceCenter = { x: 78, y: 54 };
+  const source = spriteShapes({ id: 'mira', x: 6, y: 4 }, { x: 0, y: 0 }, tick);
+  const heightRatio =
+    ((bounds.max.z ?? 1.7) - (bounds.min.z ?? 0)) / heightMeters;
+  const scale = Math.max(1 / 3, Math.min(8, heightRatio));
+  const cells = new Map();
+  for (const pixel of source) {
+    const x =
+      Math.round((centerX + (pixel.x - sourceCenter.x) * scale) / GRID_PIXELS) *
+      GRID_PIXELS;
+    const y =
+      Math.round((centerY + (pixel.y - sourceCenter.y) * scale) / GRID_PIXELS) *
+      GRID_PIXELS;
+    if (x < 0 || x >= 160 || y < 0 || y >= 108) continue;
+    const key = `${x}:${y}`;
+    if (!cells.has(key)) cells.set(key, { x, y, fill: pixel.fill });
+  }
+  return [...cells.values()].map(pixel => ({
+    type: 'rect',
+    ...pixel,
+    width: GRID_PIXELS,
+    height: GRID_PIXELS,
+    fill: actor.growthPreview === true ? '#e16b5a' : pixel.fill,
+    geometryId: actor.id,
+    growthPreview: actor.growthPreview === true,
+    logicalGridKind: actor.logicalGridKind,
+    logicalCellBounds: actor.logicalCellBounds,
+    spriteGridSize: GRID_PIXELS,
+    actorId: actor.id,
+  }));
 }
 
 /**
@@ -3085,6 +3162,7 @@ function projectRenderEntitiesToGrid(scale, entities, viewport) {
         const logicalCellBounds = resolved.cellBounds;
         return {
           ...object,
+          physicalBounds: object.bounds,
           logicalCellBounds,
           bounds: {
             min: {

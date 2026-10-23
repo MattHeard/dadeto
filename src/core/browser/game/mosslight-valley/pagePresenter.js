@@ -24,6 +24,32 @@ export function createMosslightPageEnvironment(options) {
 }
 
 /**
+ * Keep only actions supported by the current page, preserving first-seen order.
+ * @param {string[]} actions Active keyboard, touch, or gamepad actions.
+ * @param {string[]|undefined} allowedActions Optional page-specific action set.
+ * @returns {string[]} Accepted actions.
+ */
+function filterAllowedActions(actions, allowedActions) {
+  const uniqueActions = [...new Set(actions)];
+  return allowedActions
+    ? uniqueActions.filter(action => allowedActions.includes(action))
+    : uniqueActions;
+}
+
+/**
+ * Check whether one normalized action belongs to the current page's controls.
+ * @param {string|undefined} action Normalized input action.
+ * @param {string[]|undefined} allowedActions Optional page-specific action set.
+ * @returns {boolean} Whether the input should be handled.
+ */
+function isActionAllowed(action, allowedActions) {
+  return (
+    typeof action === 'string' &&
+    (!allowedActions || allowedActions.includes(action))
+  );
+}
+
+/**
  * Mount the shared RPG in a responsive page and return its lifecycle disposer.
  * @param {any} options Injected browser APIs and animation-frame functions.
  * @returns {() => void} Function that stops the page game loop and listeners.
@@ -155,13 +181,14 @@ export function startMosslightPage(options) {
    * @returns {string[]} Current keyboard, touch, and gamepad actions.
    */
   function actions() {
-    return [
+    const current = [
       ...keys.held,
       ...keys.pressed,
       ...touch,
       ...touchPulse,
       ...gamepadActions(navigatorObj.getGamepads?.() || []),
     ];
+    return filterAllowedActions(current, options.allowedActions);
   }
   /**
    *
@@ -174,7 +201,10 @@ export function startMosslightPage(options) {
     const frameActions = actions();
     if (frameActions.length && !documentObj.hidden && !runtime.isRunning())
       runtime.resume();
-    const newlyPressed = [...keys.pressed, ...touchPulse];
+    const newlyPressed = filterAllowedActions(
+      [...keys.pressed, ...touchPulse],
+      options.allowedActions
+    );
     if (newlyPressed.length) {
       inputFeedback = options.describeInput?.([...new Set(newlyPressed)]) || '';
       inputFeedbackUntil = time + 1500;
@@ -200,6 +230,13 @@ export function startMosslightPage(options) {
    * @param {{key: string, preventDefault: () => void}} event Keyboard event.
    */
   function onKeyDown(event) {
+    const action = updateInput(
+      { held: new Set(), pressed: new Set() },
+      { type: 'keydown', key: event.key }
+    )
+      .pressed.values()
+      .next().value;
+    if (!isActionAllowed(action, options.allowedActions)) return;
     const next = updateInput(keys, { type: 'keydown', key: event.key });
     keys.held = next.held;
     keys.pressed = next.pressed;
@@ -214,8 +251,12 @@ export function startMosslightPage(options) {
    */
   function onKeyUp(event) {
     const next = updateInput(keys, { type: 'keyup', key: event.key });
-    keys.held = next.held;
-    keys.pressed = next.pressed;
+    keys.held = new Set(
+      filterAllowedActions([...next.held], options.allowedActions)
+    );
+    keys.pressed = new Set(
+      filterAllowedActions([...next.pressed], options.allowedActions)
+    );
   }
   /**
    *
