@@ -29,6 +29,7 @@
 - The model suite passed 21 tests; the full toy-focused evaluator passed 49 tests, all changed-core statements/branches/functions/lines, ESLint, core parsing, and zero-clone checks.
 - The repository fast check passed 7,434 tests across six shards and every static gate. `npm run build` and `npm run manuals:check` also passed.
 - The generated standalone route and touch/keyboard controls are in place. No playtest has been recorded yet; observed enjoyment and friction remain open acceptance work.
+- Playtest attempt (2026-10-23) is blocked before interaction: this session has no interactive browser-control capability, its browser is currently on Notion, and the repository requires E2E to run in Cloud Run Jobs rather than locally. Static source and unit tests do not establish that the deployed toy loads or that the controls feel usable. The minimum supported next step is an authorized Cloud Run browser job that opens `/tetracube/`, exercises the keyboard/touch controls, and returns a sanitized screenshot/video or interaction log without adding a distinct URL-driven game state.
 
 ## Pass/fail rules
 
