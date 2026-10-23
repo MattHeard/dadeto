@@ -5,7 +5,7 @@ import { validateMudProgram, validateMudWorld } from './ast.js';
  * @param {T} value - JSON-like value to copy.
  * @returns {T} A detached JSON-compatible copy.
  */
-function clone(value) {
+export function cloneMudValue(value) {
   return /** @type {T} */ (JSON.parse(JSON.stringify(value)));
 }
 
@@ -24,11 +24,11 @@ export function executeMudProgram(worldInput, programInput) {
   if (!validProgram.ok)
     return {
       ok: false,
-      world: clone(validWorld.world),
+      world: cloneMudValue(validWorld.world),
       error: validProgram.error,
     };
 
-  const world = clone(validWorld.world);
+  const world = cloneMudValue(validWorld.world);
   /** @type {Array<{kind: 'output'|'broadcast', text: string}>} */
   const emissions = [];
   const results = [];
@@ -46,7 +46,11 @@ export function executeMudProgram(worldInput, programInput) {
  * @returns {{ok: false, world: import('./ast.js').MudWorld, error: string}} Failed transaction.
  */
 function fail(original, error) {
-  return { ok: /** @type {false} */ (false), world: clone(original), error };
+  return {
+    ok: /** @type {false} */ (false),
+    world: cloneMudValue(original),
+    error,
+  };
 }
 
 /**
@@ -65,13 +69,13 @@ function applyOperation(world, operation, emissions) {
     case 'getNode': {
       const node = findNode(operation.id);
       return node
-        ? { ok: true, value: clone(node) }
+        ? { ok: true, value: cloneMudValue(node) }
         : { ok: false, error: `Node '${operation.id}' does not exist.` };
     }
     case 'findNodes':
       return {
         ok: true,
-        value: clone(
+        value: cloneMudValue(
           world.nodes.filter(
             node =>
               (operation.type === undefined || node.type === operation.type) &&
@@ -86,17 +90,17 @@ function applyOperation(world, operation, emissions) {
       const node = {
         id: operation.id,
         type: operation.type,
-        properties: clone(operation.properties || {}),
+        properties: cloneMudValue(operation.properties || {}),
       };
       world.nodes.push(node);
-      return { ok: true, value: clone(node) };
+      return { ok: true, value: cloneMudValue(node) };
     }
     case 'setProperty': {
       const node = findNode(operation.id);
       if (!node)
         return { ok: false, error: `Node '${operation.id}' does not exist.` };
-      node.properties[operation.property] = clone(operation.value);
-      return { ok: true, value: clone(node) };
+      node.properties[operation.property] = cloneMudValue(operation.value);
+      return { ok: true, value: cloneMudValue(node) };
     }
     case 'addRelation': {
       if (!findNode(operation.from) || !findNode(operation.to))
@@ -112,7 +116,7 @@ function applyOperation(world, operation, emissions) {
         type: operation.type,
       };
       world.relations.push(relation);
-      return { ok: true, value: clone(relation) };
+      return { ok: true, value: cloneMudValue(relation) };
     }
     case 'removeRelation': {
       const index = world.relations.findIndex(relation =>
@@ -131,7 +135,7 @@ function applyOperation(world, operation, emissions) {
         relation =>
           relation.from !== operation.id && relation.to !== operation.id
       );
-      return { ok: true, value: clone(deleted) };
+      return { ok: true, value: cloneMudValue(deleted) };
     }
     case 'output':
     case 'broadcast':

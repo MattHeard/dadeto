@@ -2,10 +2,10 @@ import { createDynamicMudGame } from './game.js';
 
 /**
  * Bind the Dynamic MUD text adventure to a page.
- * @param {{documentObj: any}} deps Browser document.
+ * @param {{documentObj: any, gameDependencies?: object}} deps Browser document and optional trusted game providers.
  * @returns {() => void} Remove page listeners.
  */
-export function startDynamicMudPage({ documentObj }) {
+export function startDynamicMudPage({ documentObj, gameDependencies = {} }) {
   const form = documentObj.querySelector('#mud-command-form');
   const input = documentObj.querySelector('#mud-command');
   const transcript = documentObj.querySelector('#mud-transcript');
@@ -14,7 +14,19 @@ export function startDynamicMudPage({ documentObj }) {
   if (!form || !input || !transcript || !status || !worldReadout)
     return () => {};
 
-  const game = createDynamicMudGame();
+  const game = createDynamicMudGame({
+    ...gameDependencies,
+    onGenerationStage: stage => {
+      status.textContent = {
+        proposing: 'The causeway considers the new action…',
+        building: 'The causeway tests a safe way to act…',
+        validating: 'The action is being checked…',
+        'dry-run': 'Trying the action on a private copy…',
+        registering: 'The causeway remembers the verified action…',
+        executing: 'The action reaches the world…',
+      }[stage];
+    },
+  });
   const render = () => {
     const state = game.getState();
     transcript.replaceChildren(
@@ -29,9 +41,9 @@ export function startDynamicMudPage({ documentObj }) {
       ? 'FLOODGATE · OPEN'
       : 'FLOODGATE · CLOSED';
   };
-  const submit = (/** @type {{preventDefault: () => void}} */ event) => {
+  const submit = async (/** @type {{preventDefault: () => void}} */ event) => {
     event.preventDefault();
-    const result = game.run(input.value);
+    const result = await game.run(input.value);
     status.textContent = result.known
       ? 'The causeway answers.'
       : 'That action is not known yet.';
