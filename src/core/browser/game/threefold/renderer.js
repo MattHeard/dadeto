@@ -2625,7 +2625,6 @@ function npcRoleGlyphs(x, y, metadata) {
   }
   return shapes;
 }
-}
 
 /**
  * Align all visible THREEFOLD canvas art to an eight-pixel logical lattice.
