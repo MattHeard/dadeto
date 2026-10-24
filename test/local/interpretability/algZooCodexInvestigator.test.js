@@ -121,7 +121,13 @@ function createRequest(signal = new AbortController().signal) {
         toolCalls: 100,
         targetForwardPasses: 10000,
       },
-      investigatorModel: 'codex-cli-test',
+      investigatorRuntimeConfiguration: {
+        provider: 'codex-cli',
+        cliVersion: 'codex-cli 0.139.0',
+        requestedModelIdentifier: 'codex-cli-test',
+        reportedModelIdentifier: null,
+        observedAt: '2026-10-24T10:00:00.000Z',
+      },
     },
     mapEntries: [],
     fixtureSha256: 'a'.repeat(64),
@@ -151,7 +157,6 @@ function createAdapter(spawnImpl, overrides = {}) {
   const files = new Map();
   const removed = [];
   const adapter = createAlgZooCodexInvestigator({
-    model: 'gpt-5.4-mini',
     cliVersion: 'codex-cli 0.139.0',
     tempDirectory: '/private-tmp',
     environment: {
@@ -204,6 +209,9 @@ describe('AlgZoo Codex investigator adapter', () => {
     expect(args).toContain('workspace-write');
     expect(args).toContain('--output-schema');
     expect(args).toContain('-');
+    expect(
+      args.slice(args.indexOf('--model'), args.indexOf('--model') + 2)
+    ).toEqual(['--model', 'codex-cli-test']);
     expect(args).not.toContain('--dangerously-bypass-approvals-and-sandbox');
     expect(spawnOptions.cwd).toBe('/private-tmp/algzoo-session');
     expect(spawnOptions.env).toEqual({
@@ -213,6 +221,12 @@ describe('AlgZoo Codex investigator adapter', () => {
     });
     expect(inputFile.options).toEqual({ mode: 0o600 });
     expect(inputFile.contents).not.toContain('held-out-secret');
+    expect(
+      JSON.parse(inputFile.contents).session.investigatorRuntimeConfiguration
+    ).toMatchObject({
+      requestedModelIdentifier: 'codex-cli-test',
+      reportedModelIdentifier: null,
+    });
     expect(request.settlements[0]).toEqual({
       type: 'reserve',
       limits: { investigatorTokens: 20000, toolCalls: 100 },
@@ -234,7 +248,10 @@ describe('AlgZoo Codex investigator adapter', () => {
       expect.objectContaining({
         provider: 'codex-cli',
         cliVersion: 'codex-cli 0.139.0',
-        model: 'gpt-5.4-mini',
+        requestedModelIdentifier: 'codex-cli-test',
+        reportedModelIdentifier: null,
+        modelIdentifierStatus: 'not-reported-by-cli-jsonl',
+        runtimeIdentityObservedAt: '2026-10-24T10:00:00.000Z',
         inputTokens: 24,
         outputTokens: 9,
         toolCalls: 1,
@@ -269,13 +286,10 @@ describe('AlgZoo Codex investigator adapter', () => {
     expect(removed).toEqual(['/private-tmp/algzoo-session']);
   });
 
-  test('requires a pinned model and CLI version', () => {
-    expect(() => createAdapter(() => createChild(''), { model: '' })).toThrow(
-      'pinned Codex model'
-    );
+  test('requires an observed Codex CLI version', () => {
     expect(() =>
       createAdapter(() => createChild(''), { cliVersion: '  ' })
-    ).toThrow('pinned Codex model');
+    ).toThrow('observed Codex CLI version');
   });
 
   test('rejects incomplete requests before reserving or making runtime effects', async () => {
@@ -285,6 +299,23 @@ describe('AlgZoo Codex investigator adapter', () => {
       undefined,
       {},
       { ...validRequest, session: { ...validRequest.session, sessionId: 1 } },
+      {
+        ...validRequest,
+        session: {
+          ...validRequest.session,
+          investigatorRuntimeConfiguration: undefined,
+        },
+      },
+      {
+        ...validRequest,
+        session: {
+          ...validRequest.session,
+          investigatorRuntimeConfiguration: {
+            ...validRequest.session.investigatorRuntimeConfiguration,
+            cliVersion: 'unmatched-cli-version',
+          },
+        },
+      },
       { ...validRequest, mapEntries: null },
       { ...validRequest, fixtureSha256: null },
       { ...validRequest, budget: null },

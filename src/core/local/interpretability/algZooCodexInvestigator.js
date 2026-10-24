@@ -30,21 +30,18 @@ const NON_TOOL_ITEM_TYPES = new Set([
 
 /**
  * Create an injected Codex CLI investigator adapter for one isolated assignment.
- * @param {{model: string, cliVersion: string, command: string, tempDirectory: string, environment: Record<string, string|undefined>, spawnImpl: Function, mkdtempImpl: Function, writeFileImpl: Function, rmImpl: Function, pathModule: {join: (...parts: string[]) => string}, timestampNowImpl: () => string, monotonicNowImpl: () => number, setTimeoutImpl: (callback: () => void, delay: number) => {unref?: () => void}, clearTimeoutImpl: (timer: {unref?: () => void}) => void, decodeChunkImpl: (chunk: unknown) => string}} options Injected runtime effects and process dependencies.
+ * @param {{cliVersion: string, command: string, tempDirectory: string, environment: Record<string, string|undefined>, spawnImpl: Function, mkdtempImpl: Function, writeFileImpl: Function, rmImpl: Function, pathModule: {join: (...parts: string[]) => string}, timestampNowImpl: () => string, monotonicNowImpl: () => number, setTimeoutImpl: (callback: () => void, delay: number) => {unref?: () => void}, clearTimeoutImpl: (timer: {unref?: () => void}) => void, decodeChunkImpl: (chunk: unknown) => string}} options Injected runtime effects and process dependencies.
  * @returns {{runInvestigator: (request: Record<string, any>) => Promise<Record<string, any>>}} Injected AlgZoo harness adapter.
  */
 export function createAlgZooCodexInvestigatorCore(options) {
   if (
-    typeof options?.model !== 'string' ||
-    options.model.trim() === '' ||
     typeof options?.cliVersion !== 'string' ||
     options.cliVersion.trim() === ''
   ) {
-    throw new TypeError('A pinned Codex model and CLI version are required.');
+    throw new TypeError('An observed Codex CLI version is required.');
   }
   const dependencies = {
     command: options.command,
-    model: options.model,
     cliVersion: options.cliVersion,
     tempDirectory: options.tempDirectory,
     environment: options.environment,
@@ -72,6 +69,7 @@ export function createAlgZooCodexInvestigatorCore(options) {
  */
 async function runCodexInvestigator(dependencies, request) {
   const { session, mapEntries, fixtureSha256, budget, signal } = request ?? {};
+  const runtimeConfiguration = session?.investigatorRuntimeConfiguration;
   if (
     !session ||
     typeof session.sessionId !== 'string' ||
@@ -79,7 +77,14 @@ async function runCodexInvestigator(dependencies, request) {
     typeof fixtureSha256 !== 'string' ||
     typeof budget?.reserve !== 'function' ||
     typeof signal?.addEventListener !== 'function' ||
-    typeof signal?.aborted !== 'boolean'
+    typeof signal?.aborted !== 'boolean' ||
+    runtimeConfiguration?.provider !== 'codex-cli' ||
+    runtimeConfiguration.cliVersion !== dependencies.cliVersion ||
+    typeof runtimeConfiguration.requestedModelIdentifier !== 'string' ||
+    runtimeConfiguration.requestedModelIdentifier.trim() === '' ||
+    runtimeConfiguration.reportedModelIdentifier !== null ||
+    typeof runtimeConfiguration.observedAt !== 'string' ||
+    !Number.isFinite(Date.parse(runtimeConfiguration.observedAt))
   ) {
     throw new TypeError('A bounded AlgZoo investigator request is required.');
   }
@@ -129,7 +134,7 @@ async function runCodexInvestigator(dependencies, request) {
       '--cd',
       workspace,
       '--model',
-      dependencies.model,
+      runtimeConfiguration.requestedModelIdentifier,
       '--output-schema',
       schemaPath,
       '-',
@@ -189,7 +194,10 @@ async function runCodexInvestigator(dependencies, request) {
       investigatorRuntime: {
         provider: 'codex-cli',
         cliVersion: dependencies.cliVersion,
-        model: dependencies.model,
+        requestedModelIdentifier: runtimeConfiguration.requestedModelIdentifier,
+        reportedModelIdentifier: null,
+        modelIdentifierStatus: 'not-reported-by-cli-jsonl',
+        runtimeIdentityObservedAt: runtimeConfiguration.observedAt,
         startedAt,
         completedAt,
         inputTokens: usage.inputTokens,
@@ -226,7 +234,8 @@ function createInvestigatorInput(session, mapEntries, fixtureSha256) {
       unitIndex: session.unitIndex,
       arm: session.arm,
       budget: session.budget,
-      investigatorModel: session.investigatorModel,
+      investigatorRuntimeConfiguration:
+        session.investigatorRuntimeConfiguration,
       commonBackgroundHash: session.commonBackgroundHash,
       mapSnapshotHash: session.mapSnapshotHash,
     },

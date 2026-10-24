@@ -6,7 +6,7 @@ export {
 } from '../algZooPredictionScorer/index.js';
 
 const TARGET_COUNT = 16;
-const ALG_ZOO_PILOT_PROTOCOL_VERSION = '1.0.4';
+const ALG_ZOO_PILOT_PROTOCOL_VERSION = '1.1';
 const HELD_OUT_SEQUENCE_COUNT = 1024;
 const SEQUENCE_LENGTH = 10;
 const PINNED_MODEL_METADATA = Object.freeze({
@@ -46,9 +46,7 @@ const MANIFEST_FIELDS = Object.freeze([
   'fixturePath',
   'fixtureSha256',
   'targetEvaluatorSha256',
-  'investigatorModel',
-  'evaluatorModel',
-  'tokenizerHash',
+  'investigatorRuntime',
   'promptHashes',
   'toolHashes',
   'dependencyHashes',
@@ -177,6 +175,9 @@ export function createAlgZooPilotPlan(configuration, fixture) {
         Object.keys(value).length === 0)
     );
   }).map(field => ({ code: 'missing-manifest-field', field }));
+  if (!isValidInvestigatorRuntime(configuration?.investigatorRuntime)) {
+    errors.push({ code: 'invalid-investigator-runtime' });
+  }
   if (
     !Number.isSafeInteger(configuration?.orderSeed) ||
     configuration.orderSeed < 0 ||
@@ -195,7 +196,6 @@ export function createAlgZooPilotPlan(configuration, fixture) {
     configuration?.protocolSha256,
     configuration?.fixtureSha256,
     configuration?.targetEvaluatorSha256,
-    configuration?.tokenizerHash,
     configuration?.orderSeedCommitment,
     configuration?.mapSchemaHash,
     configuration?.commonBackgroundHash,
@@ -236,7 +236,7 @@ export function createAlgZooPilotPlan(configuration, fixture) {
 
   const schedule = createAlgZooPilotSchedule(configuration.orderSeed);
   const manifest = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: 'prelaunch-not-launched',
     protocolVersion: schedule.protocolVersion,
     gitCommit: configuration.gitCommit,
@@ -252,11 +252,10 @@ export function createAlgZooPilotPlan(configuration, fixture) {
       modelId: fixture.model.id,
     },
     evaluator: {
+      type: 'deterministic-local',
       implementationSha256: configuration.targetEvaluatorSha256,
-      model: configuration.evaluatorModel,
-      tokenizerHash: configuration.tokenizerHash,
     },
-    investigatorModel: configuration.investigatorModel,
+    investigatorRuntime: configuration.investigatorRuntime,
     promptHashes: configuration.promptHashes,
     toolHashes: configuration.toolHashes,
     dependencyHashes: configuration.dependencyHashes,
@@ -278,9 +277,9 @@ export function createAlgZooPilotPlan(configuration, fixture) {
     mapSchemaHash: configuration.mapSchemaHash,
     commonBackgroundHash: configuration.commonBackgroundHash,
     accessControlConfiguration: configuration.accessControlConfiguration,
-    launchReady: hasAccessControlEvidence(
-      configuration.accessControlConfiguration
-    ),
+    launchReady:
+      isValidInvestigatorRuntime(configuration.investigatorRuntime) &&
+      hasAccessControlEvidence(configuration.accessControlConfiguration),
   };
   const planPairs = schedule.pairs.map(pair => ({
     ...pair,
@@ -346,6 +345,26 @@ function hasAccessControlEvidence(configuration) {
     configuration.probeLogArtifact.trim() !== '' &&
     typeof configuration.probeLogSha256 === 'string' &&
     SHA256_PATTERN.test(configuration.probeLogSha256)
+  );
+}
+
+/**
+ * Require the observed Codex CLI identity and explicitly represent its missing
+ * hosted-model attestation without inventing a revision or tokenizer hash.
+ * @param {unknown} runtime Candidate observed runtime identity.
+ * @returns {boolean} Whether runtime identity is comparable across both arms.
+ */
+function isValidInvestigatorRuntime(runtime) {
+  return (
+    isRecord(runtime) &&
+    runtime.provider === 'codex-cli' &&
+    typeof runtime.cliVersion === 'string' &&
+    runtime.cliVersion.trim() !== '' &&
+    typeof runtime.requestedModelIdentifier === 'string' &&
+    runtime.requestedModelIdentifier.trim() !== '' &&
+    typeof runtime.observedAt === 'string' &&
+    Number.isFinite(Date.parse(runtime.observedAt)) &&
+    runtime.reportedModelIdentifier === null
   );
 }
 
@@ -475,6 +494,8 @@ export function createAlgZooPilotRunner(adapters) {
           pairOrder: session.pairOrder,
           unitIndex: session.unitIndex,
           arm: session.arm,
+          investigatorRuntimeConfiguration:
+            session.investigatorRuntimeConfiguration,
           fixtureSha256: pair.fixtureSha256,
           mapSnapshotHash,
           retrievedMapEntryIds: retrieval.entries.map(entry => entry.id),
@@ -802,8 +823,7 @@ function createSessionPlan(pairId, pairOrder, unitIndex, arm) {
 function addSessionMetadata(session, configuration, pairOrder) {
   return {
     ...session,
-    investigatorModel: configuration.investigatorModel,
-    tokenizerHash: configuration.tokenizerHash,
+    investigatorRuntimeConfiguration: configuration.investigatorRuntime,
     promptHashes: configuration.promptHashes,
     toolHashes: configuration.toolHashes,
     commonBackgroundHash: configuration.commonBackgroundHash,

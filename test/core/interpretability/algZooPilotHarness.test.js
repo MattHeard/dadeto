@@ -74,9 +74,13 @@ const configuration = {
   fixturePath: 'test/fixtures/interpretability/alg-zoo-m16-10.json',
   fixtureSha256: 'c'.repeat(64),
   targetEvaluatorSha256: 'd'.repeat(64),
-  investigatorModel: 'test-investigator@revision-1',
-  evaluatorModel: 'test-evaluator@revision-1',
-  tokenizerHash: 'e'.repeat(64),
+  investigatorRuntime: {
+    provider: 'codex-cli',
+    cliVersion: 'codex-cli 0.139.0',
+    requestedModelIdentifier: 'gpt-5.4-mini',
+    reportedModelIdentifier: null,
+    observedAt: '2026-10-24T10:00:00.000Z',
+  },
   promptHashes: { system: '1'.repeat(64), task: '2'.repeat(64) },
   toolHashes: { interpreter: '3'.repeat(64) },
   dependencyHashes: { runtime: '4'.repeat(64) },
@@ -285,6 +289,20 @@ describe('AlgZoo shared-map pilot harness', () => {
     expect(first.manifest.protocolVersion).toBe(preregisteredProtocolVersion);
     expect(first.schedule.protocolVersion).toBe(preregisteredProtocolVersion);
     expect(first.manifest.launchReady).toBe(true);
+    expect(first.manifest.schemaVersion).toBe(2);
+    expect(first.manifest.evaluator).toEqual({
+      type: 'deterministic-local',
+      implementationSha256: configuration.targetEvaluatorSha256,
+    });
+    expect(first.manifest).not.toHaveProperty('evaluator.model');
+    expect(first.manifest).not.toHaveProperty('evaluator.tokenizerHash');
+    expect(first.manifest).not.toHaveProperty('tokenizerHash');
+    expect(
+      first.schedule.pairs[0].sessions.control.investigatorRuntimeConfiguration
+    ).toEqual(
+      first.schedule.pairs[0].sessions.treatment
+        .investigatorRuntimeConfiguration
+    );
     expect(first.schedule.pairs).toHaveLength(16);
     expect(first.schedule.pairs[0].sessions.control.budget).toEqual({
       investigatorTokens: 20000,
@@ -336,15 +354,39 @@ describe('AlgZoo shared-map pilot harness', () => {
         fixture
       ).errors
     ).toContainEqual({ code: 'fixture-path-does-not-match-preregistration' });
+    const invalidRuntimeConfigurations = [
+      null,
+      { ...configuration.investigatorRuntime, provider: 'api' },
+      { ...configuration.investigatorRuntime, cliVersion: '' },
+      { ...configuration.investigatorRuntime, cliVersion: 7 },
+      { ...configuration.investigatorRuntime, requestedModelIdentifier: '' },
+      { ...configuration.investigatorRuntime, requestedModelIdentifier: 7 },
+      { ...configuration.investigatorRuntime, observedAt: 'unknown' },
+      { ...configuration.investigatorRuntime, observedAt: null },
+      {
+        ...configuration.investigatorRuntime,
+        reportedModelIdentifier: 'gpt-5.4-mini',
+      },
+      {
+        ...configuration.investigatorRuntime,
+        reportedModelIdentifier: undefined,
+      },
+    ];
     for (const changes of [
-      { investigatorModel: null },
-      { investigatorModel: '' },
       { inputSeedCommitments: [] },
       { promptHashes: {} },
     ]) {
       expect(
         createAlgZooPilotPlan({ ...configuration, ...changes }, fixture).valid
       ).toBe(false);
+    }
+    for (const investigatorRuntime of invalidRuntimeConfigurations) {
+      expect(
+        createAlgZooPilotPlan(
+          { ...configuration, investigatorRuntime },
+          fixture
+        ).errors
+      ).toContainEqual({ code: 'invalid-investigator-runtime' });
     }
     for (const [root, key, value] of [
       ['source', 'revision', 'wrong-revision'],
@@ -578,7 +620,9 @@ describe('AlgZoo pilot runner', () => {
           investigatorRuntime: {
             provider: 'codex-cli',
             cliVersion: 'codex-cli test-version',
-            model: 'test-model',
+            requestedModelIdentifier: 'test-model',
+            reportedModelIdentifier: null,
+            modelIdentifierStatus: 'not-reported-by-cli-jsonl',
             startedAt: '2026-10-24T10:00:00.000Z',
             completedAt: '2026-10-24T10:00:01.000Z',
             inputTokens: 8,
@@ -657,6 +701,7 @@ describe('AlgZoo pilot runner', () => {
       expect.objectContaining({
         provider: 'codex-cli',
         cliVersion: 'codex-cli test-version',
+        requestedModelIdentifier: 'test-model',
         inputTokens: 8,
         outputTokens: 4,
       })

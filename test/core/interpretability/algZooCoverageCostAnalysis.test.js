@@ -32,7 +32,7 @@ const METRICS = [
  */
 function createInput() {
   return {
-    protocolVersion: '1.0.4',
+    protocolVersion: '1.1',
     bootstrapSeed: 9173,
     bootstrapReplicateCount: 10000,
     pairs: TARGET_ORDER.map((targetId, index) => ({

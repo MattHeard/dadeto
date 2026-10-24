@@ -13,7 +13,7 @@ describe('AlgZoo coverage-cost report renderer', () => {
     expect(first.valid).toBe(true);
     if (!first.valid) return;
     expect(second).toEqual(first);
-    expect(first.markdown).toContain('Protocol version: 1.0.4');
+    expect(first.markdown).toContain('Protocol version: 1.1');
     expect(first.markdown.match(/^## /gm)).toHaveLength(4);
     expect(first.markdown.match(/^\| [0-9]+ \|/gm)).toHaveLength(64);
     expect(first.markdown).toContain('failed');
