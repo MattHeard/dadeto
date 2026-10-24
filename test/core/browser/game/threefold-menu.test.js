@@ -152,7 +152,22 @@ test('returns from the in-game guide to the main menu with A', () => {
 });
 
 test('opens the campaign status from the main menu using only the controls', () => {
-  const { menu } = createMenuRuntime();
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      witnessLedger: [],
+      campaignPlaces: [
+        { label: 'EAST QUAY', state: 'FLOODED' },
+        { id: 'BROKEN GATE', active: true },
+        { id: 'HARBOR ROAD' },
+      ],
+      campaignPressure: [{ label: 'LOW QUAY', state: 'AT RISK' }],
+      campaignClock: { elapsedGameSeconds: 3660 },
+      returnTide: { title: 'RETURN TIDE', text: 'Rising water' },
+    },
+  });
   press(menu, 'y');
   for (let index = 0; index < 4; index += 1) press(menu, 'down');
   press(menu, 'a');
@@ -162,7 +177,30 @@ test('opens the campaign status from the main menu using only the controls', () 
     .shapes.filter(shape => shape.type === 'text')
     .map(shape => shape.text);
   expect(text).toContain('CAMPAIGN');
-  expect(text).toContain('> CLOCK 0 MIN');
+  expect(text).toContain('> CLOCK 61 MIN');
+  expect(text).toContain('  EAST QUAY: FLOODED');
+  expect(text.some(line => line.includes('BROKEN GATE: HE'))).toBe(true);
+  expect(text).toContain('  HARBOR ROAD:');
+  expect(text).toContain('  VISITED');
+  expect(text).toContain('  LOW QUAY: AT RISK');
+  expect(text).toContain('  RISING WATER');
+
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      campaignPlaces: null,
+      campaignPressure: null,
+      campaignClock: null,
+      returnTide: null,
+    },
+  });
+  const emptyStatus = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(emptyStatus).toContain('> CLOCK 0 MIN');
+  expect(emptyStatus.some(line => line.includes('RETURN TIDE'))).toBe(false);
 });
 
 test('runs the in-game system actions and resumes without extra controls', () => {
