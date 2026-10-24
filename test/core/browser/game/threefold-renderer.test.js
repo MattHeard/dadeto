@@ -1771,6 +1771,61 @@ function expectPlayerPointerClearFromActors(
 }
 
 describe('THREEFOLD resident identity marker', () => {
+  test('marks Mara with a large player-only arrow that touches her silhouette', () => {
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+    );
+    const arrow = frame.shapes.filter(
+      shape => shape.playerMarkerKind === 'arrow'
+    );
+    const playerBody = frame.shapes.filter(
+      shape =>
+        shape.actorId === 'mara' &&
+        shape.playerMarker !== true &&
+        shape.playerMarkerKind !== 'leader'
+    );
+    const residentShapes = frame.shapes.filter(
+      shape => shape.actorId && shape.actorId !== 'mara'
+    );
+    const playerTop = Math.min(...playerBody.map(shape => shape.y));
+    const playerBottom = Math.max(
+      ...playerBody.map(shape => shape.y + (shape.height ?? 0))
+    );
+    const arrowBounds = frameBounds(arrow, 'playerMarkerKind', 'arrow');
+    const arrowRowWidths = Array.from(new Set(arrow.map(shape => shape.y))).map(
+      y =>
+        arrow
+          .filter(shape => shape.y === y)
+          .reduce((width, shape) => width + shape.width, 0)
+    );
+
+    expect(arrow).toHaveLength(11);
+    expect(arrowRowWidths).toEqual([2, 2, 10, 6, 2]);
+    expect(arrowBounds.width).toBe(10);
+    expect(arrowBounds.height).toBe(10);
+    expect(arrow.every(shape => shape.actorId === 'mara')).toBe(true);
+    expect(arrow.every(shape => shape.fill === '#f3f6d2')).toBe(true);
+    expect(
+      arrow.every(
+        shape =>
+          shape.width === 2 &&
+          shape.height === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0
+      )
+    ).toBe(true);
+    expect(
+      arrowBounds.y + arrowBounds.height === playerTop ||
+        arrowBounds.y === playerBottom
+    ).toBe(true);
+    expect(
+      residentShapes.some(shape => shape.playerMarkerKind === 'arrow')
+    ).toBe(false);
+    expect(arrow.every(shape => !shape.npcMarker && !shape.npcMarkerKind)).toBe(
+      true
+    );
+  });
+
   test('gives residents a scale-responsive silhouette distinct from Mara by shape', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())

@@ -87,7 +87,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'|'arrow'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2875,6 +2875,7 @@ function maraRoleLabel(sprites, otherCharacters = []) {
               },
             ];
   return [
+    ...maraRoleArrow(sprites, otherCharacters),
     ...leader
       .filter(shape => shape.width > 0 || shape.height > 0)
       .map(shape => ({
@@ -2906,6 +2907,77 @@ function maraRoleLabel(sprites, otherCharacters = []) {
       playerMarkerKind: /** @type {'pointer'} */ ('pointer'),
     },
   ];
+}
+
+/**
+ * Give Mara a large, player-only arrow that points directly at her sprite.
+ * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
+ * @param {ThreefoldSpriteShape[]} otherCharacters NPC bodies and role markers.
+ * @returns {ThreefoldSpriteShape[]} 2px-grid arrow cells, or none if no clear placement exists.
+ */
+function maraRoleArrow(sprites, otherCharacters) {
+  const minX = Math.min(...sprites.map(shape => shape.x));
+  const minY = Math.min(...sprites.map(shape => shape.y));
+  const maxX = Math.max(
+    ...sprites.map(shape => shape.x + /** @type {number} */ (shape.width))
+  );
+  const maxY = Math.max(
+    ...sprites.map(shape => shape.y + /** @type {number} */ (shape.height))
+  );
+  const centerX = snapCanvasCoordinate((minX + maxX) / 2, PERSON_GRID_PIXELS);
+  const arrowWidth = 10;
+  const arrowHeight = 10;
+  const candidates = [
+    { direction: 'down', x: centerX - arrowWidth / 2, y: minY - arrowHeight },
+    { direction: 'up', x: centerX - arrowWidth / 2, y: maxY },
+  ].filter(
+    candidate =>
+      candidate.x >= 0 &&
+      candidate.x + arrowWidth <= 160 &&
+      candidate.y >= 0 &&
+      candidate.y + arrowHeight <= 108
+  );
+  const placement = candidates.find(
+    candidate =>
+      !otherCharacters.some(
+        shape =>
+          candidate.x < shape.x + (shape.width ?? 0) &&
+          candidate.x + arrowWidth > shape.x &&
+          candidate.y < shape.y + (shape.height ?? 0) &&
+          candidate.y + arrowHeight > shape.y
+      )
+  );
+  if (!placement) return [];
+  const rows =
+    placement.direction === 'down'
+      ? [
+          { offset: 0, start: 4, width: 2 },
+          { offset: 2, start: 4, width: 2 },
+          { offset: 4, start: 0, width: 10 },
+          { offset: 6, start: 2, width: 6 },
+          { offset: 8, start: 4, width: 2 },
+        ]
+      : [
+          { offset: 0, start: 4, width: 2 },
+          { offset: 2, start: 2, width: 6 },
+          { offset: 4, start: 0, width: 10 },
+          { offset: 6, start: 4, width: 2 },
+          { offset: 8, start: 4, width: 2 },
+        ];
+  return rows.flatMap(row =>
+    Array.from({ length: row.width / PERSON_GRID_PIXELS }, (_, index) => ({
+      type: 'rect',
+      x: placement.x + row.start + index * PERSON_GRID_PIXELS,
+      y: placement.y + row.offset,
+      width: PERSON_GRID_PIXELS,
+      height: PERSON_GRID_PIXELS,
+      fill: '#f3f6d2',
+      actorId: 'mara',
+      playerMarker: true,
+      playerMarkerKind: /** @type {'arrow'} */ ('arrow'),
+      spriteGridSize: PERSON_GRID_PIXELS,
+    }))
+  );
 }
 
 /**
