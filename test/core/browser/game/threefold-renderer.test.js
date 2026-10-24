@@ -398,7 +398,7 @@ describe('THREEFOLD canvas grid', () => {
         for (const id of conflict.entityIds)
           expect(byId.get(id).placement).toBe('unresolved');
       expect(renderedEntities.length).toBeGreaterThan(0);
-      for (const shape of renderedEntities) {
+      for (const shape of renderedEntities.filter(shape => !shape.npcMarker)) {
         const entity = byId.get(shape.geometryId);
         expect(shape.logicalCellBounds).toEqual(entity.cellBounds);
         expect(shape.logicalGridKind).toBe(entity.logicalGridKind);
@@ -1665,18 +1665,44 @@ describe('THREEFOLD resident identity marker', () => {
       createThreefoldSimulation(THRESHOLDS, scene)
     );
     const residentOutline = frame.shapes.filter(
-      shape => shape.geometryId === watchkeeper.id && shape.npcMarker === true
+      shape =>
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarkerKind === 'outline'
+    );
+    const speechBubble = frame.shapes.filter(
+      shape =>
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarkerKind === 'speech-bubble'
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
 
     expect(residentOutline.length).toBeGreaterThan(0);
     expect(
       residentOutline.every(
-        shape => shape.fill === '#e9d88d' && shape.spriteGridSize === 2
+        shape =>
+          shape.fill === '#e9d88d' &&
+          shape.spriteGridSize === 2 &&
+          shape.npcMarker === true
+      )
+    ).toBe(true);
+    expect(speechBubble).toHaveLength(15);
+    expect(
+      speechBubble.every(
+        shape =>
+          shape.fill === '#43e9da' &&
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width === 2 &&
+          shape.height === 2
       )
     ).toBe(true);
     expect(mara.length).toBeGreaterThan(0);
-    expect(mara.every(shape => shape.npcMarker !== true)).toBe(true);
+    expect(
+      mara.every(
+        shape => shape.npcMarker !== true && shape.npcMarkerKind === undefined
+      )
+    ).toBe(true);
   });
 });
 
