@@ -58,7 +58,6 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
-const PERSON_GRID_PIXELS = 2;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const PERSON_ACTOR_IDS = new Set([
@@ -72,7 +71,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-foldglass-rival',
   'grainlands-iru',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, actorRole?: 'player'|'npc', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -153,18 +152,21 @@ export function renderThreefoldFrame(
       /** @type {Parameters<typeof spriteShapes>[2]} */ tick
     ) => {
       const worldActor =
-        /** @type {typeof actor & {id: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
+        /** @type {typeof actor & {id: string, controlled?: boolean, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
           actor
         );
       const bounds = worldActor.bounds;
       if (typeof worldActor.id === 'string' && bounds) {
         if (PERSON_ACTOR_IDS.has(worldActor.id))
-          return personSprite(
-            { ...worldActor, bounds },
-            camera,
-            tick,
-            heightMeters
-          );
+          return [
+            ...personSprite(
+              { ...worldActor, bounds },
+              camera,
+              tick,
+              heightMeters
+            ),
+            ...actorRoleBadge(worldActor, camera, 'NPC'),
+          ];
         if (worldActor.id === 'gatehouse-rat')
           return ratSprite(
             {
@@ -183,11 +185,13 @@ export function renderThreefoldFrame(
           );
         return geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
       }
-      const maraShapes = spriteShapes(actor, camera, tick).map(shape => ({
+      const playerShapes = spriteShapes(actor, camera, tick).map(shape => ({
         ...shape,
         actorId: 'mara',
       }));
-      return [...maraShapes, ...maraRoleLabel(maraShapes)];
+      return worldActor.controlled === true
+        ? [...playerShapes, ...actorRoleBadge(worldActor, camera, 'YOU')]
+        : playerShapes;
     },
   });
   frame.quest = isHighWorld ? state.scene.displayName : 'The Broken Gate';
@@ -2460,7 +2464,7 @@ function alignThreefoldFrame(frame) {
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} tick Animation tick.
  * @param {number} heightMeters Mara's current physical height.
- * @returns {ThreefoldSpriteShape[]} Person pixels quantized to the 2px handheld subgrid.
+ * @returns {ThreefoldSpriteShape[]} Person pixels quantized to the 4px handheld grid.
  */
 function personSprite(actor, camera, tick, heightMeters) {
   const bounds = actor.physicalBounds;
@@ -2473,211 +2477,93 @@ function personSprite(actor, camera, tick, heightMeters) {
   const centerX = (actor.x - camera.x) * TILE_PIXELS;
   const centerY = (actor.y - camera.y) * TILE_PIXELS;
   const sourceCenter = { x: 78, y: 54 };
-  const source = spriteShapes({ id: 'mira', x: 6, y: 4 }, { x: 0, y: 0 }, tick);
+  const source = spriteShapes(
+    {
+      id: 'mira',
+      x: 6,
+      y: 4,
+      colours: ['#48344a', '#138b9e', '#f4c89b', '#e9dfa0'],
+    },
+    { x: 0, y: 0 },
+    tick
+  );
   const heightRatio =
     ((bounds.max.z ?? 1.7) - (bounds.min.z ?? 0)) / heightMeters;
-  const scale = Math.max(1 / 12, Math.min(8, heightRatio));
+  const scale = Math.max(1 / 3, Math.min(8, heightRatio));
   const cells = new Map();
   for (const pixel of source) {
     const x =
-      Math.round(
-        (centerX + (pixel.x - sourceCenter.x) * scale) / PERSON_GRID_PIXELS
-      ) * PERSON_GRID_PIXELS;
+      Math.round((centerX + (pixel.x - sourceCenter.x) * scale) / GRID_PIXELS) *
+      GRID_PIXELS;
     const y =
-      Math.round(
-        (centerY + (pixel.y - sourceCenter.y) * scale) / PERSON_GRID_PIXELS
-      ) * PERSON_GRID_PIXELS;
+      Math.round((centerY + (pixel.y - sourceCenter.y) * scale) / GRID_PIXELS) *
+      GRID_PIXELS;
     if (x < 0 || x >= 160 || y < 0 || y >= 108) continue;
     const key = `${x}:${y}`;
     if (!cells.has(key)) cells.set(key, { x, y, fill: pixel.fill });
   }
-  const outline = new Map();
-  for (const pixel of cells.values()) {
-    for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
-      for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
-        if (offsetX === 0 && offsetY === 0) continue;
-        const x = pixel.x + offsetX * PERSON_GRID_PIXELS;
-        const y = pixel.y + offsetY * PERSON_GRID_PIXELS;
-        const key = `${x}:${y}`;
-        if (x >= 0 && x < 160 && y >= 0 && y < 108 && !cells.has(key)) {
-          outline.set(key, { x, y });
-        }
-      }
-    }
-  }
-  const outlineShapes = [...outline.values()].map(pixel => ({
+  return [...cells.values()].map(pixel => ({
     type: 'rect',
     ...pixel,
-    width: PERSON_GRID_PIXELS,
-    height: PERSON_GRID_PIXELS,
-    fill: '#e9d88d',
-    geometryId: actor.id,
-    growthPreview: actor.growthPreview === true,
-    logicalGridKind: actor.logicalGridKind,
-    logicalCellBounds: actor.logicalCellBounds,
-    spriteGridSize: PERSON_GRID_PIXELS,
-    actorId: actor.id,
-    npcMarker: true,
-    npcMarkerKind: 'outline',
-  }));
-  const personPixels = [...cells.values()];
-  if (personPixels.length === 0) return [];
-  const personShapes = personPixels.map(pixel => ({
-    type: 'rect',
-    ...pixel,
-    width: PERSON_GRID_PIXELS,
-    height: PERSON_GRID_PIXELS,
+    width: GRID_PIXELS,
+    height: GRID_PIXELS,
     fill: actor.growthPreview === true ? '#e16b5a' : pixel.fill,
     geometryId: actor.id,
     growthPreview: actor.growthPreview === true,
     logicalGridKind: actor.logicalGridKind,
     logicalCellBounds: actor.logicalCellBounds,
-    spriteGridSize: PERSON_GRID_PIXELS,
+    spriteGridSize: GRID_PIXELS,
     actorId: actor.id,
   }));
-  const personTop = Math.min(...personPixels.map(pixel => pixel.y));
-  const personBottom = Math.max(
-    ...personPixels.map(pixel => pixel.y + PERSON_GRID_PIXELS)
-  );
-  const markerHeight = 16;
-  const markerWidth = 30;
-  const markerAbove = personTop - markerHeight - 2;
-  const markerBelow = personBottom + 2;
-  const markerTop =
-    markerAbove >= 0
-      ? markerAbove
-      : markerBelow + markerHeight <= 108
-        ? markerBelow
-        : 0;
-  const markerLeft = Math.max(
-    0,
-    Math.min(
-      160 - markerWidth,
-      snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - markerWidth / 2
-    )
-  );
-  const markerProperties = {
-    geometryId: actor.id,
-    actorId: actor.id,
-    growthPreview: actor.growthPreview === true,
-    logicalGridKind: actor.logicalGridKind,
-    logicalCellBounds: actor.logicalCellBounds,
-    spriteGridSize: PERSON_GRID_PIXELS,
-    npcMarker: true,
-    npcMarkerKind: 'role-label',
-    npcMarkerText: 'NPC',
-  };
-  const markerShapes = [
-    {
-      type: 'rect',
-      x: markerLeft,
-      y: markerTop,
-      width: markerWidth,
-      height: markerHeight,
-      fill: '#43e9da',
-      ...markerProperties,
-    },
-    {
-      type: 'rect',
-      x: markerLeft + 2,
-      y: markerTop + 2,
-      width: markerWidth - 4,
-      height: markerHeight - 4,
-      fill: PALETTE[0],
-      ...markerProperties,
-    },
-    ...roleGlyphs(markerLeft + 4, markerTop + 4, markerProperties, 'NPC'),
-  ];
-  return [...outlineShapes, ...markerShapes, ...personShapes];
 }
 
 /**
- * Draw an explicit character role label from 2px bitmap cells.
- * @param {number} x Label's left coordinate.
- * @param {number} y Label's top coordinate.
- * @param {Record<string, any>} metadata Actor identity metadata.
- * @param {string} label Short character role label.
- * @param {string} [fill] Glyph color.
- * @returns {ThreefoldSpriteShape[]} Visible role glyph cells.
+ * Give the controlled character and residents unmistakable, grid-snapped role tags.
+ * @param {{id?: string, x: number, y: number}} actor Rendered actor.
+ * @param {{x: number, y: number}} camera Mosslight tile camera.
+ * @param {'YOU'|'NPC'} label Actor role shown in the handheld world view.
+ * @returns {ThreefoldSpriteShape[]} High-contrast role badge shapes.
  */
-function roleGlyphs(x, y, metadata, label, fill = '#f3f6d2') {
-  /** @type {Record<string, string[]>} */
-  const glyphs = {
-    N: ['101', '111', '111', '111', '101'],
-    P: ['110', '101', '110', '100', '100'],
-    C: ['111', '100', '100', '100', '111'],
-    Y: ['101', '101', '010', '010', '010'],
-    O: ['111', '101', '101', '101', '111'],
-    U: ['101', '101', '101', '101', '111'],
-  };
-  /** @type {ThreefoldSpriteShape[]} */
-  const shapes = [];
-  for (const [letterIndex, letter] of Array.from(label).entries()) {
-    glyphs[letter].forEach((row, rowIndex) => {
-      Array.from(row).forEach((pixel, pixelIndex) => {
-        if (pixel !== '1') return;
-        shapes.push({
-          type: 'rect',
-          x: x + letterIndex * 8 + pixelIndex * PERSON_GRID_PIXELS,
-          y: y + rowIndex * PERSON_GRID_PIXELS,
-          width: PERSON_GRID_PIXELS,
-          height: PERSON_GRID_PIXELS,
-          fill,
-          npcGlyph: letter,
-          ...metadata,
-        });
-      });
-    });
-  }
-  return shapes;
-}
-
-/**
- * Mark Mara as the player with a gold YOU badge, distinct from cyan NPC badges.
- * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
- * @returns {ThreefoldSpriteShape[]} Fixed-size player-role badge.
- */
-function maraRoleLabel(sprites) {
-  if (sprites.length === 0) return [];
-  const minX = Math.min(...sprites.map(shape => shape.x));
-  const minY = Math.min(...sprites.map(shape => shape.y));
-  const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
-  const markerWidth = 30;
-  const markerHeight = 16;
-  const markerLeft = Math.max(
+function actorRoleBadge(actor, camera, label) {
+  const centerX = (actor.x - camera.x) * TILE_PIXELS;
+  const centerY = (actor.y - camera.y) * TILE_PIXELS;
+  const x = Math.max(
     0,
-    Math.min(
-      160 - markerWidth,
-      snapCanvasCoordinate((minX + maxX) / 2, 2) - markerWidth / 2
-    )
+    Math.min(136, Math.round((centerX - 12) / GRID_PIXELS) * GRID_PIXELS)
   );
-  const markerTop = Math.max(0, minY - markerHeight - 2);
-  const metadata = {
-    actorId: 'mara',
-    playerMarker: true,
-    playerMarkerText: 'YOU',
-    spriteGridSize: 2,
-  };
+  const aboveY = Math.round((centerY - 20) / GRID_PIXELS) * GRID_PIXELS;
+  const y =
+    aboveY >= 0
+      ? Math.min(96, aboveY)
+      : Math.min(96, Math.round((centerY + 8) / GRID_PIXELS) * GRID_PIXELS);
+  const actorRole = label === 'YOU' ? 'player' : 'npc';
+  const background = label === 'YOU' ? '#e9d88d' : '#138b9e';
+  const foreground = label === 'YOU' ? '#182f36' : '#fff4c2';
   return [
     {
       type: 'rect',
-      x: markerLeft,
-      y: markerTop,
-      width: markerWidth,
-      height: markerHeight,
-      fill: '#e9d88d',
-      ...metadata,
+      x,
+      y,
+      width: 24,
+      height: 8,
+      fill: background,
+      geometryId: actor.id,
+      actorId: actor.id || 'mara',
+      actorRole,
+      spriteGridSize: GRID_PIXELS,
     },
     {
-      type: 'rect',
-      x: markerLeft + 2,
-      y: markerTop + 2,
-      width: markerWidth - 4,
-      height: markerHeight - 4,
-      fill: PALETTE[0],
-      ...metadata,
+      type: 'text',
+      x: x + 8,
+      y,
+      text: label,
+      fill: foreground,
+      font: '5px monospace',
+      geometryId: actor.id,
+      actorId: actor.id || 'mara',
+      actorRole,
+      spriteGridSize: GRID_PIXELS,
     },
-    ...roleGlyphs(markerLeft + 4, markerTop + 4, metadata, 'YOU'),
   ];
 }
 
