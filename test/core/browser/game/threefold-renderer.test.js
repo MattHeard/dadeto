@@ -198,11 +198,12 @@ describe('THREEFOLD canvas grid', () => {
       const frame = renderThreefoldFrame(state);
       expect(frame).toMatchObject({ width: 160, height: 144, pixelated: true });
       for (const shape of frame.shapes) {
-        expect(shape.x % 8).toBe(0);
-        expect(shape.y % 8).toBe(0);
+        const gridSize = shape.spriteGridSize || 8;
+        expect(shape.x % gridSize).toBe(0);
+        expect(shape.y % gridSize).toBe(0);
         if (shape.type === 'rect') {
-          expect(shape.width % 8).toBe(0);
-          expect(shape.height % 8).toBe(0);
+          expect(shape.width % gridSize).toBe(0);
+          expect(shape.height % gridSize).toBe(0);
         }
       }
     }
@@ -266,8 +267,9 @@ describe('THREEFOLD canvas grid', () => {
         expect(shape.logicalCellBounds).toEqual(
           entities.get(shape.geometryId).cellBounds
         );
-        expect(shape.x % 8).toBe(0);
-        expect(shape.y % 8).toBe(0);
+        const gridSize = shape.spriteGridSize || 8;
+        expect(shape.x % gridSize).toBe(0);
+        expect(shape.y % gridSize).toBe(0);
       }
       for (const fluid of frame.shapes.filter(shape => shape.fluidChamberId)) {
         expect(fluid.surfaceMeters).toBeGreaterThanOrEqual(0);
@@ -1309,6 +1311,56 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     expect(spriteBounds(smallerMara).height).toBeGreaterThan(
       spriteBounds(tallMara).height
     );
+  });
+
+  test('keeps watchkeeper size changes visible between adjacent large scales', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    scene.spawn = createScaleState(watchkeeper.position);
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const humanScale = renderThreefoldFrame({
+      ...initial,
+      player: { ...initial.player, scale: 0 },
+    });
+    const largerMara = renderThreefoldFrame({
+      ...initial,
+      player: { ...initial.player, scale: 1 },
+    });
+    const spriteBounds = frame => {
+      const pixels = frame.shapes.filter(
+        shape => shape.geometryId === 'latchfolk-watchkeeper'
+      );
+      return {
+        width:
+          Math.max(...pixels.map(shape => shape.x + shape.width)) -
+          Math.min(...pixels.map(shape => shape.x)),
+        height:
+          Math.max(...pixels.map(shape => shape.y + shape.height)) -
+          Math.min(...pixels.map(shape => shape.y)),
+      };
+    };
+    const largerSpritePixels = largerMara.shapes.filter(
+      shape => shape.geometryId === 'latchfolk-watchkeeper'
+    );
+
+    expect(spriteBounds(humanScale).width).toBeGreaterThan(
+      spriteBounds(largerMara).width
+    );
+    expect(spriteBounds(humanScale).height).toBeGreaterThan(
+      spriteBounds(largerMara).height
+    );
+    expect(
+      largerSpritePixels.every(
+        shape =>
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0
+      )
+    ).toBe(true);
   });
 
   test('renders the upland road and persistent withdrawal outcome', () => {
