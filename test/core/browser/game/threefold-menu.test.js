@@ -70,6 +70,20 @@ test('resumes play when A selects the main menu resume item', () => {
   expect(menu.isRunning()).toBe(true);
 });
 
+test('opens the empty field notes from the main menu using only the controls', () => {
+  const { menu } = createMenuRuntime();
+  press(menu, 'y');
+  for (let index = 0; index < 3; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('JOURNAL');
+  expect(text).toContain('> NO FIELD NOTES YET');
+});
+
 test('Y opens an in-game guide navigated only with the eight handheld controls', () => {
   const { menu, runtime } = createMenuRuntime();
   press(menu, 'y');
