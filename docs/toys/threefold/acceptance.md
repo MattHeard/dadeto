@@ -245,3 +245,5 @@ The Broken Gate watchkeeper must visibly change footprint between Mara at scale 
 ## NPC and player visual distinction — 2026-10-24
 
 Residents retain their high-contrast, cyan-framed `NPC` tag and cyan sprite outline. Mara has a separate gold-framed `YOU` tag and gold sprite outline. Both character sprites render on the aligned 2px display subgrid: the 8px default previously expanded each of Mara's source pixels into a block, obscuring her hooded silhouette. Renderer regressions check the distinct outline colors, label glyphs, grid alignment, and adjacent-scale resident sprite sizes. Role markers remain presentation metadata and do not affect physical layout.
+
+Follow-up: the player and NPC still looked too similar in play despite the different colors and text. Mara's gold `YOU` badge now has a downward pointer that touches her sprite; NPCs keep square cyan `NPC` badges. The pointer is rendered as three descending 2px-grid cells, making the player role identifiable by shape without reading the label. The renderer regression checks the pointer geometry and keeps it separate from NPC metadata.

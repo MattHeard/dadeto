@@ -70,7 +70,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2745,7 +2745,33 @@ function maraRoleLabel(sprites) {
       ...metadata,
     },
     ...roleGlyphs(markerLeft + 4, markerTop + 4, metadata, 'YOU'),
+    ...playerRolePointer(
+      markerLeft + markerWidth / 2,
+      markerTop + markerHeight - 2,
+      metadata
+    ),
   ];
+}
+
+/**
+ * Extend the player badge into a distinctive pointer that touches Mara's sprite.
+ * NPC badges remain square, so role recognition does not depend on tiny text.
+ * @param {number} centerX Pointer center on the handheld's 2px subgrid.
+ * @param {number} top Pointer top coordinate.
+ * @param {Record<string, any>} metadata Player identity metadata.
+ * @returns {ThreefoldSpriteShape[]} Three descending gold cells.
+ */
+function playerRolePointer(centerX, top, metadata) {
+  return [10, 6, 2].map((width, row) => ({
+    type: 'rect',
+    x: centerX - width / 2,
+    y: top + row * PERSON_GRID_PIXELS,
+    width,
+    height: PERSON_GRID_PIXELS,
+    fill: '#e9d88d',
+    ...metadata,
+    playerMarkerKind: 'pointer',
+  }));
 }
 
 /**

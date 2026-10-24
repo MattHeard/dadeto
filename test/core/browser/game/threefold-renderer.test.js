@@ -1705,6 +1705,9 @@ describe('THREEFOLD resident identity marker', () => {
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
     const playerLabel = mara.filter(shape => shape.playerMarker === true);
+    const playerPointer = mara.filter(
+      shape => shape.playerMarkerKind === 'pointer'
+    );
     const playerSprite = mara.filter(
       shape => shape.playerMarker !== true && shape.fill !== '#f2ca59'
     );
@@ -1778,6 +1781,24 @@ describe('THREEFOLD resident identity marker', () => {
       ].sort()
     ).toEqual(['O', 'U', 'Y']);
     expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
+    expect(playerPointer).toHaveLength(3);
+    expect(
+      playerPointer.map(({ x, y, width, height, fill }) => ({
+        x,
+        y,
+        width,
+        height,
+        fill,
+      }))
+    ).toEqual([
+      expect.objectContaining({ width: 10, height: 2, fill: '#e9d88d' }),
+      expect.objectContaining({ width: 6, height: 2, fill: '#e9d88d' }),
+      expect.objectContaining({ width: 2, height: 2, fill: '#e9d88d' }),
+    ]);
+    expect(
+      Math.max(...playerPointer.map(shape => shape.y + shape.height))
+    ).toBeGreaterThanOrEqual(Math.min(...playerSprite.map(shape => shape.y)));
+    expect(playerPointer.every(shape => shape.npcMarker !== true)).toBe(true);
     expect(
       mara.some(
         shape => shape.npcMarker !== true && shape.playerMarker !== true
