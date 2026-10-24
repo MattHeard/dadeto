@@ -1679,6 +1679,7 @@ describe('THREEFOLD resident identity marker', () => {
         shape.npcMarkerKind === 'role-label'
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
+    const playerLabel = mara.filter(shape => shape.playerMarker === true);
 
     expect(residentOutline.length).toBeGreaterThan(0);
     expect(
@@ -1706,10 +1707,25 @@ describe('THREEFOLD resident identity marker', () => {
       [...new Set(npcLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
     ).toEqual(['C', 'N', 'P']);
     expect(mara.length).toBeGreaterThan(0);
+    expect(playerLabel.length).toBeGreaterThan(0);
     expect(
-      mara.every(
-        shape => shape.npcMarker !== true && shape.npcMarkerKind === undefined
+      playerLabel.every(
+        shape =>
+          ['#e9d88d', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0 &&
+          shape.playerMarkerText === 'YOU'
       )
+    ).toBe(true);
+    expect(
+      [...new Set(playerLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
+    ).toEqual(['O', 'U', 'Y']);
+    expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
+    expect(
+      mara.some(shape => shape.npcMarker !== true && shape.playerMarker !== true)
     ).toBe(true);
   });
 });
