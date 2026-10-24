@@ -244,4 +244,4 @@ The Broken Gate watchkeeper must visibly change footprint between Mara at scale 
 
 ## NPC and player visual distinction — 2026-10-24
 
-NPC sprites receive a high-contrast cyan speech-bubble badge and pale 2px-grid outline while the controlled player keeps the unmarked Mara sprite. The badge stays on the handheld grid and does not replace the NPC's physical scale. Regression coverage checks the Broken Gate watchkeeper badge and confirms Mara has none; the adjacent-scale size test remains in place. The logical-grid renderer assertion excludes identity markers from physical cell containment.
+NPC sprites receive a high-contrast, cyan-framed `NPC` role label built from 2px bitmap cells, plus the pale sprite outline. The controlled player remains unlabelled as Mara. The label is semantic and readable at handheld size; it does not replace the NPC's physical scale. Regression coverage checks the visible N/P/C glyph cells and confirms Mara has no NPC marker; the adjacent-scale size test remains in place. The logical-grid renderer assertion excludes identity markers from physical cell containment.
