@@ -352,12 +352,12 @@ describe('THREEFOLD finite replacement governor and nonlethal rescue', () => {
       'interact',
     ]) {
       const frame = runtime.dispatch(action);
-      expect(frame.shapes.every(({ x, y, spriteGridSize }) => {
+      expect(
+        frame.shapes.every(({ x, y, spriteGridSize }) => {
           const grid = spriteGridSize || 8;
           return x % grid === 0 && y % grid === 0;
-        })).toBe(
-        true
-      );
+        })
+      ).toBe(true);
       expect(
         frame.shapes
           .filter(shape => shape.type === 'rect')

@@ -1670,8 +1670,7 @@ describe('THREEFOLD resident identity marker', () => {
     );
     const residentOutline = frame.shapes.filter(
       shape =>
-        shape.geometryId === watchkeeper.id &&
-        shape.npcMarkerKind === 'outline'
+        shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'outline'
     );
     const npcLabel = frame.shapes.filter(
       shape =>
@@ -1729,11 +1728,15 @@ describe('THREEFOLD resident identity marker', () => {
       )
     ).toBe(true);
     expect(
-      [...new Set(playerLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
+      [
+        ...new Set(playerLabel.map(shape => shape.npcGlyph).filter(Boolean)),
+      ].sort()
     ).toEqual(['O', 'U', 'Y']);
     expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
     expect(
-      mara.some(shape => shape.npcMarker !== true && shape.playerMarker !== true)
+      mara.some(
+        shape => shape.npcMarker !== true && shape.playerMarker !== true
+      )
     ).toBe(true);
   });
 });

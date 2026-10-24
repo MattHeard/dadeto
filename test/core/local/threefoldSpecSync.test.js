@@ -7,6 +7,7 @@ import {
   synchronizeThreefoldSpec,
   validateThreefoldSpecCache,
   runThreefoldSpecSyncCli,
+  runThreefoldSpecRefreshBestEffort,
 } from '../../../src/core/local/threefoldSpecSync.js';
 
 const section = `## Creative north star\n\n${'requirement '.repeat(100)}\n## Reference context`;
@@ -412,6 +413,108 @@ describe('THREEFOLD Notion spec synchronization', () => {
   });
 });
 
+describe('THREEFOLD spec sync CLI', () => {
+  test('best-effort refresh returns success and converts failures to unchanged', async () => {
+    await expect(
+      runThreefoldSpecRefreshBestEffort(async () => 'refreshed')
+    ).resolves.toBe('refreshed');
+    await expect(
+      runThreefoldSpecRefreshBestEffort(async () => {
+        throw new Error('offline');
+      })
+    ).resolves.toBe('unchanged');
+  });
+
+  test('handles help aliases, default and explicit check, and invalid arguments', async () => {
+    const expected = formatThreefoldSpec({ markdown: source, lastEditedTime });
+    const cli = args => {
+      const responses = [
+        jsonResponse(
+          Object.fromEntries([['last_edited_time', lastEditedTime]])
+        ),
+        jsonResponse({ object: 'page_markdown', markdown: source }),
+        jsonResponse(
+          Object.fromEntries([['last_edited_time', lastEditedTime]])
+        ),
+      ];
+      return runThreefoldSpecSyncCli({
+        args,
+        token,
+        targetPath: '/repo/spec.md',
+        dependencies: {
+          fetchImpl: async () => responses.shift(),
+          bindEffectBoundary,
+          readFileImpl: async () => expected,
+          writeFileImpl: jest.fn(),
+          renameImpl: jest.fn(),
+          unlinkImpl: jest.fn(),
+        },
+      });
+    };
+
+    await expect(
+      runThreefoldSpecSyncCli({ args: ['--help'], dependencies: {} })
+    ).resolves.toMatch(/^Usage: npm run threefold:spec:/);
+    await expect(
+      runThreefoldSpecSyncCli({ args: ['-h'], dependencies: {} })
+    ).resolves.toMatch(/^Usage: npm run threefold:spec:/);
+    await expect(cli([])).resolves.toBe('THREEFOLD spec sync: current.');
+    await expect(cli(['--check'])).resolves.toBe(
+      'THREEFOLD spec sync: current.'
+    );
+    await expect(cli(['--unknown'])).rejects.toThrow(
+      'Use --check, --refresh, or --best-effort-refresh.'
+    );
+  });
+
+  test('refresh modes replace the cache atomically', async () => {
+    const makeOptions = args => {
+      const responses = [
+        jsonResponse(
+          Object.fromEntries([['last_edited_time', lastEditedTime]])
+        ),
+        jsonResponse({ object: 'page_markdown', markdown: source }),
+        jsonResponse(
+          Object.fromEntries([['last_edited_time', lastEditedTime]])
+        ),
+      ];
+      const events = [];
+      return {
+        events,
+        options: {
+          args,
+          token,
+          targetPath: '/repo/spec.md',
+          dependencies: {
+            fetchImpl: async () => responses.shift(),
+            bindEffectBoundary,
+            readFileImpl: async () => 'stale cache',
+            writeFileImpl: async (_permission, path, content) =>
+              events.push(['write', path, content]),
+            renameImpl: async (_permission, from, to) =>
+              events.push(['rename', from, to]),
+            unlinkImpl: jest.fn(),
+          },
+        },
+      };
+    };
+    const explicit = makeOptions(['--refresh']);
+    await expect(runThreefoldSpecSyncCli(explicit.options)).resolves.toBe(
+      'THREEFOLD spec sync: refreshed.'
+    );
+    expect(explicit.events.map(([type]) => type)).toEqual(['write', 'rename']);
+
+    const bestEffort = makeOptions(['--best-effort-refresh']);
+    await expect(
+      runThreefoldSpecSyncCli(bestEffort.options)
+    ).resolves.toBeNull();
+    expect(bestEffort.events.map(([type]) => type)).toEqual([
+      'write',
+      'rename',
+    ]);
+  });
+});
+
 describe('THREEFOLD local spec cache validation', () => {
   const cache = formatThreefoldSpec({ markdown: source, lastEditedTime });
 
@@ -423,9 +526,13 @@ describe('THREEFOLD local spec cache validation', () => {
     ['', 'empty'],
     [cache.replace('Source: https://', 'Source: https://wrong.'), 'metadata'],
     [
-      cache.replace(lastEditedTime, 'not-a-timestamp'),
+      cache.replace(
+        `<!-- Source last edited: ${lastEditedTime} -->`,
+        '<!-- Source last edited metadata -->'
+      ),
       'timestamp is invalid',
     ],
+    [cache.replace(lastEditedTime, 'not-a-timestamp'), 'timestamp is invalid'],
     [cache.replace('Reference context', 'Other context'), 'exactly one'],
     [`${cache}unexpected trailing content\n`, 'deterministic formatting'],
   ])('rejects malformed cache content: %s', (content, message) => {
