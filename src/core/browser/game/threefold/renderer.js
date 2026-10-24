@@ -2494,6 +2494,9 @@ function personSprite(actor, camera, tick, heightMeters) {
     const key = `${x}:${y}`;
     if (!cells.has(key)) cells.set(key, { x, y, fill: pixel.fill });
   }
+  const personPixels = [...cells.values()];
+  if (personPixels.length === 0) return [];
+  if (actor.growthPreview !== true) applyResidentRoleAccents(personPixels);
   const outline = new Map();
   for (const pixel of cells.values()) {
     for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
@@ -2523,8 +2526,6 @@ function personSprite(actor, camera, tick, heightMeters) {
     npcMarker: true,
     npcMarkerKind: 'outline',
   }));
-  const personPixels = [...cells.values()];
-  if (personPixels.length === 0) return [];
   const personShapes = personPixels.map(pixel => ({
     type: 'rect',
     ...pixel,
@@ -2592,6 +2593,25 @@ function personSprite(actor, camera, tick, heightMeters) {
     ...roleGlyphs(markerLeft + 4, markerTop + 4, markerProperties, 'NPC'),
   ];
   return [...outlineShapes, ...markerShapes, ...personShapes];
+}
+
+/**
+ * Preserve one cap and one coat accent after scale quantization.
+ * @param {Array<{x: number, y: number, fill: string}>} pixels Quantized resident pixels.
+ * @returns {void} Mutates only existing pixel colors, preserving sprite bounds.
+ */
+function applyResidentRoleAccents(pixels) {
+  const top = pixels.reduce(
+    (current, pixel) => (pixel.y < current.y ? pixel : current),
+    pixels[0]
+  );
+  const bottom = pixels.reduce(
+    (current, pixel) => (pixel.y > current.y ? pixel : current),
+    pixels[0]
+  );
+  top.fill = '#f2ca59';
+  const body = bottom === top ? pixels.find(pixel => pixel !== top) : bottom;
+  if (body) body.fill = '#19a9a0';
 }
 
 /**
