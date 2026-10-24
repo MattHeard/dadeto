@@ -183,6 +183,7 @@ export function renderThreefoldFrame(
       }
       const maraShapes = spriteShapes(actor, camera, tick).map(shape => ({
         ...shape,
+        fill: playerRoleColor(shape.fill),
         actorId: 'mara',
         // Mara's source art is pixel-level art. Without this, the shared
         // 8px world-grid default expands every source pixel into a block and
@@ -2617,9 +2618,26 @@ function applyResidentRoleAccents(pixels) {
     (current, pixel) => (pixel.y > current.y ? pixel : current),
     pixels[0]
   );
-  top.fill = '#f2ca59';
+  top.fill = '#43e9da';
   const body = bottom === top ? pixels.find(pixel => pixel !== top) : bottom;
   if (body) body.fill = '#19a9a0';
+}
+
+/**
+ * Reserve the warm gold palette for Mara so her body reads differently from
+ * cyan/teal residents even when the small YOU label is hard to read.
+ * @param {string} fill Source Mosslight sprite pixel color.
+ * @returns {string} High-contrast Threefold player role color.
+ */
+function playerRoleColor(fill) {
+  /** @type {Record<string, string>} */
+  const colors = {
+    '#442f37': '#172c34',
+    '#e9794d': '#f2ca59',
+    '#f7dc9f': '#f3f6d2',
+    '#e8be62': '#e9d88d',
+  };
+  return colors[fill] || fill;
 }
 
 /**

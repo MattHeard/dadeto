@@ -1708,13 +1708,11 @@ describe('THREEFOLD resident identity marker', () => {
     const playerPointer = mara.filter(
       shape => shape.playerMarkerKind === 'pointer'
     );
-    const playerSprite = mara.filter(
-      shape => shape.playerMarker !== true && shape.fill !== '#f2ca59'
-    );
+    const playerSprite = mara.filter(shape => shape.playerMarker !== true);
     const playerOutline = mara.filter(shape => shape.fill === '#f2ca59');
 
     expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
-    expect(residentArt.some(shape => shape.fill === '#f2ca59')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#43e9da')).toBe(true);
     expect(residentOutline.length).toBeGreaterThan(0);
     expect(
       residentOutline.every(
@@ -1742,6 +1740,15 @@ describe('THREEFOLD resident identity marker', () => {
     ).toEqual(['C', 'N', 'P']);
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
+    expect(playerSprite.some(shape => shape.fill === '#f2ca59')).toBe(true);
+    expect(playerSprite.some(shape => shape.fill === '#f3f6d2')).toBe(true);
+    expect(
+      playerSprite.some(shape => ['#43e9da', '#19a9a0'].includes(shape.fill))
+    ).toBe(false);
+    expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
+    expect(
+      residentArt.some(shape => ['#f2ca59', '#e9d88d'].includes(shape.fill))
+    ).toBe(false);
     expect(
       playerSprite.every(
         shape =>
