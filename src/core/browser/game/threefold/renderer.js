@@ -58,6 +58,7 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
+const PERSON_GRID_PIXELS = 2;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const PERSON_ACTOR_IDS = new Set([
@@ -2458,7 +2459,7 @@ function alignThreefoldFrame(frame) {
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} tick Animation tick.
  * @param {number} heightMeters Mara's current physical height.
- * @returns {ThreefoldSpriteShape[]} Person pixels quantized to the 4px handheld grid.
+ * @returns {ThreefoldSpriteShape[]} Person pixels quantized to the 2px handheld subgrid.
  */
 function personSprite(actor, camera, tick, heightMeters) {
   const bounds = actor.physicalBounds;
@@ -2474,15 +2475,17 @@ function personSprite(actor, camera, tick, heightMeters) {
   const source = spriteShapes({ id: 'mira', x: 6, y: 4 }, { x: 0, y: 0 }, tick);
   const heightRatio =
     ((bounds.max.z ?? 1.7) - (bounds.min.z ?? 0)) / heightMeters;
-  const scale = Math.max(1 / 3, Math.min(8, heightRatio));
+  const scale = Math.max(1 / 12, Math.min(8, heightRatio));
   const cells = new Map();
   for (const pixel of source) {
     const x =
-      Math.round((centerX + (pixel.x - sourceCenter.x) * scale) / GRID_PIXELS) *
-      GRID_PIXELS;
+      Math.round(
+        (centerX + (pixel.x - sourceCenter.x) * scale) / PERSON_GRID_PIXELS
+      ) * PERSON_GRID_PIXELS;
     const y =
-      Math.round((centerY + (pixel.y - sourceCenter.y) * scale) / GRID_PIXELS) *
-      GRID_PIXELS;
+      Math.round(
+        (centerY + (pixel.y - sourceCenter.y) * scale) / PERSON_GRID_PIXELS
+      ) * PERSON_GRID_PIXELS;
     if (x < 0 || x >= 160 || y < 0 || y >= 108) continue;
     const key = `${x}:${y}`;
     if (!cells.has(key)) cells.set(key, { x, y, fill: pixel.fill });
@@ -2490,14 +2493,14 @@ function personSprite(actor, camera, tick, heightMeters) {
   return [...cells.values()].map(pixel => ({
     type: 'rect',
     ...pixel,
-    width: GRID_PIXELS,
-    height: GRID_PIXELS,
+    width: PERSON_GRID_PIXELS,
+    height: PERSON_GRID_PIXELS,
     fill: actor.growthPreview === true ? '#e16b5a' : pixel.fill,
     geometryId: actor.id,
     growthPreview: actor.growthPreview === true,
     logicalGridKind: actor.logicalGridKind,
     logicalCellBounds: actor.logicalCellBounds,
-    spriteGridSize: GRID_PIXELS,
+    spriteGridSize: PERSON_GRID_PIXELS,
     actorId: actor.id,
   }));
 }
