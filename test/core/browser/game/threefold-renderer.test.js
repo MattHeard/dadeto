@@ -1689,57 +1689,68 @@ function expectResidentHalo(outline, art, id) {
 }
 
 /**
- * Keep the NPC badge inside the handheld and clear of every player sprite cell.
- * @param {Array<Record<string, any>>} npcLabel NPC label shapes.
+ * Keep the compact NPC emblem visible, attached, and clear of both bodies.
+ * @param {Array<Record<string, any>>} npcMarker NPC emblem cells.
+ * @param {Array<Record<string, any>>} residentBody Resident sprite cells.
  * @param {Array<Record<string, any>>} playerBody Player outline and art cells.
+ * @param {string} id Resident identity.
  * @returns {void} Throws when character identity tags overlap on screen.
  */
-function expectResidentBadgeClearOfPlayer(npcLabel, playerBody) {
-  const badge = npcLabel.find(shape => shape.width === 46);
-  expect(badge).toBeDefined();
-  expect(badge.x).toBeGreaterThanOrEqual(0);
-  expect(badge.x + badge.width).toBeLessThanOrEqual(160);
-  expect(badge.y).toBeGreaterThanOrEqual(0);
-  expect(badge.y + badge.height).toBeLessThanOrEqual(108);
+function expectResidentMarkerClearOfActors(
+  npcMarker,
+  residentBody,
+  playerBody,
+  id
+) {
+  const marker = frameBounds(npcMarker, 'geometryId', id);
+  const body = frameBounds(residentBody, 'geometryId', id);
+  expect(marker.width).toBe(14);
+  expect(marker.height).toBe(14);
+  expect(marker.x).toBeGreaterThanOrEqual(0);
+  expect(marker.x + marker.width).toBeLessThanOrEqual(160);
+  expect(marker.y).toBeGreaterThanOrEqual(0);
+  expect(marker.y + marker.height).toBeLessThanOrEqual(108);
+  expect(marker.y + marker.height).toBeLessThanOrEqual(body.y);
   expect(
     playerBody.every(
       shape =>
-        badge.x + badge.width <= shape.x ||
-        badge.x >= shape.x + (shape.width ?? 0) ||
-        badge.y + badge.height <= shape.y ||
-        badge.y >= shape.y + (shape.height ?? 0)
+        marker.x + marker.width <= shape.x ||
+        marker.x >= shape.x + (shape.width ?? 0) ||
+        marker.y + marker.height <= shape.y ||
+        marker.y >= shape.y + (shape.height ?? 0)
     )
   ).toBe(true);
 }
 
 /**
- * Keep Mara's identity badge in the visible playfield and separate from residents.
- * @param {Array<Record<string, any>>} playerLabel Player badge and glyph cells.
+ * Keep Mara's pointer inside the playfield and separate from both actors.
+ * @param {Array<Record<string, any>>} playerPointer Player pointer cells.
  * @param {Array<Record<string, any>>} playerLeader Connector to Mara.
  * @param {Array<Record<string, any>>} playerBody Mara's outline and sprite.
  * @param {Array<Record<string, any>>} npcLabel Resident badge cells.
  * @returns {void} Throws when the player identity cue is hidden or ambiguous.
  */
-function expectPlayerBadgeClearFromActors(
-  playerLabel,
+function expectPlayerPointerClearFromActors(
+  playerPointer,
   playerLeader,
   playerBody,
   npcLabel
 ) {
-  const badge = playerLabel.find(shape => shape.width === 38);
-  expect(badge).toBeDefined();
-  expect(badge.y).toBeGreaterThanOrEqual(54);
-  expect(badge.y + badge.height).toBeLessThanOrEqual(108);
-  expect(badge.x + badge.width).toBeLessThanOrEqual(
+  const pointer = frameBounds(playerPointer, 'actorId', 'mara');
+  expect(pointer.width).toBe(12);
+  expect(pointer.height).toBe(12);
+  expect(pointer.y).toBeGreaterThanOrEqual(54);
+  expect(pointer.y + pointer.height).toBeLessThanOrEqual(108);
+  expect(pointer.x + pointer.width).toBeLessThanOrEqual(
     Math.min(...playerBody.map(shape => shape.x))
   );
   expect(
     npcLabel.every(
       shape =>
-        badge.x + badge.width <= shape.x ||
-        badge.x >= shape.x + (shape.width ?? 0) ||
-        badge.y + badge.height <= shape.y ||
-        badge.y >= shape.y + (shape.height ?? 0)
+        pointer.x + pointer.width <= shape.x ||
+        pointer.x >= shape.x + (shape.width ?? 0) ||
+        pointer.y + pointer.height <= shape.y ||
+        pointer.y >= shape.y + (shape.height ?? 0)
     )
   ).toBe(true);
   expect(playerLeader).toHaveLength(1);
@@ -1749,9 +1760,9 @@ function expectPlayerBadgeClearFromActors(
     fill: '#37e7ed',
     playerMarker: true,
   });
-  expect(playerLeader[0].y).toBeGreaterThanOrEqual(badge.y);
+  expect(playerLeader[0].y).toBeGreaterThanOrEqual(pointer.y);
   expect(playerLeader[0].y + playerLeader[0].height).toBeLessThanOrEqual(
-    badge.y + badge.height
+    pointer.y + pointer.height
   );
   expect(playerLeader[0].x + playerLeader[0].width).toBe(
     Math.min(...playerBody.map(shape => shape.x))
@@ -1822,19 +1833,17 @@ describe('THREEFOLD resident identity marker', () => {
       shape =>
         shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'outline'
     );
-    const npcLabel = frame.shapes.filter(
+    const npcMarker = frame.shapes.filter(
       shape =>
-        shape.geometryId === watchkeeper.id &&
-        shape.npcMarkerKind === 'role-label'
+        shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'emblem'
     );
     const residentArt = frame.shapes.filter(
-      shape =>
-        shape.geometryId === watchkeeper.id &&
-        shape.npcMarker !== true &&
-        shape.npcMarkerKind !== 'role-label'
+      shape => shape.geometryId === watchkeeper.id && shape.npcMarker !== true
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
-    const playerLabel = mara.filter(shape => shape.playerMarker === true);
+    const playerPointer = mara.filter(
+      shape => shape.playerMarkerKind === 'pointer'
+    );
     const playerLeader = mara.filter(
       shape => shape.playerMarkerKind === 'leader'
     );
@@ -1861,12 +1870,17 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarker === true
       )
     ).toBe(true);
-    expect(npcLabel.length).toBeGreaterThan(0);
-    expectResidentBadgeClearOfPlayer(npcLabel, playerBody);
+    expect(npcMarker).toHaveLength(8);
+    expectResidentMarkerClearOfActors(
+      npcMarker,
+      residentArt,
+      playerBody,
+      watchkeeper.id
+    );
     expect(
-      npcLabel.every(
+      npcMarker.every(
         shape =>
-          ['#f14bd3', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          ['#f14bd3', '#f3f6d2'].includes(shape.fill) &&
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
@@ -1875,9 +1889,6 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarkerText === 'NPC'
       )
     ).toBe(true);
-    expect(
-      [...new Set(npcLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
-    ).toEqual(['C', 'N', 'P']);
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
     expect(playerSprite.some(shape => shape.fill === '#37e7ed')).toBe(true);
@@ -1912,11 +1923,11 @@ describe('THREEFOLD resident identity marker', () => {
           shape.fill === '#37e7ed'
       )
     ).toBe(true);
-    expect(playerLabel.length).toBeGreaterThan(0);
+    expect(playerPointer).toHaveLength(6);
     expect(
-      playerLabel.every(
+      playerPointer.every(
         shape =>
-          ['#37e7ed', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          shape.fill === '#37e7ed' &&
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
@@ -1925,17 +1936,15 @@ describe('THREEFOLD resident identity marker', () => {
           shape.playerMarkerText === 'YOU'
       )
     ).toBe(true);
-    expect(
-      [
-        ...new Set(playerLabel.map(shape => shape.npcGlyph).filter(Boolean)),
-      ].sort()
-    ).toEqual(['O', 'U', 'Y']);
-    expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
-    expectPlayerBadgeClearFromActors(
-      playerLabel,
+    expect(playerPointer.some(shape => shape.playerMarkerText === 'YOU')).toBe(
+      true
+    );
+    expect(playerPointer.some(shape => npcMarker.includes(shape))).toBe(false);
+    expectPlayerPointerClearFromActors(
+      playerPointer,
       playerLeader,
       playerBody,
-      npcLabel
+      npcMarker
     );
     expect(
       mara.some(
@@ -1944,48 +1953,20 @@ describe('THREEFOLD resident identity marker', () => {
     ).toBe(true);
   });
 
-  test('attaches a bold magenta headpiece to residents and never to Mara', () => {
+  test('does not cover either character with large role-label plaques', () => {
     const scene = createBrokenGateScene();
-    const watchkeeper = scene.interactables.find(
-      item => item.id === 'latchfolk-watchkeeper'
-    );
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, scene)
     );
-    const residentHeadpiece = frame.shapes.filter(
-      shape =>
-        shape.geometryId === watchkeeper.id &&
-        shape.npcMarkerKind === 'headpiece'
-    );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
-    const residentBody = frame.shapes.filter(
-      shape => shape.geometryId === watchkeeper.id && shape.npcMarker !== true
-    );
-
-    expect(residentHeadpiece.map(({ width }) => width)).toEqual([
-      8, 16, 24, 32,
-    ]);
-    expect(residentHeadpiece.map(({ fill }) => fill)).toEqual([
-      '#f14bd3',
-      '#f14bd3',
-      '#ffe1fa',
-      '#f14bd3',
-    ]);
     expect(
-      residentHeadpiece.every(
+      frame.shapes.some(
         shape =>
-          shape.type === 'rect' &&
-          shape.height === 2 &&
-          shape.npcMarker === true &&
-          shape.spriteGridSize === 2 &&
-          shape.x % 2 === 0 &&
-          shape.y % 2 === 0
+          shape.npcMarkerKind === 'role-label' ||
+          shape.npcMarkerKind === 'headpiece'
       )
-    ).toBe(true);
-    expect(
-      Math.max(...residentHeadpiece.map(shape => shape.y + (shape.height ?? 0)))
-    ).toBe(Math.min(...residentBody.map(shape => shape.y)) - 2);
-    expect(mara.some(shape => shape.npcMarkerKind === 'headpiece')).toBe(false);
+    ).toBe(false);
+    expect(mara.some(shape => shape.playerMarkerKind === 'pointer')).toBe(true);
   });
 });
 
