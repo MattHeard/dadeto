@@ -704,6 +704,12 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
       expect(frame.shapes.map(({ geometryId }) => geometryId)).toEqual(
         expect.arrayContaining(sourceIds)
       );
+      expect(
+        frame.shapes.find(shape => shape.geometryId === 'mara')
+      ).toMatchObject({ fill: '#37e7ed', playerMarker: true });
+      expect(
+        frame.shapes.find(shape => shape.geometryId === 'hearthgaps-brin')
+      ).toMatchObject({ fill: '#f14bd3', npcMarker: true });
       expectHearthgapsCellContainment(frame, sourceIds);
       for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
         expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);

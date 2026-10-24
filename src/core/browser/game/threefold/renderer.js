@@ -2426,6 +2426,17 @@ function weftwaysBeetleShapes(entity, layout, lost) {
  */
 function finishSmallWorldFrame(frame, threefold) {
   frame.threefold = threefold;
+  frame.shapes = frame.shapes.map(
+    (/** @type {ThreefoldSpriteShape} */ shape) =>
+      shape.geometryId === 'mara' && shape.logicalCellBounds
+        ? { ...shape, fill: '#37e7ed', playerMarker: true }
+        : typeof shape.geometryId === 'string' &&
+            PERSON_ACTOR_IDS.has(shape.geometryId) &&
+            shape.logicalCellBounds &&
+            shape.spriteGridSize
+          ? { ...shape, fill: '#f14bd3', npcMarker: true }
+          : shape
+  );
   return alignThreefoldFrame(frame);
 }
 

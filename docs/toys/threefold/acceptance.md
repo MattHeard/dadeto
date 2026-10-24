@@ -1,6 +1,6 @@
 # THREEFOLD Acceptance
 
-- [x] Mara is immediately distinct from residents at the 160 × 144 handheld size: her coat, outline, and attached YOU pointer use bright cyan; residents retain violet-and-pink sprites, a magenta outline, and an NPC diamond badge. Renderer regression coverage asserts distinct role colors and shapes while resident body size changes with physical scale.
+- [x] Mara is immediately distinct from residents at the 160 × 144 handheld size: her coat, outline, and attached YOU pointer use bright cyan; residents retain violet-and-pink sprites, a magenta outline, and an NPC diamond badge. Compact regional renderers also color cell-sized Mara sprites cyan and named resident sprites vivid magenta. Renderer regression coverage asserts these role colors and shapes while resident body size changes with physical scale.
 
 ## Machine-Checkable Criteria
 
