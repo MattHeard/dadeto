@@ -8,7 +8,7 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
-Mara has a cyan coat, bright cyan outline, and a long cyan `YOU` pointer attached directly above her. Residents have violet-and-pink sprites, a bold four-row magenta headpiece with a pale inset attached directly above each sprite, and a magenta diamond inside their `NPC` badge. The wide headpiece gives residents a different silhouette even when the handheld is too small to read the badge. Their badges move sideways when needed to avoid covering Mara's sprite. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta; the role colors remain distinct as character bodies change size with scale.
+Mara has a cyan coat, bright cyan outline, and a long cyan `YOU` pointer attached directly above her. Residents wear a broad magenta hat and long violet coat, with a pale-inset headpiece above the sprite and a magenta diamond inside the `NPC` badge. Their 12×12 pixel art has a different silhouette from Mara's hood and short coat; that body art still scales with the resident's authored physical size. Badges move sideways when needed to avoid covering Mara's sprite. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta.
 
 ## Input
 

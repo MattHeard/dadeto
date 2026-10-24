@@ -1707,6 +1707,38 @@ function expectResidentBadgeClearOfPlayer(npcLabel, playerBody) {
 }
 
 describe('THREEFOLD resident identity marker', () => {
+  test('gives residents a scale-responsive silhouette distinct from Mara by shape', () => {
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+    );
+    const residentBody = frame.shapes.filter(
+      shape =>
+        shape.actorId === 'latchfolk-watchkeeper' && shape.npcMarker !== true
+    );
+    const maraBody = frame.shapes.filter(
+      shape =>
+        shape.actorId === 'mara' &&
+        shape.playerMarker !== true &&
+        shape.playerMarkerKind !== 'pointer' &&
+        shape.fill !== '#37e7ed'
+    );
+    const silhouette = shapes => {
+      const minX = Math.min(...shapes.map(shape => shape.x));
+      const minY = Math.min(...shapes.map(shape => shape.y));
+      return shapes.map(shape => `${shape.x - minX}:${shape.y - minY}`).sort();
+    };
+
+    expect(residentBody.length).toBeGreaterThan(0);
+    expect(maraBody.length).toBeGreaterThan(0);
+    expect(silhouette(residentBody)).not.toEqual(silhouette(maraBody));
+    expect(
+      residentBody.every(
+        shape =>
+          shape.spriteGridSize === 2 && shape.x % 2 === 0 && shape.y % 2 === 0
+      )
+    ).toBe(true);
+  });
+
   test('draws the prepared resident role art in the shared Mosslight presenter', () => {
     const scene = createBrokenGateScene();
     const frame = renderThreefoldFrame(
@@ -1802,12 +1834,7 @@ describe('THREEFOLD resident identity marker', () => {
       playerSprite.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
     ).toBe(false);
     expect(
-      residentArt.every(
-        residentShape =>
-          !playerSprite.some(
-            playerShape => playerShape.fill === residentShape.fill
-          )
-      )
+      residentArt.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
     ).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
     expect(

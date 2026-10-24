@@ -279,3 +279,7 @@ Bead `dadeto-pajf` responds to another playtest report that residents still blen
 ## NPC silhouette follow-up — 2026-10-24
 
 Play feedback still could not distinguish residents from Mara. Residents now receive a four-row magenta headpiece with a pale inset, centered immediately above their sprite; Mara does not. This larger, attached shape cue supplements the badge and colors and remains on the 2px sprite grid. The renderer regression asserts its shape, colors, alignment, attachment, and player absence; existing tests continue to verify NPC body size changes with scale. Focused Jest passed 44/44; elevated `npm run check` passed all six shards (7,641 tests) and all 10 static gates; `npm run build` and `git diff --check` passed. Commit `f587c73` is pushed and deployed. Exact-head Full Check 40113139614 and Sonar 40113139644 are still running. Phone-size visual confirmation remains open.
+
+## Distinct resident body silhouette — 2026-10-24
+
+The latest play report still could not distinguish residents from Mara, so resident sprites now use a broad-brimmed magenta hat and long violet coat, while Mara keeps her cyan hood and short coat. This changes the resident pixel mask rather than relying on palette alone; the custom art is still rendered from authored physical bounds on the 2px subgrid. A renderer regression compares resident and player body masks without considering their colors. Focused Threefold renderer Jest passed 45/45. Phone-size visual confirmation remains open until Full Check produces its mobile screenshot.

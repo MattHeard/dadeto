@@ -66,6 +66,20 @@ const RESIDENT_BADGE_WIDTH = 46;
 const RESIDENT_BADGE_HEIGHT = 20;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
+const THREEFOLD_RESIDENT_ART = [
+  '...aaaaaa...',
+  '..aaaaaaaa..',
+  '...hhhhhh...',
+  '..hsssssshh.',
+  '.hsksssksh..',
+  '...ssssss...',
+  '..cccccccc..',
+  '.sccccccccs.',
+  '.sccccccccs.',
+  '..sccccccs..',
+  '...kk..kk...',
+  '..kk....kk..',
+];
 const PERSON_ACTOR_IDS = new Set([
   ...RETURN_TIDE_PEOPLE.map(({ id }) => id),
   'latchfolk-watchkeeper',
@@ -2502,7 +2516,7 @@ function personSprite(actor, camera, tick, heightMeters) {
   const sourceCenter = { x: 78, y: 54 };
   // The residents' broad cap and bright coat keep their silhouette distinct from Mara.
   const source = spriteShapes(
-    { id: 'resident', x: 6, y: 4 },
+    { id: 'resident', x: 6, y: 4, art: THREEFOLD_RESIDENT_ART },
     { x: 0, y: 0 },
     tick
   );
