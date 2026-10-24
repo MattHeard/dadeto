@@ -401,7 +401,8 @@ describe('THREEFOLD canvas grid', () => {
         const bottom = top + Math.ceil((height * 12) / 8) * 8;
         if (
           entity.logicalGridKind === 'creature' ||
-          shape.spriteGridSize === 8
+          shape.spriteGridSize === 8 ||
+          (shape.spriteGridSize !== undefined && shape.spriteGridSize < 8)
         ) {
           expect(shape.x).toBeGreaterThanOrEqual(left);
           expect(shape.y).toBeGreaterThanOrEqual(top);
