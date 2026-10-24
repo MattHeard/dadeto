@@ -211,6 +211,20 @@ describe('THREEFOLD systemic Return Tide', () => {
     expect(rising.damageIds).not.toContain('choir-branches');
   });
 
+  test('does not interrupt the Assembly plan after its rise commitment', () => {
+    const facts = preparedFacts();
+    const committed = advanceThreefoldReturnTide(
+      createThreefoldReturnTide(),
+      facts,
+      1800
+    );
+
+    expect(committed.assemblySealPlanStatus).toBe('committed');
+    expect(
+      operateThreefoldReturnTide(committed, 'interrupt-seal-plan', facts)
+    ).toBe(committed);
+  });
+
   test('the spillway preserves root routes while flooding the Quay; preparation changes people, not material loss', () => {
     const facts = preparedFacts();
     const spill = operateThreefoldReturnTide(
