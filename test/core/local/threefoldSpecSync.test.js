@@ -5,6 +5,8 @@ import {
   fetchThreefoldSpecSnapshot,
   formatThreefoldSpec,
   synchronizeThreefoldSpec,
+  validateThreefoldSpecCache,
+  runThreefoldSpecSyncCli,
 } from '../../../src/core/local/threefoldSpecSync.js';
 
 const section = `## Creative north star\n\n${'requirement '.repeat(100)}\n## Reference context`;
@@ -360,6 +362,35 @@ describe('THREEFOLD Notion spec synchronization', () => {
     expect(writeFileImpl).not.toHaveBeenCalled();
   });
 
+  test('best-effort CLI refresh is silent and preserves the cache on missing credentials or fetch failure', async () => {
+    const readFileImpl = jest.fn();
+    const writeFileImpl = jest.fn();
+    const fetchImpl = jest.fn(async () => {
+      throw new Error('offline');
+    });
+    const dependencies = {
+      fetchImpl,
+      bindEffectBoundary,
+      readFileImpl,
+      writeFileImpl,
+      renameImpl: jest.fn(),
+      unlinkImpl: jest.fn(),
+    };
+    const tryRefresh = candidateToken =>
+      runThreefoldSpecSyncCli({
+        args: ['--best-effort-refresh'],
+        token: candidateToken,
+        targetPath: '/repo/spec.md',
+        dependencies,
+      });
+
+    await expect(tryRefresh('')).resolves.toBeNull();
+    await expect(tryRefresh(token)).resolves.toBeNull();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(readFileImpl).not.toHaveBeenCalled();
+    expect(writeFileImpl).not.toHaveBeenCalled();
+  });
+
   test('composes a successful live read with check mode', async () => {
     const responses = [
       jsonResponse(Object.fromEntries([['last_edited_time', lastEditedTime]])),
@@ -378,6 +409,27 @@ describe('THREEFOLD Notion spec synchronization', () => {
     await expect(
       handle({ mode: 'check', token, targetPath: '/repo/spec.md' })
     ).resolves.toBe('current');
+  });
+});
+
+describe('THREEFOLD local spec cache validation', () => {
+  const cache = formatThreefoldSpec({ markdown: source, lastEditedTime });
+
+  test('accepts a deterministic cache using only local content', () => {
+    expect(validateThreefoldSpecCache(cache)).toBe('valid');
+  });
+
+  test.each([
+    ['', 'empty'],
+    [cache.replace('Source: https://', 'Source: https://wrong.'), 'metadata'],
+    [
+      cache.replace(lastEditedTime, 'not-a-timestamp'),
+      'timestamp is invalid',
+    ],
+    [cache.replace('Reference context', 'Other context'), 'exactly one'],
+    [`${cache}unexpected trailing content\n`, 'deterministic formatting'],
+  ])('rejects malformed cache content: %s', (content, message) => {
+    expect(() => validateThreefoldSpecCache(content)).toThrow(message);
   });
 });
 

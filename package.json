@@ -23,6 +23,8 @@
     "manuals:check": "node scripts/check-toy-manuals.js",
     "threefold:spec:check": "node src/local/sync-threefold-spec.js --check",
     "threefold:spec:refresh": "node src/local/sync-threefold-spec.js --refresh",
+    "threefold:spec:refresh:best-effort": "node src/local/sync-threefold-spec.js --best-effort-refresh",
+    "threefold:spec:cache:check": "node src/local/check-threefold-spec-cache.js",
     "migrate:tree-visibility": "node scripts/migrate-tree-visibility.js",
     "generate:gcp-diagram": "node scripts/generate-gcp-architecture-diagram.js",
     "render:template": "node scripts/render-html-template.js",
