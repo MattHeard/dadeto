@@ -271,6 +271,43 @@ test('opens the campaign status from the main menu using only the controls', () 
   expect(emptyStatus.some(line => line.includes('RETURN TIDE'))).toBe(false);
 });
 
+test('clamps the campaign cursor when saved locations disappear', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      campaignPlaces: Array.from({ length: 8 }, (_, index) => ({
+        label: `PLACE ${index}`,
+        state: 'VISITED',
+      })),
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+  press(menu, 'y');
+  for (let index = 0; index < 4; index += 1) press(menu, 'down');
+  press(menu, 'a');
+  for (let index = 0; index < 8; index += 1) press(menu, 'down');
+
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      campaignPlaces: [],
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('  CLOCK 0 MIN');
+  expect(text).toContain('> BACK');
+});
+
 test('runs the in-game system actions and resumes without extra controls', () => {
   const { menu, runtime, buttons } = createMenuRuntime();
   press(menu, 'y');
