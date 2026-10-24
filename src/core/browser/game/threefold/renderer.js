@@ -2790,7 +2790,11 @@ function maraRoleLabel(sprites) {
       snapCanvasCoordinate((minX + maxX) / 2, 2) - markerWidth / 2
     )
   );
-  const markerTop = Math.max(0, minY - markerHeight - 2);
+  // Leave room for the player-only pointer. The word badge and small sprite
+  // are easy to miss when the handheld is viewed on a phone; the broad arrow
+  // makes the controlled character identifiable without reading or comparing
+  // the NPC labels.
+  const markerTop = Math.max(0, minY - markerHeight - 10);
   const metadata = {
     actorId: 'mara',
     playerMarker: true,
@@ -2826,15 +2830,15 @@ function maraRoleLabel(sprites) {
 }
 
 /**
- * Extend the player badge into a distinctive pointer that touches Mara's sprite.
+ * Extend the player badge into a large pointer that leads directly to Mara.
  * NPC badges remain square, so role recognition does not depend on tiny text.
  * @param {number} centerX Pointer center on the handheld's 2px subgrid.
  * @param {number} top Pointer top coordinate.
  * @param {Record<string, any>} metadata Player identity metadata.
- * @returns {ThreefoldSpriteShape[]} Three descending gold cells.
+ * @returns {ThreefoldSpriteShape[]} Six descending gold rows.
  */
 function playerRolePointer(centerX, top, metadata) {
-  return [10, 6, 2].map((width, row) => ({
+  return [22, 18, 14, 10, 6, 2].map((width, row) => ({
     type: 'rect',
     x: centerX - width / 2,
     y: top + row * PERSON_GRID_PIXELS,

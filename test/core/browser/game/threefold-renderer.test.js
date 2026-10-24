@@ -1800,7 +1800,7 @@ describe('THREEFOLD resident identity marker', () => {
       ].sort()
     ).toEqual(['O', 'U', 'Y']);
     expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
-    expect(playerPointer).toHaveLength(3);
+    expect(playerPointer).toHaveLength(6);
     expect(
       playerPointer.map(({ x, y, width, height, fill }) => ({
         x,
@@ -1810,10 +1810,16 @@ describe('THREEFOLD resident identity marker', () => {
         fill,
       }))
     ).toEqual([
+      expect.objectContaining({ width: 22, height: 2, fill: '#e9d88d' }),
+      expect.objectContaining({ width: 18, height: 2, fill: '#e9d88d' }),
+      expect.objectContaining({ width: 14, height: 2, fill: '#e9d88d' }),
       expect.objectContaining({ width: 10, height: 2, fill: '#e9d88d' }),
       expect.objectContaining({ width: 6, height: 2, fill: '#e9d88d' }),
       expect.objectContaining({ width: 2, height: 2, fill: '#e9d88d' }),
     ]);
+    expect(
+      Math.max(...playerPointer.map(shape => shape.y + shape.height))
+    ).toBeLessThanOrEqual(Math.min(...playerSprite.map(shape => shape.y)) + 2);
     expect(
       Math.max(...playerPointer.map(shape => shape.y + shape.height))
     ).toBeGreaterThanOrEqual(Math.min(...playerSprite.map(shape => shape.y)));

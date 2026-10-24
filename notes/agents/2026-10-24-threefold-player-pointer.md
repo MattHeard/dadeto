@@ -1,6 +1,6 @@
-# Threefold player and NPC distinction follow-up
+# Threefold player marker remains visible at handheld size
 
-- Unexpected hurdle: distinct sprite colors, outlines, and `YOU`/`NPC` tags still did not let the player identify Mara at a glance.
-- Diagnosis: the previous regression checked semantic color/metadata but did not enforce a role cue with a visibly different shape.
-- Fix: add a gold downward pointer to Mara's `YOU` badge. NPCs keep square cyan `NPC` badges. A renderer test checks the pointer's 10/6/2-pixel taper and that it carries no NPC marker metadata.
-- Next-time guidance: when a user says an identity distinction is not visible, verify shape-level cues in addition to palette and text assertions; do not treat metadata-only distinction as visual acceptance.
+- Unexpected hurdle: the player still could not distinguish Mara from residents after separate palettes, silhouettes, outlines, and text labels had been added.
+- Diagnosis: the player-only gold pointer was only three 2px rows, so its shape cue was too small when the 160x144 screen was scaled down on a phone.
+- Fix: expanded the pointer into a six-row gold arrow leading from the `YOU` badge to Mara, and added a renderer regression for its size and contact with the sprite.
+- Next time: validate role cues at the actual handheld display size; different colors and labels are insufficient evidence of glanceable distinction.
