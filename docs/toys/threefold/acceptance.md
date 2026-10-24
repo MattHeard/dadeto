@@ -254,6 +254,8 @@ Follow-up readability check: color and text alone still did not separate residen
 
 Follow-up playtest: the player still could not distinguish Mara from the residents. Enlarge Mara's gold pointer into a prominent six-row arrow that leads from the `YOU` badge to the top of her sprite; keep resident markers square and cyan. The renderer regression checks its size, alignment, color, and that its tip meets Mara's rendered sprite. This adds a shape cue that remains conspicuous when the handheld is scaled down.
 
+Follow-up playtest: the cyan NPC treatment still blended into the green playfield and did not separate residents from Mara clearly enough. NPCs now use a contrasting violet-and-pink body palette, bright magenta halo, cap, and badge; Mara retains the warm gold-and-cream sprite, outline, and arrow. Existing renderer assertions now describe the new resident palette and preserve scale-responsive sprite sizing.
+
 ## NPC contrast follow-up — 2026-10-24
 
 Bead `dadeto-pajf` strengthens the resident outline from a thin cyan edge to a 4px cyan halo around NPC pixels, while Mara keeps her thin gold outline and downward gold pointer. Focused renderer coverage verifies the larger cyan footprint extends around NPC art and remains separate from the player's gold identity cues.

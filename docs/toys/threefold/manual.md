@@ -8,7 +8,7 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
-Mara is marked with a gold downward arrow; residents have a broad cyan outline and a square `NPC` badge. These role markers stay visible as the character sprites change size.
+Mara is marked with a gold downward arrow and gold outline. Residents have violet-and-pink sprites, a bright magenta outline and cap, and a square `NPC` badge. The warm player colors and magenta resident colors remain distinct as characters change size.
 
 ## Input
 
@@ -51,7 +51,7 @@ The ferry mooring, Latchfolk watchkeeper, upland road, relief-gate locking pawl,
 
 ## Output
 
-The standalone page contains the 160 × 144 handheld screen and exactly eight touch controls: up, down, left, right, A, B, X, and Y. The Y menu brings the guide, route travel, field notes, campaign status, saves/transfers, and system actions into the game. There is no opening dialogue; the screen starts in active play and shows Y MENU. Mara is marked by a large gold arrow that points directly at her sprite; residents use cyan `NPC` tags and outlines. NPC sprites change relative size with Mara's scale on a two-pixel subgrid nested within the eight-pixel world grid. Simulation positions and fluid values remain continuous.
+The standalone page contains the 160 × 144 handheld screen and exactly eight touch controls: up, down, left, right, A, B, X, and Y. The Y menu brings the guide, route travel, field notes, campaign status, saves/transfers, and system actions into the game. There is no opening dialogue; the screen starts in active play and shows Y MENU. Mara is marked by a large gold arrow that points directly at her sprite; residents use violet-and-pink sprites with a bright magenta `NPC` tag, cap, and outline. NPC sprites change relative size with Mara's scale on a two-pixel subgrid nested within the eight-pixel world grid. Simulation positions and fluid values remain continuous.
 
 On the Broken Gate route, open **Field Notes** in the Y menu to compare attributed statements. The dock worker says they shouted the warning toward the lower path; the Latchfolk watchkeeper says no warning that the gate would fail reached their post before the surge. Each account shows its own source. The game leaves responsibility for relaying the warning unresolved because no relay duty is established. These statements are kept apart from the **Witness ledger**, which records what the screen showed before a choice, the chosen operation, and deterministic consequences. Older saves restore the authored accounts; imported saves cannot change a statement or supply a verdict.
 

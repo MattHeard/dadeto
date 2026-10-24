@@ -2509,7 +2509,7 @@ function personSprite(actor, camera, tick, heightMeters) {
   const outline = new Map();
   for (const pixel of cells.values()) {
     // A single 2px edge disappears against the busy pixel landscape on phones.
-    // Give residents a two-cell cyan halo; Mara keeps the thinner gold outline
+    // Give residents a two-cell magenta halo; Mara keeps the thinner gold outline
     // and downward pointer, so character role remains visible without reading.
     for (let offsetY = -2; offsetY <= 2; offsetY += 1) {
       for (let offsetX = -2; offsetX <= 2; offsetX += 1) {
@@ -2528,7 +2528,7 @@ function personSprite(actor, camera, tick, heightMeters) {
     ...pixel,
     width: PERSON_GRID_PIXELS,
     height: PERSON_GRID_PIXELS,
-    fill: '#43e9da',
+    fill: '#f14bd3',
     geometryId: actor.id,
     growthPreview: actor.growthPreview === true,
     logicalGridKind: actor.logicalGridKind,
@@ -2590,7 +2590,7 @@ function personSprite(actor, camera, tick, heightMeters) {
       y: markerTop,
       width: markerWidth,
       height: markerHeight,
-      fill: '#43e9da',
+      fill: '#f14bd3',
       ...markerProperties,
     },
     {
@@ -2614,7 +2614,7 @@ function personSprite(actor, camera, tick, heightMeters) {
 }
 
 /**
- * Add a cyan, grid-snapped silhouette cue to a resident.
+ * Add a bright magenta, grid-snapped silhouette cue to a resident.
  * @param {Array<{x: number, y: number}>} personPixels Rendered resident pixels.
  * @param {number} centerX Resident center in handheld coordinates.
  * @param {number} personTop Top pixel row of the resident.
@@ -2646,23 +2646,23 @@ function residentRoleCap(personPixels, centerX, personTop, markerProperties) {
     y: Math.max(0, personTop - PERSON_GRID_PIXELS),
     width,
     height: PERSON_GRID_PIXELS,
-    fill: '#43e9da',
+    fill: '#f14bd3',
     ...markerProperties,
     npcMarkerKind: 'cap',
   };
 }
 
 /**
- * Keep residents in a cool palette and preserve role accents after quantization.
+ * Keep residents in a contrasting violet palette after quantization.
  * @param {Array<{x: number, y: number, fill: string}>} pixels Quantized resident pixels.
  * @returns {void} Mutates only existing pixel colors, preserving sprite bounds.
  */
 function applyResidentRoleAccents(pixels) {
   const residentPalette = /** @type {Record<string, string>} */ ({
-    '#283b4b': '#173944',
-    '#19a9a0': '#19a9a0',
-    '#f4c89b': '#d8fff4',
-    '#f2ca59': '#287f9c',
+    '#283b4b': '#342041',
+    '#19a9a0': '#8d4bb0',
+    '#f4c89b': '#ffe1fa',
+    '#f2ca59': '#e866d2',
   });
   pixels.forEach(pixel => {
     pixel.fill = residentPalette[pixel.fill] || pixel.fill;
@@ -2675,14 +2675,14 @@ function applyResidentRoleAccents(pixels) {
     (current, pixel) => (pixel.y > current.y ? pixel : current),
     pixels[0]
   );
-  top.fill = '#43e9da';
+  top.fill = '#f14bd3';
   const body = bottom === top ? pixels.find(pixel => pixel !== top) : bottom;
-  if (body) body.fill = '#19a9a0';
+  if (body) body.fill = '#8d4bb0';
 }
 
 /**
  * Reserve the warm gold palette for Mara so her body reads differently from
- * cyan/teal residents even when the small YOU label is hard to read.
+ * violet/magenta residents even when the small YOU label is hard to read.
  * @param {string} fill Source Mosslight sprite pixel color.
  * @returns {string} High-contrast Threefold player role color.
  */
@@ -2698,7 +2698,7 @@ function playerRoleColor(fill) {
 }
 
 /**
- * Give the player sprite a warm outline, distinct from resident cyan outlines.
+ * Give the player sprite a warm outline, distinct from resident magenta outlines.
  * @param {ThreefoldSpriteShape[]} sprites Mara's source sprite pixels.
  * @returns {ThreefoldSpriteShape[]} Grid-aligned outline cells behind Mara.
  */
@@ -2775,7 +2775,7 @@ function roleGlyphs(x, y, metadata, label) {
 }
 
 /**
- * Mark Mara as the player with a gold YOU badge, distinct from cyan NPC badges.
+ * Mark Mara as the player with a gold YOU badge, distinct from magenta NPC badges.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
  * @returns {ThreefoldSpriteShape[]} Fixed-size player-role badge.
  */

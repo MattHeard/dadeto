@@ -1661,7 +1661,7 @@ function frameBounds(shapes, property, id) {
 }
 
 /**
- * Require the resident's cyan outline to extend at least one 2px cell beyond art.
+ * Require the resident's magenta outline to extend at least one 2px cell beyond art.
  * @param {Array<Record<string, any>>} outline Resident outline shapes.
  * @param {Array<Record<string, any>>} art Resident sprite shapes.
  * @param {string} id Resident identity.
@@ -1693,7 +1693,7 @@ describe('THREEFOLD resident identity marker', () => {
 
     drawGameFrame(context, frame);
 
-    expect(paintedColors).toContain('#43e9da');
+    expect(paintedColors).toContain('#f14bd3');
   });
 
   test('distinguishes resident sprites from Mara on the 2px grid', () => {
@@ -1727,9 +1727,9 @@ describe('THREEFOLD resident identity marker', () => {
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
     const playerOutline = mara.filter(shape => shape.fill === '#f2ca59');
 
-    expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
-    expect(residentArt.some(shape => shape.fill === '#43e9da')).toBe(true);
-    expect(residentArt.some(shape => shape.fill === '#d8fff4')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#f14bd3')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#ffe1fa')).toBe(true);
     expect(
       residentArt.every(shape => !['#f2ca59', '#e9d88d'].includes(shape.fill))
     ).toBe(true);
@@ -1738,7 +1738,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(
       residentOutline.every(
         shape =>
-          shape.fill === '#43e9da' &&
+          shape.fill === '#f14bd3' &&
           shape.spriteGridSize === 2 &&
           shape.npcMarker === true
       )
@@ -1747,7 +1747,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(
       npcLabel.every(
         shape =>
-          ['#43e9da', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          ['#f14bd3', '#182f36', '#f3f6d2'].includes(shape.fill) &&
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
@@ -1764,7 +1764,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(playerSprite.some(shape => shape.fill === '#f2ca59')).toBe(true);
     expect(playerSprite.some(shape => shape.fill === '#f3f6d2')).toBe(true);
     expect(
-      playerSprite.some(shape => ['#43e9da', '#19a9a0'].includes(shape.fill))
+      playerSprite.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
     ).toBe(false);
     expect(
       residentArt.every(
@@ -1774,7 +1774,7 @@ describe('THREEFOLD resident identity marker', () => {
           )
       )
     ).toBe(true);
-    expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
     expect(
       residentArt.some(shape => ['#f2ca59', '#e9d88d'].includes(shape.fill))
     ).toBe(false);
@@ -1848,7 +1848,7 @@ describe('THREEFOLD resident identity marker', () => {
     ).toBe(true);
   });
 
-  test('attaches a cyan cap to each resident and never to Mara', () => {
+  test('attaches a magenta cap to each resident and never to Mara', () => {
     const scene = createBrokenGateScene();
     const watchkeeper = scene.interactables.find(
       item => item.id === 'latchfolk-watchkeeper'
@@ -1866,7 +1866,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(residentCap[0]).toMatchObject({
       type: 'rect',
       height: 2,
-      fill: '#43e9da',
+      fill: '#f14bd3',
       npcMarker: true,
       npcMarkerKind: 'cap',
       spriteGridSize: 2,
