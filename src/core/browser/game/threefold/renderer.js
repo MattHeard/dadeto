@@ -72,7 +72,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-foldglass-rival',
   'grainlands-iru',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2490,7 +2490,35 @@ function personSprite(actor, camera, tick, heightMeters) {
     const key = `${x}:${y}`;
     if (!cells.has(key)) cells.set(key, { x, y, fill: pixel.fill });
   }
-  return [...cells.values()].map(pixel => ({
+  const outline = new Map();
+  for (const pixel of cells.values()) {
+    for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+      for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+        if (offsetX === 0 && offsetY === 0) continue;
+        const x = pixel.x + offsetX * PERSON_GRID_PIXELS;
+        const y = pixel.y + offsetY * PERSON_GRID_PIXELS;
+        const key = `${x}:${y}`;
+        if (x >= 0 && x < 160 && y >= 0 && y < 108 && !cells.has(key)) {
+          outline.set(key, { x, y });
+        }
+      }
+    }
+  }
+  const outlineShapes = [...outline.values()].map(pixel => ({
+    type: 'rect',
+    ...pixel,
+    width: PERSON_GRID_PIXELS,
+    height: PERSON_GRID_PIXELS,
+    fill: '#e9d88d',
+    geometryId: actor.id,
+    growthPreview: actor.growthPreview === true,
+    logicalGridKind: actor.logicalGridKind,
+    logicalCellBounds: actor.logicalCellBounds,
+    spriteGridSize: PERSON_GRID_PIXELS,
+    actorId: actor.id,
+    npcMarker: true,
+  }));
+  const personShapes = [...cells.values()].map(pixel => ({
     type: 'rect',
     ...pixel,
     width: PERSON_GRID_PIXELS,
@@ -2503,6 +2531,7 @@ function personSprite(actor, camera, tick, heightMeters) {
     spriteGridSize: PERSON_GRID_PIXELS,
     actorId: actor.id,
   }));
+  return [...outlineShapes, ...personShapes];
 }
 
 /**

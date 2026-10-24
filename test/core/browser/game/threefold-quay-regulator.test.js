@@ -341,7 +341,7 @@ describe('THREEFOLD finite replacement governor and nonlethal rescue', () => {
     );
   });
 
-  test('keeps handoff HUD shapes aligned to the shared eight-pixel screen', () => {
+  test('keeps handoff HUD shapes aligned to each sprite grid', () => {
     const runtime = quayRuntime(createStorage());
     for (const action of [
       'interact',
@@ -352,13 +352,19 @@ describe('THREEFOLD finite replacement governor and nonlethal rescue', () => {
       'interact',
     ]) {
       const frame = runtime.dispatch(action);
-      expect(frame.shapes.every(({ x, y }) => x % 8 === 0 && y % 8 === 0)).toBe(
+      expect(frame.shapes.every(({ x, y, spriteGridSize }) => {
+          const grid = spriteGridSize || 8;
+          return x % grid === 0 && y % grid === 0;
+        })).toBe(
         true
       );
       expect(
         frame.shapes
           .filter(shape => shape.type === 'rect')
-          .every(({ width, height }) => width % 8 === 0 && height % 8 === 0)
+          .every(({ width, height, spriteGridSize }) => {
+            const grid = spriteGridSize || 8;
+            return width % grid === 0 && height % grid === 0;
+          })
       ).toBe(true);
       expect(
         frame.threefold.campaignPressure.some(
