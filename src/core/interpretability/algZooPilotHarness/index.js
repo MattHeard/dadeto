@@ -427,6 +427,7 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
  * @property {(entries: Array<Record<string, any>>) => string|Promise<string>} hashMapSnapshot Snapshot hasher.
  * @property {(elapsedMillis: number) => AlgZooPilotDeadline} createDeadline Per-session deadline adapter.
  * @property {(result: unknown) => boolean} validateCausalInterventionResult Strict parser for a new submission's typed causal record.
+ * @property {(eventType: string, payload: Record<string, any>) => Promise<void>} [appendAuditRecord] Optional durable audit writer.
  */
 
 /**
@@ -468,6 +469,17 @@ export function createAlgZooPilotRunner(adapters) {
             'Pilot deadline adapter returned an invalid deadline.'
           );
         }
+        const auditMetadata = {
+          sessionId: session.sessionId,
+          pairId: pair.pairId,
+          pairOrder: session.pairOrder,
+          unitIndex: session.unitIndex,
+          arm: session.arm,
+          fixtureSha256: pair.fixtureSha256,
+          mapSnapshotHash,
+          retrievedMapEntryIds: retrieval.entries.map(entry => entry.id),
+        };
+        await adapters.appendAuditRecord?.('session-started', auditMetadata);
         const budget = createPilotSessionBudget(session.budget, deadline);
         /** @type {Record<string, any>} */
         let execution;
@@ -522,14 +534,34 @@ export function createAlgZooPilotRunner(adapters) {
         } finally {
           deadline.cancel();
         }
-        sessionRecords.push(
-          createAlgZooPilotSessionRecord(
-            session,
-            retrieval,
-            execution,
-            mapSnapshotHash
-          )
+        const sessionRecord = createAlgZooPilotSessionRecord(
+          session,
+          retrieval,
+          execution,
+          mapSnapshotHash
         );
+        sessionRecords.push(sessionRecord);
+        const auditEventType =
+          sessionRecord.attemptStatus === 'submitted'
+            ? 'session-finished'
+            : sessionRecord.attemptStatus === 'budget-stopped'
+              ? 'budget-stopped'
+              : 'run-failed';
+        await adapters.appendAuditRecord?.(auditEventType, {
+          ...auditMetadata,
+          status: sessionRecord.attemptStatus,
+          costMeasurementStatus: sessionRecord.costMeasurementStatus,
+          cost: sessionRecord.cost,
+          ...(sessionRecord.failureCode
+            ? { failureCode: sessionRecord.failureCode }
+            : {}),
+          ...(sessionRecord.submission === undefined
+            ? {}
+            : { submission: sessionRecord.submission }),
+          ...(sessionRecord.investigatorRuntime
+            ? { investigatorRuntime: sessionRecord.investigatorRuntime }
+            : {}),
+        });
       }
       const blindedSubmissions = sessionRecords.map(
         createAlgZooBlindedSubmission

@@ -1,15 +1,19 @@
-const AUDIT_EVENT_TYPES = new Set([
-  'session-started',
+const TERMINAL_SESSION_EVENT_TYPES = new Set([
   'session-finished',
   'run-failed',
+  'budget-stopped',
   'run-interrupted',
+]);
+const AUDIT_EVENT_TYPES = new Set([
+  'session-started',
+  ...TERMINAL_SESSION_EVENT_TYPES,
 ]);
 const GENESIS_HASH = '0'.repeat(64);
 
 /**
  * Create an append-only JSONL audit ledger with a verifiable SHA-256 chain.
  * @param {{ledgerPath: string, pathModule: {dirname: (path: string) => string}, mkdirImpl: Function, readFileImpl: Function, appendFileImpl: Function, sha256Impl: (value: string) => string}} options Injected file and digest effects.
- * @returns {{append: (eventType: string, payload: Record<string, any>) => Promise<Record<string, any>>, readAll: () => Promise<Array<Record<string, any>>>}} Ledger operations.
+ * @returns {{append: (eventType: string, payload: Record<string, any>) => Promise<Record<string, any>>, readAll: () => Promise<Array<Record<string, any>>>, readInterruptedSessions: () => Promise<Array<Record<string, any>>>}} Ledger operations.
  */
 export function createAlgZooAuditLedgerCore(options) {
   if (
@@ -71,7 +75,22 @@ export function createAlgZooAuditLedgerCore(options) {
     appendQueue = task.catch(() => {});
     return task;
   };
-  return Object.freeze({ append, readAll });
+  const readInterruptedSessions = async () => {
+    const records = await readAll();
+    const completedSessionIds = new Set(
+      records
+        .filter(record => TERMINAL_SESSION_EVENT_TYPES.has(record.eventType))
+        .map(record => record.payload.sessionId)
+        .filter(sessionId => typeof sessionId === 'string')
+    );
+    return records.filter(
+      record =>
+        record.eventType === 'session-started' &&
+        typeof record.payload.sessionId === 'string' &&
+        !completedSessionIds.has(record.payload.sessionId)
+    );
+  };
+  return Object.freeze({ append, readAll, readInterruptedSessions });
 }
 
 /**

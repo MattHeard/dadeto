@@ -1,0 +1,3 @@
+# AlgZoo pilot session audit lifecycle
+
+Persist a `session-started` event before each investigator attempt, then append exactly one terminal event after building the ordinary session record. Distinguish successful submissions, runtime failures, missing submissions, and budget stops. Keep ledger metadata public and hash-based; held-out evaluation values never enter the audit ledger. `readInterruptedSessions()` should identify starts without terminal events. For focused core coverage, use the documented `npm run check:impact:run -- --files ...` command with all related suites; direct Jest coverage can provide file metrics without confusing those with repository-wide thresholds. Shared `/tmp` may be full, so set `TMPDIR` to an ignored worktree-local directory.

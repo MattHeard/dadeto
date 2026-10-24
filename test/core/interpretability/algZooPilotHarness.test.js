@@ -729,6 +729,117 @@ describe('AlgZoo pilot runner', () => {
       monetaryCostUsd: null,
     });
   });
+
+  it.each([
+    {
+      outcome: 'submitted',
+      expectedStatus: 'submitted',
+      terminalEvent: 'session-finished',
+    },
+    {
+      outcome: 'failed',
+      expectedStatus: 'failed',
+      terminalEvent: 'run-failed',
+    },
+    {
+      outcome: 'budget-stopped',
+      expectedStatus: 'budget-stopped',
+      terminalEvent: 'budget-stopped',
+    },
+    {
+      outcome: 'missing-submission',
+      expectedStatus: 'invalid-submission',
+      terminalEvent: 'run-failed',
+    },
+  ])(
+    'records $outcome as a terminal audit event after its start',
+    async ({ outcome, expectedStatus, terminalEvent }) => {
+      const plan = createAlgZooPilotPlan(configuration, fixture);
+      const pair = {
+        ...plan.schedule.pairs[0],
+        sessionOrder: ['control', 'treatment'],
+      };
+      const heldOut = [{ secret: 'held-out audit sentinel' }];
+      const activity = [];
+      const runner = createTestAlgZooPilotRunner({
+        appendAuditRecord: async (eventType, payload) =>
+          activity.push({ type: 'audit', eventType, payload }),
+        createDeadline: createTestDeadlineFactory().createDeadline,
+        hashMapSnapshot: async () => 'lifecycle-map-hash',
+        runInvestigator: async request => {
+          activity.push({
+            type: 'investigator',
+            sessionId: request.session.sessionId,
+          });
+          if (request.session.arm === 'treatment') {
+            if (outcome === 'failed') throw new Error('synthetic failure');
+            if (outcome === 'budget-stopped')
+              request.budget.reserve({ investigatorTokens: 20001 });
+          }
+          const reservation = request.budget.reserve({ investigatorTokens: 1 });
+          reservation.complete({ investigatorTokens: 1 });
+          if (
+            request.session.arm === 'treatment' &&
+            outcome === 'missing-submission'
+          ) {
+            return { cost: { investigatorTokens: 1 } };
+          }
+          return {
+            cost: { investigatorTokens: 1 },
+            submission: {
+              result: 'synthetic',
+              causalInterventionResult: {
+                schemaVersion: 1,
+                status: 'not-tested',
+              },
+            },
+            ...(request.session.arm === 'control'
+              ? { investigatorRuntime: { provider: 'synthetic' } }
+              : {}),
+          };
+        },
+        scoreBlindedSubmissions: async request => {
+          activity.push({
+            type: 'scorer',
+            heldOutEvaluationData: request.heldOutEvaluationData,
+          });
+          return [];
+        },
+      });
+
+      const result = await runner.runTargetPair(pair, [], heldOut);
+      const auditEvents = activity.filter(event => event.type === 'audit');
+
+      expect(activity.map(event => event.type)).toEqual([
+        'audit',
+        'investigator',
+        'audit',
+        'audit',
+        'investigator',
+        'audit',
+        'scorer',
+      ]);
+      expect(auditEvents.map(event => event.eventType)).toEqual([
+        'session-started',
+        'session-finished',
+        'session-started',
+        terminalEvent,
+      ]);
+      expect(auditEvents[3].payload).toMatchObject({
+        status: expectedStatus,
+        cost: result.sessionRecords[1].cost,
+      });
+      if (outcome === 'missing-submission')
+        expect(auditEvents[3].payload).not.toHaveProperty('submission');
+      else
+        expect(auditEvents[3].payload.submission).toEqual(
+          result.sessionRecords[1].submission
+        );
+      expect(JSON.stringify(auditEvents)).not.toContain(
+        'held-out audit sentinel'
+      );
+    }
+  );
 });
 
 describe('AlgZoo typed causal result enforcement', () => {

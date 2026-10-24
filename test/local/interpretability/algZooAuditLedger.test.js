@@ -69,6 +69,29 @@ describe('AlgZoo audit ledger', () => {
     ]);
   });
 
+  it('recognizes starts without a terminal lifecycle event', async () => {
+    const { ledger } = createLedgerHarness();
+    const terminalEvents = [
+      'session-finished',
+      'run-failed',
+      'budget-stopped',
+      'run-interrupted',
+    ];
+    for (const [index, eventType] of terminalEvents.entries()) {
+      const sessionId = `completed-${index}`;
+      await ledger.append('session-started', { sessionId });
+      await ledger.append(eventType, { sessionId });
+    }
+    await ledger.append('session-started', { sessionId: 'interrupted' });
+
+    await expect(ledger.readInterruptedSessions()).resolves.toMatchObject([
+      {
+        eventType: 'session-started',
+        payload: { sessionId: 'interrupted' },
+      },
+    ]);
+  });
+
   it('rejects tampered history before appending another record', async () => {
     const { files, ledger } = createLedgerHarness();
     await ledger.append('session-started', { sessionId: 'session-1' });
