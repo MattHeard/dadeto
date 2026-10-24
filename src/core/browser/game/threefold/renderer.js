@@ -184,8 +184,16 @@ export function renderThreefoldFrame(
       const maraShapes = spriteShapes(actor, camera, tick).map(shape => ({
         ...shape,
         actorId: 'mara',
+        // Mara's source art is pixel-level art. Without this, the shared
+        // 8px world-grid default expands every source pixel into a block and
+        // erases the hooded player silhouette that distinguishes her from NPCs.
+        spriteGridSize: PERSON_GRID_PIXELS,
       }));
-      return [...maraShapes, ...maraRoleLabel(maraShapes)];
+      return [
+        ...playerRoleOutline(maraShapes),
+        ...maraShapes,
+        ...maraRoleLabel(maraShapes),
+      ];
     },
   });
   frame.quest = isHighWorld ? state.scene.displayName : 'The Broken Gate';
@@ -2516,7 +2524,7 @@ function personSprite(actor, camera, tick, heightMeters) {
     ...pixel,
     width: PERSON_GRID_PIXELS,
     height: PERSON_GRID_PIXELS,
-    fill: '#e9d88d',
+    fill: '#43e9da',
     geometryId: actor.id,
     growthPreview: actor.growthPreview === true,
     logicalGridKind: actor.logicalGridKind,
@@ -2612,6 +2620,43 @@ function applyResidentRoleAccents(pixels) {
   top.fill = '#f2ca59';
   const body = bottom === top ? pixels.find(pixel => pixel !== top) : bottom;
   if (body) body.fill = '#19a9a0';
+}
+
+/**
+ * Give the player sprite a warm outline, distinct from resident cyan outlines.
+ * @param {ThreefoldSpriteShape[]} sprites Mara's source sprite pixels.
+ * @returns {ThreefoldSpriteShape[]} Grid-aligned outline cells behind Mara.
+ */
+function playerRoleOutline(sprites) {
+  const cells = new Map(
+    sprites.map(shape => {
+      const x = snapCanvasCoordinate(shape.x, PERSON_GRID_PIXELS);
+      const y = snapCanvasCoordinate(shape.y, PERSON_GRID_PIXELS);
+      return [`${x}:${y}`, { x, y }];
+    })
+  );
+  const outline = new Map();
+  for (const pixel of cells.values()) {
+    for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
+      for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+        if (offsetX === 0 && offsetY === 0) continue;
+        const x = pixel.x + offsetX * PERSON_GRID_PIXELS;
+        const y = pixel.y + offsetY * PERSON_GRID_PIXELS;
+        const key = `${x}:${y}`;
+        if (x >= 0 && x < 160 && y >= 0 && y < 108 && !cells.has(key))
+          outline.set(key, { x, y });
+      }
+    }
+  }
+  return [...outline.values()].map(pixel => ({
+    type: 'rect',
+    ...pixel,
+    width: PERSON_GRID_PIXELS,
+    height: PERSON_GRID_PIXELS,
+    fill: '#f2ca59',
+    actorId: 'mara',
+    spriteGridSize: PERSON_GRID_PIXELS,
+  }));
 }
 
 /**

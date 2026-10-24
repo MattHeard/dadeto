@@ -1705,6 +1705,10 @@ describe('THREEFOLD resident identity marker', () => {
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
     const playerLabel = mara.filter(shape => shape.playerMarker === true);
+    const playerSprite = mara.filter(
+      shape => shape.playerMarker !== true && shape.fill !== '#f2ca59'
+    );
+    const playerOutline = mara.filter(shape => shape.fill === '#f2ca59');
 
     expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#f2ca59')).toBe(true);
@@ -1712,7 +1716,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(
       residentOutline.every(
         shape =>
-          shape.fill === '#e9d88d' &&
+          shape.fill === '#43e9da' &&
           shape.spriteGridSize === 2 &&
           shape.npcMarker === true
       )
@@ -1734,6 +1738,27 @@ describe('THREEFOLD resident identity marker', () => {
       [...new Set(npcLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
     ).toEqual(['C', 'N', 'P']);
     expect(mara.length).toBeGreaterThan(0);
+    expect(playerSprite.length).toBeGreaterThan(0);
+    expect(
+      playerSprite.every(
+        shape =>
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0
+      )
+    ).toBe(true);
+    expect(playerOutline.length).toBeGreaterThan(0);
+    expect(
+      playerOutline.every(
+        shape =>
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.fill === '#f2ca59'
+      )
+    ).toBe(true);
     expect(playerLabel.length).toBeGreaterThan(0);
     expect(
       playerLabel.every(
