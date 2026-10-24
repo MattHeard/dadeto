@@ -1,4 +1,7 @@
-import { isThreefoldResidentAvailable } from './return-tide-world.js';
+import {
+  isThreefoldResidentAvailable,
+  RETURN_TIDE_PEOPLE,
+} from './return-tide-world.js';
 import {
   createThreefoldPressureNetwork,
   getThreefoldNurseryWaterDepthMeters,
@@ -62,15 +65,10 @@ const PERSON_GRID_PIXELS = 2;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const PERSON_ACTOR_IDS = new Set([
+  ...RETURN_TIDE_PEOPLE.map(({ id }) => id),
   'latchfolk-watchkeeper',
-  'lantern-ward-mira',
-  'lantern-ward-tov',
   'belltops-iri',
-  'belltops-sentry-orla',
-  'crownback-elder-tharn',
-  'weftways-pell',
   'belltops-foldglass-rival',
-  'grainlands-iru',
 ]);
 /** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
