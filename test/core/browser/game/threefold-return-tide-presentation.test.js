@@ -150,6 +150,25 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
       ...facts(),
       availableFactions: ['assembly'],
     });
+    const committedSeal = presentThreefoldReturnTide(
+      state,
+      {
+        ...tide,
+        assemblySealPlanStatus: 'committed',
+        controls: { ...tide.controls, sealClosed: true },
+      },
+      { ...facts(), availableFactions: ['assembly'] }
+    );
+    const interruptedSeal = presentThreefoldReturnTide(
+      state,
+      { ...tide, assemblySealPlanStatus: 'interrupted' },
+      { ...facts(), availableFactions: ['assembly'] }
+    );
+    const unavailableSeal = presentThreefoldReturnTide(
+      state,
+      { ...tide, assemblySealPlanStatus: 'unavailable' },
+      { ...facts(), intactMechanisms: ['seal'], availableFactions: [] }
+    );
     const aftermath = presentThreefoldReturnTide(state, observedAftermath(), {
       ...facts(),
       intactMechanisms: ['seal'],
@@ -159,8 +178,10 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     expect(prepared.text).toContain('independently preparing the Final Seal');
     expect(prepared.text).toContain('cuts deep Choir branches');
     expect(prepared.text).toContain('can combine');
+    expect(prepared.text).toContain('will close it at the tide rise');
     expect(cueShapes.map(shape => shape.text)).toEqual(prepared.planCue);
     expect(cueShapes.every(shape => shape.y % 8 === 0)).toBe(true);
+    expect(prepared.planCue).toContain('REACH SEAL TO INTERRUPT');
     expect(noAssembly.text).toContain('No surviving Assembly representative');
     expect(noAssembly.planCue[0]).toBe('ASSEMBLY CREW ABSENT');
     expect(closedSeal.text).toContain('The Final Seal is closed');
@@ -168,6 +189,11 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     expect(closedSeal.text).not.toContain('independently preparing');
     expect(brokenSeal.text).toContain('Final Seal mechanism is destroyed');
     expect(brokenSeal.planCue[0]).toBe('FINAL SEAL DEVICE BROKEN');
+    expect(committedSeal.text).toContain(
+      'The Assembly closed the Final Seal at the tide rise'
+    );
+    expect(interruptedSeal.text).toContain('Mara interrupted the Assembly');
+    expect(unavailableSeal.text).toContain('no representative survived');
     expect(aftermath.text).not.toContain('independently preparing');
     expect(aftermath.planCue).toEqual([]);
   });

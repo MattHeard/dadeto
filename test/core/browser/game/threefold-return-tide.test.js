@@ -92,8 +92,12 @@ describe('THREEFOLD systemic Return Tide', () => {
     expect(() => advanceThreefoldReturnTide(state, facts, NaN)).toThrow();
   });
 
-  test('inaction still resolves the world, with real irreversible unprepared losses and conserved water', () => {
-    const facts = { ...preparedFacts(), preparedGroups: [] };
+  test('without a surviving Assembly, inaction resolves the world with irreversible losses and conserved water', () => {
+    const facts = {
+      ...preparedFacts(),
+      availableFactions: [],
+      preparedGroups: [],
+    };
     const state = advanceThreefoldReturnTide(
       createThreefoldReturnTide(),
       facts,
@@ -149,6 +153,62 @@ describe('THREEFOLD systemic Return Tide', () => {
     const reopened = operateThreefoldReturnTide(result, 'open-seal', facts);
     expect(reopened.controls.sealClosed).toBe(false);
     expect(reopened.damageIds).toEqual(result.damageIds);
+  });
+
+  test('the Assembly commits its prepared seal once at the action-time rise milestone', () => {
+    const facts = preparedFacts();
+    const warning = advanceThreefoldReturnTide(
+      createThreefoldReturnTide(),
+      facts,
+      1799
+    );
+    expect(warning.assemblySealPlanStatus).toBe('pending');
+    expect(warning.controls.sealClosed).toBe(false);
+
+    const rising = advanceThreefoldReturnTide(warning, facts, 1800);
+
+    expect(rising).toMatchObject({
+      elapsedGameSeconds: 1800,
+      assemblySealPlanStatus: 'committed',
+      controls: { sealClosed: true },
+    });
+    expect(rising.damageIds).toContain('choir-branches');
+    expect(advanceThreefoldReturnTide(rising, facts, 1800)).toBe(rising);
+  });
+
+  test('the Assembly plan becomes unavailable when its representative or seal hardware is gone', () => {
+    const state = createThreefoldReturnTide();
+    const absent = advanceThreefoldReturnTide(
+      state,
+      { ...preparedFacts(), availableFactions: [] },
+      1800
+    );
+    const broken = advanceThreefoldReturnTide(
+      state,
+      { ...preparedFacts(), intactMechanisms: [] },
+      1800
+    );
+
+    expect(absent.assemblySealPlanStatus).toBe('unavailable');
+    expect(absent.controls.sealClosed).toBe(false);
+    expect(absent.damageIds).not.toContain('choir-branches');
+    expect(broken.assemblySealPlanStatus).toBe('unavailable');
+    expect(broken.controls.sealClosed).toBe(false);
+  });
+
+  test('a pre-rise player override prevents the later Assembly commitment', () => {
+    const facts = preparedFacts();
+    const interrupted = operateThreefoldReturnTide(
+      createThreefoldReturnTide(),
+      'interrupt-seal-plan',
+      facts
+    );
+    const rising = advanceThreefoldReturnTide(interrupted, facts, 1800);
+
+    expect(interrupted.assemblySealPlanStatus).toBe('interrupted');
+    expect(rising.assemblySealPlanStatus).toBe('interrupted');
+    expect(rising.controls.sealClosed).toBe(false);
+    expect(rising.damageIds).not.toContain('choir-branches');
   });
 
   test('the spillway preserves root routes while flooding the Quay; preparation changes people, not material loss', () => {
@@ -299,6 +359,7 @@ describe('THREEFOLD systemic Return Tide', () => {
   test('surviving preparation cannot resurrect prior named growth deaths or erase tide deaths', () => {
     const facts = {
       ...preparedFacts(),
+      availableFactions: [],
       preparedGroups: [],
       priorDeathIds: ['sera', 'neme'],
     };
@@ -343,6 +404,12 @@ describe('THREEFOLD systemic Return Tide', () => {
       { ...valid, elapsedGameSeconds: 5401 },
       { ...valid, controls: {} },
       { ...valid, regulatorFailed: 'false' },
+      { ...valid, assemblySealPlanStatus: 'unknown' },
+      {
+        ...valid,
+        elapsedGameSeconds: 1800,
+        assemblySealPlanStatus: 'pending',
+      },
       { ...valid, volumesCubicMeters: [0, 0, 0, 0, 0] },
       { ...valid, volumesCubicMeters: null },
       { ...valid, volumesCubicMeters: [THREEFOLD_RETURN_TIDE_VOLUME] },

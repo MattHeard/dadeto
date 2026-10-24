@@ -1879,6 +1879,48 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
+test('gives residents an NPC-only diamond distinct from Mara’s pointer', () => {
+  const scene = createBrokenGateScene();
+  const watchkeeper = scene.interactables.find(
+    item => item.id === 'latchfolk-watchkeeper'
+  );
+  const frame = renderThreefoldFrame(
+    createThreefoldSimulation(THRESHOLDS, scene)
+  );
+  const emblem = frame.shapes.filter(
+    shape =>
+      shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'emblem'
+  );
+  const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
+
+  expect(emblem).toHaveLength(8);
+  expect(emblem.slice(0, 7).map(({ width }) => width)).toEqual([
+    2, 6, 10, 14, 10, 6, 2,
+  ]);
+  expect(
+    emblem.every(
+      shape =>
+        shape.height === 2 &&
+        shape.spriteGridSize === 2 &&
+        shape.x % 2 === 0 &&
+        shape.y % 2 === 0 &&
+        shape.width % 2 === 0
+    )
+  ).toBe(true);
+  expect(emblem.slice(0, 7).every(shape => shape.fill === '#f14bd3')).toBe(
+    true
+  );
+  expect(emblem[7]).toMatchObject({
+    width: 2,
+    height: 2,
+    fill: '#f3f6d2',
+    npcMarker: true,
+    npcMarkerKind: 'emblem',
+  });
+  expect(mara.some(shape => shape.npcMarkerKind === 'emblem')).toBe(false);
+  expect(mara.some(shape => shape.playerMarkerKind === 'pointer')).toBe(true);
+});
+
 describe('THREEFOLD legacy withdrawal rendering', () => {
   test.each([
     [

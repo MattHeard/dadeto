@@ -256,6 +256,10 @@ Follow-up playtest: the player still could not distinguish Mara from the residen
 
 Follow-up playtest: the cyan NPC treatment still blended into the green playfield and did not separate residents from Mara clearly enough. NPCs now use a contrasting violet-and-pink body palette, bright magenta halo, cap, and badge; Mara retains the warm gold-and-cream sprite, outline, and arrow. Existing renderer assertions now describe the new resident palette and preserve scale-responsive sprite sizing.
 
+## Assembly Final Seal autonomous action — 2026-10-24
+
+Bead `dadeto-9gba` makes the Assembly's independently prepared plan a real, deterministic world action. At 1,800 campaign action-clock seconds, the Assembly closes the intact Final Seal exactly once if a representative survives; this permanently severs deep Choir branches. Missing representatives or destroyed hardware record the plan as unavailable. Mara can interrupt the pending plan through the reachable physical seal before the deadline and then operate other controls. Tests cover action-clock timing, no render-driven time, death/hardware unavailability, player interruption, irreversible cost, presentation, campaign export/import, and schema-v4 migration without retroactive actions. Focused Return Tide and campaign-outcomes Jest passed 4 suites / 52 tests. Full `npm run check`, build, manuals, and exact-head CI remain required before closing the bead.
+
 ## NPC contrast follow-up — 2026-10-24
 
 Bead `dadeto-pajf` strengthens the resident outline from a thin cyan edge to a 4px cyan halo around NPC pixels, while Mara keeps her thin gold outline and downward gold pointer. Focused renderer coverage verifies the larger cyan footprint extends around NPC art and remains separate from the player's gold identity cues.
@@ -263,3 +267,7 @@ Bead `dadeto-pajf` strengthens the resident outline from a thin cyan edge to a 4
 ## Assembly Final Seal warning — 2026-10-24
 
 Bead `dadeto-4lxr` covers the missing Return Tide warning. While the tide is in its warning phase, the handheld now names the Assembly's independently prepared Final Seal and its irreversible deep-root cost; it notes that the spillway and manifolds can combine. The cue instead reports absent Assembly representation or a destroyed seal mechanism when those facts apply, and disappears in aftermath rather than describing an unchosen plan as an outcome. Focused renderer/presentation regression checks the 160×144 cue, 8px-aligned rows, conditional state, and after-state.
+
+## NPC identity emblem follow-up — 2026-10-24
+
+Bead `dadeto-pajf` responds to another playtest report that residents still blend into Mara. Each resident now has a 14×14 magenta diamond with a cream center inside the NPC badge; Mara keeps her gold downward pointer. This uses shape as well as color and tiny text to distinguish roles. Regression coverage asserts the diamond's snapped pixel geometry and confirms the player does not receive it; resident sprite scaling remains covered by the existing adjacent-scale tests. Focused renderer tests passed 1 suite / 44 tests. `npm run check` passed all 10 gates (six impact shards); `npm run build` passed. Exact-head CI evidence will be recorded after the commit is pushed.

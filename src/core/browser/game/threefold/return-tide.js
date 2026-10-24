@@ -30,6 +30,13 @@ const CONTROLS = [
   'coastManifold',
   'foldglassBound',
 ];
+const ASSEMBLY_SEAL_PLAN_STATES = [
+  'pending',
+  'committed',
+  'interrupted',
+  'unavailable',
+  'legacy',
+];
 const LOSS_IDS = [
   'quay-low-district',
   'quay-hospital',
@@ -115,9 +122,9 @@ const DAMAGE_OBLIGATIONS = {
 
 /** @typedef {'assembly'|'latchfolk'|'threadbound'|'nursery'|'choir'|'crownback'} ReturnTideFaction */
 /** @typedef {{sealClosed:boolean,spillwayOpen:boolean,humanManifold:boolean,rootManifold:boolean,coastManifold:boolean,foldglassBound:boolean}} ReturnTideControls */
-/** @typedef {{originGameSeconds:number,elapsedGameSeconds:number,controls:ReturnTideControls,agreements:string[],volumesCubicMeters:number[],peakDepthsMeters:number[],damageIds:string[],deathIds:string[],displacedGroups:string[],observedSceneIds:string[],brokenMechanisms:string[],rememberedGrowthDeaths:string[],regulatorFailed:boolean}} ThreefoldReturnTide */
+/** @typedef {{originGameSeconds:number,elapsedGameSeconds:number,assemblySealPlanStatus:'pending'|'committed'|'interrupted'|'unavailable'|'legacy',controls:ReturnTideControls,agreements:string[],volumesCubicMeters:number[],peakDepthsMeters:number[],damageIds:string[],deathIds:string[],displacedGroups:string[],observedSceneIds:string[],brokenMechanisms:string[],rememberedGrowthDeaths:string[],regulatorFailed:boolean}} ThreefoldReturnTide */
 /** @typedef {{intactMechanisms:string[],availableFactions:string[],engineerAvailable:boolean,evidenceCount:number,rootRelief:boolean,coastReady:boolean,preparedGroups:string[],priorDeathIds:string[],civicAccount?:{reportFiled:boolean,iriConfessionDisclosed:boolean,passengerOutcome:'aboard'|'partial'|'evacuated'|'lost'|null,ferryOutcome:'afloat'|'lost'|null}}} ReturnTideFacts */
-/** @typedef {'close-seal'|'open-seal'|'open-spillway'|'fit-human-manifold'|'fit-root-manifold'|'fit-coast-manifold'|'bind-foldglass'} ReturnTideOperation */
+/** @typedef {'close-seal'|'open-seal'|'interrupt-seal-plan'|'open-spillway'|'fit-human-manifold'|'fit-root-manifold'|'fit-coast-manifold'|'bind-foldglass'} ReturnTideOperation */
 
 /**
  * Begin an unavoidable action-time tide, preserving a warning horizon for legacy campaigns.
@@ -129,6 +136,7 @@ export function createThreefoldReturnTide(originGameSeconds = 0) {
   return {
     originGameSeconds,
     elapsedGameSeconds: 0,
+    assemblySealPlanStatus: 'pending',
     controls: {
       sealClosed: false,
       spillwayOpen: false,
@@ -177,6 +185,23 @@ export function normalizeThreefoldReturnTide(candidate) {
     CONTROLS.some(key => typeof state.controls[key] !== 'boolean')
   )
     throw new TypeError('Return Tide controls are invalid.');
+  const assemblySealPlanStatus =
+    state.assemblySealPlanStatus === undefined
+      ? state.controls.sealClosed
+        ? 'interrupted'
+        : elapsed >= THREEFOLD_RETURN_TIDE_RISE_SECONDS
+          ? 'legacy'
+          : 'pending'
+      : state.assemblySealPlanStatus;
+  if (!ASSEMBLY_SEAL_PLAN_STATES.includes(assemblySealPlanStatus))
+    throw new TypeError('Return Tide Assembly plan is invalid.');
+  if (
+    assemblySealPlanStatus === 'pending' &&
+    elapsed >= THREEFOLD_RETURN_TIDE_RISE_SECONDS
+  )
+    throw new RangeError(
+      'Return Tide Assembly plan cannot remain pending after rise.'
+    );
   if (typeof state.regulatorFailed !== 'boolean')
     throw new TypeError('Return Tide failure is invalid.');
   const volumes = normalizeMeasurements(state.volumesCubicMeters);
@@ -198,6 +223,7 @@ export function normalizeThreefoldReturnTide(candidate) {
   return {
     originGameSeconds: origin,
     elapsedGameSeconds: elapsed,
+    assemblySealPlanStatus,
     controls: /** @type {ReturnTideControls} */ (
       Object.fromEntries(CONTROLS.map(key => [key, state.controls[key]]))
     ),
@@ -248,11 +274,26 @@ export function pledgeThreefoldReturnTide(state, faction, facts) {
  * @returns {ThreefoldReturnTide} Device/cost change, or the same state if unavailable.
  */
 export function operateThreefoldReturnTide(state, operation, facts) {
+  if (operation === 'interrupt-seal-plan')
+    return state.assemblySealPlanStatus === 'pending'
+      ? { ...state, assemblySealPlanStatus: 'interrupted' }
+      : state;
   const control = operationControl(operation);
   if (!control || !canOperate(state, operation, facts)) return state;
   const value = operation !== 'open-seal';
-  if (state.controls[control] === value) return state;
-  const next = { ...state, controls: { ...state.controls, [control]: value } };
+  if (
+    state.controls[control] === value &&
+    state.assemblySealPlanStatus !== 'pending'
+  )
+    return state;
+  const next = {
+    ...state,
+    assemblySealPlanStatus:
+      state.assemblySealPlanStatus === 'pending'
+        ? 'interrupted'
+        : state.assemblySealPlanStatus,
+    controls: { ...state.controls, [control]: value },
+  };
   if (operation === 'close-seal')
     return {
       ...next,
@@ -286,10 +327,36 @@ export function advanceThreefoldReturnTide(state, facts, absoluteGameSeconds) {
       ...next,
       elapsedGameSeconds: next.elapsedGameSeconds + STEP_SECONDS,
     };
+    if (
+      next.elapsedGameSeconds >= THREEFOLD_RETURN_TIDE_RISE_SECONDS &&
+      next.assemblySealPlanStatus === 'pending'
+    )
+      next = resolveAssemblySealPlan(next, facts);
     if (next.elapsedGameSeconds >= THREEFOLD_RETURN_TIDE_RISE_SECONDS)
       next = advanceTideStep(next, facts);
   }
   return next;
+}
+
+/**
+ * Resolve the Assembly's one-shot plan at the action-time rise milestone.
+ * @param {ThreefoldReturnTide} state Tide at the exact commitment milestone.
+ * @param {ReturnTideFacts} facts People and hardware surviving at this action boundary.
+ * @returns {ThreefoldReturnTide} Committed plan or explicit unavailable state.
+ */
+function resolveAssemblySealPlan(state, facts) {
+  if (
+    !facts.availableFactions.includes('assembly') ||
+    !facts.intactMechanisms.includes('seal') ||
+    state.brokenMechanisms.includes('seal')
+  )
+    return { ...state, assemblySealPlanStatus: 'unavailable' };
+  return {
+    ...state,
+    assemblySealPlanStatus: 'committed',
+    controls: { ...state.controls, sealClosed: true },
+    damageIds: addIdentifiers(state.damageIds, ['choir-branches']),
+  };
 }
 
 /**
@@ -341,6 +408,7 @@ function operationControl(operation) {
   const controls = {
     'close-seal': 'sealClosed',
     'open-seal': 'sealClosed',
+    'interrupt-seal-plan': null,
     'open-spillway': 'spillwayOpen',
     'fit-human-manifold': 'humanManifold',
     'fit-root-manifold': 'rootManifold',

@@ -360,11 +360,14 @@ export function createThreefoldRuntime(options = {}) {
         campaignClock
       );
       pressureNetwork = arrival.network;
-      campaignOutcomes = advanceThreefoldFinale(
-        ensureThreefoldReturnTide(campaignOutcomes, campaignClock),
+      const advancedFinale = advanceThreefoldFinaleWithNotice(
+        campaignOutcomes,
         priorTideFacts,
-        campaignClock
+        campaignClock,
+        finaleNotice
       );
+      campaignOutcomes = advancedFinale.outcomes;
+      finaleNotice = advancedFinale.notice;
       projectCampaignState();
     }
     const readArrival =
@@ -825,5 +828,43 @@ function describeThreefoldRuntimeWorld(state) {
                 : isHighWorldSimulationState(state)
                   ? state.elapsedGameSeconds / 3600
                   : state.crisis.elapsedMinutes / 60,
+  };
+}
+
+/**
+ * Explain a one-time Assembly plan transition at the rise milestone.
+ * @param {string} before Persisted plan status before the tide step.
+ * @param {string} after Persisted plan status after the tide step.
+ * @returns {string} Accessible event notice, or empty when no commitment occurred.
+ */
+function autonomousSealNotice(before, after) {
+  if (before !== 'pending') return '';
+  if (after === 'committed')
+    return 'At the tide rise, the Assembly closed the Final Seal. Deep Choir branches are permanently severed.';
+  if (after === 'unavailable')
+    return 'At the tide rise, the Assembly could not close the Final Seal because its crew or mechanism was unavailable.';
+  return '';
+}
+
+/**
+ * Advance campaign tide state and retain the notice for its one-shot Assembly action.
+ * @param {ReturnType<typeof ensureThreefoldReturnTide>} outcomes Current campaign record.
+ * @param {import('./return-tide.js').ReturnTideFacts} facts Established world prerequisites.
+ * @param {{elapsedGameSeconds:number}} clock Resulting action-time clock.
+ * @param {string} previousNotice Existing deliberate interaction notice.
+ * @returns {{outcomes:ReturnType<typeof ensureThreefoldReturnTide>,notice:string}} Updated finale and notice.
+ */
+function advanceThreefoldFinaleWithNotice(
+  outcomes,
+  facts,
+  clock,
+  previousNotice
+) {
+  const before = outcomes.returnTide.assemblySealPlanStatus;
+  const next = advanceThreefoldFinale(outcomes, facts, clock);
+  const after = next.returnTide.assemblySealPlanStatus;
+  return {
+    outcomes: next,
+    notice: autonomousSealNotice(before, after) || previousNotice,
   };
 }

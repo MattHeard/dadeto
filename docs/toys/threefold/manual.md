@@ -8,7 +8,7 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
-Mara is marked with a gold downward arrow and gold outline. Residents have violet-and-pink sprites, a bright magenta outline and cap, and a square `NPC` badge. The warm player colors and magenta resident colors remain distinct as characters change size.
+Mara is marked with a gold downward arrow and gold outline. Residents have violet-and-pink sprites, a bright magenta outline and cap, and a magenta diamond emblem inside the `NPC` badge. The emblem gives residents a geometric marker that is separate from Mara's downward pointer; resident body size continues to track their physical height as Mara changes scale.
 
 ## Input
 
@@ -181,7 +181,7 @@ The Return Tide starts with a 20,000 m³ reservoir and advances only through del
 
 The finale has no ending selector. Reach physical controls in their existing regions to close or reopen the city seal, open the Crownback spillway, fit finite human/root/coast manifolds, and bind Foldglass control when its evidence, engineering, hardware and cross-community agreements are actually available. The seal protects the Quay while cutting deep roots; the spillway protects those roots by flooding the Quay. A shared regulator spreads exposure and requires ongoing labor, with sacrifice-channel homes still at risk. Controls can combine into hybrid outcomes. Missing or later-destroyed machinery can leave a partial regulator that fails at the peak; past damage and deaths remain.
 
-Before the tide rises, the handheld identifies the Assembly's independent Final Seal plan and its deep-root cost. If no Assembly representative survives or the seal mechanism is destroyed, the cue says so; other controls can still combine. The warning does not appear as an aftermath outcome if the plan was never carried out.
+Before the tide rises, the handheld identifies the Assembly's independent Final Seal plan and its deep-root cost. Reach the physical seal in Belltops and press A to interrupt the plan before the tide rises; then Mara can operate the spillway or manifolds instead. If Mara does nothing, the Assembly closes the intact seal at the 30-minute action-time mark, permanently severing the deep Choir branches. If no Assembly representative survives or the mechanism is destroyed, the plan is recorded as unavailable. The result follows deliberate in-game actions, not browser time, and remains in campaign saves.
 
 The Assembly, Latchfolk, Threadbound, Nursery, Choir and Crownback accords are explicit reachable conversations based on surviving people and real prior preparation. Each signed accord carries its own daily manual-control duty. Found evidence and discovered outcomes remain separate: a physical event elsewhere is not reported until Mara surveys that region after the tide. The accessible aftermath account describes surveyed local losses, displacement, deaths, survivors and asset-specific repair or relocation duties. Other regions remain unknown until visited. Foldglass restrictions appear only if Mara actually bound the regulator. Full scenario coverage and remaining epilogue breadth are tracked in `acceptance.md`; this slice does not mark the complete campaign spec done.
 

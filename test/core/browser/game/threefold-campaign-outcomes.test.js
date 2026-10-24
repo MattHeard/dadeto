@@ -9,6 +9,7 @@ import { createThreefoldCampaignOutcomesSaveStore } from '../../../../src/core/b
 import { createThreefoldRuntime } from '../../../../src/core/browser/game/threefold/runtime.js';
 import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
 import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/threefold/belltops.js';
+import { createThreefoldReturnTide } from '../../../../src/core/browser/game/threefold/return-tide.js';
 
 describe('THREEFOLD campaign outcomes', () => {
   test('starts without publishing an undiscovered Iri outcome', () => {
@@ -137,7 +138,7 @@ describe('THREEFOLD campaign outcomes', () => {
         },
       };
       const serialized = serializeThreefoldCampaignOutcomes(outcomes);
-      expect(JSON.parse(serialized).schemaVersion).toBe(4);
+      expect(JSON.parse(serialized).schemaVersion).toBe(5);
       expect(restoreThreefoldCampaignOutcomes(serialized)).toEqual(outcomes);
     }
     expect(
@@ -176,6 +177,40 @@ describe('THREEFOLD campaign outcomes', () => {
     );
   });
 
+  test('migrates version-four tide saves without retroactively running the Assembly plan', () => {
+    const tide = createThreefoldReturnTide();
+    const legacy = ({ elapsedGameSeconds, sealClosed = false }) => {
+      const returnTide = {
+        ...tide,
+        elapsedGameSeconds,
+        controls: { ...tide.controls, sealClosed },
+      };
+      delete returnTide.assemblySealPlanStatus;
+      return JSON.stringify({
+        game: 'threefold-campaign-outcomes',
+        schemaVersion: 4,
+        state: {
+          iriFate: null,
+          returnTide,
+        },
+      });
+    };
+
+    expect(
+      restoreThreefoldCampaignOutcomes(legacy({ elapsedGameSeconds: 1785 }))
+        .returnTide.assemblySealPlanStatus
+    ).toBe('pending');
+    expect(
+      restoreThreefoldCampaignOutcomes(legacy({ elapsedGameSeconds: 1800 }))
+        .returnTide.assemblySealPlanStatus
+    ).toBe('legacy');
+    expect(
+      restoreThreefoldCampaignOutcomes(
+        legacy({ elapsedGameSeconds: 1800, sealClosed: true })
+      ).returnTide.assemblySealPlanStatus
+    ).toBe('interrupted');
+  });
+
   test('rejects unrelated, unsupported, and malformed campaign outcome saves', () => {
     expect(restoreThreefoldCampaignOutcomes(null)).toBeNull();
     expect(restoreThreefoldCampaignOutcomes('{bad json')).toBeNull();
@@ -186,7 +221,7 @@ describe('THREEFOLD campaign outcomes', () => {
       restoreThreefoldCampaignOutcomes(
         JSON.stringify({
           game: 'threefold-campaign-outcomes',
-          schemaVersion: 5,
+          schemaVersion: 6,
           state: { iriFate: null },
         })
       )

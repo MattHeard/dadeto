@@ -460,9 +460,18 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     });
     approach(runtime, 'return-tide-seal-control');
     expect(runtime.frame().threefold.returnTide.interaction.label).toBe(
-      'A CLOSE CITY SEAL'
+      'A INTERRUPT SEAL PLAN'
     );
     runtime.resume();
+    runtime.step(125, ['a']);
+    expect(actualTide(runtime).assemblySealPlanStatus).toBe('interrupted');
+    expect(actualTide(runtime).controls.sealClosed).toBe(false);
+    runtime.step(125, ['a']);
+    expect(actualTide(runtime).controls.sealClosed).toBe(false);
+    runtime.step(125, []);
+    expect(runtime.frame().threefold.returnTide.interaction.label).toBe(
+      'A CLOSE CITY SEAL'
+    );
     runtime.step(125, ['a']);
     expect(actualTide(runtime).controls.sealClosed).toBe(true);
     expect(actualTide(runtime).damageIds).toContain('choir-branches');
@@ -472,7 +481,7 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     runtime.step(125, ['a']);
     expect(actualTide(runtime).controls.sealClosed).toBe(false);
     expect(actualTide(runtime).damageIds).toContain('choir-branches');
-    expect(runtime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(30);
+    expect(runtime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(45);
     expect(runtime.frame().toast).toContain('Reopening cannot restore');
   });
 
@@ -506,20 +515,21 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
       finished: true,
       epilogue: [],
     });
-    expect(actualTide(runtime).damageIds).toContain('quay-hospital');
-    expect(actualTide(runtime).deathIds).toContain('sera');
+    expect(actualTide(runtime).assemblySealPlanStatus).toBe('committed');
+    expect(actualTide(runtime).damageIds).toContain('choir-branches');
+    expect(actualTide(runtime).deathIds).not.toContain('sera');
     expect(
       runtime
         .getState()
         .scene.creatures.some(person => person.id === 'belltops-sera')
-    ).toBe(false);
-    expect(runtime.getState().player.destroyedGeometryIds).toContain(
+    ).toBe(true);
+    expect(runtime.getState().player.destroyedGeometryIds).not.toContain(
       'return-tide-hospital'
     );
     runtime.dispatch('interact');
     const content = runtime.frame().threefold.returnTide;
     expect(content.epilogue).toContain(
-      'sera: died in the Return Tide; no later repair restores this person.'
+      'sera: survived here. Prior choices and debts remain.'
     );
     expect(content.epilogue.some(row => row.startsWith('iru:'))).toBe(false);
     const backup = runtime.exportCampaign();
@@ -533,13 +543,13 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
       content.epilogue
     );
     restored.resetSave();
-    expect(actualTide(restored).deathIds).toContain('sera');
+    expect(actualTide(restored).deathIds).not.toContain('sera');
     expect(
       restored
         .getState()
         .scene.creatures.some(person => person.id === 'belltops-sera')
-    ).toBe(false);
-    expect(restored.getState().player.destroyedGeometryIds).toContain(
+    ).toBe(true);
+    expect(restored.getState().player.destroyedGeometryIds).not.toContain(
       'return-tide-hospital'
     );
     expect(restored.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(5415);
@@ -565,7 +575,8 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
         .frame()
         .threefold.returnTide.epilogue.some(row => row.startsWith('sera:'))
     ).toBe(false);
-    expect(actualTide(quay).deathIds).toContain('sera');
+    expect(actualTide(quay).deathIds).not.toContain('sera');
+    expect(actualTide(quay).deathIds).toContain('neme');
   });
 
   test('blocked browser storage keeps the same tide in local play and portable export', () => {
@@ -574,6 +585,7 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
       scene: createThreefoldBelltopsScene(),
     });
     approach(runtime, 'return-tide-seal-control');
+    runtime.dispatch('interact');
     runtime.dispatch('interact');
     waitForAftermath(runtime);
     expect(runtime.getPersistenceStatus().dirty).toBe(true);
@@ -632,5 +644,42 @@ describe('THREEFOLD civic Return Tide aftermath', () => {
     });
     restored.importCampaign(belltops.exportCampaign());
     expect(restored.frame().threefold.returnTide.epilogue).toEqual(epilogue);
+  });
+});
+
+describe('THREEFOLD autonomous Assembly seal plan', () => {
+  test('commits at the action-time rise and survives export/import', () => {
+    const storage = browserStorage();
+    const runtime = createThreefoldRuntime({
+      storage,
+      scene: createThreefoldBelltopsScene(),
+    });
+    const initialTime = runtime.getSnapshot().campaign.clock.elapsedGameSeconds;
+
+    runtime.frame();
+    expect(runtime.getSnapshot().campaign.clock.elapsedGameSeconds).toBe(
+      initialTime
+    );
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 15 });
+    expect(actualTide(runtime).assemblySealPlanStatus).toBe('pending');
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 15 });
+
+    expect(actualTide(runtime)).toMatchObject({
+      elapsedGameSeconds: 1800,
+      assemblySealPlanStatus: 'committed',
+      controls: { sealClosed: true },
+    });
+    expect(runtime.frame().threefold.returnTide.notice).toContain(
+      'the Assembly closed the Final Seal'
+    );
+    expect(actualTide(runtime).damageIds).toContain('choir-branches');
+
+    const backup = runtime.exportCampaign();
+    const restored = createThreefoldRuntime({
+      storage: browserStorage(),
+      scene: createThreefoldBelltopsScene(),
+    });
+    restored.importCampaign(backup);
+    expect(actualTide(restored)).toEqual(actualTide(runtime));
   });
 });

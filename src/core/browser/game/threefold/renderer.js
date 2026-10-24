@@ -70,7 +70,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2555,8 +2555,8 @@ function personSprite(actor, camera, tick, heightMeters) {
   const personBottom = Math.max(
     ...personPixels.map(pixel => pixel.y + PERSON_GRID_PIXELS)
   );
-  const markerHeight = 16;
-  const markerWidth = 30;
+  const markerHeight = 20;
+  const markerWidth = 46;
   const markerAbove = personTop - markerHeight - 2;
   const markerBelow = personBottom + 2;
   const markerTop =
@@ -2602,7 +2602,11 @@ function personSprite(actor, camera, tick, heightMeters) {
       fill: PALETTE[0],
       ...markerProperties,
     },
-    ...roleGlyphs(markerLeft + 4, markerTop + 4, markerProperties, 'NPC'),
+    ...npcRoleEmblem(markerLeft + 2, markerTop + 3, {
+      ...markerProperties,
+      npcMarkerKind: 'emblem',
+    }),
+    ...roleGlyphs(markerLeft + 22, markerTop + 6, markerProperties, 'NPC'),
   ];
   const residentCap = residentRoleCap(
     personPixels,
@@ -2611,6 +2615,38 @@ function personSprite(actor, camera, tick, heightMeters) {
     markerProperties
   );
   return [...outlineShapes, ...markerShapes, ...personShapes, residentCap];
+}
+
+/**
+ * Draw the NPC-only diamond emblem at a size visible on the handheld display.
+ * @param {number} x Left edge on the two-pixel grid.
+ * @param {number} y Top edge on the two-pixel grid.
+ * @param {Record<string, any>} metadata NPC role metadata.
+ * @returns {ThreefoldSpriteShape[]} Magenta diamond with a cream center.
+ */
+function npcRoleEmblem(x, y, metadata) {
+  const rowWidths = [2, 6, 10, 14, 10, 6, 2];
+  const diamond = rowWidths.map((width, row) => ({
+    type: 'rect',
+    x: x + (14 - width) / 2,
+    y: y + row * PERSON_GRID_PIXELS,
+    width,
+    height: PERSON_GRID_PIXELS,
+    fill: '#f14bd3',
+    ...metadata,
+  }));
+  return [
+    ...diamond,
+    {
+      type: 'rect',
+      x: x + 6,
+      y: y + 4,
+      width: PERSON_GRID_PIXELS,
+      height: PERSON_GRID_PIXELS,
+      fill: '#f3f6d2',
+      ...metadata,
+    },
+  ];
 }
 
 /**

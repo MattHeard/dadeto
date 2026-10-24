@@ -127,6 +127,19 @@ function describeInteraction(id, tide, facts) {
     !facts.intactMechanisms.includes(device.kind)
   )
     return null;
+  if (
+    device.kind === 'seal' &&
+    tide.assemblySealPlanStatus === 'pending' &&
+    facts.availableFactions.includes('assembly') &&
+    !tide.controls.sealClosed
+  )
+    return {
+      id,
+      operation: 'interrupt-seal-plan',
+      label: 'A INTERRUPT SEAL PLAN',
+      detail:
+        'The Assembly will close the Final Seal when the Return Tide rises. Interrupt it here before the deadline; you can still operate the spillway or manifolds instead. The Assembly plan commits at the 30-minute action-time mark.',
+    };
   if (device.kind === 'seal')
     return {
       id,

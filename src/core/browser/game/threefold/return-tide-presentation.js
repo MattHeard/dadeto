@@ -52,20 +52,20 @@ export function presentThreefoldReturnTide(state, tide, facts, notice = '') {
   const interaction = getThreefoldReturnTideInteraction(state, tide, facts);
   const until = Math.max(0, 1800 - tide.elapsedGameSeconds);
   const sealPlan =
-    phase === 'warning'
-      ? assemblySealPlan(tide, facts)
-      : { text: '', lines: [] };
+    phase === 'aftermath'
+      ? { text: '', lines: [] }
+      : assemblySealPlan(tide, facts);
   const text =
     phase === 'warning'
       ? `Return Tide rises in ${Math.ceil(until / 60)} game minutes, peaks at minute 60 and recedes at minute 90 of this tide horizon. ${sealPlan.text} Waiting or refusing still changes the world.`
-      : `Return Tide ${phase}. ${tide.regulatorFailed ? 'The incomplete or damaged distributed regulator failed. ' : 'Historical damage and deaths remain. '}${phase === 'aftermath' ? 'The story can conclude without victory or intervention. E surveys local high-water records; other places remain unsurveyed.' : 'Surviving preparation changes casualties, not past material losses.'}`;
+      : `Return Tide ${phase}. ${tide.regulatorFailed ? 'The incomplete or damaged distributed regulator failed. ' : 'Historical damage and deaths remain. '}${phase === 'aftermath' ? 'The story can conclude without victory or intervention. E surveys local high-water records; other places remain unsurveyed.' : `Surviving preparation changes casualties, not past material losses. ${sealPlan.text}`}`;
   return {
     phase,
     title: 'The Return Tide',
     notice,
     text: `${interaction ? `${text} ${interaction.detail}` : text}${notice ? ` ${notice}` : ''}`,
     hud: interaction?.label || `RETURN TIDE · ${phase.toUpperCase()}`,
-    planCue: sealPlan.lines,
+    planCue: phase === 'warning' ? sealPlan.lines : [],
     epilogue: observedEpilogue(tide, facts),
     finished: phase === 'aftermath',
     interaction,
@@ -82,6 +82,35 @@ function assemblySealPlan(tide, facts) {
   const sealIntact =
     facts.intactMechanisms.includes('seal') &&
     !tide.brokenMechanisms.includes('seal');
+  if (tide.assemblySealPlanStatus === 'committed')
+    return {
+      text: tide.controls.sealClosed
+        ? 'The Assembly closed the Final Seal at the tide rise. The Quay is protected, but deep Choir branches are permanently severed; reopening cannot restore them.'
+        : 'The Assembly closed the Final Seal at the tide rise. Mara later reopened it, but the deep Choir branches remain permanently severed.',
+      lines: [],
+    };
+  if (tide.assemblySealPlanStatus === 'interrupted')
+    return {
+      text: tide.controls.sealClosed
+        ? 'Mara closed the Final Seal before the Assembly plan committed. It protects the Quay but permanently severs deep Choir branches.'
+        : 'Mara interrupted the Assembly Final Seal plan before the tide rose. The seal remains open; the spillway and manifolds can still combine.',
+      lines: [],
+    };
+  if (tide.assemblySealPlanStatus === 'legacy')
+    return {
+      text: 'This saved tide had already risen before the Assembly plan was tracked; no autonomous Seal action was added retroactively.',
+      lines: [],
+    };
+  if (tide.assemblySealPlanStatus === 'unavailable')
+    return !sealIntact
+      ? {
+          text: 'The Assembly Final Seal plan could not proceed because its mechanism was destroyed. Other surviving controls can still combine.',
+          lines: [],
+        }
+      : {
+          text: 'The Assembly Final Seal plan could not proceed because no representative survived to carry it out. Mara can still operate the intact control directly.',
+          lines: [],
+        };
   if (!sealIntact)
     return {
       text: 'The Final Seal mechanism is destroyed; the Assembly plan is unavailable, while other surviving controls can still combine.',
@@ -110,11 +139,11 @@ function assemblySealPlan(tide, facts) {
       ],
     };
   return {
-    text: 'The Assembly is independently preparing the Final Seal. Closing protects much of the Quay but cuts deep Choir branches. The spillway and manifolds remain independent controls and can combine.',
+    text: 'The Assembly is independently preparing the Final Seal and will close it at the tide rise unless Mara interrupts them first. Closing protects much of the Quay but cuts deep Choir branches. The spillway and manifolds remain independent controls and can combine.',
     lines: [
       'ASSEMBLY PLANS THE SEAL',
       'CLOSING CUTS DEEP ROOTS',
-      'SPILLWAY + MANIFOLDS MIX',
+      'REACH SEAL TO INTERRUPT',
     ],
   };
 }

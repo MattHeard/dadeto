@@ -2,7 +2,7 @@ import { normalizeThreefoldReturnTide } from './return-tide.js';
 import { normalizeThreefoldElapsedGameSeconds } from './campaign-clock.js';
 
 const CAMPAIGN_OUTCOMES_GAME_ID = 'threefold-campaign-outcomes';
-const CAMPAIGN_OUTCOMES_SCHEMA_VERSION = 4;
+const CAMPAIGN_OUTCOMES_SCHEMA_VERSION = 5;
 const LEGACY_IRI_FATE_OUTCOMES = Object.freeze(['alive', 'escaped', 'dead']);
 const THREEFOLD_IRI_FATE_OUTCOMES = Object.freeze([
   'trapped',
@@ -94,7 +94,7 @@ export function restoreThreefoldCampaignOutcomes(serialized) {
     !envelope ||
     typeof envelope !== 'object' ||
     envelope.game !== CAMPAIGN_OUTCOMES_GAME_ID ||
-    ![1, 2, 3, CAMPAIGN_OUTCOMES_SCHEMA_VERSION].includes(
+    ![1, 2, 3, 4, CAMPAIGN_OUTCOMES_SCHEMA_VERSION].includes(
       envelope.schemaVersion
     )
   )
@@ -119,7 +119,7 @@ export function restoreThreefoldCampaignOutcomes(serialized) {
     return createThreefoldCampaignOutcomes(
       iriFate,
       envelope.schemaVersion >= 3 ? envelope.state.iriKnowledge : undefined,
-      envelope.schemaVersion === 4 ? envelope.state.returnTide : undefined
+      envelope.schemaVersion >= 4 ? envelope.state.returnTide : undefined
     );
   } catch {
     return null;
