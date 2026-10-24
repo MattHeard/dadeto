@@ -1742,8 +1742,8 @@ function expectResidentMarkerClearOfActors(
 ) {
   const marker = frameBounds(npcMarker, 'geometryId', id);
   const body = frameBounds(residentBody, 'geometryId', id);
-  expect(marker.width).toBe(22);
-  expect(marker.height).toBe(10);
+  expect(marker.width).toBe(28);
+  expect(marker.height).toBe(12);
   expect(marker.x).toBeGreaterThanOrEqual(0);
   expect(marker.x + marker.width).toBeLessThanOrEqual(160);
   expect(marker.y).toBeGreaterThanOrEqual(0);
@@ -1758,6 +1758,43 @@ function expectResidentMarkerClearOfActors(
         marker.y >= shape.y + (shape.height ?? 0)
     )
   ).toBe(true);
+}
+
+/**
+ * Verify the framed resident badge remains legible on the handheld grid.
+ * @param {Array<Record<string, any>>} marker Resident emblem shapes.
+ * @returns {void} Throws when the role badge loses its contrast or grid fit.
+ */
+function expectFramedNpcEmblem(marker) {
+  expect(marker).toHaveLength(3);
+  expect(marker.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)).toBe(
+    true
+  );
+  expect(marker[0]).toMatchObject({
+    type: 'rect',
+    width: 28,
+    height: 12,
+    fill: '#f14bd3',
+    spriteGridSize: 2,
+    npcMarkerText: 'NPC',
+  });
+  expect(marker[1]).toMatchObject({
+    type: 'rect',
+    x: marker[0].x + 2,
+    y: marker[0].y + 2,
+    width: 24,
+    height: 8,
+    fill: '#182f36',
+    npcMarkerText: 'NPC',
+  });
+  expect(marker[2]).toMatchObject({
+    type: 'text',
+    text: 'NPC',
+    fill: '#f3f6d2',
+    font: '8px monospace',
+    bitmap: true,
+    npcMarkerText: 'NPC',
+  });
 }
 
 /**
@@ -2054,32 +2091,13 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarker === true
       )
     ).toBe(true);
-    expect(npcMarker).toHaveLength(2);
+    expectFramedNpcEmblem(npcMarker);
     expectResidentMarkerClearOfActors(
       npcMarker,
       residentArt,
       playerBody,
       watchkeeper.id
     );
-    expect(npcMarker[0]).toMatchObject({
-      type: 'rect',
-      width: 22,
-      height: 10,
-      fill: '#f14bd3',
-      spriteGridSize: 2,
-      npcMarkerText: 'NPC',
-    });
-    expect(npcMarker[1]).toMatchObject({
-      type: 'text',
-      text: 'NPC',
-      fill: '#f3f6d2',
-      font: '7px monospace',
-      bitmap: true,
-      npcMarkerText: 'NPC',
-    });
-    expect(
-      npcMarker.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)
-    ).toBe(true);
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
     expect(playerSprite.some(shape => shape.fill === '#37e7ed')).toBe(true);
@@ -2310,28 +2328,8 @@ test('gives residents an NPC label distinct from Mara’s YOU label', () => {
   );
   const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
 
-  expect(emblem).toHaveLength(2);
-  expect(emblem.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)).toBe(
-    true
-  );
-  expect(emblem[0]).toMatchObject({
-    type: 'rect',
-    width: 22,
-    height: 10,
-    fill: '#f14bd3',
-    spriteGridSize: 2,
-    npcMarkerText: 'NPC',
-    npcMarkerKind: 'emblem',
-  });
-  expect(emblem[1]).toMatchObject({
-    type: 'text',
-    text: 'NPC',
-    font: '7px monospace',
-    fill: '#f3f6d2',
-    bitmap: true,
-    npcMarker: true,
-    npcMarkerKind: 'emblem',
-  });
+  expectFramedNpcEmblem(emblem);
+  expect(emblem.every(shape => shape.npcMarkerKind === 'emblem')).toBe(true);
   expect(mara.some(shape => shape.npcMarkerKind === 'emblem')).toBe(false);
   expect(mara.some(shape => shape.playerMarkerKind === 'leader')).toBe(true);
 });

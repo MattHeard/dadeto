@@ -8,7 +8,7 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
-Mara's sprite has a tall pointed hood and broad, flared cyan cloak. Residents have a wide, flat magenta brim and a straight, full-length violet robe. Those body silhouettes are different even without their colors or labels. Four cyan selection brackets enclose Mara's body; her attached `YOU` tag and residents' `NPC` tags are extra role cues. Adult residents are authored at human stature and their bodies change size with Mara's scale. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta.
+Mara's sprite has a tall pointed hood and broad, flared cyan cloak. Residents have a wide, flat magenta brim and a straight, full-length violet robe. Those body silhouettes are different even without their colors or labels. Four cyan selection brackets enclose Mara's body and a cyan `YOU` tag points to her. Residents have a larger dark-backed `NPC` badge with a bright magenta frame. Adult residents are authored at human stature and their bodies change size with Mara's scale. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta.
 
 On phones, the display enlarges to fit its bezel while the game continues to render at 160 × 144 pixels with nearest-neighbor scaling, so character pixels stay crisp and easier to inspect.
 

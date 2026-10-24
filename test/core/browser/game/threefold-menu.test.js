@@ -54,6 +54,22 @@ function press(menu, ...actions) {
   menu.step(16, []);
 }
 
+test('resumes play when A selects the main menu resume item', () => {
+  const { menu, runtime } = createMenuRuntime();
+  press(menu, 'y');
+
+  expect(menu.isRunning()).toBe(true);
+  expect(runtime.pause).toHaveBeenCalledTimes(1);
+
+  press(menu, 'a');
+
+  expect(runtime.resume).toHaveBeenCalledTimes(1);
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    false
+  );
+  expect(menu.isRunning()).toBe(true);
+});
+
 test('Y opens an in-game guide navigated only with the eight handheld controls', () => {
   const { menu, runtime } = createMenuRuntime();
   press(menu, 'y');

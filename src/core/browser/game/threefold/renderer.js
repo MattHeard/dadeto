@@ -64,6 +64,8 @@ const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
 const ROLE_TAG_WIDTH = 22;
 const ROLE_TAG_HEIGHT = 10;
+const NPC_EMBLEM_WIDTH = 28;
+const NPC_EMBLEM_HEIGHT = 12;
 const PLAYER_BADGE_MIN_Y = 54;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
@@ -2874,7 +2876,7 @@ function personSprite(actor, camera, tick, heightMeters) {
   const personBottom = Math.max(
     ...personPixels.map(pixel => pixel.y + PERSON_GRID_PIXELS)
   );
-  const markerHeight = ROLE_TAG_HEIGHT;
+  const markerHeight = NPC_EMBLEM_HEIGHT;
   const markerAbove = personTop - markerHeight - 2;
   const markerBelow = personBottom + 2;
   const markerTop =
@@ -2911,8 +2913,8 @@ function personSprite(actor, camera, tick, heightMeters) {
  * @returns {number} Grid-aligned badge left coordinate inside the display.
  */
 function placeResidentMarker(centerX, top, playerKeepout) {
-  const width = ROLE_TAG_WIDTH;
-  const height = ROLE_TAG_HEIGHT;
+  const width = NPC_EMBLEM_WIDTH;
+  const height = NPC_EMBLEM_HEIGHT;
   const centered = Math.max(
     0,
     Math.min(
@@ -2952,18 +2954,27 @@ function npcRoleEmblem(x, y, metadata) {
       type: 'rect',
       x,
       y,
-      width: ROLE_TAG_WIDTH,
-      height: ROLE_TAG_HEIGHT,
+      width: NPC_EMBLEM_WIDTH,
+      height: NPC_EMBLEM_HEIGHT,
       fill: '#f14bd3',
       ...metadata,
     },
     {
-      type: 'text',
+      type: 'rect',
       x: x + 2,
-      y: y + 8,
+      y: y + 2,
+      width: NPC_EMBLEM_WIDTH - 4,
+      height: NPC_EMBLEM_HEIGHT - 4,
+      fill: '#182f36',
+      ...metadata,
+    },
+    {
+      type: 'text',
+      x: x + 5,
+      y: y + 9,
       text: 'NPC',
       fill: '#f3f6d2',
-      font: '7px monospace',
+      font: '8px monospace',
       bitmap: true,
       ...metadata,
     },

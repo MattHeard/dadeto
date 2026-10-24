@@ -6,7 +6,9 @@ test('renders the Broken Gate handheld cleanly at narrow mobile width', async ({
   await page.goto('/threefold/');
 
   await expect(page).toHaveTitle(/THREEFOLD/);
-  await expect(page.getByRole('heading', { name: 'THREEFOLD' })).toBeVisible();
+  await expect(
+    page.getByRole('main', { name: 'THREEFOLD handheld game' })
+  ).toBeVisible();
 
   const screen = page.locator('#game-screen');
   await expect(screen).toBeVisible();
@@ -48,9 +50,9 @@ test('renders the Broken Gate handheld cleanly at narrow mobile width', async ({
   expect(layout.screen.width / layout.screen.height).toBeCloseTo(160 / 144, 2);
   expect(layout.touchPad.left).toBeGreaterThanOrEqual(0);
   expect(layout.touchPad.right).toBeLessThanOrEqual(layout.viewportWidth);
-  await expect(page.getByRole('button', { name: 'Move up' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'A button: grow' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'B button: shrink' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Up' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'A' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'B' })).toBeVisible();
 
   fs.mkdirSync('reports', { recursive: true });
   await page.screenshot({ path: 'reports/threefold-mobile.png', fullPage: true });
