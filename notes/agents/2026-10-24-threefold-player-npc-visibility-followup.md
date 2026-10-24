@@ -10,3 +10,6 @@
 
 - The full coverage report also exposed an untested no-op when interrupting the Assembly plan after it had committed. Added a return-tide regression that advances through the rise, repeats the late interrupt, and proves the committed state is preserved.
 - Evidence: focused coverage run for `return-tide.js` passed 17 tests and recorded a hit on the previously missed `return-tide.js:280` arm. A follow-up `npm run check` passed all 10 gates. Global coverage remains open in `dadeto-3jh8`.
+
+- A second small coverage slice adds the committed-but-reopened Final Seal presentation. Mara can reopen the seal after the Assembly commitment, but the scene must still say the Choir branches remain permanently severed.
+- Evidence: focused coverage run for `return-tide-presentation.js` passed 10 tests; the committed message's two `sealClosed` branches are both hit. `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates across six impact shards, with zero clones and vulnerabilities.

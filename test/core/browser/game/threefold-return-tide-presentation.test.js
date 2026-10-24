@@ -159,6 +159,15 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
       },
       { ...facts(), availableFactions: ['assembly'] }
     );
+    const reopenedCommittedSeal = presentThreefoldReturnTide(
+      state,
+      {
+        ...tide,
+        assemblySealPlanStatus: 'committed',
+        controls: { ...tide.controls, sealClosed: false },
+      },
+      { ...facts(), availableFactions: ['assembly'] }
+    );
     const interruptedSeal = presentThreefoldReturnTide(
       state,
       { ...tide, assemblySealPlanStatus: 'interrupted' },
@@ -191,6 +200,9 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     expect(brokenSeal.planCue[0]).toBe('FINAL SEAL DEVICE BROKEN');
     expect(committedSeal.text).toContain(
       'The Assembly closed the Final Seal at the tide rise'
+    );
+    expect(reopenedCommittedSeal.text).toContain(
+      'Mara later reopened it, but the deep Choir branches remain permanently severed'
     );
     expect(interruptedSeal.text).toContain('Mara interrupted the Assembly');
     expect(unavailableSeal.text).toContain('no representative survived');
