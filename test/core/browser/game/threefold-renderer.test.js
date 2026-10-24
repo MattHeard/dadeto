@@ -1812,6 +1812,36 @@ describe('THREEFOLD resident identity marker', () => {
       )
     ).toBe(true);
   });
+
+  test('attaches a cyan cap to each resident and never to Mara', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+    const residentCap = frame.shapes.filter(
+      shape =>
+        shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'cap'
+    );
+    const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
+
+    expect(residentCap).toHaveLength(1);
+    expect(residentCap[0]).toMatchObject({
+      type: 'rect',
+      height: 2,
+      fill: '#43e9da',
+      npcMarker: true,
+      npcMarkerKind: 'cap',
+      spriteGridSize: 2,
+    });
+    expect(residentCap[0].width).toBeGreaterThanOrEqual(8);
+    expect(residentCap[0].width).toBeLessThanOrEqual(18);
+    expect(residentCap[0].x % 2).toBe(0);
+    expect(residentCap[0].y % 2).toBe(0);
+    expect(mara.some(shape => shape.npcMarkerKind === 'cap')).toBe(false);
+  });
 });
 
 describe('THREEFOLD legacy withdrawal rendering', () => {

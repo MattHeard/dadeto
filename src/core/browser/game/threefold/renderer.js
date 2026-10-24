@@ -70,7 +70,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2601,7 +2601,52 @@ function personSprite(actor, camera, tick, heightMeters) {
     },
     ...roleGlyphs(markerLeft + 4, markerTop + 4, markerProperties, 'NPC'),
   ];
-  return [...outlineShapes, ...markerShapes, ...personShapes];
+  const residentCap = residentRoleCap(
+    personPixels,
+    centerX,
+    personTop,
+    markerProperties
+  );
+  return [...outlineShapes, ...markerShapes, ...personShapes, residentCap];
+}
+
+/**
+ * Add a cyan, grid-snapped silhouette cue to a resident.
+ * @param {Array<{x: number, y: number}>} personPixels Rendered resident pixels.
+ * @param {number} centerX Resident center in handheld coordinates.
+ * @param {number} personTop Top pixel row of the resident.
+ * @param {Record<string, any>} markerProperties Resident identity metadata.
+ * @returns {ThreefoldSpriteShape} Scale-responsive resident cap.
+ */
+function residentRoleCap(personPixels, centerX, personTop, markerProperties) {
+  const personLeft = Math.min(...personPixels.map(pixel => pixel.x));
+  const personRight = Math.max(
+    ...personPixels.map(pixel => pixel.x + PERSON_GRID_PIXELS)
+  );
+  const width = Math.max(
+    8,
+    Math.min(
+      18,
+      snapCanvasCoordinate(personRight - personLeft + 4, PERSON_GRID_PIXELS)
+    )
+  );
+  const x = Math.max(
+    0,
+    Math.min(
+      160 - width,
+      snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - width / 2
+    )
+  );
+  return {
+    type: 'rect',
+    x,
+    y: Math.max(0, personTop - PERSON_GRID_PIXELS),
+    width,
+    height: PERSON_GRID_PIXELS,
+    fill: '#43e9da',
+    ...markerProperties,
+    npcMarkerKind: 'cap',
+  };
 }
 
 /**
