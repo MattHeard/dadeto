@@ -8,7 +8,7 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
-Mara has a cyan hood and coat, bright cyan outline, and an attached cyan `YOU` tag. Residents wear a magenta brim and long violet coat, with a magenta `NPC` tag above the sprite. The high-contrast labels name each role directly, while different body shapes and colors reinforce the distinction. Adult residents are authored at human stature and their bodies change size with Mara's scale. At the Broken Gate's default scale, the watchkeeper renders about 14 pixels tall beside Mara's 16-pixel sprite. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta.
+Mara has a cyan hood, short jacket, separated legs, and an attached cyan `YOU` tag. Residents have a broad magenta brim and a continuous full-length violet robe, with a magenta `NPC` tag above each sprite. The different silhouettes remain visible without reading the tags, while color and labels reinforce the roles. Adult residents are authored at human stature and their bodies change size with Mara's scale. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta.
 
 ## Input
 

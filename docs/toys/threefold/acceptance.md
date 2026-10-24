@@ -1,6 +1,6 @@
 # THREEFOLD Acceptance
 
-- [ ] Confirm by phone-size playtest that Mara is immediately distinct from residents at 160 × 144. The deployed rendering gives Mara a cyan coat/outline and attached YOU pointer; residents have violet-and-pink sprites, magenta outline and diamond badge, plus a bold magenta headpiece with a pale inset directly above each sprite. Compact regional renderers use cyan for Mara and vivid magenta for named residents. The mobile smoke now requires both role colors in the same rendered canvas; renderer unit tests check the headpiece geometry and scale-responsive NPC bodies. These checks do not replace the pending visual confirmation.
+- [ ] Confirm by phone-size playtest that Mara is immediately distinct from residents at 160 × 144. Mara keeps a cyan hood, short jacket, and separated legs; residents now have a broad brim and continuous full-length robe, in addition to the cyan `YOU` and magenta `NPC` tags. A renderer regression checks the resident robe's solid hem and color-independent silhouette difference at native size. This source change still needs a deployed phone-size visual review.
 
 ## Machine-Checkable Criteria
 

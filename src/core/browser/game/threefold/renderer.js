@@ -68,18 +68,18 @@ const PLAYER_BADGE_MIN_Y = 54;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const THREEFOLD_RESIDENT_ART = [
-  '....aaaa....',
+  '.....aa.....',
   '...aaaaaa...',
-  '..hhhhhhhh..',
-  '.hssssssssh.',
-  '.hsksssskh..',
-  '..ssssssss..',
+  '.aaaaaaaaaa.',
+  'hssssssssssh',
+  'hsksssssskh.',
+  '.ssssssssss.',
+  'hcccccccccch',
+  'sccccccccccs',
+  'sccccccccccs',
+  'sccccccccccs',
   '.sccccccccs.',
-  '.sccccccccs.',
-  '.sccccccccs.',
-  '..sccccccs..',
-  '...kk..kk...',
-  '..kk....kk..',
+  '...ssssss...',
 ];
 const PERSON_ACTOR_IDS = new Set([
   ...RETURN_TIDE_PEOPLE.map(({ id }) => id),

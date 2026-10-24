@@ -1803,6 +1803,38 @@ describe('THREEFOLD resident identity marker', () => {
     ).toBe(true);
   });
 
+  test('renders a continuous resident robe hem at native size', () => {
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+    );
+    const bodyPixels = actorId =>
+      frame.shapes.filter(
+        shape =>
+          shape.actorId === actorId &&
+          shape.npcMarker !== true &&
+          shape.playerMarker !== true &&
+          shape.playerMarkerKind !== 'leader' &&
+          shape.fill !== '#37e7ed'
+      );
+    const bottomRowXs = shapes => {
+      const bottom = Math.max(...shapes.map(shape => shape.y));
+      return shapes
+        .filter(shape => shape.y === bottom)
+        .map(shape => shape.x)
+        .sort((left, right) => left - right);
+    };
+    const residentBottomRow = bottomRowXs(bodyPixels('latchfolk-watchkeeper'));
+    expect(residentBottomRow.length).toBeGreaterThan(2);
+    expect(
+      residentBottomRow.at(-1) - residentBottomRow[0]
+    ).toBeGreaterThanOrEqual(8);
+    expect(
+      residentBottomRow.every(
+        (x, index) => index === 0 || x - residentBottomRow[index - 1] === 2
+      )
+    ).toBe(true);
+  });
+
   test('draws the prepared resident role art in the shared Mosslight presenter', () => {
     const scene = createBrokenGateScene();
     const frame = renderThreefoldFrame(
