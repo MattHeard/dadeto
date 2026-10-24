@@ -1304,7 +1304,9 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     });
     const spriteBounds = frame => {
       const pixels = frame.shapes.filter(
-        shape => shape.geometryId === 'latchfolk-watchkeeper'
+        shape =>
+          shape.geometryId === 'latchfolk-watchkeeper' &&
+          shape.npcMarker !== true
       );
       return {
         width:
@@ -1341,7 +1343,9 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     });
     const spriteBounds = frame => {
       const pixels = frame.shapes.filter(
-        shape => shape.geometryId === 'latchfolk-watchkeeper'
+        shape =>
+          shape.geometryId === 'latchfolk-watchkeeper' &&
+          shape.npcMarker !== true
       );
       return {
         width:
@@ -1669,10 +1673,10 @@ describe('THREEFOLD resident identity marker', () => {
         shape.geometryId === watchkeeper.id &&
         shape.npcMarkerKind === 'outline'
     );
-    const speechBubble = frame.shapes.filter(
+    const npcLabel = frame.shapes.filter(
       shape =>
         shape.geometryId === watchkeeper.id &&
-        shape.npcMarkerKind === 'speech-bubble'
+        shape.npcMarkerKind === 'role-label'
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
 
@@ -1685,18 +1689,22 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarker === true
       )
     ).toBe(true);
-    expect(speechBubble).toHaveLength(15);
+    expect(npcLabel.length).toBeGreaterThan(0);
     expect(
-      speechBubble.every(
+      npcLabel.every(
         shape =>
-          shape.fill === '#43e9da' &&
+          ['#43e9da', '#182f36', '#f3f6d2'].includes(shape.fill) &&
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
-          shape.width === 2 &&
-          shape.height === 2
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0 &&
+          shape.npcMarkerText === 'NPC'
       )
     ).toBe(true);
+    expect(
+      [...new Set(npcLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
+    ).toEqual(['C', 'N', 'P']);
     expect(mara.length).toBeGreaterThan(0);
     expect(
       mara.every(
