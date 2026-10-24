@@ -84,6 +84,30 @@ test('opens the empty field notes from the main menu using only the controls', (
   expect(text).toContain('> NO FIELD NOTES YET');
 });
 
+test('returns from the in-game guide to the main menu with A', () => {
+  const { menu } = createMenuRuntime();
+  press(menu, 'y');
+  press(menu, 'down');
+  press(menu, 'a');
+  expect(menu.frame().shapes.some(shape => shape.text === 'GUIDE')).toBe(true);
+
+  let backSelected = false;
+  for (let index = 0; index < 40; index += 1) {
+    if (menu.frame().shapes.some(shape => shape.text === '> BACK')) {
+      backSelected = true;
+      break;
+    }
+    press(menu, 'down');
+  }
+  expect(backSelected).toBe(true);
+  press(menu, 'a');
+
+  expect(menu.frame().shapes.some(shape => shape.text === 'GUIDE')).toBe(false);
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    true
+  );
+});
+
 test('opens the campaign status from the main menu using only the controls', () => {
   const { menu } = createMenuRuntime();
   press(menu, 'y');
