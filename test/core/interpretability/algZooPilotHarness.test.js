@@ -575,6 +575,16 @@ describe('AlgZoo pilot runner', () => {
             evidence: [{ observation: 'controlled' }],
           },
           cost: { investigatorTokens: 12 },
+          investigatorRuntime: {
+            provider: 'codex-cli',
+            cliVersion: 'codex-cli test-version',
+            model: 'test-model',
+            startedAt: '2026-10-24T10:00:00.000Z',
+            completedAt: '2026-10-24T10:00:01.000Z',
+            inputTokens: 8,
+            outputTokens: 4,
+            toolCalls: 0,
+          },
         };
       },
       scoreBlindedSubmissions: async request => {
@@ -643,6 +653,14 @@ describe('AlgZoo pilot runner', () => {
       expect(submission).not.toHaveProperty('mapSnapshotHash');
     }
     expect(result.sessionRecords).toHaveLength(2);
+    expect(result.sessionRecords[0].investigatorRuntime).toEqual(
+      expect.objectContaining({
+        provider: 'codex-cli',
+        cliVersion: 'codex-cli test-version',
+        inputTokens: 8,
+        outputTokens: 4,
+      })
+    );
     assertSyntheticCanaryIsolation(result, investigatorCalls);
     expect(
       result.sessionRecords.map(record => record.submission.causalEvidence)

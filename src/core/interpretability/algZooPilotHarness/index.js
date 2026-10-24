@@ -838,6 +838,9 @@ function createAlgZooPilotSessionRecord(
     ...(execution.failureCode ? { failureCode: execution.failureCode } : {}),
     costMeasurementStatus: execution.costMeasurementStatus ?? 'complete',
     submission: execution.submission,
+    ...(execution.investigatorRuntime
+      ? { investigatorRuntime: execution.investigatorRuntime }
+      : {}),
     cost,
     exceededBudgetLimits,
     retrievedMapEntryIds: retrieval.entries.map(entry => entry.id),
