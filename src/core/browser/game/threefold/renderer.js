@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 32806)
-Total output lines: 3469
-
 import { isThreefoldResidentAvailable } from './return-tide-world.js';
 import {
   createThreefoldPressureNetwork,
@@ -1323,7 +1320,851 @@ function hearthgapsHomeShapes(entity, layout, status) {
     bounds.y + bounds.height - wallY - GRID_PIXELS
   );
   /**
-   * Attach the home identity and projected bound…7806 tokens truncated… 'SPIDER BEATEN · BRIDGE BROKE'
+   * Attach the home identity and projected bounds to one sprite.
+   * @param {ThreefoldSpriteShape} shape Home sprite shape.
+   * @returns {ThreefoldSpriteShape} Tagged home sprite.
+   */
+  function tag(shape) {
+    return {
+      ...shape,
+      geometryId: entity.id,
+      logicalCellBounds: entity.cellBounds,
+    };
+  }
+  return [
+    tag(
+      createThreefoldRectShape(
+        [bounds.x, bounds.y, bounds.width, GRID_PIXELS],
+        roof
+      )
+    ),
+    ...(bounds.height >= 3 * GRID_PIXELS
+      ? [
+          tag(
+            createThreefoldRectShape(
+              [centerX, bounds.y + GRID_PIXELS, GRID_PIXELS, GRID_PIXELS],
+              roof
+            )
+          ),
+        ]
+      : []),
+    tag(
+      createThreefoldRectShape([centerX, wallY, GRID_PIXELS, wallHeight], wall)
+    ),
+    tag(
+      createThreefoldRectShape(
+        [
+          bounds.x,
+          bounds.y + bounds.height - GRID_PIXELS,
+          bounds.width,
+          GRID_PIXELS,
+        ],
+        '#182f36'
+      )
+    ),
+    ...(status.flooded
+      ? [
+          tag(
+            createThreefoldRectShape(
+              [
+                bounds.x,
+                bounds.y + bounds.height - 2 * GRID_PIXELS,
+                bounds.width,
+                GRID_PIXELS,
+              ],
+              '#25a9b8'
+            )
+          ),
+        ]
+      : []),
+  ];
+}
+
+/**
+ * Resolve Hearthgaps geometry, controls, residents and Mara into finite cells.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'hearthgaps'}}>} state Current Hearthgaps simulation.
+ * @returns {Omit<ReturnType<typeof resolveSceneLayout>, 'entities'> & {viewport: ReturnType<typeof projectEntity>['cellBounds'], entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Finite authored map layout.
+ */
+function createHearthgapsGridLayout(state) {
+  const { scene, player } = state;
+  const runoffFlowIds = new Set([
+    'hearthgaps-culvert',
+    'hearthgaps-brin-runoff-gate',
+    'hearthgaps-shared-bypass',
+    'mara',
+  ]);
+  const runoffFlowGroupId = 'hearthgaps-runoff-flow';
+  const creatures =
+    /** @type {Array<Pick<ThreefoldGridRenderEntity, 'id'|'bounds'>>} */ (
+      scene.creatures
+    );
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  const facets = /** @type {HearthgapsGridFacet[]} */ (
+    [
+      ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+      ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+      ...scene.interactables.map(entity => ({
+        ...entity,
+        kind: 'interactable',
+      })),
+      ...creatures.map(entity => ({ ...entity, kind: 'creature' })),
+      {
+        id: 'mara',
+        kind: 'actor',
+        bounds: {
+          min: {
+            x: player.position.x - halfBodyWidth,
+            y: player.position.y - halfBodyWidth,
+            z: 0,
+          },
+          max: {
+            x: player.position.x + halfBodyWidth,
+            y: player.position.y + halfBodyWidth,
+            z: heightAtScale(player.scale),
+          },
+        },
+      },
+    ].map(entity =>
+      runoffFlowIds.has(entity.id)
+        ? { ...entity, overlapGroupId: runoffFlowGroupId }
+        : entity
+    )
+  );
+  const sceneCells = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
+    player.scale
+  ).cellBounds;
+  const viewport = {
+    ...sceneCells,
+    width: Math.max(sceneCells.width + 1, 4),
+    height: Math.max(sceneCells.height + 1, 3),
+  };
+  const entities = facets.map(entity => ({
+    id: entity.id,
+    bounds: entity.bounds,
+    parentId: entity.parentId,
+    overlapGroupId: entity.overlapGroupId,
+    hierarchy: entity.hierarchy,
+  }));
+  const resolved = resolveSceneLayout(entities, player.scale, viewport);
+  const offViewportIds = new Set(
+    resolved.overflow.map(({ entityId }) => entityId)
+  );
+  const packed = packSceneLayout(
+    entities.filter(entity => !offViewportIds.has(entity.id)),
+    player.scale,
+    viewport
+  );
+  const kindsById = new Map(facets.map(({ id, kind }) => [id, kind]));
+  return {
+    ...resolved,
+    ...packed,
+    viewport,
+    entities: [
+      ...packed.entities,
+      ...resolved.entities.filter(entity => offViewportIds.has(entity.id)),
+    ]
+      .map(entity => ({
+        ...entity,
+        logicalGridKinds: [/** @type {string} */ (kindsById.get(entity.id))],
+        physicalBounds: facets.find(facet => facet.id === entity.id)?.bounds,
+      }))
+      .sort((first, second) => first.id.localeCompare(second.id)),
+    overflow: [...packed.overflow, ...resolved.overflow],
+    hierarchy: resolved.hierarchy,
+    containments: resolved.containments,
+    intentionalOverlaps: packed.intentionalOverlaps,
+    relationshipIssues: resolved.relationshipIssues,
+  };
+}
+
+/**
+ * Convert a logical entity into an 8px-aligned Hearthgaps screen rectangle.
+ * @param {ReturnType<typeof resolveSceneLayout>['entities'][number]} entity Projected entity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @returns {{x:number,y:number,width:number,height:number}} Canvas rectangle derived from its cell bounds.
+ */
+function hearthgapsEntityRect(entity, layout) {
+  return logicalGridEntityRect(
+    /** @type {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} */ (
+      entity
+    ),
+    layout
+  );
+}
+
+/**
+ * Map one logical cell rectangle into the shared 144 by 72 Mosslight field.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number] | ReturnType<typeof createGrainlandsGridLayout>['entities'][number] | ReturnType<typeof createWeftwaysGridLayout>['entities'][number]} entity Projected scene identity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout> | ReturnType<typeof createGrainlandsGridLayout> | ReturnType<typeof createWeftwaysGridLayout>} layout Finite logical view.
+ * @returns {{x:number,y:number,width:number,height:number}} Screen rectangle.
+ */
+function logicalGridEntityRect(entity, layout) {
+  const bounds = entity.cellBounds;
+  const pitch = Math.max(
+    GRID_PIXELS,
+    Math.floor(
+      Math.min(144 / layout.viewport.width, 72 / layout.viewport.height) /
+        GRID_PIXELS
+    ) * GRID_PIXELS
+  );
+  const mapWidth = pitch * layout.viewport.width;
+  const mapHeight = pitch * layout.viewport.height;
+  return {
+    x: snapCanvasCoordinate(
+      8 + (144 - mapWidth) / 2 + (bounds.x - layout.viewport.x) * pitch
+    ),
+    y: snapCanvasCoordinate(
+      28 +
+        (72 - mapHeight) / 2 +
+        (layout.viewport.height -
+          (bounds.y - layout.viewport.y) -
+          bounds.height) *
+          pitch
+    ),
+    width: pitch * bounds.width,
+    height: pitch * bounds.height,
+  };
+}
+
+/**
+ * Draw a projected Hearthgaps source entity with its logical bounds.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected entity.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @param {string} fill Sprite color.
+ * @returns {ThreefoldSpriteShape|null} Cell-derived sprite, omitted for overflow.
+ */
+function hearthgapsEntityShape(entity, layout, fill) {
+  const rect = hearthgapsEntityRect(entity, layout);
+  return {
+    ...createThreefoldRectShape(
+      [rect.x, rect.y, rect.width, rect.height],
+      fill
+    ),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+    logicalGridKinds: /** @type {string[]} */ (entity.logicalGridKinds),
+  };
+}
+
+/**
+ * Draw an in-cell runoff control marker from its resolved affordance.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected control.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @returns {ThreefoldSpriteShape|null} Cell-derived control marker, omitted for overflow.
+ */
+function hearthgapsControlShape(entity, layout) {
+  if (entity.placement === 'overflow') return null;
+  const rect = hearthgapsEntityRect(entity, layout);
+  return {
+    ...createThreefoldRectShape(
+      [
+        rect.x +
+          Math.floor((rect.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+            GRID_PIXELS,
+        rect.y +
+          Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+            GRID_PIXELS,
+        GRID_PIXELS,
+        GRID_PIXELS,
+      ],
+      entity.id === THREEFOLD_HEARTHGAPS_BRIN_GATE_ID ? '#e9d88d' : '#d28b69'
+    ),
+    geometryId: entity.id,
+    logicalCellBounds: entity.cellBounds,
+  };
+}
+
+/**
+ * Draw a resident sprite at the center of its resolved logical cell.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>['entities'][number]} entity Projected actor.
+ * @param {ReturnType<typeof createHearthgapsGridLayout>} layout Finite layout.
+ * @param {string} fill Sprite color.
+ * @param {number} scale Mara's current scale.
+ * @returns {ThreefoldSpriteShape|null} Cell-sourced actor sprite, omitted for overflow.
+ */
+function hearthgapsActorShape(entity, layout, fill, scale) {
+  if (entity.placement === 'overflow') return null;
+  return createScaleAwareActorShape(entity, layout, fill, scale);
+}
+
+/**
+ * Project Weftways source identities and Mara into its authored finite view.
+ * Pell keeps one identity for its interactable and creature roles.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'weftways'}}>} state Current Weftways simulation.
+ * @returns {Omit<ReturnType<typeof resolveSceneLayout>, 'entities'> & {viewport: ReturnType<typeof projectEntity>['cellBounds'], entities: Array<ReturnType<typeof resolveSceneLayout>['entities'][number] & {logicalGridKinds: string[]}>}} Projected finite scene layout.
+ */
+function createWeftwaysGridLayout(state) {
+  const { scene, player } = state;
+  const halfBodyWidth = (scene.baseBodyWidthMeters * 3 ** player.scale) / 2;
+  const facets = /** @type {WeftwaysGridFacet[]} */ ([
+    ...scene.geometry.map(entity => ({ ...entity, kind: 'structure' })),
+    ...scene.decorations.map(entity => ({ ...entity, kind: 'decoration' })),
+    ...scene.interactables.map(entity => ({ ...entity, kind: 'interactable' })),
+    ...scene.creatures.map(entity => ({ ...entity, kind: 'creature' })),
+    {
+      id: 'mara',
+      kind: 'actor',
+      bounds: {
+        min: {
+          x: player.position.x - halfBodyWidth,
+          y: player.position.y - halfBodyWidth,
+          z: 0,
+        },
+        max: {
+          x: player.position.x + halfBodyWidth,
+          y: player.position.y + halfBodyWidth,
+          z: heightAtScale(player.scale),
+        },
+      },
+    },
+  ]);
+  const byId = new Map();
+  for (const facet of facets) {
+    const existing = byId.get(facet.id);
+    if (!existing) {
+      byId.set(facet.id, { ...facet, kinds: [facet.kind] });
+      continue;
+    }
+    if (!sameGrainlandsBounds(existing.bounds, facet.bounds))
+      throw new RangeError(`Conflicting Weftways geometry for ${facet.id}.`);
+    existing.kinds.push(facet.kind);
+  }
+  const viewport = projectEntity(
+    { id: scene.id, bounds: scene.bounds },
+    player.scale
+  ).cellBounds;
+  const intentionalOverlapGroupById = new Map([
+    ['weftways-pell', 'weftways-pell-accord'],
+    ['return-tide-accord-threadbound', 'weftways-pell-accord'],
+  ]);
+  const entities = [...byId.keys()].sort().map(id => {
+    const entity = byId.get(id);
+    return {
+      id: entity.id,
+      bounds: entity.bounds,
+      parentId: entity.parentId,
+      overlapGroupId:
+        entity.overlapGroupId ?? intentionalOverlapGroupById.get(id),
+      hierarchy: entity.hierarchy,
+    };
+  });
+  const resolved = resolveSceneLayout(entities, player.scale, viewport);
+  const offViewportIds = new Set(
+    resolved.overflow.map(({ entityId }) => entityId)
+  );
+  const packed = packSceneLayout(
+    entities.filter(entity => !offViewportIds.has(entity.id)),
+    player.scale,
+    viewport
+  );
+  return {
+    ...resolved,
+    ...packed,
+    viewport,
+    entities: [
+      ...packed.entities,
+      ...resolved.entities.filter(entity => offViewportIds.has(entity.id)),
+    ].map(entity => ({
+      ...entity,
+      logicalGridKinds: [...byId.get(entity.id).kinds].sort(),
+      physicalBounds: byId.get(entity.id).bounds,
+    })),
+    overflow: [...packed.overflow, ...resolved.overflow],
+    hierarchy: resolved.hierarchy,
+    containments: resolved.containments,
+    intentionalOverlaps: packed.intentionalOverlaps,
+    relationshipIssues: resolved.relationshipIssues,
+  };
+}
+
+/**
+ * Render the Threadbound crossing and its two flow choices on the handheld grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'weftways'}}>} state Current Weftways simulation.
+ * @returns {Record<string, any>} Snapped Mosslight frame and route metadata.
+ */
+function renderThreefoldWeftwaysFrame(state) {
+  const {
+    flowChoice,
+    floodedGeometryIds,
+    relayRecordRead,
+    relayRecordShared,
+    relayRecordConcealed,
+    relayRecordDestroyed,
+    relayRestitutionNegotiated,
+  } = state.weftways;
+  const pellDied = weftways.hasThreefoldWeftwaysPellGrowthDeath(
+    state.encounter
+  );
+  const rootFlooded = floodedGeometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+  );
+  const quayFlooded = floodedGeometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_LOW_QUAY_ID
+  );
+  const growth = previewThreefoldGrowthEffects(state);
+  const beetleFates = new Set(
+    (state.encounter.growthDeaths ?? []).map(({ creatureId }) => creatureId)
+  );
+  const flowMessage = relayRecordShared
+    ? pellDied
+      ? 'Mara shared Pell’s record with the relay keeper; responsibility remains unresolved.'
+      : 'Mara shared the record; responsibility remains unresolved.'
+    : relayRecordConcealed
+      ? pellDied
+        ? 'Mara keeps Pell’s record private from the relay keeper.'
+        : 'Mara keeps Pell’s record private.'
+      : relayRecordDestroyed
+        ? 'Mara destroyed the record; responsibility remains unresolved.'
+        : relayRestitutionNegotiated
+          ? pellDied
+            ? 'The relay keeper records Mara’s offer and will carry it onward; Pell’s answer is unknown.'
+            : flowChoice === 'pell-bypass'
+              ? 'Pell accepts Mara’s offer to carry relay tokens and help restore the route.'
+              : 'Pell defers terms until root-channel damage is assessed.'
+          : flowChoice === 'pell-bypass'
+            ? pellDied
+              ? 'The relay keeper preserves Pell’s crossing choice; roots hold, quay floods.'
+              : 'Pell trusts Mara; roots hold, quay floods.'
+            : flowChoice === 'quay-spill'
+              ? pellDied
+                ? 'The relay keeper preserves Pell’s crossing choice; quay stays dry, root crossing floods.'
+                : 'Pell is wary; quay stays dry, root crossing floods.'
+              : pellDied
+                ? 'The relay keeper can discuss the crossing and preserve its evidence.'
+                : 'Pell knows a bypass through the deep roots.';
+  const threadboundIndependentPublication =
+    flowChoice === 'quay-spill'
+      ? {
+          title: pellDied
+            ? 'Caravan relay keeper’s independent notice'
+            : 'Pell’s independent relay notice',
+          text:
+            `After the root crossing flooded, ${pellDied ? 'the caravan relay keeper published' : 'Pell posted'} a notice from the ` +
+            'caravan’s own relay notes to help the downstream crews restore ' +
+            'their route. The notes say relay tokens stopped arriving after ' +
+            'the emergency pressure-regulator bypass. They do not identify ' +
+            'the final sender, establish what Iri knew, or assign responsibility.',
+        }
+      : null;
+  const logicalGridLayout = createWeftwaysGridLayout(state);
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
+  );
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'WEFTWAYS',
+      state.elapsedGameSeconds,
+      { x: 7, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: flowMessage,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Threadbound Crossing';
+  frame.toast = flowMessage;
+  /**
+   * Create a pixel shape for a resolved source identity.
+   * @param {string} id Source identity.
+   * @param {string} fill Pixel fill.
+   * @returns {ThreefoldSpriteShape[]} Projected source shape, or none when omitted.
+   */
+  const sourceShape = (id, fill) => {
+    const entity = logicalEntities.get(id);
+    if (!entity || entity.placement === 'overflow') return [];
+    return [weftwaysEntityShape(entity, logicalGridLayout, fill)];
+  };
+  /**
+   * Select the saved-choice fill for a flow control.
+   * @param {string} id Flow-control identity.
+   * @returns {string} Selected control fill.
+   */
+  const flowControlFill = id =>
+    id === weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID
+      ? flowChoice === 'pell-bypass'
+        ? '#bfd77c'
+        : '#e9d88d'
+      : flowChoice === 'quay-spill'
+        ? '#bfd77c'
+        : '#e9d88d';
+  const rootThreatened = growth.geometryIds.includes(
+    weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+  );
+  const shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'WEFTWAYS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 32, 144, 72], '#315744'),
+    ...state.scene.geometry.flatMap(({ id }) =>
+      sourceShape(
+        id,
+        id === weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID
+          ? rootFlooded
+            ? '#25a9b8'
+            : rootThreatened
+              ? '#e16b5a'
+              : '#bfd77c'
+          : quayFlooded
+            ? '#25a9b8'
+            : '#d28b69'
+      )
+    ),
+    ...state.scene.decorations.flatMap(({ id }) => sourceShape(id, '#526e4b')),
+    ...state.scene.interactables.flatMap(({ id }) => {
+      if (id === weftways.THREEFOLD_WEFTWAYS_PELL_ID)
+        return pellDied
+          ? []
+          : weftwaysPellShapes(
+              logicalEntities.get(id),
+              logicalGridLayout,
+              state.player.scale
+            );
+      return sourceShape(
+        id,
+        id === weftways.THREEFOLD_WEFTWAYS_PELL_BYPASS_ID ||
+          id === weftways.THREEFOLD_WEFTWAYS_QUAY_SPILL_ID
+          ? flowControlFill(id)
+          : id === weftways.THREEFOLD_WEFTWAYS_BRAZIER_ID &&
+              relayRecordDestroyed
+            ? '#8aa27b'
+            : id === weftways.THREEFOLD_WEFTWAYS_CARAVAN_CIRCLE_ID &&
+                relayRecordShared
+              ? '#bfd77c'
+              : id === weftways.THREEFOLD_WEFTWAYS_RESTITUTION_TABLE_ID &&
+                  relayRestitutionNegotiated
+                ? '#bfd77c'
+                : '#d28b69'
+      );
+    }),
+    ...state.scene.creatures.flatMap(({ id }) => {
+      if (id === weftways.THREEFOLD_WEFTWAYS_PELL_ID) return [];
+      return weftwaysBeetleShapes(
+        logicalEntities.get(id),
+        logicalGridLayout,
+        beetleFates.has(id)
+      );
+    }),
+    ...sourceShape('mara', PALETTE[3]),
+    ...(threadboundIndependentPublication
+      ? weftwaysPublicationShapes(
+          logicalEntities.get(weftways.THREEFOLD_WEFTWAYS_ROOT_CROSSING_ID),
+          logicalGridLayout
+        )
+      : []),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      flowChoice === 'pell-bypass'
+        ? pellDied
+          ? 'RELAY KEEPER · ROOTS SAFE · QUAY FLOODS'
+          : 'ROOTS SAFE · QUAY FLOODS'
+        : flowChoice === 'quay-spill'
+          ? pellDied
+            ? 'RELAY KEEPER · QUAY SAFE · ROOTS FLOOD'
+            : 'QUAY SAFE · ROOTS FLOOD'
+          : pellDied
+            ? 'CARAVAN KEEPER · CHOOSE A FLOW'
+            : 'PELL · CHOOSE A FLOW'
+    ),
+    captionShape(
+      { x: 8, y: 136 },
+      flowChoice === 'undecided'
+        ? 'MOVE · A CHOOSE / GROW · B SHRINK'
+        : relayRecordShared
+          ? 'CARAVAN KNOWS THE RECORD'
+          : relayRecordConcealed
+            ? 'MARA KEPT THE RECORD PRIVATE'
+            : relayRecordDestroyed
+              ? 'LEDGER DESTROYED · FACTS UNRESOLVED'
+              : relayRestitutionNegotiated
+                ? pellDied
+                  ? 'KEEPER CARRIES OFFER · PELL ANSWER UNKNOWN'
+                  : flowChoice === 'pell-bypass'
+                    ? 'PELL ACCEPTS · TOKENS AND ROUTE REPAIR'
+                    : 'PELL DEFERS · ROOT DAMAGE TO ASSESS'
+                : relayRecordRead
+                  ? 'A SHARE · REPAIR · KEEP · DESTROY'
+                  : pellDied
+                    ? 'REACH CARAVAN CIRCLE · A READ COPY'
+                    : 'REACH PELL · A READ RELAY LOG'
+    ),
+    ...(growth.creatureIds.includes(weftways.THREEFOLD_WEFTWAYS_PELL_ID)
+      ? [captionShape({ x: 8, y: 24 }, 'A KILLS PELL', true)]
+      : []),
+  ];
+  frame.shapes = shapes;
+  return finishSmallWorldFrame(frame, {
+    scale: state.player.scale,
+    heightMeters: heightAtScale(state.player.scale),
+    anchor: state.player.anchor,
+    maximumAnchor: state.player.maximumAnchor,
+    elapsedGameSeconds: state.elapsedGameSeconds,
+    flowChoice,
+    floodedGeometryIds: [...floodedGeometryIds],
+    relayRecordRead,
+    relayRecordShared,
+    relayRecordConcealed,
+    relayRecordDestroyed,
+    relayRestitutionNegotiated,
+    pellDied,
+    threadboundPellOutcome: pellDied
+      ? {
+          title: 'Pell’s death and the caravan relay keeper',
+          text:
+            'Mara’s growth killed Pell. The caravan relay keeper now preserves ' +
+            'his record and can discuss the crossing and carry route-repair ' +
+            'offers onward. Pell does not return, and his response to any offer ' +
+            'after his death is unknown.',
+        }
+      : null,
+    threadboundIndependentPublication,
+    threadboundRelayRecord:
+      relayRecordRead && !relayRecordDestroyed
+        ? {
+            title: 'Threadbound relay ledger',
+            text:
+              `${pellDied ? 'The relay keeper preserves Pell’s caravan ledger, which shows' : 'Pell’s caravan ledger shows'} downstream relay tokens stopped ` +
+              'arriving after an emergency pressure-regulator bypass. It does ' +
+              'not identify who sent the final message, what Iri knew, or who ' +
+              'was responsible.',
+          }
+        : null,
+    threadboundRelayDestruction: relayRecordDestroyed
+      ? {
+          title: 'What happened to the Threadbound ledger',
+          text:
+            'Mara destroyed Pell’s relay ledger at the brazier. The record ' +
+            'can no longer be read. It did not identify the final sender, ' +
+            'establish what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayDisclosure: relayRecordShared
+      ? {
+          title: 'What Mara shared with the caravan',
+          text:
+            'Mara told the Threadbound caravan that downstream relay tokens ' +
+            'stopped arriving after an emergency pressure-regulator bypass. ' +
+            'The record still cannot identify the final sender, establish ' +
+            'what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayConcealment: relayRecordConcealed
+      ? {
+          title: 'What Mara kept private',
+          text:
+            'Mara chose not to share Pell’s relay ledger with the caravan and ' +
+            'kept the record for herself. It still cannot identify the final ' +
+            'sender, establish what Iri knew, or assign responsibility.',
+        }
+      : null,
+    threadboundRelayRestitution: relayRestitutionNegotiated
+      ? {
+          title: 'Threadbound relay restitution',
+          text: pellDied
+            ? 'Mara offered to carry replacement relay tokens to downstream settlements and help restore their route. The caravan relay keeper records the offer and will carry it onward; Pell’s answer is unknown. The offer does not identify the final sender, establish what Iri knew, or assign responsibility.'
+            : flowChoice === 'pell-bypass'
+              ? 'Mara offered to carry replacement relay tokens to downstream ' +
+                'settlements and help restore their route. Pell accepts the ' +
+                'plan. The agreement does not identify the final sender, ' +
+                'establish what Iri knew, or assign responsibility.'
+              : 'Mara offered to carry replacement relay tokens to downstream ' +
+                'settlements and help restore their route. Pell defers final ' +
+                'terms until the root-channel damage is assessed. The offer ' +
+                'does not identify the final sender, establish what Iri knew, ' +
+                'or assign responsibility.',
+        }
+      : null,
+    packBeetleIds: state.scene.creatures
+      .filter(({ id }) => id.startsWith('weftways-pack-beetle-'))
+      .map(({ id }) => id),
+    growthPreviewGeometryIds: growth.geometryIds,
+    growthPreviewCreatureIds: growth.creatureIds,
+    witnessLedger: [],
+    logicalGridLayout,
+  });
+}
+
+/**
+ * Render Iru's nursery and the scale-aware spider decision on Mosslight's grid.
+ * @param {Extract<ReturnType<typeof import('./simulation.js').createThreefoldSimulation>, {scene: {id: 'grainlands'}}>} state Current Grainlands simulation.
+ * @param {import('./pressure-network.js').ThreefoldPressureNetwork} pressureNetwork Shared campaign water.
+ * @returns {Record<string, any>} Snapped handheld frame and route state.
+ */
+function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
+  const nurseryDepth = getThreefoldNurseryWaterDepthMeters(pressureNetwork);
+  const growth = previewThreefoldGrowthEffects(state);
+  const logicalGridLayout = createGrainlandsGridLayout(state);
+  const logicalEntities = new Map(
+    logicalGridLayout.entities.map(entity => [entity.id, entity])
+  );
+  const spiderFate = state.grainlands.spiderFate;
+  const bridgeOutcome = state.grainlands.bridgeOutcome;
+  const bridgeThreatened = growth.geometryIds.includes(
+    grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID
+  );
+  const bridgeColor =
+    bridgeOutcome === 'broken'
+      ? '#526e4b'
+      : bridgeThreatened
+        ? '#e16b5a'
+        : '#bfd77c';
+  const status = describeGrainlandsIru(state);
+  const nurseryEntity =
+    /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+      logicalEntities.get(grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID)
+    );
+  const spiderEntity = logicalEntities.get(
+    grainlands.THREEFOLD_GRAINLANDS_SPIDER_ID
+  );
+  const maraEntity = logicalEntities.get('mara');
+  const nurseryRect = grainlandsEntityRect(nurseryEntity, logicalGridLayout);
+  const waterHeight = nurseryRect
+    ? Math.min(
+        nurseryRect.height,
+        snapCanvasDimension((nurseryDepth / 0.04) * nurseryRect.height)
+      )
+    : 0;
+  const frame = createThreefoldFramePayload({
+    world: createSmallWorldFrameWorld(
+      state.scene.id,
+      'GRAINLANDS',
+      state.elapsedGameSeconds,
+      { x: 4, y: 5 }
+    ),
+    dialogue: null,
+    quickAction: 'grow',
+    toast: status,
+    presentation: {
+      palette: PALETTE,
+      status: formatScaleStatus(state.player),
+    },
+    spriteRenderer: () => [],
+  });
+  frame.quest = 'The Nursery Crossing';
+  frame.toast = status;
+  frame.shapes = [
+    createThreefoldRectShape([0, 0, 160, 144], PALETTE[0]),
+    captionShape({ x: 8, y: 12 }, 'GRAINLANDS', true),
+    createThreefoldRectShape([4, 20, 152, 92], '#102823'),
+    createThreefoldRectShape([8, 28, 144, 72], '#315744'),
+    ...state.scene.geometry.flatMap(({ id }) => {
+      const entity =
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        );
+      const fill =
+        id === grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID
+          ? bridgeColor
+          : id === grainlands.THREEFOLD_GRAINLANDS_NURSERY_ID &&
+              pressureNetwork.nurseryDamaged
+            ? '#b46b55'
+            : '#526e4b';
+      const shape = grainlandsEntityShape(entity, logicalGridLayout, fill);
+      if (!shape) return [];
+      if (
+        id !== grainlands.THREEFOLD_GRAINLANDS_BRIDGE_ID ||
+        bridgeOutcome !== 'broken'
+      )
+        return [shape];
+      const rect =
+        /** @type {{x:number,y:number,width:number,height:number}} */ (
+          grainlandsEntityRect(entity, logicalGridLayout)
+        );
+      return [
+        shape,
+        createThreefoldRectShape(
+          [
+            rect.x +
+              Math.floor((rect.width - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+                GRID_PIXELS,
+            rect.y +
+              Math.floor((rect.height - GRID_PIXELS) / (2 * GRID_PIXELS)) *
+                GRID_PIXELS,
+            GRID_PIXELS,
+            GRID_PIXELS,
+          ],
+          '#182f36'
+        ),
+      ];
+    }),
+    ...state.scene.decorations.flatMap(({ id }) => {
+      const entity =
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        );
+      const shape = grainlandsEntityShape(entity, logicalGridLayout, '#526e4b');
+      return shape ? [shape] : [];
+    }),
+    ...(waterHeight > 0 && nurseryRect
+      ? [
+          {
+            ...createThreefoldRectShape(
+              [
+                nurseryRect.x,
+                nurseryRect.y + nurseryRect.height - waterHeight,
+                nurseryRect.width,
+                waterHeight,
+              ],
+              '#1b8a83'
+            ),
+            logicalContainerBounds: nurseryEntity.cellBounds,
+            surfaceMeters: nurseryDepth,
+          },
+        ]
+      : []),
+    ...state.scene.interactables.flatMap(({ id }) => {
+      const entity =
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          logicalEntities.get(id)
+        );
+      const fill =
+        id === grainlands.THREEFOLD_GRAINLANDS_HATCH_ID
+          ? pressureNetwork.nurseryDamaged
+            ? '#b46b55'
+            : pressureNetwork.hatchClosed
+              ? '#e9d88d'
+              : '#526e4b'
+          : id === grainlands.THREEFOLD_GRAINLANDS_IRU_ID
+            ? '#d28b69'
+            : '#bfd77c';
+      const shape = grainlandsActorShape(
+        entity,
+        logicalGridLayout,
+        fill,
+        state.player.scale
+      );
+      return shape ? [shape] : [];
+    }),
+    ...(spiderFate === 'baited-away' || !spiderEntity
+      ? []
+      : grainlandsSpiderShapes(
+          spiderEntity,
+          logicalGridLayout,
+          spiderFate === 'overpowered'
+        )),
+    ...[
+      grainlandsActorShape(
+        /** @type {ReturnType<typeof createGrainlandsGridLayout>['entities'][number]} */ (
+          maraEntity
+        ),
+        logicalGridLayout,
+        PALETTE[3],
+        state.player.scale
+      ),
+    ].filter(Boolean),
+    createThreefoldRectShape([4, 116, 152, 24], '#182f36'),
+    captionShape(
+      { x: 8, y: 126 },
+      spiderFate === 'baited-away'
+        ? 'SPIDER BAITED · BRIDGE SAFE'
+        : spiderFate === 'overpowered'
+          ? 'SPIDER BEATEN · BRIDGE BROKE'
           : 'IRU · NURSERY · SPIDER'
     ),
     captionShape({ x: 8, y: 136 }, 'A IRU / HATCH / GROW'),
