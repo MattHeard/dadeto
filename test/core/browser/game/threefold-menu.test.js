@@ -98,6 +98,29 @@ test('opens the campaign status from the main menu using only the controls', () 
   expect(text).toContain('> CLOCK 0 MIN');
 });
 
+test('runs the in-game system actions and resumes without extra controls', () => {
+  const { menu, runtime, buttons } = createMenuRuntime();
+  press(menu, 'y');
+  for (let index = 0; index < 6; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  expect(menu.frame().shapes.some(shape => shape.text === 'SYSTEM')).toBe(true);
+  press(menu, 'down');
+  press(menu, 'a');
+  expect(buttons.get('#fullscreen-game').click).toHaveBeenCalledTimes(1);
+  press(menu, 'down');
+  press(menu, 'a');
+  expect(buttons.get('#reset-game').click).toHaveBeenCalledTimes(1);
+  press(menu, 'up');
+  press(menu, 'up');
+  press(menu, 'a');
+
+  expect(runtime.resume).toHaveBeenCalledTimes(1);
+  expect(menu.frame().shapes.some(shape => shape.text === 'SYSTEM')).toBe(
+    false
+  );
+});
+
 test('Y opens an in-game guide navigated only with the eight handheld controls', () => {
   const { menu, runtime } = createMenuRuntime();
   press(menu, 'y');
