@@ -1,6 +1,6 @@
 # Threefold player and NPC contrast follow-up
 
-- Unexpected hurdle: residents and Mara were both rendered with the same small Mara bitmap, and the earlier scale-only cue did not make their roles legible.
-- Diagnosis: at the handheld's tiny sprite footprint, color and silhouette differences alone are easy to miss.
-- Fix: add persistent `YOU` and `NPC` badges with distinct gold/cyan backgrounds, keep the badges on the existing 8-pixel grid, and give resident clothing a cyan accent. Add a renderer regression for role text, colors, and grid alignment.
-- Next time: evaluate character-role readability in the complete 160 × 144 frame, not only sprite bounds.
+- Unexpected hurdle: residents and Mara shared the same tiny source bitmap; gold/cyan role labels were present but still did not make the character silhouettes distinct enough.
+- Diagnosis: at handheld scale, labels and outline pixels were too small to compensate for identical human art.
+- Fix: give every resident a broad-cap, bright-cyan Mosslight sprite while Mara retains her hooded player sprite. Keep the existing gold YOU and cyan NPC badges and verify resident palette pixels in the renderer regression.
+- Next time: review the complete 160 × 144 frame and compare role silhouettes at the smallest rendered scale, not only marker metadata.
