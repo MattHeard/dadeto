@@ -84,6 +84,20 @@ test('opens the empty field notes from the main menu using only the controls', (
   expect(text).toContain('> NO FIELD NOTES YET');
 });
 
+test('opens the campaign status from the main menu using only the controls', () => {
+  const { menu } = createMenuRuntime();
+  press(menu, 'y');
+  for (let index = 0; index < 4; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('CAMPAIGN');
+  expect(text).toContain('> CLOCK 0 MIN');
+});
+
 test('Y opens an in-game guide navigated only with the eight handheld controls', () => {
   const { menu, runtime } = createMenuRuntime();
   press(menu, 'y');
