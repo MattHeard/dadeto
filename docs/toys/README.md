@@ -16,9 +16,11 @@ If a toy graduates to production behavior, retain docs as historical context and
 
 ## THREEFOLD spec source
 
-The stable requirements in the THREEFOLD Notion page are canonical. Its synchronized section runs inclusively from `Creative north star` through `Reference context`; progress history outside those headings is excluded. Edit that section in Notion, then run `npm run threefold:spec:refresh` to update `docs/toys/threefold/spec.md`. Run `npm run threefold:spec:check` to verify a local copy. The generated file includes its source link and last-edited timestamp and must not be edited directly.
+The THREEFOLD Notion page is canonical; `docs/toys/threefold/spec.md` is a best-effort cache. Its synchronized section runs inclusively from `Creative north star` through `Reference context`; progress history outside those headings is excluded. Do not edit the generated file directly.
 
-Local refresh and CI check require `NOTION_THREEFOLD_SPEC_READ_TOKEN` from a dedicated Notion integration shared only with the canonical page and granted read-content access. Configure the same variable as a GitHub Actions repository secret. CI fails if the secret is missing or the page cannot be read; it never skips the drift check.
+At implementation start and after completing and validating each subtask, optionally run `npm run threefold:spec:refresh:best-effort`. If Notion access is available, it refreshes the cache. If credentials, network, or the source are unavailable, the command exits silently and leaves the existing cache unchanged. After a successful refresh, reconcile remaining work against the updated section before continuing. For a deliberate strict refresh or live drift check, use `npm run threefold:spec:refresh` or `npm run threefold:spec:check`; these require `NOTION_THREEFOLD_SPEC_READ_TOKEN` and report failures.
+
+`npm run threefold:spec:cache:check` validates the checked-in cache structure and deterministic metadata using local files only. Full Check runs this local-only command; CI makes no Notion requests and requires no Notion secret.
 
 ## How to create a new toy folder
 
