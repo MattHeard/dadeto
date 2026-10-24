@@ -10,6 +10,10 @@ const ACTORS = {
   mira: '...hhhhhh.../..hhhhhhhh../..hhsssshh../..hssksshh../..hssssshh../...cccccc.../..sccccccs../..scacaccs../...aaaaaa.../..aaaaaaaa../...kk.kk..../............'.split(
     '/'
   ),
+  resident:
+    '....aaaa..../...aaaaaa.../..hhhhhhhh../..hsssssshh./..hskssskshh/...ssssss.../...cccccc.../..sccccccs../..sccaaacc../...ccaaaa.../...kk.kk..../............'.split(
+      '/'
+    ),
   'uncle-vale':
     '...aaaaaa.../..aaaaaaaa../...hssss..../...sskss..../...shhhh..../...cccccc.../..sccaccas../..sccaccas../...cccccc.../...kk.kk..../...kk.kk..../............'.split(
       '/'
@@ -52,6 +56,7 @@ const PROPS = {
 const COLOURS = {
   player: '#442f37/#e9794d/#f7dc9f/#e8be62'.split('/'),
   mira: '#48344a/#6995ab/#f4c89b/#e9dfa0'.split('/'),
+  resident: '#283b4b/#19a9a0/#f4c89b/#f2ca59'.split('/'),
   'uncle-vale': '#4d3532/#a47757/#edc297/#b7cb76'.split('/'),
   juniper: '#34364f/#9a719f/#f0cda5/#e8ce6f'.split('/'),
   pip: '#49382d/#dfb949/#f1cc9d/#76bba1'.split('/'),
