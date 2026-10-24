@@ -244,4 +244,4 @@ The Broken Gate watchkeeper must visibly change footprint between Mara at scale 
 
 ## NPC and player visual distinction — 2026-10-24
 
-NPC sprites receive a high-contrast, cyan-framed `NPC` role label built from 2px bitmap cells, plus the pale sprite outline. The controlled player remains unlabelled as Mara. The label is semantic and readable at handheld size; it does not replace the NPC's physical scale. Regression coverage checks the visible N/P/C glyph cells and confirms Mara has no NPC marker; the adjacent-scale size test remains in place. The logical-grid renderer assertion excludes identity markers from physical cell containment.
+Residents retain their high-contrast, cyan-framed `NPC` tag and pale sprite outline. Mara now has a separate gold-framed `YOU` tag so the controlled character is immediately identifiable too. Both fixed-size role tags use the aligned 2px display subgrid; resident sprite footprints still change with their authored physical scale. Renderer regressions check the distinct label glyphs and colors, grid alignment, and adjacent-scale sprite sizes. Role markers remain presentation metadata and do not affect physical layout.
