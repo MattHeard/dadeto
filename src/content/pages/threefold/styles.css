@@ -520,7 +520,7 @@ footer {
 }
 
 .screen-glow {
-  width: fit-content;
+  width: 100%;
   margin: 0 auto;
 }
 

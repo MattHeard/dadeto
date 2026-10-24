@@ -10,6 +10,8 @@ Play begins immediately in the Broken Gate. The opening objective and nearby cha
 
 Mara has a cyan hood, short jacket, separated legs, and an attached cyan `YOU` tag. Residents have a broad magenta brim and a continuous full-length violet robe, with a magenta `NPC` tag above each sprite. The different silhouettes remain visible without reading the tags, while color and labels reinforce the roles. Adult residents are authored at human stature and their bodies change size with Mara's scale. In compact regional views that use cell-sized sprites, Mara is cyan and residents are vivid magenta.
 
+On phones, the display enlarges to fit its bezel while the game continues to render at 160 × 144 pixels with nearest-neighbor scaling, so character pixels stay crisp and easier to inspect.
+
 ## Input
 
 Before a growth action, the frame highlights and names intact structures the next scale rung will break. If the next body volume overlaps the still-present Latchfolk watchkeeper, the frame also highlights them and says `A KILLS LATCHFOLK`, including when Mara has entered their bounds at small size. It also highlights every authored creature Mara currently fits inside when the next body overlaps it. These warnings are informational: pressing A still grows and commits the shown outcomes.

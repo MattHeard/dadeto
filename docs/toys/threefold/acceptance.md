@@ -1,6 +1,6 @@
 # THREEFOLD Acceptance
 
-- [ ] Confirm by phone-size playtest that Mara is immediately distinct from residents at 160 × 144. Mara keeps a cyan hood, short jacket, and separated legs; residents now have a broad brim and continuous full-length robe, in addition to the cyan `YOU` and magenta `NPC` tags. A renderer regression checks the resident robe's solid hem and color-independent silhouette difference at native size. This source change still needs a deployed phone-size visual review.
+- [ ] Confirm by phone-size playtest that Mara is immediately distinct from residents at 160 × 144. Mara keeps a cyan hood, short jacket, and separated legs; residents have a broad brim and continuous full-length robe, plus cyan `YOU` and magenta `NPC` tags. The phone layout now scales the native 160 × 144 canvas to fill its handheld frame instead of shrink-wrapping it at 1× CSS size. Renderer regressions cover the robe hem and silhouette at native size; deployed phone-size visual review is still required.
 
 ## Machine-Checkable Criteria
 

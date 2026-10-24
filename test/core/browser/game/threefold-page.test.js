@@ -71,6 +71,7 @@ const { createThreefoldLanternWardScene } = await import(
 
 test('keeps the standalone page focused on the handheld and eight controls', () => {
   expect(THREEFOLD_CSS).toContain('--threefold-layout-grid: 8px');
+  expect(THREEFOLD_CSS).toContain('.screen-glow {\n  width: 100%;');
   expect(THREEFOLD_CSS).toContain('grid-template-columns: repeat(3, 40px)');
   expect(THREEFOLD_CSS).toContain('transform: none');
   expect(THREEFOLD_HTML).toContain('width="160"');
