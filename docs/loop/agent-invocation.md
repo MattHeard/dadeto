@@ -64,6 +64,16 @@ empty lists are valid, and use an unknown estimate instead of inventing a
 fraction. This record is for meaningful toy/feature completions, not every
 commit.
 
+## THREEFOLD spec refresh boundaries
+
+When implementing a THREEFOLD specification item, refresh the best-effort cache at the start of the implementation and after completing and validating each subtask:
+
+```bash
+npm run threefold:spec:refresh:best-effort
+```
+
+If the refresh updates `docs/toys/threefold/spec.md`, reconcile the remaining subtasks against the new canonical section before continuing. Preserve already validated work. If credentials, network access, or the source is unavailable, the command fails silently and leaves the cached file untouched; continue using the checked-in requirements and note any uncertainty that affects the work. Full Check validates the local cache with `npm run threefold:spec:cache:check` and never performs a live Notion request.
+
 ## Default Heuristics
 
 When the user gives only a bead reference, use these defaults unless the bead clearly requires something else:
