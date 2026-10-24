@@ -127,6 +127,44 @@ test('shows saved witness facts in the in-game field notes', () => {
   expect(text).toContain('  OBSERVED: THE GATE');
 });
 
+test('shows attributed testimony and unresolved responsibility in field notes', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      witnessLedger: [],
+      testimony: {
+        accounts: [
+          {
+            speaker: 'Dock worker',
+            statement: 'I warned that the tide was rising.',
+          },
+        ],
+        responsibility: {
+          question: 'Who knew the gate would fail?',
+          status: 'unresolved',
+        },
+      },
+      campaignPlaces: [],
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+  press(menu, 'y');
+  for (let index = 0; index < 3; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('JOURNAL');
+  expect(text.some(line => line.includes('DOCK WORKER: I'))).toBe(true);
+  expect(text).toContain('  WARNED THAT THE');
+  expect(text).toContain('  UNRESOLVED');
+});
+
 test('returns from the in-game guide to the main menu with A', () => {
   const { menu } = createMenuRuntime();
   press(menu, 'y');
