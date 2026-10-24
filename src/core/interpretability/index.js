@@ -351,6 +351,10 @@ export function createInterpretabilitySchemasV1(z) {
       .min(32),
     report: accuracyEvaluationReportSchemaV1,
   });
+  const experimentDesignSchemaV1 = createExperimentDesignSchemaV1(
+    z,
+    pinnedModel
+  );
 
   return Object.freeze({
     mechanismSchemaV1,
@@ -361,6 +365,7 @@ export function createInterpretabilitySchemasV1(z) {
     evidenceEdgeSchemaV1,
     mechanisticEstimateSchemaV1,
     accuracyEvaluationSchemaV1,
+    experimentDesignSchemaV1,
     interpretabilityJsonSchemasV1: Object.freeze({
       mechanism: z.toJSONSchema(mechanismSchemaV1),
       hypothesis: z.toJSONSchema(hypothesisSchemaV1),
@@ -372,6 +377,7 @@ export function createInterpretabilitySchemasV1(z) {
       evidenceEdge: z.toJSONSchema(evidenceEdgeSchemaV1),
       mechanisticEstimate: z.toJSONSchema(mechanisticEstimateSchemaV1),
       accuracyEvaluation: z.toJSONSchema(accuracyEvaluationSchemaV1),
+      experimentDesign: z.toJSONSchema(experimentDesignSchemaV1),
     }),
   });
 }
@@ -1821,6 +1827,8 @@ export function importInterpretabilityIdentityGraphV3(
 const IDENTITY_REFERENCE_ENTITY_TYPES_V1 = Object.freeze([
   'model',
   'checkpoint',
+  'hypothesis',
+  'evidence',
   'component',
   'activation-position',
   'observation',
@@ -2079,6 +2087,44 @@ export function exportInterpretabilityResearchBundleV6(bundle, schemas) {
 }
 
 /**
+ * Export an immutable, separately versioned experiment-design collection.
+ * @param {any} bundle Portable evidence, identities and plans.
+ * @param {any} schemas Injected graph and plan schemas.
+ * @returns {{valid: true, json: string}|{valid: false, errors: Array<Record<string, any>>}} V7 export result.
+ */
+export function exportInterpretabilityResearchBundleV7(bundle, schemas) {
+  if (!bundle || typeof bundle !== 'object' || Array.isArray(bundle))
+    return researchBundleFailure('invalid-research-bundle');
+  const { experimentDesigns = [], ...legacyBundle } = bundle;
+  const legacyExport = exportInterpretabilityResearchBundleV6(
+    legacyBundle,
+    schemas
+  );
+  if (!legacyExport.valid) return legacyExport;
+  const imported = importInterpretabilityResearchBundleV2(
+    legacyExport.json,
+    schemas
+  );
+  if (!imported.valid) return imported;
+  const designs = validateExperimentDesignCollectionV1(
+    experimentDesigns,
+    imported.bundle,
+    schemas?.evidenceGraphSchemasV1?.experimentDesignSchemaV1
+  );
+  if (!designs.valid)
+    return researchBundleFailure('invalid-experiment-designs', designs.errors);
+  const envelope = JSON.parse(legacyExport.json);
+  return {
+    valid: true,
+    json: JSON.stringify({
+      ...envelope,
+      schemaVersion: 7,
+      experimentDesigns: designs.designs,
+    }),
+  };
+}
+
+/**
  * Validate portable subgraphs and serialize the selected outer envelope version.
  * @param {Record<string, any>} bundle Portable research subgraphs.
  * @param {Record<string, any>} schemas Injected subgraph schemas.
@@ -2095,6 +2141,13 @@ function exportInterpretabilityResearchBundle(bundle, schemas, version) {
     Array.isArray(bundle.evidenceGraph)
   ) {
     return researchBundleFailure('invalid-evidence-graph');
+  }
+  if (
+    version < 7 &&
+    Array.isArray(bundle.experimentDesigns) &&
+    bundle.experimentDesigns.length > 0
+  ) {
+    return researchBundleFailure('unsupported-experiment-designs');
   }
   const evidenceExport = exportEvidenceGraphV1(bundle.evidenceGraph);
   if (!evidenceExport.valid) {
@@ -2238,6 +2291,8 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
   if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope)) {
     return researchBundleFailure('invalid-document');
   }
+  if (envelope.schemaVersion === 7)
+    return importInterpretabilityResearchBundleV7(json, schemas);
   if (![2, 3, 4, 5, 6].includes(envelope.schemaVersion)) {
     return researchBundleFailure('unsupported-version');
   }
@@ -2392,6 +2447,58 @@ export function importInterpretabilityResearchBundleV2(json, schemas) {
       accuracyEvaluations: accuracyResult.records,
       identityReferences: identityReferencesResult.claims,
     },
+  };
+}
+
+/**
+ * Import a V7 bundle and retain its independently versioned design records.
+ * Legacy V2-V6 envelopes remain handled by the existing importer.
+ * @param {string} json Portable V7 research bundle JSON.
+ * @param {any} schemas Injected graph and plan schemas.
+ * @returns {any} V7 import result.
+ */
+export function importInterpretabilityResearchBundleV7(json, schemas) {
+  if (typeof json !== 'string') return researchBundleFailure('invalid-json');
+  let envelope;
+  try {
+    envelope = JSON.parse(json);
+  } catch {
+    return researchBundleFailure('invalid-json');
+  }
+  if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope))
+    return researchBundleFailure('invalid-document');
+  const allowedKeys = [
+    'schemaVersion',
+    'evidenceGraph',
+    'identityGraph',
+    'mechanismIdentityLinks',
+    'accuracyEvaluations',
+    'experimentDesigns',
+  ];
+  if (
+    envelope.schemaVersion !== 7 ||
+    !Array.isArray(envelope.experimentDesigns) ||
+    Object.keys(envelope).some(key => !allowedKeys.includes(key))
+  ) {
+    return researchBundleFailure('invalid-research-bundle');
+  }
+  const legacyEnvelope = { ...envelope, schemaVersion: 6 };
+  delete legacyEnvelope.experimentDesigns;
+  const imported = importInterpretabilityResearchBundleV2(
+    JSON.stringify(legacyEnvelope),
+    schemas
+  );
+  if (!imported.valid) return imported;
+  const designs = validateExperimentDesignCollectionV1(
+    envelope.experimentDesigns,
+    imported.bundle,
+    schemas?.evidenceGraphSchemasV1?.experimentDesignSchemaV1
+  );
+  if (!designs.valid)
+    return researchBundleFailure('invalid-experiment-designs', designs.errors);
+  return {
+    valid: true,
+    bundle: { ...imported.bundle, experimentDesigns: designs.designs },
   };
 }
 
@@ -3255,6 +3362,58 @@ export function appendIdentityReferenceV1(bundle, claim, schemas) {
 }
 
 /**
+ * Append one immutable plan and preserve unresolved citations as V3 source claims.
+ * @param {any} bundle Validated V6 portable research bundle.
+ * @param {any} design Proposed experiment design.
+ * @param {any} schemas Injected graph and plan schemas.
+ * @returns {{valid: true, bundle: Record<string, any>}|{valid: false, errors: Array<Record<string, any>>}} Appended bundle or validation errors.
+ */
+export function appendExperimentDesignV1(bundle, design, schemas) {
+  if (!bundle || typeof bundle !== 'object' || Array.isArray(bundle))
+    return { valid: false, errors: [{ code: 'invalid-research-bundle' }] };
+  const { experimentDesigns = [], ...legacyBundle } = bundle;
+  if (!Array.isArray(experimentDesigns))
+    return { valid: false, errors: [{ code: 'invalid-experiment-designs' }] };
+  const baseExport = exportInterpretabilityResearchBundleV6(
+    legacyBundle,
+    schemas
+  );
+  if (!baseExport.valid) return baseExport;
+  const base = importInterpretabilityResearchBundleV2(baseExport.json, schemas);
+  if (!base.valid) return base;
+  const schema = schemas?.evidenceGraphSchemasV1?.experimentDesignSchemaV1;
+  if (typeof schema?.safeParse !== 'function')
+    return {
+      valid: false,
+      errors: [{ code: 'missing-experiment-design-schema' }],
+    };
+  const parsed = schema.safeParse(design);
+  if (!parsed.success)
+    return { valid: false, errors: [{ code: 'invalid-experiment-design' }] };
+
+  const candidateContext = {
+    ...base.bundle,
+    identityReferences: [
+      ...base.bundle.identityReferences,
+      ...unresolvedExperimentDesignClaimsV1(parsed.data),
+    ],
+  };
+  const appended = validateExperimentDesignCollectionV1(
+    [...experimentDesigns, parsed.data],
+    candidateContext,
+    schema
+  );
+  if (!appended.valid) return appended;
+  return {
+    valid: true,
+    bundle: {
+      ...candidateContext,
+      experimentDesigns: appended.designs,
+    },
+  };
+}
+
+/**
  * Parse submitted records with an injected schema and report stable failures.
  * @param {string} collection Graph collection name.
  * @param {Array<InterpretabilityRecord>} records Submitted records.
@@ -3975,3 +4134,387 @@ function addStatusWarning(warnings, record, warningCode) {
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: true}>} EvidenceGraphContextPageV1 */
 /** @typedef {EvidenceGraphContextPageV1 & {hypotheses: Array<InterpretabilityRecord>, evidence: Array<InterpretabilityRecord>, experiments: Array<InterpretabilityRecord>, relationships: Array<InterpretabilityRecord>}} PresentedEvidenceGraphContextPageV1 */
 /** @typedef {Extract<ReturnType<typeof getEvidenceGraphContextV1>, {valid: false}>|PresentedEvidenceGraphContextPageV1} PresentedEvidenceGraphContextResultV1 */
+const SNAPSHOT_ID_PATTERN = /^atlas:context:v1:[a-f0-9]{64}$/;
+const COMMIT_REVISION_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i;
+
+/** @typedef {Record<string, any> & {citations: Array<Record<string, any>>, id: string, authorId: string, mechanism: Record<string, any>, test: {expectedOutcomes: Array<Record<string, any>>}, reproducibility: Record<string, any>}} ExperimentDesignRecord */
+/** @typedef {{mechanisms: Array<Record<string, any>>, hypotheses: Array<Record<string, any>>, experiments: Array<Record<string, any>>, estimates: Array<Record<string, any>>, evidence: Array<Record<string, any>>, edges: Array<Record<string, any>>}} ExperimentDesignEvidenceGraph */
+/** @typedef {{evidenceGraph: ExperimentDesignEvidenceGraph, identityGraph: Record<string, any>, mechanismIdentityLinks: Array<Record<string, any>>, identityReferences: Array<Record<string, any>>}} ExperimentDesignBundle */
+
+/**
+ * Build the strict schema for an unexecuted, attributed experiment proposal.
+ * @param {any} z Injected Zod-compatible API.
+ * @param {any} pinnedModel Pinned model schema shared by evidence records.
+ * @returns {any} Versioned experiment-design schema.
+ */
+export function createExperimentDesignSchemaV1(z, pinnedModel) {
+  const citation = z
+    .object({
+      targetType: z.enum(['hypothesis', 'evidence']),
+      targetId: z.string().min(1),
+      relation: z.enum(['motivated-by', 'tests', 'challenges']),
+      unresolvedSource: z
+        .object({
+          source: z.string().min(1),
+          recordedAt: z.iso.datetime(),
+        })
+        .strict()
+        .optional(),
+    })
+    .strict();
+  const procedure = z
+    .object({
+      repository: z.string().url(),
+      revision: z.string().regex(COMMIT_REVISION_PATTERN),
+      path: z.string().min(1),
+    })
+    .strict();
+  const sourceReference = z
+    .object({
+      uri: z.string().url(),
+      revision: z.string().min(1).optional(),
+      sha256: z.string().regex(SHA256_PATTERN).optional(),
+    })
+    .strict();
+  const expectedOutcome = z
+    .object({
+      hypothesis: z.enum(['favored', 'alternative']),
+      observation: z.string().min(1),
+    })
+    .strict();
+  const schema = z
+    .object({
+      schemaVersion: z.literal(1),
+      id: z.string().min(1),
+      status: z.literal('proposed'),
+      executionStatus: z.literal('untested'),
+      authorId: z.string().min(1),
+      agentId: z.string().min(1).optional(),
+      createdAt: z.iso.datetime(),
+      mechanism: z
+        .object({
+          mechanismId: z.string().min(1),
+          componentId: z.string().min(1),
+          model: pinnedModel,
+        })
+        .strict(),
+      contextSnapshotId: z.string().regex(SNAPSHOT_ID_PATTERN),
+      citations: z.array(citation).min(2),
+      uncertainty: z.string().min(1),
+      favoredHypothesis: z.string().min(1),
+      alternativeHypothesis: z
+        .object({
+          kind: z.enum(['alternative', 'null']),
+          statement: z.string().min(1),
+        })
+        .strict(),
+      test: z
+        .object({
+          inputSelection: z.string().min(1),
+          inputConstruction: z.string().min(1),
+          measurements: z.array(z.string().min(1)).min(1),
+          interventions: z.array(z.string().min(1)),
+          controls: z.array(z.string().min(1)).min(1),
+          expectedOutcomes: z.array(expectedOutcome).min(2),
+          weakeningCondition: z.string().min(1),
+        })
+        .strict(),
+      reproducibility: z
+        .object({
+          status: z.enum(['executable', 'not-yet-executable']),
+          procedure: procedure.optional(),
+          inputSpecification: z.string().min(1),
+          seed: z.number().int().nonnegative().optional(),
+          budget: z
+            .object({
+              maxInputs: z.number().int().positive().max(1000000),
+              maxComputeUnits: z.number().positive().max(100000000),
+              computeUnit: z.string().min(1),
+            })
+            .strict(),
+          sourceReferences: z.array(sourceReference),
+        })
+        .strict(),
+    })
+    .strict()
+    .refine(experimentDesignIsCoherent);
+  return schema;
+}
+
+/**
+ * Validate experiment-design collection references and immutable IDs.
+ * @param {Array<ExperimentDesignRecord>} designs Proposed plans.
+ * @param {any} bundle Validated portable V6 bundle.
+ * @param {any} schema Injected experiment-design schema.
+ * @returns {{valid: true, designs: Array<Record<string, any>>}|{valid: false, errors: Array<Record<string, any>>}} Canonical designs or errors.
+ */
+export function validateExperimentDesignCollectionV1(designs, bundle, schema) {
+  if (!Array.isArray(designs))
+    return { valid: false, errors: [{ code: 'invalid-experiment-designs' }] };
+  if (typeof schema?.safeParse !== 'function')
+    return {
+      valid: false,
+      errors: [{ code: 'missing-experiment-design-schema' }],
+    };
+
+  const evidenceGraph = /** @type {ExperimentDesignEvidenceGraph|undefined} */ (
+    bundle?.evidenceGraph
+  );
+  const identityGraph = bundle?.identityGraph;
+  const mechanismIdentityLinks = bundle?.mechanismIdentityLinks;
+  const identityReferences = bundle?.identityReferences;
+  if (
+    !evidenceGraph ||
+    !identityGraph ||
+    !Array.isArray(mechanismIdentityLinks) ||
+    !Array.isArray(identityReferences)
+  ) {
+    return {
+      valid: false,
+      errors: [{ code: 'invalid-experiment-design-context' }],
+    };
+  }
+
+  const seenIds = new Set(
+    [
+      ...evidenceGraph.mechanisms,
+      ...evidenceGraph.hypotheses,
+      ...evidenceGraph.experiments,
+      ...evidenceGraph.evidence,
+      ...evidenceGraph.estimates,
+      ...evidenceGraph.edges,
+    ].map(record => record.id)
+  );
+  const canonical = [];
+  const errors = [];
+  for (const [index, design] of designs.entries()) {
+    const parsed = schema.safeParse(design);
+    if (!parsed.success) {
+      errors.push({ code: 'invalid-experiment-design', index, id: design?.id });
+      continue;
+    }
+    if (seenIds.has(design.id)) {
+      errors.push({ code: 'duplicate-experiment-design-id', id: design.id });
+      continue;
+    }
+    seenIds.add(design.id);
+    const linked = validateDesignMechanism(design, bundle);
+    if (!linked.valid) {
+      errors.push({ ...linked.error, designId: design.id });
+      continue;
+    }
+    const citations = validateDesignCitations(design, bundle);
+    if (!citations.valid) {
+      errors.push(
+        ...citations.errors.map(error => ({ ...error, designId: design.id }))
+      );
+      continue;
+    }
+    canonical.push(parsed.data);
+  }
+  return errors.length
+    ? { valid: false, errors }
+    : {
+        valid: true,
+        designs: canonical.sort((left, right) =>
+          left.id.localeCompare(right.id)
+        ),
+      };
+}
+
+/**
+ * Create source-bound V3 identity claims for unresolved plan citations.
+ * @param {ExperimentDesignRecord} design Validated experiment design.
+ * @returns {Array<Record<string, any>>} Attributed unresolved claims.
+ */
+export function unresolvedExperimentDesignClaimsV1(design) {
+  return design.citations.flatMap(citation =>
+    citation.unresolvedSource
+      ? [
+          {
+            schemaVersion: 1,
+            claimId: unresolvedCitationClaimId(design.id, citation),
+            entityType: citation.targetType,
+            entityId: citation.targetId,
+            authorId: design.authorId,
+            source: citation.unresolvedSource.source,
+            sourceRecordId: design.id,
+            recordedAt: citation.unresolvedSource.recordedAt,
+          },
+        ]
+      : []
+  );
+}
+
+/**
+ * Validate one plan's canonical mechanism and typed evidence references.
+ * @param {ExperimentDesignRecord} design Proposed plan.
+ * @param {any} bundle Portable evidence context.
+ * @returns {{valid: true}|{valid: false, error: Record<string, any>}} Relationship result.
+ */
+function validateDesignMechanism(design, bundle) {
+  const evidenceGraph = /** @type {ExperimentDesignEvidenceGraph} */ (
+    bundle.evidenceGraph
+  );
+  const mechanisms = evidenceGraph.mechanisms;
+  const mechanism = mechanisms.find(
+    item => item.id === design.mechanism.mechanismId
+  );
+  if (!mechanism)
+    return { valid: false, error: { code: 'unknown-design-mechanism' } };
+  const mechanismIdentityLinks = /** @type {Array<Record<string, any>>} */ (
+    bundle.mechanismIdentityLinks
+  );
+  const links = mechanismIdentityLinks.filter(
+    link => link.legacyMechanismId === mechanism.id
+  );
+  if (
+    links.length !== 1 ||
+    links[0].componentId !== design.mechanism.componentId
+  )
+    return {
+      valid: false,
+      error: { code: 'invalid-design-mechanism-lineage' },
+    };
+  const components = /** @type {Array<Record<string, any>>} */ (
+    bundle.identityGraph.components
+  );
+  const component = components.find(
+    item => item.id === design.mechanism.componentId
+  );
+  if (!component)
+    return { valid: false, error: { code: 'unknown-design-component' } };
+  if (
+    canonicalJson(mechanism.model) !== canonicalJson(design.mechanism.model) ||
+    canonicalJson(component.model) !== canonicalJson(design.mechanism.model)
+  ) {
+    return {
+      valid: false,
+      error: {
+        code:
+          mechanism.model.checkpoint?.sha256 !==
+          design.mechanism.model.checkpoint?.sha256
+            ? 'cross-checkpoint-design'
+            : 'design-model-identity-mismatch',
+      },
+    };
+  }
+  return { valid: true };
+}
+
+/**
+ * Validate typed plan citations and source-bound claims for unresolved IDs.
+ * @param {ExperimentDesignRecord} design Proposed plan.
+ * @param {any} bundle Portable evidence context.
+ * @returns {{valid: true}|{valid: false, errors: Array<Record<string, any>>}} Citation result.
+ */
+function validateDesignCitations(design, bundle) {
+  const evidenceGraph = /** @type {ExperimentDesignEvidenceGraph} */ (
+    bundle.evidenceGraph
+  );
+  const identityReferences = /** @type {Array<Record<string, any>>} */ (
+    bundle.identityReferences
+  );
+  const cited = new Set();
+  const errors = [];
+  for (const citation of design.citations) {
+    const key = JSON.stringify([citation.targetType, citation.targetId]);
+    if (citation.targetId === design.id || cited.has(key)) {
+      errors.push({
+        code: 'self-referential-or-duplicate-design-citation',
+        targetId: citation.targetId,
+      });
+      continue;
+    }
+    cited.add(key);
+    const collection =
+      citation.targetType === 'hypothesis' ? 'hypotheses' : 'evidence';
+    const record = evidenceGraph[collection].find(
+      item => item.id === citation.targetId
+    );
+    if (record) {
+      if (
+        citation.unresolvedSource ||
+        !record.mechanismIds.includes(design.mechanism.mechanismId)
+      ) {
+        errors.push({
+          code: 'invalid-resolved-design-citation',
+          targetId: citation.targetId,
+        });
+      }
+      continue;
+    }
+    const claim = identityReferences.find(
+      item =>
+        item.claimId === unresolvedCitationClaimId(design.id, citation) &&
+        item.entityType === citation.targetType &&
+        item.entityId === citation.targetId &&
+        item.authorId === design.authorId &&
+        item.sourceRecordId === design.id &&
+        item.source === citation.unresolvedSource?.source &&
+        item.recordedAt === citation.unresolvedSource?.recordedAt
+    );
+    if (!citation.unresolvedSource || !claim)
+      errors.push({
+        code: 'unresolved-design-citation',
+        targetId: citation.targetId,
+      });
+  }
+  const citedTypes = new Set(design.citations.map(item => item.targetType));
+  if (!citedTypes.has('hypothesis') || !citedTypes.has('evidence'))
+    errors.push({ code: 'missing-typed-design-citations' });
+  return errors.length ? { valid: false, errors } : { valid: true };
+}
+
+/**
+ * Ensure a not-yet-executed plan has rival predictions and no repeated citation.
+ * @param {ExperimentDesignRecord} design Proposed plan.
+ * @returns {boolean} Whether the record's internal design rules hold.
+ */
+function experimentDesignIsCoherent(design) {
+  const relations = new Set(design.citations.map(item => item.relation));
+  const outcomes = new Set(
+    design.test.expectedOutcomes.map(item => item.hypothesis)
+  );
+  return (
+    design.citations.some(item => item.targetType === 'hypothesis') &&
+    design.citations.some(item => item.targetType === 'evidence') &&
+    design.citations.every(item => item.targetId !== design.id) &&
+    new Set(
+      design.citations.map(item =>
+        JSON.stringify([item.targetType, item.targetId])
+      )
+    ).size === design.citations.length &&
+    [...relations].length > 0 &&
+    outcomes.has('favored') &&
+    outcomes.has('alternative') &&
+    (design.reproducibility.status !== 'executable' ||
+      design.reproducibility.procedure !== undefined)
+  );
+}
+
+/**
+ * Return a canonical JSON encoding for model identity comparisons.
+ * @param {unknown} value JSON-compatible identity.
+ * @returns {string} Stable canonical encoding.
+ */
+function canonicalJson(value) {
+  if (value && typeof value === 'object') {
+    const record = /** @type {Record<string, unknown>} */ (value);
+    return `{${Object.keys(record)
+      .sort()
+      .map(key => `${JSON.stringify(key)}:${canonicalJson(record[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Build the stable source-claim ID for one unresolved design citation.
+ * @param {string} designId Proposed plan ID.
+ * @param {Record<string, any>} citation Typed citation.
+ * @returns {string} Stable claim ID.
+ */
+function unresolvedCitationClaimId(designId, citation) {
+  return `atlas:design-reference:${encodeURIComponent(designId)}:${citation.targetType}:${encodeURIComponent(citation.targetId)}`;
+}

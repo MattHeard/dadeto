@@ -392,6 +392,7 @@ describe('versioned interpretability schemas', () => {
       'evidence',
       'evidenceEdge',
       'experiment',
+      'experimentDesign',
       'hypothesis',
       'mechanism',
       'mechanisticEstimate',
