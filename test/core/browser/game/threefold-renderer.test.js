@@ -1771,15 +1771,12 @@ function expectPlayerPointerClearFromActors(
 }
 
 describe('THREEFOLD resident identity marker', () => {
-  test('marks Mara with a large player-only arrow that touches her silhouette', () => {
+  test('frames Mara with player-only selection brackets around her silhouette', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
     );
-    const arrow = frame.shapes.filter(
-      shape => shape.playerMarkerKind === 'arrow'
-    );
-    const arrowOutline = frame.shapes.filter(
-      shape => shape.playerMarkerKind === 'arrow-outline'
+    const selectionFrame = frame.shapes.filter(
+      shape => shape.playerMarkerKind === 'selection-frame'
     );
     const playerBody = frame.shapes.filter(
       shape =>
@@ -1790,38 +1787,35 @@ describe('THREEFOLD resident identity marker', () => {
     const residentShapes = frame.shapes.filter(
       shape => shape.actorId && shape.actorId !== 'mara'
     );
-    const playerTop = Math.min(...playerBody.map(shape => shape.y));
-    const playerBottom = Math.max(
+    const minX = Math.min(...playerBody.map(shape => shape.x));
+    const minY = Math.min(...playerBody.map(shape => shape.y));
+    const maxX = Math.max(
+      ...playerBody.map(shape => shape.x + (shape.width ?? 0))
+    );
+    const maxY = Math.max(
       ...playerBody.map(shape => shape.y + (shape.height ?? 0))
     );
-    const arrowBounds = frameBounds(arrow, 'playerMarkerKind', 'arrow');
-    const fullMarkerBounds = {
-      x: Math.min(...arrowOutline.map(shape => shape.x)),
-      y: Math.min(...arrowOutline.map(shape => shape.y)),
-      width:
-        Math.max(...arrowOutline.map(shape => shape.x + shape.width)) -
-        Math.min(...arrowOutline.map(shape => shape.x)),
-      height:
-        Math.max(...arrowOutline.map(shape => shape.y + shape.height)) -
-        Math.min(...arrowOutline.map(shape => shape.y)),
-    };
-    const arrowRowWidths = Array.from(new Set(arrow.map(shape => shape.y))).map(
-      y =>
-        arrow
-          .filter(shape => shape.y === y)
-          .reduce((width, shape) => width + shape.width, 0)
+    const frameLeft = Math.min(...selectionFrame.map(shape => shape.x));
+    const frameTop = Math.min(...selectionFrame.map(shape => shape.y));
+    const frameRight = Math.max(
+      ...selectionFrame.map(shape => shape.x + shape.width)
+    );
+    const frameBottom = Math.max(
+      ...selectionFrame.map(shape => shape.y + shape.height)
+    );
+    const frameCells = new Set(
+      selectionFrame.map(shape => `${shape.x}:${shape.y}`)
     );
 
-    expect(arrow).toHaveLength(34);
-    expect(arrowRowWidths).toEqual([4, 4, 8, 12, 16, 12, 8, 4]);
-    expect(arrowBounds.width).toBe(16);
-    expect(arrowBounds.height).toBe(16);
-    expect(arrowOutline.length).toBeGreaterThan(0);
-    expect(fullMarkerBounds.width).toBe(20);
-    expect(fullMarkerBounds.height).toBe(20);
-    expect(arrowOutline.every(shape => shape.fill === '#172c34')).toBe(true);
+    expect(selectionFrame).toHaveLength(28);
+    expect(frameRight - frameLeft).toBe(maxX - minX + 8);
+    expect(frameBottom - frameTop).toBe(maxY - minY + 8);
+    expect(frameLeft + 2).toBeLessThanOrEqual(minX);
+    expect(frameTop + 2).toBeLessThanOrEqual(minY);
+    expect(frameRight - 2).toBeGreaterThanOrEqual(maxX);
+    expect(frameBottom - 2).toBeGreaterThanOrEqual(maxY);
     expect(
-      arrowOutline.every(
+      selectionFrame.every(
         shape =>
           shape.width === 2 &&
           shape.height === 2 &&
@@ -1829,27 +1823,40 @@ describe('THREEFOLD resident identity marker', () => {
           shape.y % 2 === 0
       )
     ).toBe(true);
-    expect(arrow.every(shape => shape.actorId === 'mara')).toBe(true);
-    expect(arrow.every(shape => shape.fill === '#f3f6d2')).toBe(true);
-    expect(
-      arrow.every(
-        shape =>
-          shape.width === 2 &&
-          shape.height === 2 &&
-          shape.x % 2 === 0 &&
-          shape.y % 2 === 0
-      )
-    ).toBe(true);
-    expect(
-      fullMarkerBounds.y + fullMarkerBounds.height === playerTop ||
-        fullMarkerBounds.y === playerBottom
-    ).toBe(true);
-    expect(
-      residentShapes.some(shape => shape.playerMarkerKind === 'arrow')
-    ).toBe(false);
-    expect(arrow.every(shape => !shape.npcMarker && !shape.npcMarkerKind)).toBe(
+    expect(selectionFrame.every(shape => shape.actorId === 'mara')).toBe(true);
+    expect(selectionFrame.every(shape => shape.playerMarker === true)).toBe(
       true
     );
+    expect(selectionFrame.every(shape => !shape.npcMarker)).toBe(true);
+    expect(
+      residentShapes.some(shape => shape.playerMarkerKind === 'selection-frame')
+    ).toBe(false);
+    expect(
+      [...frameCells].some(cell => {
+        const [x, y] = cell.split(':').map(Number);
+        return playerBody.some(
+          shape =>
+            x < shape.x + (shape.width ?? 0) &&
+            x + 2 > shape.x &&
+            y < shape.y + (shape.height ?? 0) &&
+            y + 2 > shape.y
+        );
+      })
+    ).toBe(false);
+    const residentBodies = residentShapes.filter(
+      shape => shape.npcMarker !== true && shape.type === 'rect'
+    );
+    expect(
+      selectionFrame.some(marker =>
+        residentBodies.some(
+          resident =>
+            marker.x < resident.x + (resident.width ?? 0) &&
+            marker.x + marker.width > resident.x &&
+            marker.y < resident.y + (resident.height ?? 0) &&
+            marker.y + marker.height > resident.y
+        )
+      )
+    ).toBe(false);
   });
 
   test('gives residents a scale-responsive silhouette distinct from Mara by shape', () => {
@@ -2094,7 +2101,9 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarkerKind === 'headpiece'
       )
     ).toBe(false);
-    expect(mara.some(shape => shape.playerMarkerKind === 'pointer')).toBe(true);
+    expect(
+      mara.some(shape => shape.playerMarkerKind === 'selection-frame')
+    ).toBe(true);
   });
 });
 

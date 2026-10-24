@@ -13,3 +13,11 @@
 
 - A second small coverage slice adds the committed-but-reopened Final Seal presentation. Mara can reopen the seal after the Assembly commitment, but the scene must still say the Choir branches remain permanently severed.
 - Evidence: focused coverage run for `return-tide-presentation.js` passed 10 tests; the committed message's two `sealClosed` branches are both hit. `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates across six impact shards, with zero clones and vulnerabilities.
+
+## Player selection-frame retry
+
+- Unexpected hurdle: the user still could not connect the overhead arrow and offset `YOU` badge to Mara's small body.
+- Diagnosis: the pointer read as a separate icon while the nearby resident's badge and silhouette dominated the scene.
+- Chosen fix: replace the arrow with four cyan 2px-grid corner brackets framing Mara's entire sprite; retain her badge and leader as secondary role cues. Residents keep their broad-brim silhouette, violet coat, and magenta `NPC` badge.
+- Evidence: renderer Jest passed 47/47; a regression checks frame bounds, spacing, 2px-grid alignment, player-only ownership, and no overlap with either body. `npm run build` passed. The 393 × 873 local preview at `/tmp/threefold-selection-frame-preview.png` shows the brackets enclosing Mara in the 160 × 144 screen.
+- Next-time guidance: when a marker does not establish identity during play, attach the cue to the whole sprite and inspect the exact crowded gameplay frame before relying on colors or labels.
