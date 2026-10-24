@@ -259,7 +259,24 @@ describe('THREEFOLD canvas grid', () => {
       expect(gridShapes.map(shape => shape.geometryId)).toEqual(
         expect.arrayContaining(projectedIds)
       );
-      expectTidalArchiveShapesAligned(frame, projectedIds, entities);
+      for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
+        expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
+        expect(shape.height % (shape.spriteGridSize || 8)).toBe(0);
+      }
+      for (const shape of gridShapes) {
+        expect(shape.logicalCellBounds).toEqual(
+          entities.get(shape.geometryId).cellBounds
+        );
+        const gridSize = shape.spriteGridSize || 8;
+        expect(shape.x % gridSize).toBe(0);
+        expect(shape.y % gridSize).toBe(0);
+      }
+      for (const fluid of frame.shapes.filter(shape => shape.fluidChamberId)) {
+        expect(fluid.surfaceMeters).toBeGreaterThanOrEqual(0);
+        expect(fluid.logicalContainerBounds).toEqual(
+          entities.get(fluid.fluidChamberId).cellBounds
+        );
+      }
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
       );
@@ -337,36 +354,6 @@ describe('THREEFOLD canvas grid', () => {
     );
   }
 
-  /**
-   * @param {ReturnType<typeof renderThreefoldFrame>} frame Archive frame.
-   * @param {string[]} projectedIds Expected scene entity IDs.
-   * @param {Map<string, any>} entities Canonical projected entities.
-   * @returns {void} Verifies pixel-grid alignment and cell bounds.
-   */
-  function expectTidalArchiveShapesAligned(frame, projectedIds, entities) {
-    for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
-      expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
-      expect(shape.height % (shape.spriteGridSize || 8)).toBe(0);
-    }
-    const gridShapes = frame.shapes.filter(shape =>
-      projectedIds.includes(shape.geometryId)
-    );
-    for (const shape of gridShapes) {
-      expect(shape.logicalCellBounds).toEqual(
-        entities.get(shape.geometryId).cellBounds
-      );
-      const gridSize = shape.spriteGridSize || 8;
-      expect(shape.x % gridSize).toBe(0);
-      expect(shape.y % gridSize).toBe(0);
-    }
-    for (const fluid of frame.shapes.filter(shape => shape.fluidChamberId)) {
-      expect(fluid.surfaceMeters).toBeGreaterThanOrEqual(0);
-      expect(fluid.logicalContainerBounds).toEqual(
-        entities.get(fluid.fluidChamberId).cellBounds
-      );
-    }
-  }
-
   test('renders baseline structures from scale-local logical cells without mutating geometry', () => {
     const base = createThreefoldSimulation(THRESHOLDS);
     const before = JSON.stringify({
@@ -414,7 +401,7 @@ describe('THREEFOLD canvas grid', () => {
         const bottom = top + Math.ceil((height * 12) / 8) * 8;
         if (
           entity.logicalGridKind === 'creature' ||
-          (shape.spriteGridSize !== undefined && shape.spriteGridSize < 8)
+          shape.spriteGridSize === 8
         ) {
           expect(shape.x).toBeGreaterThanOrEqual(left);
           expect(shape.y).toBeGreaterThanOrEqual(top);
@@ -1375,34 +1362,7 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
       )
     ).toBe(true);
   });
-});
 
-describe('THREEFOLD resident identity marker', () => {
-  test('distinguishes resident sprites from Mara on the 2px grid', () => {
-    const scene = createBrokenGateScene();
-    const watchkeeper = scene.interactables.find(
-      item => item.id === 'latchfolk-watchkeeper'
-    );
-    const frame = renderThreefoldFrame(
-      createThreefoldSimulation(THRESHOLDS, scene)
-    );
-    const residentOutline = frame.shapes.filter(
-      shape => shape.geometryId === watchkeeper.id && shape.npcMarker === true
-    );
-    const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
-
-    expect(residentOutline.length).toBeGreaterThan(0);
-    expect(
-      residentOutline.every(
-        shape => shape.fill === '#e9d88d' && shape.spriteGridSize === 2
-      )
-    ).toBe(true);
-    expect(mara.length).toBeGreaterThan(0);
-    expect(mara.every(shape => shape.npcMarker !== true)).toBe(true);
-  });
-});
-
-describe('THREEFOLD remaining renderer coverage', () => {
   test('renders the upland road and persistent withdrawal outcome', () => {
     const withdrawn = createWithdrawnSimulation();
     const frame = renderThreefoldFrame(withdrawn);
@@ -1683,6 +1643,31 @@ function frameBounds(shapes, property, id) {
   const maxY = Math.max(...owned.map(shape => shape.y + shape.height));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
+
+describe('THREEFOLD resident identity marker', () => {
+  test('distinguishes resident sprites from Mara on the 2px grid', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+    const residentOutline = frame.shapes.filter(
+      shape => shape.geometryId === watchkeeper.id && shape.npcMarker === true
+    );
+    const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
+
+    expect(residentOutline.length).toBeGreaterThan(0);
+    expect(
+      residentOutline.every(
+        shape => shape.fill === '#e9d88d' && shape.spriteGridSize === 2
+      )
+    ).toBe(true);
+    expect(mara.length).toBeGreaterThan(0);
+    expect(mara.every(shape => shape.npcMarker !== true)).toBe(true);
+  });
+});
 
 describe('THREEFOLD legacy withdrawal rendering', () => {
   test.each([
