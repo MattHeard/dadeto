@@ -72,7 +72,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-foldglass-rival',
   'grainlands-iru',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'speech-bubble'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label', npcMarkerText?: string, npcGlyph?: string}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2538,38 +2538,24 @@ function personSprite(actor, camera, tick, heightMeters) {
   const personBottom = Math.max(
     ...personPixels.map(pixel => pixel.y + PERSON_GRID_PIXELS)
   );
-  const markerAbove = personTop - 12;
+  const markerHeight = 16;
+  const markerWidth = 30;
+  const markerAbove = personTop - markerHeight - 2;
   const markerBelow = personBottom + 2;
   const markerTop =
-    markerAbove >= 0 ? markerAbove : markerBelow <= 96 ? markerBelow : 0;
+    markerAbove >= 0
+      ? markerAbove
+      : markerBelow + markerHeight <= 108
+        ? markerBelow
+        : 0;
   const markerLeft = Math.max(
     0,
-    Math.min(152, snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - 4)
+    Math.min(
+      160 - markerWidth,
+      snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - markerWidth / 2
+    )
   );
-  const speechBubbleCells = [
-    [0, 0],
-    [2, 0],
-    [4, 0],
-    [6, 0],
-    [0, 2],
-    [6, 2],
-    [0, 4],
-    [6, 4],
-    [0, 6],
-    [6, 6],
-    [0, 8],
-    [2, 8],
-    [4, 8],
-    [6, 8],
-    [4, 10],
-  ];
-  const markerShapes = speechBubbleCells.map(([offsetX, offsetY]) => ({
-    type: 'rect',
-    x: markerLeft + offsetX,
-    y: markerTop + offsetY,
-    width: PERSON_GRID_PIXELS,
-    height: PERSON_GRID_PIXELS,
-    fill: '#43e9da',
+  const markerProperties = {
     geometryId: actor.id,
     actorId: actor.id,
     growthPreview: actor.growthPreview === true,
@@ -2577,9 +2563,67 @@ function personSprite(actor, camera, tick, heightMeters) {
     logicalCellBounds: actor.logicalCellBounds,
     spriteGridSize: PERSON_GRID_PIXELS,
     npcMarker: true,
-    npcMarkerKind: 'speech-bubble',
-  }));
+    npcMarkerKind: 'role-label',
+    npcMarkerText: 'NPC',
+  };
+  const markerShapes = [
+    {
+      type: 'rect',
+      x: markerLeft,
+      y: markerTop,
+      width: markerWidth,
+      height: markerHeight,
+      fill: '#43e9da',
+      ...markerProperties,
+    },
+    {
+      type: 'rect',
+      x: markerLeft + 2,
+      y: markerTop + 2,
+      width: markerWidth - 4,
+      height: markerHeight - 4,
+      fill: PALETTE[0],
+      ...markerProperties,
+    },
+    ...npcRoleGlyphs(markerLeft + 4, markerTop + 4, markerProperties),
+  ];
   return [...outlineShapes, ...markerShapes, ...personShapes];
+}
+
+/**
+ * Draw an explicit NPC role label from 2px bitmap cells.
+ * @param {number} x Label's left coordinate.
+ * @param {number} y Label's top coordinate.
+ * @param {Record<string, any>} metadata Actor identity metadata.
+ * @returns {ThreefoldSpriteShape[]} Visible NPC glyph cells.
+ */
+function npcRoleGlyphs(x, y, metadata) {
+  /** @type {Record<string, string[]>} */
+  const glyphs = {
+    N: ['101', '111', '111', '111', '101'],
+    P: ['110', '101', '110', '100', '100'],
+    C: ['111', '100', '100', '100', '111'],
+  };
+  /** @type {ThreefoldSpriteShape[]} */
+  const shapes = [];
+  for (const [letterIndex, letter] of Array.from('NPC').entries()) {
+    glyphs[letter].forEach((row, rowIndex) => {
+      Array.from(row).forEach((pixel, pixelIndex) => {
+        if (pixel !== '1') return;
+        shapes.push({
+          type: 'rect',
+          x: x + letterIndex * 8 + pixelIndex * PERSON_GRID_PIXELS,
+          y: y + rowIndex * PERSON_GRID_PIXELS,
+          width: PERSON_GRID_PIXELS,
+          height: PERSON_GRID_PIXELS,
+          fill: '#f3f6d2',
+          npcGlyph: letter,
+          ...metadata,
+        });
+      });
+    });
+  }
+  return shapes;
 }
 
 /**
