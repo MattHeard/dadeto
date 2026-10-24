@@ -71,7 +71,11 @@ test('resumes play when A selects the main menu resume item', () => {
 });
 
 test('opens the empty field notes from the main menu using only the controls', () => {
-  const { menu } = createMenuRuntime();
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+  });
   press(menu, 'y');
   for (let index = 0; index < 3; index += 1) press(menu, 'down');
   press(menu, 'a');
