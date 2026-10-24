@@ -1706,6 +1706,52 @@ function expectResidentBadgeClearOfPlayer(npcLabel, playerBody) {
   ).toBe(true);
 }
 
+/**
+ * Keep Mara's identity badge in the visible playfield and separate from residents.
+ * @param {Array<Record<string, any>>} playerLabel Player badge and glyph cells.
+ * @param {Array<Record<string, any>>} playerLeader Connector to Mara.
+ * @param {Array<Record<string, any>>} playerBody Mara's outline and sprite.
+ * @param {Array<Record<string, any>>} npcLabel Resident badge cells.
+ * @returns {void} Throws when the player identity cue is hidden or ambiguous.
+ */
+function expectPlayerBadgeClearFromActors(
+  playerLabel,
+  playerLeader,
+  playerBody,
+  npcLabel
+) {
+  const badge = playerLabel.find(shape => shape.width === 38);
+  expect(badge).toBeDefined();
+  expect(badge.y).toBeGreaterThanOrEqual(54);
+  expect(badge.y + badge.height).toBeLessThanOrEqual(108);
+  expect(badge.x + badge.width).toBeLessThanOrEqual(
+    Math.min(...playerBody.map(shape => shape.x))
+  );
+  expect(
+    npcLabel.every(
+      shape =>
+        badge.x + badge.width <= shape.x ||
+        badge.x >= shape.x + (shape.width ?? 0) ||
+        badge.y + badge.height <= shape.y ||
+        badge.y >= shape.y + (shape.height ?? 0)
+    )
+  ).toBe(true);
+  expect(playerLeader).toHaveLength(1);
+  expect(playerLeader[0]).toMatchObject({
+    width: 4,
+    height: 2,
+    fill: '#37e7ed',
+    playerMarker: true,
+  });
+  expect(playerLeader[0].y).toBeGreaterThanOrEqual(badge.y);
+  expect(playerLeader[0].y + playerLeader[0].height).toBeLessThanOrEqual(
+    badge.y + badge.height
+  );
+  expect(playerLeader[0].x + playerLeader[0].width).toBe(
+    Math.min(...playerBody.map(shape => shape.x))
+  );
+}
+
 describe('THREEFOLD resident identity marker', () => {
   test('gives residents a scale-responsive silhouette distinct from Mara by shape', () => {
     const frame = renderThreefoldFrame(
@@ -1719,7 +1765,7 @@ describe('THREEFOLD resident identity marker', () => {
       shape =>
         shape.actorId === 'mara' &&
         shape.playerMarker !== true &&
-        shape.playerMarkerKind !== 'pointer' &&
+        shape.playerMarkerKind !== 'leader' &&
         shape.fill !== '#37e7ed'
     );
     const silhouette = shapes => {
@@ -1783,13 +1829,13 @@ describe('THREEFOLD resident identity marker', () => {
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
     const playerLabel = mara.filter(shape => shape.playerMarker === true);
-    const playerPointer = mara.filter(
-      shape => shape.playerMarkerKind === 'pointer'
+    const playerLeader = mara.filter(
+      shape => shape.playerMarkerKind === 'leader'
     );
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
     const playerBody = mara.filter(
       shape =>
-        shape.playerMarker !== true && shape.playerMarkerKind !== 'pointer'
+        shape.playerMarker !== true && shape.playerMarkerKind !== 'leader'
     );
     const playerOutline = mara.filter(shape => shape.fill === '#37e7ed');
 
@@ -1879,32 +1925,12 @@ describe('THREEFOLD resident identity marker', () => {
       ].sort()
     ).toEqual(['O', 'U', 'Y']);
     expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
-    expect(playerPointer).toHaveLength(8);
-    expect(
-      playerPointer.map(({ x, y, width, height, fill }) => ({
-        x,
-        y,
-        width,
-        height,
-        fill,
-      }))
-    ).toEqual([
-      expect.objectContaining({ width: 30, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 26, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 22, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 18, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 14, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 10, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 6, height: 2, fill: '#37e7ed' }),
-      expect.objectContaining({ width: 2, height: 2, fill: '#37e7ed' }),
-    ]);
-    expect(
-      Math.max(...playerPointer.map(shape => shape.y + shape.height))
-    ).toBeLessThanOrEqual(Math.min(...playerSprite.map(shape => shape.y)) + 2);
-    expect(
-      Math.max(...playerPointer.map(shape => shape.y + shape.height))
-    ).toBeGreaterThanOrEqual(Math.min(...playerSprite.map(shape => shape.y)));
-    expect(playerPointer.every(shape => shape.npcMarker !== true)).toBe(true);
+    expectPlayerBadgeClearFromActors(
+      playerLabel,
+      playerLeader,
+      playerBody,
+      npcLabel
+    );
     expect(
       mara.some(
         shape => shape.npcMarker !== true && shape.playerMarker !== true
@@ -1996,7 +2022,7 @@ test('gives residents an NPC-only diamond distinct from Mara’s pointer', () =>
     npcMarkerKind: 'emblem',
   });
   expect(mara.some(shape => shape.npcMarkerKind === 'emblem')).toBe(false);
-  expect(mara.some(shape => shape.playerMarkerKind === 'pointer')).toBe(true);
+  expect(mara.some(shape => shape.playerMarkerKind === 'leader')).toBe(true);
 });
 
 describe('THREEFOLD legacy withdrawal rendering', () => {
