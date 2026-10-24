@@ -72,7 +72,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-foldglass-rival',
   'grainlands-iru',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'speech-bubble'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2517,8 +2517,11 @@ function personSprite(actor, camera, tick, heightMeters) {
     spriteGridSize: PERSON_GRID_PIXELS,
     actorId: actor.id,
     npcMarker: true,
+    npcMarkerKind: 'outline',
   }));
-  const personShapes = [...cells.values()].map(pixel => ({
+  const personPixels = [...cells.values()];
+  if (personPixels.length === 0) return [];
+  const personShapes = personPixels.map(pixel => ({
     type: 'rect',
     ...pixel,
     width: PERSON_GRID_PIXELS,
@@ -2531,7 +2534,52 @@ function personSprite(actor, camera, tick, heightMeters) {
     spriteGridSize: PERSON_GRID_PIXELS,
     actorId: actor.id,
   }));
-  return [...outlineShapes, ...personShapes];
+  const personTop = Math.min(...personPixels.map(pixel => pixel.y));
+  const personBottom = Math.max(
+    ...personPixels.map(pixel => pixel.y + PERSON_GRID_PIXELS)
+  );
+  const markerAbove = personTop - 12;
+  const markerBelow = personBottom + 2;
+  const markerTop =
+    markerAbove >= 0 ? markerAbove : markerBelow <= 96 ? markerBelow : 0;
+  const markerLeft = Math.max(
+    0,
+    Math.min(152, snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - 4)
+  );
+  const speechBubbleCells = [
+    [0, 0],
+    [2, 0],
+    [4, 0],
+    [6, 0],
+    [0, 2],
+    [6, 2],
+    [0, 4],
+    [6, 4],
+    [0, 6],
+    [6, 6],
+    [0, 8],
+    [2, 8],
+    [4, 8],
+    [6, 8],
+    [4, 10],
+  ];
+  const markerShapes = speechBubbleCells.map(([offsetX, offsetY]) => ({
+    type: 'rect',
+    x: markerLeft + offsetX,
+    y: markerTop + offsetY,
+    width: PERSON_GRID_PIXELS,
+    height: PERSON_GRID_PIXELS,
+    fill: '#43e9da',
+    geometryId: actor.id,
+    actorId: actor.id,
+    growthPreview: actor.growthPreview === true,
+    logicalGridKind: actor.logicalGridKind,
+    logicalCellBounds: actor.logicalCellBounds,
+    spriteGridSize: PERSON_GRID_PIXELS,
+    npcMarker: true,
+    npcMarkerKind: 'speech-bubble',
+  }));
+  return [...outlineShapes, ...markerShapes, ...personShapes];
 }
 
 /**
