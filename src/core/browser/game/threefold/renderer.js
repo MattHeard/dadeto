@@ -2717,8 +2717,8 @@ function applyResidentRoleAccents(pixels) {
 }
 
 /**
- * Reserve the warm gold palette for Mara so her body reads differently from
- * violet/magenta residents even when the small YOU label is hard to read.
+ * Reserve the bright cyan palette for Mara so she reads differently from
+ * violet/magenta residents even when the role markers are small.
  * @param {string} fill Source Mosslight sprite pixel color.
  * @returns {string} High-contrast Threefold player role color.
  */
@@ -2726,7 +2726,7 @@ function playerRoleColor(fill) {
   /** @type {Record<string, string>} */
   const colors = {
     '#442f37': '#172c34',
-    '#e9794d': '#f2ca59',
+    '#e9794d': '#37e7ed',
     '#f7dc9f': '#f3f6d2',
     '#e8be62': '#e9d88d',
   };
@@ -2734,7 +2734,7 @@ function playerRoleColor(fill) {
 }
 
 /**
- * Give the player sprite a warm outline, distinct from resident magenta outlines.
+ * Give the player sprite a cyan outline, distinct from resident magenta outlines.
  * @param {ThreefoldSpriteShape[]} sprites Mara's source sprite pixels.
  * @returns {ThreefoldSpriteShape[]} Grid-aligned outline cells behind Mara.
  */
@@ -2764,7 +2764,7 @@ function playerRoleOutline(sprites) {
     ...pixel,
     width: PERSON_GRID_PIXELS,
     height: PERSON_GRID_PIXELS,
-    fill: '#f2ca59',
+    fill: '#37e7ed',
     actorId: 'mara',
     spriteGridSize: PERSON_GRID_PIXELS,
   }));
@@ -2811,7 +2811,7 @@ function roleGlyphs(x, y, metadata, label) {
 }
 
 /**
- * Mark Mara as the player with a gold YOU badge, distinct from magenta NPC badges.
+ * Mark Mara as the player with a cyan YOU badge, distinct from magenta NPC badges.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
  * @returns {ThreefoldSpriteShape[]} Fixed-size player-role badge.
  */
@@ -2820,8 +2820,8 @@ function maraRoleLabel(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
   const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
-  const markerWidth = 30;
-  const markerHeight = 16;
+  const markerWidth = 38;
+  const markerHeight = 18;
   const markerLeft = Math.max(
     0,
     Math.min(
@@ -2829,11 +2829,9 @@ function maraRoleLabel(sprites) {
       snapCanvasCoordinate((minX + maxX) / 2, 2) - markerWidth / 2
     )
   );
-  // Leave room for the player-only pointer. The word badge and small sprite
-  // are easy to miss when the handheld is viewed on a phone; the broad arrow
-  // makes the controlled character identifiable without reading or comparing
-  // the NPC labels.
-  const markerTop = Math.max(0, minY - markerHeight - 10);
+  // The cyan badge and long pointer stay visually distinct from the magenta
+  // NPC diamond even when the handheld is viewed at phone size.
+  const markerTop = Math.max(0, minY - markerHeight - 16);
   const metadata = {
     actorId: 'mara',
     playerMarker: true,
@@ -2847,7 +2845,7 @@ function maraRoleLabel(sprites) {
       y: markerTop,
       width: markerWidth,
       height: markerHeight,
-      fill: '#e9d88d',
+      fill: '#37e7ed',
       ...metadata,
     },
     {
@@ -2859,7 +2857,7 @@ function maraRoleLabel(sprites) {
       fill: PALETTE[0],
       ...metadata,
     },
-    ...roleGlyphs(markerLeft + 4, markerTop + 4, metadata, 'YOU'),
+    ...roleGlyphs(markerLeft + 6, markerTop + 4, metadata, 'YOU'),
     ...playerRolePointer(
       markerLeft + markerWidth / 2,
       markerTop + markerHeight - 2,
@@ -2869,21 +2867,21 @@ function maraRoleLabel(sprites) {
 }
 
 /**
- * Extend the player badge into a large pointer that leads directly to Mara.
+ * Extend the player badge into a long cyan pointer that leads directly to Mara.
  * NPC badges remain square, so role recognition does not depend on tiny text.
  * @param {number} centerX Pointer center on the handheld's 2px subgrid.
  * @param {number} top Pointer top coordinate.
  * @param {Record<string, any>} metadata Player identity metadata.
- * @returns {ThreefoldSpriteShape[]} Six descending gold rows.
+ * @returns {ThreefoldSpriteShape[]} Eight descending cyan rows.
  */
 function playerRolePointer(centerX, top, metadata) {
-  return [22, 18, 14, 10, 6, 2].map((width, row) => ({
+  return [30, 26, 22, 18, 14, 10, 6, 2].map((width, row) => ({
     type: 'rect',
     x: centerX - width / 2,
     y: top + row * PERSON_GRID_PIXELS,
     width,
     height: PERSON_GRID_PIXELS,
-    fill: '#e9d88d',
+    fill: '#37e7ed',
     ...metadata,
     playerMarkerKind: 'pointer',
   }));

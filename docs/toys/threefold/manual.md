@@ -8,7 +8,7 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
-Mara is marked with a gold downward arrow and gold outline. Residents have violet-and-pink sprites, a bright magenta outline and cap, and a magenta diamond emblem inside the `NPC` badge. The emblem gives residents a geometric marker that is separate from Mara's downward pointer; resident body size continues to track their physical height as Mara changes scale.
+Mara has a cyan coat, bright cyan outline, and a long cyan `YOU` pointer attached directly above her. Residents have violet-and-pink sprites, a bright magenta outline and cap, and a magenta diamond inside their `NPC` badge. Cyan identifies the player; magenta identifies residents. These role cues remain fixed and easy to spot while resident body size tracks their physical height as Mara changes scale.
 
 ## Input
 

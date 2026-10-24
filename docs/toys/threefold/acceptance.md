@@ -1,5 +1,7 @@
 # THREEFOLD Acceptance
 
+- [x] Mara is immediately distinct from residents at the 160 × 144 handheld size: her coat, outline, and attached YOU pointer use bright cyan; residents retain violet-and-pink sprites, a magenta outline, and an NPC diamond badge. Renderer regression coverage asserts distinct role colors and shapes while resident body size changes with physical scale.
+
 ## Machine-Checkable Criteria
 
 - [x] Belltops has a reachable, deliberate Foldglass rival encounter with scale changes for both participants; overlap-based growth death has a stable cause and no name immunity; retreat remains nonlethal; save, campaign backup, reload/reset, stale-page refresh, deterministic time/Anchor, and accessible status preserve the right outcome. Bead `dadeto-8oi7.5` owns this acceptance slice. Direct coverage passed 42 suites / 650 tests with statements, branches, functions, and lines at 100% for every changed core file. `npm run check` passed all 10 local gates; build, 79 manuals, and diff check passed. Exact-head Full Check 39892926131 passed for commit `9e3f8b30c426234e6691d930c7642ccf8568d430`.

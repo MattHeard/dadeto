@@ -1725,13 +1725,13 @@ describe('THREEFOLD resident identity marker', () => {
       shape => shape.playerMarkerKind === 'pointer'
     );
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
-    const playerOutline = mara.filter(shape => shape.fill === '#f2ca59');
+    const playerOutline = mara.filter(shape => shape.fill === '#37e7ed');
 
     expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#f14bd3')).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#ffe1fa')).toBe(true);
     expect(
-      residentArt.every(shape => !['#f2ca59', '#e9d88d'].includes(shape.fill))
+      residentArt.every(shape => !['#37e7ed', '#e9d88d'].includes(shape.fill))
     ).toBe(true);
     expect(residentOutline.length).toBeGreaterThan(0);
     expectResidentHalo(residentOutline, residentArt, watchkeeper.id);
@@ -1761,7 +1761,7 @@ describe('THREEFOLD resident identity marker', () => {
     ).toEqual(['C', 'N', 'P']);
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
-    expect(playerSprite.some(shape => shape.fill === '#f2ca59')).toBe(true);
+    expect(playerSprite.some(shape => shape.fill === '#37e7ed')).toBe(true);
     expect(playerSprite.some(shape => shape.fill === '#f3f6d2')).toBe(true);
     expect(
       playerSprite.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
@@ -1776,7 +1776,7 @@ describe('THREEFOLD resident identity marker', () => {
     ).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
     expect(
-      residentArt.some(shape => ['#f2ca59', '#e9d88d'].includes(shape.fill))
+      residentArt.some(shape => ['#37e7ed', '#e9d88d'].includes(shape.fill))
     ).toBe(false);
     expect(
       playerSprite.every(
@@ -1795,14 +1795,14 @@ describe('THREEFOLD resident identity marker', () => {
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
-          shape.fill === '#f2ca59'
+          shape.fill === '#37e7ed'
       )
     ).toBe(true);
     expect(playerLabel.length).toBeGreaterThan(0);
     expect(
       playerLabel.every(
         shape =>
-          ['#e9d88d', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          ['#37e7ed', '#182f36', '#f3f6d2'].includes(shape.fill) &&
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
@@ -1817,7 +1817,7 @@ describe('THREEFOLD resident identity marker', () => {
       ].sort()
     ).toEqual(['O', 'U', 'Y']);
     expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
-    expect(playerPointer).toHaveLength(6);
+    expect(playerPointer).toHaveLength(8);
     expect(
       playerPointer.map(({ x, y, width, height, fill }) => ({
         x,
@@ -1827,12 +1827,14 @@ describe('THREEFOLD resident identity marker', () => {
         fill,
       }))
     ).toEqual([
-      expect.objectContaining({ width: 22, height: 2, fill: '#e9d88d' }),
-      expect.objectContaining({ width: 18, height: 2, fill: '#e9d88d' }),
-      expect.objectContaining({ width: 14, height: 2, fill: '#e9d88d' }),
-      expect.objectContaining({ width: 10, height: 2, fill: '#e9d88d' }),
-      expect.objectContaining({ width: 6, height: 2, fill: '#e9d88d' }),
-      expect.objectContaining({ width: 2, height: 2, fill: '#e9d88d' }),
+      expect.objectContaining({ width: 30, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 26, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 22, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 18, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 14, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 10, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 6, height: 2, fill: '#37e7ed' }),
+      expect.objectContaining({ width: 2, height: 2, fill: '#37e7ed' }),
     ]);
     expect(
       Math.max(...playerPointer.map(shape => shape.y + shape.height))
