@@ -283,3 +283,7 @@ Play feedback still could not distinguish residents from Mara. Residents now rec
 ## Distinct resident body silhouette — 2026-10-24
 
 The latest play report still could not distinguish residents from Mara, so resident sprites now use a broad-brimmed magenta hat and long violet coat, while Mara keeps her cyan hood and short coat. This changes the resident pixel mask rather than relying on palette alone; the custom art is still rendered from authored physical bounds on the 2px subgrid. A renderer regression compares resident and player body masks without considering their colors. Focused Threefold renderer Jest passed 45/45. Phone-size visual confirmation remains open until Full Check produces its mobile screenshot.
+
+## Stronger resident silhouette after playtest — 2026-10-24
+
+The player still reported that residents blend into Mara in the deployed game. The earlier silhouette contrast was too subtle at handheld scale. Residents now have a broad 8px brim and a long, wide coat in their 12×12 pixel art, plus a 32px magenta overhead crest; Mara keeps her cyan hood, short coat, and cyan `YOU` pointer. These role marks use the same 2px subgrid and do not change physical sizing. The renderer regression checks the enlarged crest widths and the color-independent body-mask difference. Focused Threefold renderer Jest passed 45/45. This is a stronger visual pass, not proof of readability on the live page; mobile screenshot review remains open.

@@ -67,13 +67,13 @@ const RESIDENT_BADGE_HEIGHT = 20;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const THREEFOLD_RESIDENT_ART = [
+  '....aaaa....',
   '...aaaaaa...',
-  '..aaaaaaaa..',
-  '...hhhhhh...',
-  '..hsssssshh.',
-  '.hsksssksh..',
-  '...ssssss...',
-  '..cccccccc..',
+  '..hhhhhhhh..',
+  '.hssssssssh.',
+  '.hsksssskh..',
+  '..ssssssss..',
+  '.sccccccccs.',
   '.sccccccccs.',
   '.sccccccccs.',
   '..sccccccs..',
@@ -2233,10 +2233,10 @@ function renderThreefoldGrainlandsFrame(state, pressureNetwork) {
  * @param {any} layout Finite logical camera.
  * @param {string} fill Sprite color.
  * @param {number} scale Mara's current scale.
- * @returns {ThreefoldSpriteShape|null} Scale-aware character sprite.
+ * @returns {ThreefoldSpriteShape} Scale-aware character sprite.
  */
 function createScaleAwareActorShape(entity, layout, fill, scale) {
-  if (!entity || entity.placement === 'overflow') return null;
+  // Every caller rejects overflow before projecting the entity to a cell.
   return createScaleAwareActorShapeAtBounds(
     entity,
     fill,
@@ -2251,11 +2251,12 @@ function createScaleAwareActorShape(entity, layout, fill, scale) {
  * @param {string} fill Actor color.
  * @param {number} scale Mara's current scale.
  * @param {ThreefoldSpriteShape | {x: number, y: number, width?: number, height?: number}} cellRect Screen bounds for the actor.
- * @returns {ThreefoldSpriteShape|null} Scale-aware character sprite.
+ * @returns {ThreefoldSpriteShape} Scale-aware character sprite.
  */
 function createScaleAwareActorShapeAtBounds(entity, fill, scale, cellRect) {
-  const cellWidth = cellRect.width || GRID_PIXELS;
-  const cellHeight = cellRect.height || GRID_PIXELS;
+  // Grid resolution guarantees positive dimensions at both call sites.
+  const cellWidth = /** @type {number} */ (cellRect.width);
+  const cellHeight = /** @type {number} */ (cellRect.height);
   if (entity.id === 'mara')
     return {
       ...createThreefoldRectShape(
@@ -2271,7 +2272,6 @@ function createScaleAwareActorShapeAtBounds(entity, fill, scale, cellRect) {
       logicalCellBounds: entity.cellBounds,
     };
   const bounds = entity.physicalBounds;
-  if (!bounds) return null;
   const cell = heightAtScale(scale);
   const width = Math.max(
     4,
@@ -2371,7 +2371,7 @@ function weftwaysEntityShape(entity, layout, fill) {
 function weftwaysPellShapes(entity, layout, scale) {
   if (!entity || entity.placement === 'overflow') return [];
   const sprite = createScaleAwareActorShape(entity, layout, '#d28b69', scale);
-  return sprite ? [sprite] : [];
+  return [sprite];
 }
 
 /**
@@ -2734,10 +2734,10 @@ function residentRoleHeadpiece(centerX, personTop, markerProperties) {
   );
   const top = Math.max(0, personTop - 10);
   const rows = [
-    { width: 4, offset: -2 },
     { width: 8, offset: -4 },
-    { width: 12, offset: -6 },
-    { width: 20, offset: -10 },
+    { width: 16, offset: -8 },
+    { width: 24, offset: -12 },
+    { width: 32, offset: -16 },
   ];
   return rows.map((row, index) => ({
     type: 'rect',
@@ -2766,10 +2766,8 @@ function applyResidentRoleAccents(pixels) {
   pixels.forEach(pixel => {
     pixel.fill = residentPalette[pixel.fill] || pixel.fill;
   });
-  const top = pixels.reduce(
-    (current, pixel) => (pixel.y < current.y ? pixel : current),
-    pixels[0]
-  );
+  // spriteShapes is row-major, and positive-scale quantization cannot reorder y.
+  const top = pixels[0];
   const bottom = pixels.reduce(
     (current, pixel) => (pixel.y > current.y ? pixel : current),
     pixels[0]

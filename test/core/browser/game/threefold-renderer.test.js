@@ -1930,7 +1930,9 @@ describe('THREEFOLD resident identity marker', () => {
       shape => shape.geometryId === watchkeeper.id && shape.npcMarker !== true
     );
 
-    expect(residentHeadpiece.map(({ width }) => width)).toEqual([4, 8, 12, 20]);
+    expect(residentHeadpiece.map(({ width }) => width)).toEqual([
+      8, 16, 24, 32,
+    ]);
     expect(residentHeadpiece.map(({ fill }) => fill)).toEqual([
       '#f14bd3',
       '#f14bd3',
