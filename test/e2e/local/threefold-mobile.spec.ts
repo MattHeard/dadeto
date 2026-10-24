@@ -24,7 +24,11 @@ test('renders the Broken Gate handheld cleanly at narrow mobile width', async ({
       if (pixels[index + 3] > 0)
         colors.add(`${pixels[index]},${pixels[index + 1]},${pixels[index + 2]}`);
     }
-    return colors.size > 4;
+    return (
+      colors.size > 4 &&
+      colors.has('55,231,237') &&
+      colors.has('241,75,211')
+    );
   });
 
   const layout = await page.evaluate(() => {
