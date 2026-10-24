@@ -170,4 +170,10 @@ test('the in-game saves menu keeps save, transfer, and backup actions available'
   expect(menu.frame().shapes.some(shape => shape.text === 'SAVES')).toBe(true);
   press(menu, 'a');
   expect(buttons.get('#save-game').click).toHaveBeenCalledTimes(1);
+  for (let i = 0; i < 5; i += 1) press(menu, 'down');
+  press(menu, 'a');
+  expect(menu.frame().shapes.some(shape => shape.text === 'SAVES')).toBe(false);
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    true
+  );
 });
