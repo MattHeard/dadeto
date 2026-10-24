@@ -1713,6 +1713,10 @@ describe('THREEFOLD resident identity marker', () => {
 
     expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#43e9da')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#d8fff4')).toBe(true);
+    expect(
+      residentArt.every(shape => !['#f2ca59', '#e9d88d'].includes(shape.fill))
+    ).toBe(true);
     expect(residentOutline.length).toBeGreaterThan(0);
     expect(
       residentOutline.every(
@@ -1745,6 +1749,14 @@ describe('THREEFOLD resident identity marker', () => {
     expect(
       playerSprite.some(shape => ['#43e9da', '#19a9a0'].includes(shape.fill))
     ).toBe(false);
+    expect(
+      residentArt.every(
+        residentShape =>
+          !playerSprite.some(
+            playerShape => playerShape.fill === residentShape.fill
+          )
+      )
+    ).toBe(true);
     expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
     expect(
       residentArt.some(shape => ['#f2ca59', '#e9d88d'].includes(shape.fill))

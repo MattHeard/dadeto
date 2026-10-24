@@ -2650,11 +2650,20 @@ function residentRoleCap(personPixels, centerX, personTop, markerProperties) {
 }
 
 /**
- * Preserve one cap and one coat accent after scale quantization.
+ * Keep residents in a cool palette and preserve role accents after quantization.
  * @param {Array<{x: number, y: number, fill: string}>} pixels Quantized resident pixels.
  * @returns {void} Mutates only existing pixel colors, preserving sprite bounds.
  */
 function applyResidentRoleAccents(pixels) {
+  const residentPalette = /** @type {Record<string, string>} */ ({
+    '#283b4b': '#173944',
+    '#19a9a0': '#19a9a0',
+    '#f4c89b': '#d8fff4',
+    '#f2ca59': '#287f9c',
+  });
+  pixels.forEach(pixel => {
+    pixel.fill = residentPalette[pixel.fill] || pixel.fill;
+  });
   const top = pixels.reduce(
     (current, pixel) => (pixel.y < current.y ? pixel : current),
     pixels[0]
