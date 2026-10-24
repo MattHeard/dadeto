@@ -204,7 +204,10 @@ describe('THREEFOLD playable small-world sluice', () => {
     });
     expect(frame.threefold).not.toHaveProperty('iriRecordedConfession');
     expect(
-      frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
+      frame.shapes.every(shape => {
+        const grid = shape.spriteGridSize || 8;
+        return shape.x % grid === 0 && shape.y % grid === 0;
+      })
     ).toBe(true);
   });
 
