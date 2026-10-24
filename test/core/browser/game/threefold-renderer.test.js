@@ -1241,6 +1241,26 @@ describe('THREEFOLD Mosslight handheld frame', () => {
 });
 
 describe('THREEFOLD Mosslight episode outcomes', () => {
+  test('renders the saved ferry-wreck search in the accessible witness disclosure', () => {
+    const scene = createBrokenGateScene();
+    const mooring = scene.interactables.find(
+      item => item.id === 'ferry-mooring-line'
+    );
+    scene.spawn = createScaleState(mooring.position);
+    const aftermath = stepThreefoldSimulation(
+      createThreefoldSimulation(THRESHOLDS, scene),
+      { type: 'wait', elapsedGameMinutes: 15 }
+    );
+    const searched = stepThreefoldSimulation(aftermath, { type: 'interact' });
+
+    const frame = renderThreefoldFrame(searched);
+
+    expect(frame.threefold.ferryWreckSearch).toEqual({
+      title: 'Ferry wreck search',
+      text: expect.stringContaining('No survivors are found in the wreck.'),
+    });
+  });
+
   test('renders the ferry mooring and branch-specific rescue outcomes', () => {
     const scene = createBrokenGateScene();
     scene.spawn = createScaleState(scene.interactables[0].position);
