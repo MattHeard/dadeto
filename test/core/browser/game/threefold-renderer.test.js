@@ -3,6 +3,10 @@ import { createThreefoldBelltopsScene } from '../../../../src/core/browser/game/
 import { createThreefoldCrownbackReachScene } from '../../../../src/core/browser/game/threefold/crownback-reach.js';
 import { createThreefoldSiltMarginScene } from '../../../../src/core/browser/game/threefold/silt-margin.js';
 import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/game/threefold/hearthgaps.js';
+import {
+  createThreefoldWeftwaysScene,
+  THREEFOLD_WEFTWAYS_PELL_ID,
+} from '../../../../src/core/browser/game/threefold/weftways.js';
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { createThreefoldWakeformShoalsScene } from '../../../../src/core/browser/game/threefold/wakeform-shoals.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
@@ -709,12 +713,25 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
       expect(frame.shapes.map(({ geometryId }) => geometryId)).toEqual(
         expect.arrayContaining(sourceIds)
       );
+      expect(frame.shapes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            geometryId: 'mara',
+            fill: '#37e7ed',
+            actorRole: 'player',
+            actorSpritePart: 'body',
+          }),
+        ])
+      );
       expect(
-        frame.shapes.find(shape => shape.geometryId === 'mara')
-      ).toMatchObject({ fill: '#37e7ed', playerMarker: true });
-      expect(
-        frame.shapes.find(shape => shape.geometryId === 'hearthgaps-brin')
-      ).toMatchObject({ fill: '#f14bd3', npcMarker: true });
+        frame.shapes.some(
+          shape =>
+            shape.geometryId === 'hearthgaps-brin' &&
+            shape.fill === '#f14bd3' &&
+            shape.actorRole === 'npc' &&
+            shape.actorSpritePart === 'body'
+        )
+      ).toBe(true);
       expectHearthgapsCellContainment(frame, sourceIds);
       for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
         expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
@@ -2129,6 +2146,115 @@ describe('THREEFOLD resident identity marker', () => {
     );
 
     expectDifferentCharacterMasks(playerArt, residentArt);
+  });
+
+  test('keeps Mara and small-world residents distinct in the Threadbound scene', () => {
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, createThreefoldWeftwaysScene())
+    );
+    const playerArt = frame.shapes.filter(
+      shape =>
+        shape.actorRole === 'player' && shape.actorSpritePart === 'identity-cue'
+    );
+    const residentArt = frame.shapes.filter(
+      shape =>
+        shape.actorId === THREEFOLD_WEFTWAYS_PELL_ID &&
+        shape.actorRole === 'npc' &&
+        shape.actorSpritePart === 'identity-cue'
+    );
+
+    const normalizedMask = shapes => {
+      const left = Math.min(...shapes.map(shape => shape.x));
+      const top = Math.min(...shapes.map(shape => shape.y));
+      return new Set(shapes.map(shape => `${shape.x - left}:${shape.y - top}`));
+    };
+    const playerMask = normalizedMask(playerArt);
+    const residentMask = normalizedMask(residentArt);
+    expect(playerMask).not.toEqual(residentMask);
+    expect(
+      [...playerMask].filter(cell => !residentMask.has(cell)).length
+    ).toBeGreaterThan(2);
+    expect(
+      [...residentMask].filter(cell => !playerMask.has(cell)).length
+    ).toBeGreaterThan(2);
+    expect(playerArt.every(shape => shape.spriteGridSize === 2)).toBe(true);
+    expect(playerArt.some(shape => shape.fill === '#37e7ed')).toBe(true);
+    expect(
+      residentArt.every(
+        shape =>
+          shape.spriteGridSize === 2 &&
+          shape.geometryId === THREEFOLD_WEFTWAYS_PELL_ID
+      )
+    ).toBe(true);
+    const returnTideOverlayIndex = frame.shapes.findIndex(
+      shape => shape.geometryId === 'return-tide-accord-threadbound'
+    );
+    const lastResidentCueIndex = Math.max(
+      ...frame.shapes
+        .map((shape, index) => ({ shape, index }))
+        .filter(
+          ({ shape }) =>
+            shape.geometryId === THREEFOLD_WEFTWAYS_PELL_ID &&
+            shape.actorSpritePart === 'identity-cue'
+        )
+        .map(({ index }) => index)
+    );
+    expect(returnTideOverlayIndex).toBeGreaterThanOrEqual(0);
+    expect(lastResidentCueIndex).toBeGreaterThan(returnTideOverlayIndex);
+  });
+
+  test('labels compact scene actors with YOU and NPC tags clear of their bodies', () => {
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, createThreefoldWeftwaysScene())
+    );
+    const labels = frame.shapes.filter(
+      shape => shape.actorSpritePart === 'role-label' && shape.type === 'rect'
+    );
+    const playerTag = labels.find(
+      shape => shape.actorId === 'mara' && shape.playerMarkerText === 'YOU'
+    );
+    const residentTag = labels.find(
+      shape =>
+        shape.actorId === THREEFOLD_WEFTWAYS_PELL_ID &&
+        shape.npcMarkerText === 'NPC'
+    );
+    const bodies = frame.shapes.filter(
+      shape => shape.actorSpritePart === 'body'
+    );
+
+    expect(playerTag).toMatchObject({ fill: '#37e7ed', width: 22, height: 10 });
+    expect(residentTag).toMatchObject({
+      fill: '#f14bd3',
+      width: 22,
+      height: 10,
+    });
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({ actorId: 'mara', text: 'YOU' })
+    );
+    expect(frame.shapes).toContainEqual(
+      expect.objectContaining({
+        actorId: THREEFOLD_WEFTWAYS_PELL_ID,
+        text: 'NPC',
+      })
+    );
+    for (const tag of labels) {
+      expect(tag.x).toBeGreaterThanOrEqual(0);
+      expect(tag.x + tag.width).toBeLessThanOrEqual(160);
+      expect(tag.y).toBeGreaterThanOrEqual(28);
+      expect(tag.y + tag.height).toBeLessThanOrEqual(104);
+      expect(tag.x % 2).toBe(0);
+      expect(tag.y % 2).toBe(0);
+      expect(
+        bodies.some(
+          body =>
+            body.actorId !== tag.actorId &&
+            tag.x < body.x + body.width &&
+            tag.x + tag.width > body.x &&
+            tag.y < body.y + body.height &&
+            tag.y + tag.height > body.y
+        )
+      ).toBe(false);
+    }
   });
 
   test('does not cover either character with large role-label plaques', () => {

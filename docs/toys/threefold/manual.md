@@ -177,6 +177,10 @@ For a governed handoff, move toward the harbor crane until the HUD offers TAKE G
 
 A destroyed crane cannot supply its governor, and a destroyed regulator cannot accept one. If installed machinery is later destroyed, its governor is lost; a carried governor survives crane damage. Reopening a region cannot duplicate the part or bring a departed Iri back. The other investigation routes remain available. Campaign status and the handheld HUD show the current handoff and machine cost.
 
+## Recognizing Mara and residents
+
+Across the compact settlement and crossing scenes, Mara has a pointed hood and a cloak that widens toward the hem. Residents have a flat, broad brim and a straight robe. Cyan `YOU` and magenta `NPC` tags identify each role directly. Tags stay inside the handheld playfield and clear of other actor bodies; two-pixel identity shapes stay inside each logical actor cell, scale-aware body pixels keep their physical footprint, and characters draw above scenery so a shared cell cannot hide them.
+
 ## Return Tide
 
 The Return Tide starts with a 20,000 m³ reservoir and advances only through deliberate game actions. Its warning lasts 30 game minutes, the rise reaches its peak at 60 minutes, and recession completes at 90 minutes. Waiting is a choice: the tide still resolves if Mara does nothing. Pausing, opening menus, drawing frames, or loading a save does not advance it.

@@ -3,6 +3,7 @@ import {
   createThreefoldGrainlandsState,
   normalizeThreefoldGrainlandsState,
   THREEFOLD_GRAINLANDS_BRIDGE_ID,
+  THREEFOLD_GRAINLANDS_HATCH_ID,
   THREEFOLD_GRAINLANDS_IRU_ID,
   THREEFOLD_GRAINLANDS_NURSERY_ID,
   THREEFOLD_GRAINLANDS_SPIDER_ID,
@@ -36,21 +37,46 @@ function createGrainlandsRun() {
   );
 }
 
+test('keeps the Grainlands hatch as scenery, not a character sprite', () => {
+  const frame = renderThreefoldFrame(createGrainlandsRun());
+  expect(
+    frame.shapes.some(
+      shape =>
+        shape.geometryId === THREEFOLD_GRAINLANDS_HATCH_ID &&
+        shape.actorSpritePart !== undefined
+    )
+  ).toBe(false);
+});
+
 describe('THREEFOLD Grainlands nursery crossing', () => {
   test('scales Iru relative to Mara as the player changes size', () => {
     const base = createGrainlandsRun();
-    const renderAt = scale =>
-      renderThreefoldFrame({
+    const renderAt = scale => {
+      const shapes = renderThreefoldFrame({
         ...base,
         player: { ...base.player, scale, minimumUnlockedScale: -4 },
-      }).shapes.find(shape => shape.geometryId === THREEFOLD_GRAINLANDS_IRU_ID);
+      }).shapes.filter(
+        shape =>
+          shape.geometryId === THREEFOLD_GRAINLANDS_IRU_ID &&
+          shape.actorSpritePart === 'body'
+      );
+      return {
+        width:
+          Math.max(...shapes.map(shape => shape.x + shape.width)) -
+          Math.min(...shapes.map(shape => shape.x)),
+        height:
+          Math.max(...shapes.map(shape => shape.y + shape.height)) -
+          Math.min(...shapes.map(shape => shape.y)),
+        spriteGridSizes: new Set(shapes.map(shape => shape.spriteGridSize)),
+      };
+    };
 
     const smallerWorld = renderAt(-4);
     const largerWorld = renderAt(-2);
     expect(smallerWorld.width).toBeGreaterThan(largerWorld.width);
     expect(smallerWorld.height).toBeGreaterThan(largerWorld.height);
-    expect(smallerWorld.spriteGridSize).toBe(4);
-    expect(largerWorld.spriteGridSize).toBe(4);
+    expect(smallerWorld.spriteGridSizes).toEqual(new Set([2]));
+    expect(largerWorld.spriteGridSizes).toEqual(new Set([2]));
   });
   test('renders every source identity from a finite camera-centered logical grid', () => {
     const base = createGrainlandsRun();
@@ -252,7 +278,9 @@ describe('THREEFOLD Grainlands nursery crossing', () => {
       renderThreefoldFrame(outside).threefold.logicalGridLayout.viewport.x
     ).toBe(0);
   });
+});
 
+describe('THREEFOLD Grainlands nursery outcomes', () => {
   test('authors the 6.77 cm nursery, Iru, and a substantially larger spider', () => {
     const scene = createThreefoldGrainlandsScene();
     const state = createGrainlandsRun();

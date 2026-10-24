@@ -101,7 +101,13 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'}} ThreefoldSpriteShape */
+const SMALL_WORLD_NPC_IDS = new Set([
+  ...PERSON_ACTOR_IDS,
+  'grainlands-iru',
+  'silt-margin-guardian',
+  'weftways-pell',
+]);
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2300,6 +2306,7 @@ function createScaleAwareActorShapeAtBounds(entity, fill, scale, cellRect) {
       ),
       geometryId: entity.id,
       logicalCellBounds: entity.cellBounds,
+      actorRole: 'player',
     };
   const bounds = entity.physicalBounds;
   const cell = heightAtScale(scale);
@@ -2320,6 +2327,7 @@ function createScaleAwareActorShapeAtBounds(entity, fill, scale, cellRect) {
     geometryId: entity.id,
     logicalCellBounds: entity.cellBounds,
     spriteGridSize: 4,
+    ...(SMALL_WORLD_NPC_IDS.has(entity.id) ? { actorRole: 'npc' } : {}),
   };
 }
 
@@ -2470,18 +2478,266 @@ function weftwaysBeetleShapes(entity, layout, lost) {
  */
 function finishSmallWorldFrame(frame, threefold) {
   frame.threefold = threefold;
-  frame.shapes = frame.shapes.map(
-    (/** @type {ThreefoldSpriteShape} */ shape) =>
-      shape.geometryId === 'mara' && shape.logicalCellBounds
-        ? { ...shape, fill: '#37e7ed', playerMarker: true }
-        : typeof shape.geometryId === 'string' &&
-            PERSON_ACTOR_IDS.has(shape.geometryId) &&
-            shape.logicalCellBounds &&
-            shape.spriteGridSize
-          ? { ...shape, fill: '#f14bd3', npcMarker: true }
-          : shape
+  frame.shapes = frame.shapes.flatMap(
+    (/** @type {ThreefoldSpriteShape} */ shape) => {
+      const actorRole =
+        shape.actorRole ?? (shape.geometryId === 'mara' ? 'player' : undefined);
+      const layout = threefold.logicalGridLayout;
+      const actorEntity =
+        layout?.viewport &&
+        layout.entities.find(
+          (/** @type {ThreefoldGridRenderEntity} */ entity) =>
+            entity.id === shape.geometryId
+        );
+      const actorCell = actorEntity
+        ? logicalGridEntityRect(actorEntity, layout)
+        : {
+            x: shape.x,
+            y: shape.y,
+            width: shape.width ?? 0,
+            height: shape.height ?? 0,
+          };
+      return actorRole && shape.type === 'rect'
+        ? smallWorldActorSprite(shape, actorRole, actorCell)
+        : [shape];
+    }
   );
+  const actorShapes = frame.shapes.filter(
+    (/** @type {ThreefoldSpriteShape} */ shape) =>
+      shape.actorSpritePart !== undefined
+  );
+  const sceneShapes = frame.shapes.filter(
+    (/** @type {ThreefoldSpriteShape} */ shape) =>
+      shape.actorSpritePart === undefined
+  );
+  frame.shapes = [
+    ...sceneShapes,
+    ...actorShapes,
+    ...smallWorldRoleLabels(actorShapes),
+  ];
   return alignThreefoldFrame(frame);
+}
+
+/**
+ * Add short, high-contrast role labels beside compact scene characters.
+ * @param {ThreefoldSpriteShape[]} shapes Rendered small-world actor pixels.
+ * @returns {ThreefoldSpriteShape[]} Labels placed within the 160 by 144 field.
+ */
+function smallWorldRoleLabels(shapes) {
+  /** @type {Map<string, {id:string,role:'player'|'npc',shapes:ThreefoldSpriteShape[]}>} */
+  const actors = new Map();
+  for (const shape of shapes) {
+    if (
+      shape.actorSpritePart !== 'body' ||
+      typeof shape.actorId !== 'string' ||
+      !shape.actorRole
+    )
+      continue;
+    const actor = actors.get(shape.actorId) ?? {
+      id: shape.actorId,
+      role: shape.actorRole,
+      shapes: [],
+    };
+    actor.shapes.push(shape);
+    actors.set(shape.actorId, actor);
+  }
+  const bodies = [...actors.values()].map(actor => ({
+    ...actor,
+    bounds: boundsOf(actor.shapes),
+  }));
+  /** @type {Array<{id:string,bounds:{x:number,y:number,width:number,height:number}}>} */
+  const placedBounds = [];
+  /** @type {ThreefoldSpriteShape[]} */
+  const labels = [];
+  for (const actor of bodies) {
+    const label = actor.role === 'player' ? 'YOU' : 'NPC';
+    const width = 22;
+    const height = 10;
+    const body = actor.bounds;
+    const centeredX = snapCanvasCoordinate(
+      body.x + (body.width - width) / 2,
+      PERSON_GRID_PIXELS
+    );
+    const centeredY = snapCanvasCoordinate(
+      body.y + (body.height - height) / 2,
+      PERSON_GRID_PIXELS
+    );
+    const candidates = [
+      { x: centeredX, y: body.y - height - 2 },
+      { x: centeredX, y: body.y + body.height + 2 },
+      { x: body.x - width - 2, y: centeredY },
+      { x: body.x + body.width + 2, y: centeredY },
+    ].flatMap(({ x, y }) =>
+      Array.from({ length: 81 }, (_, index) => {
+        const offset = (index % 2 ? 1 : -1) * Math.ceil(index / 2) * 2;
+        return { x: x + offset, y };
+      })
+    );
+    const position = candidates.find(
+      candidate =>
+        candidate.x >= 0 &&
+        candidate.x + width <= 160 &&
+        candidate.y >= 28 &&
+        candidate.y + height <= 104 &&
+        [...bodies, ...placedBounds].every(other =>
+          other.id === actor.id
+            ? true
+            : !rectanglesOverlap({ ...candidate, width, height }, other.bounds)
+        )
+    );
+    if (!position) continue;
+    const player = actor.role === 'player';
+    const metadata = {
+      actorId: actor.id,
+      actorRole: actor.role,
+      ...(player
+        ? { playerMarker: true, playerMarkerText: label }
+        : { npcMarker: true, npcMarkerText: label }),
+      spriteGridSize: PERSON_GRID_PIXELS,
+    };
+    const fill = player ? '#37e7ed' : '#f14bd3';
+    const textFill = player ? '#172c34' : '#fff3fc';
+    placedBounds.push({ id: actor.id, bounds: { ...position, width, height } });
+    labels.push({
+      type: 'rect',
+      ...position,
+      width,
+      height,
+      fill,
+      ...metadata,
+      actorSpritePart: 'role-label',
+    });
+    labels.push({
+      type: 'text',
+      x: position.x + 2,
+      y: position.y + 7,
+      text: label,
+      fill: textFill,
+      font: '6px monospace',
+      bitmap: true,
+      ...metadata,
+      actorSpritePart: 'role-label',
+    });
+  }
+  return labels;
+}
+
+/**
+ * @param {ThreefoldSpriteShape[]} shapes Actor pixel cells.
+ * @returns {{x:number,y:number,width:number,height:number}} Their visible bounds.
+ */
+function boundsOf(shapes) {
+  return {
+    x: Math.min(...shapes.map(shape => shape.x)),
+    y: Math.min(...shapes.map(shape => shape.y)),
+    width:
+      Math.max(...shapes.map(shape => shape.x + (shape.width ?? 0))) -
+      Math.min(...shapes.map(shape => shape.x)),
+    height:
+      Math.max(...shapes.map(shape => shape.y + (shape.height ?? 0))) -
+      Math.min(...shapes.map(shape => shape.y)),
+  };
+}
+
+/**
+ * @param {{x:number,y:number,width:number,height:number}} first First rectangle.
+ * @param {{x:number,y:number,width:number,height:number}} second Second rectangle.
+ * @returns {boolean} Whether the rectangles have positive-area overlap.
+ */
+function rectanglesOverlap(first, second) {
+  return (
+    first.x < second.x + second.width &&
+    first.x + first.width > second.x &&
+    first.y < second.y + second.height &&
+    first.y + first.height > second.y
+  );
+}
+
+/**
+ * Replace the small-world actor placeholder with a readable role-specific sprite.
+ * These scenes use a compressed logical map, so contrasting masks occupy each
+ * actor's existing cell rather than expanding into neighboring cells.
+ * @param {ThreefoldSpriteShape} shape Scale-aware actor cell or player marker.
+ * @param {'player'|'npc'} role Actor identity.
+ * @param {{x:number,y:number,width:number,height:number}} actorCell Projected logical actor cell.
+ * @returns {ThreefoldSpriteShape[]} Two-pixel-grid character cells.
+ */
+function smallWorldActorSprite(shape, role, actorCell) {
+  const player = role === 'player';
+  const source = player
+    ? ['...c', '..fc', '.ccc', 'cccc']
+    : ['nnnn', '.nn.', '.nn.', '.nn.'];
+  /** @type {Record<string, string>} */
+  const colors = player
+    ? { c: '#37e7ed', f: '#f3f6d2', k: '#172c34' }
+    : { n: '#f14bd3', v: '#8d4bb0', f: '#ffe1fa', k: '#342041' };
+  const bodyWidth = Math.min(actorCell.width, shape.width ?? actorCell.width);
+  const bodyHeight = Math.min(
+    actorCell.height,
+    shape.height ?? actorCell.height
+  );
+  /**
+   * @param {{x:number,y:number,width:number,height:number}} bounds Pixel mask bounds.
+   * @param {'identity-cue'|'body'} part Sprite layer.
+   * @returns {ThreefoldSpriteShape[]} Rendered pixel cells.
+   */
+  const renderPattern = (bounds, part) => {
+    const columns = Math.max(1, Math.floor(bounds.width / PERSON_GRID_PIXELS));
+    const rows = Math.max(1, Math.floor(bounds.height / PERSON_GRID_PIXELS));
+    const left = snapCanvasCoordinate(bounds.x, PERSON_GRID_PIXELS);
+    const top = snapCanvasCoordinate(bounds.y, PERSON_GRID_PIXELS);
+    const output = [];
+    for (let row = 0; row < rows; row += 1) {
+      const sourceRow =
+        source[
+          Math.min(
+            source.length - 1,
+            Math.floor(((row + 0.5) / rows) * source.length)
+          )
+        ];
+      for (let column = 0; column < columns; column += 1) {
+        const sourceColumn = Math.min(
+          3,
+          Math.floor(((column + 0.5) / columns) * 4)
+        );
+        const pixel = sourceRow[sourceColumn];
+        if (pixel === '.') continue;
+        output.push({
+          ...shape,
+          type: 'rect',
+          x: left + column * PERSON_GRID_PIXELS,
+          y: top + row * PERSON_GRID_PIXELS,
+          width: PERSON_GRID_PIXELS,
+          height: PERSON_GRID_PIXELS,
+          fill: colors[pixel],
+          actorRole: role,
+          actorSpritePart: part,
+          ...(player && part === 'body'
+            ? { playerSpritePart: /** @type {'body'} */ ('body') }
+            : {}),
+          actorId: shape.geometryId,
+          spriteGridSize: PERSON_GRID_PIXELS,
+        });
+      }
+    }
+    return output;
+  };
+  const cueBounds = {
+    x: actorCell.x,
+    y: actorCell.y,
+    width: actorCell.width,
+    height: actorCell.height,
+  };
+  const bodyBounds = {
+    x: actorCell.x + (actorCell.width - bodyWidth) / 2,
+    y: actorCell.y + (actorCell.height - bodyHeight) / 2,
+    width: bodyWidth,
+    height: bodyHeight,
+  };
+  return [
+    ...renderPattern(cueBounds, 'identity-cue'),
+    ...renderPattern(bodyBounds, 'body'),
+  ];
 }
 
 /**

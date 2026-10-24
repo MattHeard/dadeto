@@ -603,18 +603,25 @@ describe('THREEFOLD Silt Margin authored valve scale', () => {
 
 /**
  * Assert that the scaled guardian remains visible inside the viewport.
- * @param {{shapes: Array<{geometryId?: string, x: number, y: number, width: number, height: number, spriteGridSize?: number}>}} frame Rendered game frame.
+ * @param {{shapes: Array<{geometryId?: string, actorSpritePart?: string, x: number, y: number, width: number, height: number, spriteGridSize?: number}>}} frame Rendered game frame.
  * @returns {void} Throws if the guardian is missing or outside the screen.
  */
 function expectSiltGuardianVisible(frame) {
-  const shape = frame.shapes.find(
-    item => item.geometryId === 'silt-margin-guardian'
+  const shapes = frame.shapes.filter(
+    item =>
+      item.geometryId === 'silt-margin-guardian' &&
+      item.actorSpritePart === 'body'
   );
-  expect(shape.spriteGridSize).toBe(4);
-  expect(shape.x).toBeGreaterThanOrEqual(8);
-  expect(shape.x + shape.width).toBeLessThanOrEqual(152);
-  expect(shape.y).toBeGreaterThanOrEqual(28);
-  expect(shape.y + shape.height).toBeLessThanOrEqual(100);
+  const left = Math.min(...shapes.map(shape => shape.x));
+  const top = Math.min(...shapes.map(shape => shape.y));
+  const right = Math.max(...shapes.map(shape => shape.x + shape.width));
+  const bottom = Math.max(...shapes.map(shape => shape.y + shape.height));
+  expect(shapes.length).toBeGreaterThan(0);
+  expect(shapes.every(shape => shape.spriteGridSize === 2)).toBe(true);
+  expect(left).toBeGreaterThanOrEqual(8);
+  expect(right).toBeLessThanOrEqual(152);
+  expect(top).toBeGreaterThanOrEqual(28);
+  expect(bottom).toBeLessThanOrEqual(100);
 }
 
 /**
@@ -696,6 +703,17 @@ describe('THREEFOLD Silt Margin logical-grid renderer', () => {
           expectSiltGuardianVisible(frame);
           continue;
         }
+        if (id === 'mara') {
+          expect(
+            frame.shapes.some(
+              item =>
+                item.geometryId === 'mara' &&
+                item.actorSpritePart === 'body' &&
+                item.actorRole === 'player'
+            )
+          ).toBe(true);
+          continue;
+        }
         expect(shape.x).toBe(
           Math.round((8 + entity.cellBounds.x * pitchX) / 8) * 8
         );
@@ -719,12 +737,23 @@ describe('THREEFOLD Silt Margin logical-grid renderer', () => {
     small.player.scale = -4;
     const large = createSiltMarginRun();
     large.player.scale = -3;
-    const smallGuardian = renderThreefoldFrame(small).shapes.find(
-      shape => shape.geometryId === 'silt-margin-guardian'
-    );
-    const largeGuardian = renderThreefoldFrame(large).shapes.find(
-      shape => shape.geometryId === 'silt-margin-guardian'
-    );
+    const bounds = state => {
+      const shapes = renderThreefoldFrame(state).shapes.filter(
+        shape =>
+          shape.geometryId === 'silt-margin-guardian' &&
+          shape.actorSpritePart === 'body'
+      );
+      return {
+        width:
+          Math.max(...shapes.map(shape => shape.x + shape.width)) -
+          Math.min(...shapes.map(shape => shape.x)),
+        height:
+          Math.max(...shapes.map(shape => shape.y + shape.height)) -
+          Math.min(...shapes.map(shape => shape.y)),
+      };
+    };
+    const smallGuardian = bounds(small);
+    const largeGuardian = bounds(large);
 
     expect(smallGuardian.width).toBeGreaterThan(largeGuardian.width);
     expect(smallGuardian.height).toBeGreaterThan(largeGuardian.height);
