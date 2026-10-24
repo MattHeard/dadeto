@@ -81,13 +81,27 @@ const THREEFOLD_RESIDENT_ART = [
   '.sccccccccs.',
   '...ssssss...',
 ];
+const THREEFOLD_MARA_ART = [
+  '.....hh.....',
+  '....hhhh....',
+  '...hhhhhh...',
+  '...hhssss...',
+  '...hhskss...',
+  '....ssss....',
+  '....cc......',
+  '...cccc.....',
+  '..cccccc....',
+  '..cccccc....',
+  '...cccc.....',
+  '...kk..kk...',
+];
 const PERSON_ACTOR_IDS = new Set([
   ...RETURN_TIDE_PEOPLE.map(({ id }) => id),
   'latchfolk-watchkeeper',
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'|'selection-frame'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -211,15 +225,25 @@ export function renderThreefoldFrame(
           );
         return geometrySprite({ ...worldActor, bounds }, camera, heightMeters);
       }
-      const maraShapes = spriteShapes(actor, camera, tick).map(shape => ({
+      const maraBody = spriteShapes(
+        {
+          ...actor,
+          art: THREEFOLD_MARA_ART,
+          colours: ['#172c34', '#37e7ed', '#f3f6d2', '#e9d88d'],
+        },
+        camera,
+        tick
+      ).map(shape => ({
         ...shape,
         fill: playerRoleColor(shape.fill),
         actorId: 'mara',
+        playerSpritePart: /** @type {'body'} */ ('body'),
         // Mara's source art is pixel-level art. Without this, the shared
         // 8px world-grid default expands every source pixel into a block and
         // erases the hooded player silhouette that distinguishes her from NPCs.
         spriteGridSize: PERSON_GRID_PIXELS,
       }));
+      const maraShapes = [...maraBody, ...maraCapeFrill(maraBody)];
       return [...playerRoleOutline(maraShapes), ...maraShapes];
     },
   });
@@ -2766,6 +2790,37 @@ function playerRoleOutline(sprites) {
     height: PERSON_GRID_PIXELS,
     fill: '#37e7ed',
     actorId: 'mara',
+    playerSpritePart: /** @type {'outline'} */ ('outline'),
+    spriteGridSize: PERSON_GRID_PIXELS,
+  }));
+}
+
+/**
+ * Extend Mara's cloak beyond the residents' narrower robe silhouette.
+ * @param {ThreefoldSpriteShape[]} sprites Mara's pixel-art body cells.
+ * @returns {ThreefoldSpriteShape[]} Player-only cloak cells on the 2px grid.
+ */
+function maraCapeFrill(sprites) {
+  const minX = Math.min(...sprites.map(shape => shape.x));
+  const maxX = Math.max(...sprites.map(shape => shape.x));
+  const minY = Math.min(...sprites.map(shape => shape.y));
+  const cells = [6, 8].flatMap(offset => [
+    { x: minX - 6, y: minY + offset },
+    { x: minX - 4, y: minY + offset },
+    { x: minX - 2, y: minY + offset },
+    { x: maxX + 2, y: minY + offset },
+    { x: maxX + 4, y: minY + offset },
+    { x: maxX + 6, y: minY + offset },
+  ]);
+  return cells.map(({ x, y }) => ({
+    type: 'rect',
+    x,
+    y,
+    width: PERSON_GRID_PIXELS,
+    height: PERSON_GRID_PIXELS,
+    fill: '#37e7ed',
+    actorId: 'mara',
+    playerSpritePart: /** @type {'body'} */ ('body'),
     spriteGridSize: PERSON_GRID_PIXELS,
   }));
 }

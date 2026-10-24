@@ -5,6 +5,7 @@ import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefol
 import {
   createThreefoldReturnTide,
   getThreefoldReturnTideObligations,
+  normalizeThreefoldReturnTide,
 } from '../../../../src/core/browser/game/threefold/return-tide.js';
 import {
   presentThreefoldReturnTide,
@@ -178,6 +179,12 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
       { ...tide, assemblySealPlanStatus: 'unavailable' },
       { ...facts(), intactMechanisms: ['seal'], availableFactions: [] }
     );
+    const legacyTide = normalizeThreefoldReturnTide({
+      ...createThreefoldReturnTide(),
+      assemblySealPlanStatus: undefined,
+      elapsedGameSeconds: 1800,
+    });
+    const legacySeal = presentThreefoldReturnTide(state, legacyTide, facts());
     const aftermath = presentThreefoldReturnTide(state, observedAftermath(), {
       ...facts(),
       intactMechanisms: ['seal'],
@@ -206,6 +213,10 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     );
     expect(interruptedSeal.text).toContain('Mara interrupted the Assembly');
     expect(unavailableSeal.text).toContain('no representative survived');
+    expect(legacyTide.assemblySealPlanStatus).toBe('legacy');
+    expect(legacySeal.text).toContain(
+      'had already risen before the Assembly plan was tracked'
+    );
     expect(aftermath.text).not.toContain('independently preparing');
     expect(aftermath.planCue).toEqual([]);
   });

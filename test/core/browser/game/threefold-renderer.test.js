@@ -1770,6 +1770,32 @@ function expectPlayerPointerClearFromActors(
   );
 }
 
+/**
+ * Ensure the two character body silhouettes differ when color and labels are removed.
+ * @param {Array<Record<string, any>>} playerArt Mara's 2px-grid body cells.
+ * @param {Array<Record<string, any>>} residentArt Resident body cells.
+ * @returns {void} Throws when either body mask lacks a role-specific shape.
+ */
+function expectDifferentCharacterMasks(playerArt, residentArt) {
+  const normalizedMask = shapes => {
+    const minX = Math.min(...shapes.map(shape => shape.x));
+    const minY = Math.min(...shapes.map(shape => shape.y));
+    return new Set(shapes.map(shape => `${shape.x - minX}:${shape.y - minY}`));
+  };
+  expect(playerArt.length).toBeGreaterThan(0);
+  expect(playerArt.every(shape => shape.spriteGridSize === 2)).toBe(true);
+  const playerMask = normalizedMask(playerArt);
+  const residentMask = normalizedMask(residentArt);
+  const playerOnlyCells = [...playerMask].filter(
+    cell => !residentMask.has(cell)
+  ).length;
+  const residentOnlyCells = [...residentMask].filter(
+    cell => !playerMask.has(cell)
+  ).length;
+  expect(playerOnlyCells).toBeGreaterThan(8);
+  expect(residentOnlyCells).toBeGreaterThan(10);
+}
+
 describe('THREEFOLD resident identity marker', () => {
   test('frames Mara with player-only selection brackets around her silhouette', () => {
     const frame = renderThreefoldFrame(
@@ -2027,6 +2053,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(
       residentArt.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
     ).toBe(true);
+
     expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
     expect(
       residentArt.some(shape => ['#37e7ed', '#e9d88d'].includes(shape.fill))
@@ -2086,6 +2113,22 @@ describe('THREEFOLD resident identity marker', () => {
         shape => shape.npcMarker !== true && shape.playerMarker !== true
       )
     ).toBe(true);
+  });
+
+  test('uses body silhouettes that differ without color or role labels', () => {
+    const scene = createBrokenGateScene();
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+    const playerArt = frame.shapes.filter(
+      shape => shape.playerSpritePart === 'body'
+    );
+    const residentArt = frame.shapes.filter(
+      shape =>
+        shape.geometryId === 'latchfolk-watchkeeper' && shape.npcMarker !== true
+    );
+
+    expectDifferentCharacterMasks(playerArt, residentArt);
   });
 
   test('does not cover either character with large role-label plaques', () => {
