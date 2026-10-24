@@ -1370,7 +1370,8 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
       };
     };
     const largerSpritePixels = largerMara.shapes.filter(
-      shape => shape.geometryId === 'latchfolk-watchkeeper'
+      shape =>
+        shape.geometryId === 'latchfolk-watchkeeper' && shape.type === 'rect'
     );
 
     expect(spriteBounds(humanScale).width).toBeGreaterThan(
@@ -1667,8 +1668,8 @@ function frameBounds(shapes, property, id) {
   if (owned.length === 0) return null;
   const minX = Math.min(...owned.map(shape => shape.x));
   const minY = Math.min(...owned.map(shape => shape.y));
-  const maxX = Math.max(...owned.map(shape => shape.x + shape.width));
-  const maxY = Math.max(...owned.map(shape => shape.y + shape.height));
+  const maxX = Math.max(...owned.map(shape => shape.x + (shape.width ?? 0)));
+  const maxY = Math.max(...owned.map(shape => shape.y + (shape.height ?? 0)));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
@@ -1689,8 +1690,8 @@ function expectResidentHalo(outline, art, id) {
 }
 
 /**
- * Keep the compact NPC emblem visible, attached, and clear of both bodies.
- * @param {Array<Record<string, any>>} npcMarker NPC emblem cells.
+ * Keep the readable NPC tag visible, attached, and clear of both bodies.
+ * @param {Array<Record<string, any>>} npcMarker NPC tag shapes.
  * @param {Array<Record<string, any>>} residentBody Resident sprite cells.
  * @param {Array<Record<string, any>>} playerBody Player outline and art cells.
  * @param {string} id Resident identity.
@@ -1704,8 +1705,8 @@ function expectResidentMarkerClearOfActors(
 ) {
   const marker = frameBounds(npcMarker, 'geometryId', id);
   const body = frameBounds(residentBody, 'geometryId', id);
-  expect(marker.width).toBe(14);
-  expect(marker.height).toBe(14);
+  expect(marker.width).toBe(22);
+  expect(marker.height).toBe(10);
   expect(marker.x).toBeGreaterThanOrEqual(0);
   expect(marker.x + marker.width).toBeLessThanOrEqual(160);
   expect(marker.y).toBeGreaterThanOrEqual(0);
@@ -1723,8 +1724,8 @@ function expectResidentMarkerClearOfActors(
 }
 
 /**
- * Keep Mara's pointer inside the playfield and separate from both actors.
- * @param {Array<Record<string, any>>} playerPointer Player pointer cells.
+ * Keep Mara's role tag inside the playfield and separate from both actors.
+ * @param {Array<Record<string, any>>} playerPointer Player tag shapes.
  * @param {Array<Record<string, any>>} playerLeader Connector to Mara.
  * @param {Array<Record<string, any>>} playerBody Mara's outline and sprite.
  * @param {Array<Record<string, any>>} npcLabel Resident badge cells.
@@ -1737,8 +1738,8 @@ function expectPlayerPointerClearFromActors(
   npcLabel
 ) {
   const pointer = frameBounds(playerPointer, 'actorId', 'mara');
-  expect(pointer.width).toBe(12);
-  expect(pointer.height).toBe(12);
+  expect(pointer.width).toBe(22);
+  expect(pointer.height).toBe(10);
   expect(pointer.y).toBeGreaterThanOrEqual(54);
   expect(pointer.y + pointer.height).toBeLessThanOrEqual(108);
   expect(pointer.x + pointer.width).toBeLessThanOrEqual(
@@ -1870,24 +1871,31 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarker === true
       )
     ).toBe(true);
-    expect(npcMarker).toHaveLength(8);
+    expect(npcMarker).toHaveLength(2);
     expectResidentMarkerClearOfActors(
       npcMarker,
       residentArt,
       playerBody,
       watchkeeper.id
     );
+    expect(npcMarker[0]).toMatchObject({
+      type: 'rect',
+      width: 22,
+      height: 10,
+      fill: '#f14bd3',
+      spriteGridSize: 2,
+      npcMarkerText: 'NPC',
+    });
+    expect(npcMarker[1]).toMatchObject({
+      type: 'text',
+      text: 'NPC',
+      fill: '#f3f6d2',
+      font: '7px monospace',
+      bitmap: true,
+      npcMarkerText: 'NPC',
+    });
     expect(
-      npcMarker.every(
-        shape =>
-          ['#f14bd3', '#f3f6d2'].includes(shape.fill) &&
-          shape.spriteGridSize === 2 &&
-          shape.x % 2 === 0 &&
-          shape.y % 2 === 0 &&
-          shape.width % 2 === 0 &&
-          shape.height % 2 === 0 &&
-          shape.npcMarkerText === 'NPC'
-      )
+      npcMarker.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)
     ).toBe(true);
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
@@ -1923,18 +1931,25 @@ describe('THREEFOLD resident identity marker', () => {
           shape.fill === '#37e7ed'
       )
     ).toBe(true);
-    expect(playerPointer).toHaveLength(6);
+    expect(playerPointer).toHaveLength(2);
+    expect(playerPointer[0]).toMatchObject({
+      type: 'rect',
+      width: 22,
+      height: 10,
+      fill: '#37e7ed',
+      spriteGridSize: 2,
+      playerMarkerText: 'YOU',
+    });
+    expect(playerPointer[1]).toMatchObject({
+      type: 'text',
+      text: 'YOU',
+      fill: '#172c34',
+      font: '7px monospace',
+      bitmap: true,
+      playerMarkerText: 'YOU',
+    });
     expect(
-      playerPointer.every(
-        shape =>
-          shape.fill === '#37e7ed' &&
-          shape.spriteGridSize === 2 &&
-          shape.x % 2 === 0 &&
-          shape.y % 2 === 0 &&
-          shape.width % 2 === 0 &&
-          shape.height % 2 === 0 &&
-          shape.playerMarkerText === 'YOU'
-      )
+      playerPointer.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)
     ).toBe(true);
     expect(playerPointer.some(shape => shape.playerMarkerText === 'YOU')).toBe(
       true
@@ -1970,7 +1985,7 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
-test('gives residents an NPC-only diamond distinct from Mara’s pointer', () => {
+test('gives residents an NPC label distinct from Mara’s YOU label', () => {
   const scene = createBrokenGateScene();
   const watchkeeper = scene.interactables.find(
     item => item.id === 'latchfolk-watchkeeper'
@@ -1984,27 +1999,25 @@ test('gives residents an NPC-only diamond distinct from Mara’s pointer', () =>
   );
   const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
 
-  expect(emblem).toHaveLength(8);
-  expect(emblem.slice(0, 7).map(({ width }) => width)).toEqual([
-    2, 6, 10, 14, 10, 6, 2,
-  ]);
-  expect(
-    emblem.every(
-      shape =>
-        shape.height === 2 &&
-        shape.spriteGridSize === 2 &&
-        shape.x % 2 === 0 &&
-        shape.y % 2 === 0 &&
-        shape.width % 2 === 0
-    )
-  ).toBe(true);
-  expect(emblem.slice(0, 7).every(shape => shape.fill === '#f14bd3')).toBe(
+  expect(emblem).toHaveLength(2);
+  expect(emblem.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)).toBe(
     true
   );
-  expect(emblem[7]).toMatchObject({
-    width: 2,
-    height: 2,
+  expect(emblem[0]).toMatchObject({
+    type: 'rect',
+    width: 22,
+    height: 10,
+    fill: '#f14bd3',
+    spriteGridSize: 2,
+    npcMarkerText: 'NPC',
+    npcMarkerKind: 'emblem',
+  });
+  expect(emblem[1]).toMatchObject({
+    type: 'text',
+    text: 'NPC',
+    font: '7px monospace',
     fill: '#f3f6d2',
+    bitmap: true,
     npcMarker: true,
     npcMarkerKind: 'emblem',
   });
