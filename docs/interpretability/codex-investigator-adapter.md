@@ -6,12 +6,12 @@ Before starting Codex, the adapter reserves the session's full investigator-toke
 
 ## Prelaunch hold
 
-This module is process and output plumbing only. It has not invoked Codex or used credentials. The harness returns the runtime metadata in its session records, but no append-only audit writer stores those records yet. The adapter does not yet provide the pinned model weights, frozen common-background bundle, a verified local target-forward-pass tool, or actual isolation evidence. Its reported target-forward-pass count is therefore zero. Do not connect it to a pilot runner or launch assignments until those inputs are injected and the following gates are independently verified on the Pi 5 runtime:
+This module is process and output plumbing only. It has not invoked Codex or used credentials. A separate injected JSONL ledger can append and verify lifecycle records, but the pilot runner does not yet write to it or preserve its head digest outside the run directory. A same-user hash chain is not an OS-enforced append-only store and does not protect records from an investigator process running as the same UID. The adapter does not yet provide the pinned model weights, frozen common-background bundle, a verified local target-forward-pass tool, or actual isolation evidence. Its reported target-forward-pass count is therefore zero. Do not connect it to a pilot runner or launch assignments until those inputs are injected and the following gates are independently verified on the Pi 5 runtime:
 
 - Confirm the Codex CLI version/model and subscription authentication under the dedicated persistent runtime identity.
 - Verify rootless Podman or equivalent isolation, workspace boundaries, network denial, environment allowlisting, and cleanup with real canary probes and access logs.
 - Confirm the complete fixture and common-background inputs are frozen, hashed, read-only to the investigator, and exclude held-out/future/opposite-arm data.
-- Add append-only audit records outside investigator workspaces, including failed and interrupted runs, prompt/config hashes, runtime version, timestamps, and measured usage.
+- Integrate the ledger with the runner so started and completed/failed records survive interruptions, then anchor its head digest outside the investigator's readable/writable workspace. Include prompt/config hashes, runtime version, timestamps, and measured usage.
 - Verify the token allowance's post-turn overshoot behavior and ensure equal limits for both arms.
 - Complete the spec's blinded scoring, independent review, rehearsal, and experiment-wide budget gates.
 

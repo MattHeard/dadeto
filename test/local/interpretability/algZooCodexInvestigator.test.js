@@ -15,11 +15,36 @@ const submission = {
 };
 
 /**
+ *
+ * @param inputTokens
+ * @param outputTokens
+ */
+/**
+ * @param {number} inputTokens Input token usage.
+ * @param {number} outputTokens Output token usage.
+ * @returns {Record<string, number>} JSONL usage record.
+ */
+function usageRecord(inputTokens, outputTokens) {
+  return Object.fromEntries([
+    ['input_tokens', inputTokens],
+    ['output_tokens', outputTokens],
+  ]);
+}
+
+/**
  * Build one successful Codex JSONL turn.
  * @param {Array<Record<string, any>>} [events] Additional process events.
+ * @param {string} [answerText] Serialized answer content.
+ * @param {Record<string, any>|null} [usage] Reported usage object.
+ * @param {number} [turnCount] Number of completed turn events.
  * @returns {string} Serialized Codex event stream.
  */
-function codexOutput(events = []) {
+function codexOutput(
+  events = [],
+  answerText = JSON.stringify(submission),
+  usage = usageRecord(24, 9),
+  turnCount = 1
+) {
   return [
     {
       type: 'thread.started',
@@ -32,16 +57,13 @@ function codexOutput(events = []) {
       item: {
         id: 'answer',
         type: 'agent_message',
-        text: JSON.stringify(submission),
+        text: answerText,
       },
     },
-    {
+    ...Array.from({ length: turnCount }, () => ({
       type: 'turn.completed',
-      usage: Object.fromEntries([
-        ['input_tokens', 24],
-        ['output_tokens', 9],
-      ]),
-    },
+      usage,
+    })),
   ]
     .map(event => JSON.stringify(event))
     .join('\n');
@@ -54,9 +76,15 @@ function codexOutput(events = []) {
  * @param {string|null} stdout JSONL stream, or null to keep it open.
  * @param {number} [exitCode] Child exit code.
  * @param {boolean} [autoClose] Whether to close on the next event-loop turn.
+ * @param {string|null} [processSignal] Child termination signal.
  * @returns {MockCodexChild} Controllable child process.
  */
-function createChild(stdout, exitCode = 0, autoClose = true) {
+function createChild(
+  stdout,
+  exitCode = 0,
+  autoClose = true,
+  processSignal = null
+) {
   const child = /** @type {MockCodexChild} */ (new EventEmitter());
   child.stdin = new PassThrough();
   child.stdout = new PassThrough();
@@ -67,7 +95,7 @@ function createChild(stdout, exitCode = 0, autoClose = true) {
   if (autoClose) {
     setImmediate(() => {
       if (stdout !== null) child.stdout.end(stdout);
-      child.emit('close', exitCode, null);
+      child.emit('close', exitCode, processSignal);
     });
   }
   return child;
@@ -116,9 +144,10 @@ function createRequest(signal = new AbortController().signal) {
 /**
  * Build the adapter with in-memory filesystem and process dependencies.
  * @param {(...args: Array<any>) => MockCodexChild} spawnImpl Mocked child-process factory.
+ * @param {Record<string, any>} [overrides] Options for a failure-path test.
  * @returns {{adapter: ReturnType<typeof createAlgZooCodexInvestigator>, files: Map<string, any>, removed: string[]}} Test adapter and observed effects.
  */
-function createAdapter(spawnImpl) {
+function createAdapter(spawnImpl, overrides = {}) {
   const files = new Map();
   const removed = [];
   const adapter = createAlgZooCodexInvestigator({
@@ -137,6 +166,7 @@ function createAdapter(spawnImpl) {
       files.set(filePath, { contents, options });
     },
     rmImpl: async directory => removed.push(directory),
+    ...overrides,
   });
   return { adapter, files, removed };
 }
@@ -146,6 +176,11 @@ describe('AlgZoo Codex investigator adapter', () => {
     const request = createRequest();
     const child = createChild(
       codexOutput([
+        {
+          type: 'item.started',
+          item: { id: 'message-1', type: 'agent_message' },
+        },
+        { type: 'item.started', item: { id: 'missing-type' } },
         {
           type: 'item.started',
           item: { id: 'tool-1', type: 'command_execution', command: 'inspect' },
@@ -232,5 +267,232 @@ describe('AlgZoo Codex investigator adapter', () => {
     expect(child.kill).toHaveBeenCalledWith('SIGTERM');
     expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
     expect(removed).toEqual(['/private-tmp/algzoo-session']);
+  });
+
+  test('requires a pinned model and CLI version', () => {
+    expect(() => createAdapter(() => createChild(''), { model: '' })).toThrow(
+      'pinned Codex model'
+    );
+    expect(() =>
+      createAdapter(() => createChild(''), { cliVersion: '  ' })
+    ).toThrow('pinned Codex model');
+  });
+
+  test('rejects incomplete requests before reserving or making runtime effects', async () => {
+    const { adapter } = createAdapter(() => createChild(codexOutput()));
+    const validRequest = createRequest();
+    const invalidRequests = [
+      undefined,
+      {},
+      { ...validRequest, session: { ...validRequest.session, sessionId: 1 } },
+      { ...validRequest, mapEntries: null },
+      { ...validRequest, fixtureSha256: null },
+      { ...validRequest, budget: null },
+      { ...validRequest, signal: {} },
+    ];
+
+    for (const request of invalidRequests) {
+      await expect(adapter.runInvestigator(request)).rejects.toThrow(
+        'bounded AlgZoo investigator request'
+      );
+    }
+    expect(validRequest.settlements).toEqual([]);
+  });
+
+  test('cancels a request that is already aborted before workspace creation', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const request = createRequest(controller.signal);
+    const { adapter, removed } = createAdapter(() => createChild(''));
+
+    await expect(adapter.runInvestigator(request)).rejects.toThrow('aborted');
+    expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    expect(removed).toEqual([]);
+  });
+
+  test('settles errors for failed process status and invalid structured answers', async () => {
+    const failedProcessRequest = createRequest();
+    const failedProcess = createAdapter(() =>
+      createChild(codexOutput(), 1)
+    ).adapter;
+    await expect(
+      failedProcess.runInvestigator(failedProcessRequest)
+    ).rejects.toThrow('process failed');
+
+    for (const answerText of [
+      '',
+      JSON.stringify({ hypothesis: 'partial' }),
+      '[]',
+    ]) {
+      const request = createRequest();
+      const adapter = createAdapter(() =>
+        createChild(codexOutput([], answerText))
+      ).adapter;
+      await expect(adapter.runInvestigator(request)).rejects.toThrow(
+        answerText === '' ? 'no structured submission' : 'invalid shape'
+      );
+      expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    }
+  });
+
+  test('rejects failed, missing, duplicate, and invalid-usage JSONL events', async () => {
+    const cases = [
+      [codexOutput([{ type: 'turn.failed' }]), 'complete exactly one turn'],
+      [
+        codexOutput([], JSON.stringify(submission), undefined, 0),
+        'complete exactly one turn',
+      ],
+      [
+        codexOutput([], JSON.stringify(submission), undefined, 2),
+        'complete exactly one turn',
+      ],
+      [
+        codexOutput([], JSON.stringify(submission), null),
+        'token usage is unavailable',
+      ],
+      [
+        codexOutput([], JSON.stringify(submission), []),
+        'token usage is unavailable',
+      ],
+      [
+        codexOutput([], JSON.stringify(submission), usageRecord(-1, 0)),
+        'token usage is unavailable',
+      ],
+      [codexOutput([{ type: 'error' }]), 'complete exactly one turn'],
+    ];
+    for (const [stdout, error] of cases) {
+      const request = createRequest();
+      const adapter = createAdapter(() => createChild(stdout)).adapter;
+      await expect(adapter.runInvestigator(request)).rejects.toThrow(error);
+      expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    }
+  });
+
+  test('cleans up when workspace creation fails', async () => {
+    const request = createRequest();
+    const { adapter, removed } = createAdapter(() => createChild(''), {
+      mkdtempImpl: async () => {
+        throw new Error('temporary storage unavailable');
+      },
+    });
+
+    await expect(adapter.runInvestigator(request)).rejects.toThrow(
+      'temporary storage unavailable'
+    );
+    expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    expect(removed).toEqual([]);
+  });
+
+  test('accepts an explicit executable and rejects a signalled child exit', async () => {
+    const { adapter } = createAdapter(() => createChild(codexOutput()), {
+      command: '/opt/codex/bin/codex',
+    });
+    const command = jest.fn(() =>
+      createChild(codexOutput(), 0, true, 'SIGTERM')
+    );
+    const signalledAdapter = createAdapter(command).adapter;
+
+    await expect(
+      adapter.runInvestigator(createRequest())
+    ).resolves.toMatchObject({
+      status: 'submitted',
+    });
+    await expect(
+      signalledAdapter.runInvestigator(createRequest())
+    ).rejects.toThrow('process failed');
+    expect(command).toHaveBeenCalledWith(
+      'codex',
+      expect.any(Array),
+      expect.objectContaining({ cwd: '/private-tmp/algzoo-session' })
+    );
+  });
+
+  test('cancels on a child spawn error and removes the private workspace', async () => {
+    const request = createRequest();
+    const child = createChild(null, 0, false);
+    const { adapter, removed } = createAdapter(() => {
+      setImmediate(() => child.emit('error', new Error('spawn failed')));
+      return child;
+    });
+
+    await expect(adapter.runInvestigator(request)).rejects.toThrow(
+      'spawn failed'
+    );
+    expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    expect(removed).toEqual(['/private-tmp/algzoo-session']);
+  });
+
+  test('terminates an oversized JSONL stream and clears the force-kill timer', async () => {
+    const request = createRequest();
+    const child = createChild(`${'x'.repeat(10 * 1024 * 1024 + 1)}`, 0, false);
+    const timer = { unref: jest.fn() };
+    const clearTimeoutImpl = jest.fn();
+    const { adapter, removed } = createAdapter(
+      () => {
+        setImmediate(() => {
+          child.stdout.write('x'.repeat(10 * 1024 * 1024 + 1));
+          child.stdout.end('extra');
+        });
+        return child;
+      },
+      {
+        setTimeoutImpl: callback => {
+          callback();
+          return timer;
+        },
+        clearTimeoutImpl,
+      }
+    );
+
+    await expect(adapter.runInvestigator(request)).rejects.toThrow(
+      'output exceeded its limit'
+    );
+    expect(child.kill.mock.calls.map(([signal]) => signal)).toEqual([
+      'SIGTERM',
+      'SIGKILL',
+    ]);
+    expect(timer.unref).toHaveBeenCalledTimes(1);
+    expect(clearTimeoutImpl).toHaveBeenCalledWith(timer);
+    expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    expect(removed).toEqual(['/private-tmp/algzoo-session']);
+  });
+
+  test('cancels if the signal becomes aborted while the process is spawned', async () => {
+    const controller = new AbortController();
+    const request = createRequest(controller.signal);
+    const child = createChild(null, 0, false);
+    const timer = { unref: jest.fn() };
+    const { adapter, removed } = createAdapter(
+      () => {
+        controller.abort();
+        return child;
+      },
+      { setTimeoutImpl: () => timer }
+    );
+
+    await expect(adapter.runInvestigator(request)).rejects.toThrow('aborted');
+    expect(child.kill).toHaveBeenCalledWith('SIGTERM');
+    expect(request.settlements.at(-1)).toEqual({ type: 'cancel' });
+    expect(removed).toEqual(['/private-tmp/algzoo-session']);
+  });
+
+  test('does not cancel a reservation after completion has already settled', async () => {
+    const request = createRequest();
+    let timestampCalls = 0;
+    const { adapter } = createAdapter(() => createChild(codexOutput()), {
+      timestampNowImpl: () => {
+        timestampCalls += 1;
+        if (timestampCalls === 2) throw new Error('completion clock failed');
+        return '2026-10-24T00:00:00.000Z';
+      },
+    });
+
+    await expect(adapter.runInvestigator(request)).rejects.toThrow(
+      'completion clock failed'
+    );
+    expect(request.settlements.map(event => event.type)).toEqual([
+      'reserve',
+      'complete',
+    ]);
   });
 });

@@ -43,7 +43,7 @@ export function createAlgZooCodexInvestigatorCore(options) {
     throw new TypeError('A pinned Codex model and CLI version are required.');
   }
   const dependencies = {
-    command: options.command ?? 'codex',
+    command: options.command,
     model: options.model,
     cliVersion: options.cliVersion,
     tempDirectory: options.tempDirectory,
@@ -291,6 +291,7 @@ function runCodexProcess(options) {
       'data',
       /** @param {string|Uint8Array} chunk Chunk of child stdout. */
       chunk => {
+        if (outputExceeded) return;
         outputBytes += chunk.length;
         if (outputBytes > MAX_JSONL_BYTES) {
           outputExceeded = true;
