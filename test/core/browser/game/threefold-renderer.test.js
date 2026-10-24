@@ -185,6 +185,33 @@ function expectHearthgapsOverflow(frame, scene) {
   );
 }
 
+/**
+ * Verify projected archive shapes fit their logical grid cells.
+ * @param {ReturnType<typeof renderThreefoldFrame>} frame Rendered frame.
+ * @param {ReturnType<typeof renderThreefoldFrame>['shapes']} gridShapes Shapes owned by logical entities.
+ * @param {Map<string, ReturnType<typeof renderThreefoldFrame>['threefold']['logicalGridLayout']['entities'][number]>} entities Entity placements.
+ * @returns {void} Throws when a projected shape is misaligned or escapes its cell.
+ */
+function expectSluiceShapesWithinGrid(frame, gridShapes, entities) {
+  for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
+    expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
+    expect(shape.height % (shape.spriteGridSize || 8)).toBe(0);
+  }
+  for (const shape of gridShapes) {
+    const entity = entities.get(shape.geometryId);
+    expect(shape.logicalCellBounds).toEqual(entity.cellBounds);
+    const gridSize = shape.spriteGridSize || 8;
+    expect(shape.x % gridSize).toBe(0);
+    expect(shape.y % gridSize).toBe(0);
+  }
+  for (const fluid of frame.shapes.filter(shape => shape.fluidChamberId)) {
+    expect(fluid.surfaceMeters).toBeGreaterThanOrEqual(0);
+    expect(fluid.logicalContainerBounds).toEqual(
+      entities.get(fluid.fluidChamberId).cellBounds
+    );
+  }
+}
+
 describe('THREEFOLD canvas grid', () => {
   test('snaps both scenes to an eight-pixel logical grid without changing fluid state', () => {
     const brokenGate = createThreefoldSimulation(THRESHOLDS);
@@ -198,11 +225,12 @@ describe('THREEFOLD canvas grid', () => {
       const frame = renderThreefoldFrame(state);
       expect(frame).toMatchObject({ width: 160, height: 144, pixelated: true });
       for (const shape of frame.shapes) {
-        expect(shape.x % 8).toBe(0);
-        expect(shape.y % 8).toBe(0);
+        const gridSize = shape.spriteGridSize || 8;
+        expect(shape.x % gridSize).toBe(0);
+        expect(shape.y % gridSize).toBe(0);
         if (shape.type === 'rect') {
-          expect(shape.width % 8).toBe(0);
-          expect(shape.height % 8).toBe(0);
+          expect(shape.width % gridSize).toBe(0);
+          expect(shape.height % gridSize).toBe(0);
         }
       }
     }
@@ -258,23 +286,7 @@ describe('THREEFOLD canvas grid', () => {
       expect(gridShapes.map(shape => shape.geometryId)).toEqual(
         expect.arrayContaining(projectedIds)
       );
-      for (const shape of frame.shapes.filter(shape => shape.type === 'rect')) {
-        expect(shape.width % (shape.spriteGridSize || 8)).toBe(0);
-        expect(shape.height % (shape.spriteGridSize || 8)).toBe(0);
-      }
-      for (const shape of gridShapes) {
-        expect(shape.logicalCellBounds).toEqual(
-          entities.get(shape.geometryId).cellBounds
-        );
-        expect(shape.x % 8).toBe(0);
-        expect(shape.y % 8).toBe(0);
-      }
-      for (const fluid of frame.shapes.filter(shape => shape.fluidChamberId)) {
-        expect(fluid.surfaceMeters).toBeGreaterThanOrEqual(0);
-        expect(fluid.logicalContainerBounds).toEqual(
-          entities.get(fluid.fluidChamberId).cellBounds
-        );
-      }
+      expectSluiceShapesWithinGrid(frame, gridShapes, entities);
       expect(renderThreefoldFrame(state).threefold.logicalGridLayout).toEqual(
         layout
       );
@@ -386,7 +398,7 @@ describe('THREEFOLD canvas grid', () => {
         for (const id of conflict.entityIds)
           expect(byId.get(id).placement).toBe('unresolved');
       expect(renderedEntities.length).toBeGreaterThan(0);
-      for (const shape of renderedEntities) {
+      for (const shape of renderedEntities.filter(shape => !shape.npcMarker)) {
         const entity = byId.get(shape.geometryId);
         expect(shape.logicalCellBounds).toEqual(entity.cellBounds);
         expect(shape.logicalGridKind).toBe(entity.logicalGridKind);
@@ -399,7 +411,8 @@ describe('THREEFOLD canvas grid', () => {
         const bottom = top + Math.ceil((height * 12) / 8) * 8;
         if (
           entity.logicalGridKind === 'creature' ||
-          shape.spriteGridSize === 8
+          shape.spriteGridSize === 8 ||
+          (shape.spriteGridSize !== undefined && shape.spriteGridSize < 8)
         ) {
           expect(shape.x).toBeGreaterThanOrEqual(left);
           expect(shape.y).toBeGreaterThanOrEqual(top);
@@ -1291,7 +1304,9 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     });
     const spriteBounds = frame => {
       const pixels = frame.shapes.filter(
-        shape => shape.geometryId === 'latchfolk-watchkeeper'
+        shape =>
+          shape.geometryId === 'latchfolk-watchkeeper' &&
+          shape.npcMarker !== true
       );
       return {
         width:
@@ -1311,41 +1326,56 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     );
   });
 
-  test('makes residents visually distinct from the controlled character', () => {
+  test('keeps watchkeeper size changes visible between adjacent large scales', () => {
     const scene = createBrokenGateScene();
     const watchkeeper = scene.interactables.find(
       item => item.id === 'latchfolk-watchkeeper'
     );
     scene.spawn = createScaleState(watchkeeper.position);
-    const frame = renderThreefoldFrame(
-      createThreefoldSimulation(THRESHOLDS, scene)
-    );
-    const playerTag = frame.shapes.find(
-      shape => shape.actorRole === 'player' && shape.type === 'text'
-    );
-    const npcTag = frame.shapes.find(
-      shape => shape.actorRole === 'npc' && shape.type === 'text'
-    );
-    const playerBadge = frame.shapes.find(
-      shape => shape.actorRole === 'player' && shape.type === 'rect'
-    );
-    const npcBadge = frame.shapes.find(
-      shape => shape.actorRole === 'npc' && shape.type === 'rect'
+    const initial = createThreefoldSimulation(THRESHOLDS, scene);
+    const humanScale = renderThreefoldFrame({
+      ...initial,
+      player: { ...initial.player, scale: 0 },
+    });
+    const largerMara = renderThreefoldFrame({
+      ...initial,
+      player: { ...initial.player, scale: 1 },
+    });
+    const spriteBounds = frame => {
+      const pixels = frame.shapes.filter(
+        shape =>
+          shape.geometryId === 'latchfolk-watchkeeper' &&
+          shape.npcMarker !== true
+      );
+      return {
+        width:
+          Math.max(...pixels.map(shape => shape.x + shape.width)) -
+          Math.min(...pixels.map(shape => shape.x)),
+        height:
+          Math.max(...pixels.map(shape => shape.y + shape.height)) -
+          Math.min(...pixels.map(shape => shape.y)),
+      };
+    };
+    const largerSpritePixels = largerMara.shapes.filter(
+      shape => shape.geometryId === 'latchfolk-watchkeeper'
     );
 
-    expect(playerTag).toMatchObject({ text: 'YOU', fill: '#182f36' });
-    expect(npcTag).toMatchObject({ text: 'NPC', fill: '#fff4c2' });
-    expect(playerBadge.fill).toBe('#e9d88d');
-    expect(npcBadge.fill).toBe('#138b9e');
-    for (const shape of frame.shapes.filter(shape => shape.actorRole)) {
-      const gridSize = shape.spriteGridSize;
-      expect(shape.x % gridSize).toBe(0);
-      expect(shape.y % gridSize).toBe(0);
-      if (shape.type === 'rect') {
-        expect(shape.width % gridSize).toBe(0);
-        expect(shape.height % gridSize).toBe(0);
-      }
-    }
+    expect(spriteBounds(humanScale).width).toBeGreaterThan(
+      spriteBounds(largerMara).width
+    );
+    expect(spriteBounds(humanScale).height).toBeGreaterThan(
+      spriteBounds(largerMara).height
+    );
+    expect(
+      largerSpritePixels.every(
+        shape =>
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0
+      )
+    ).toBe(true);
   });
 
   test('renders the upland road and persistent withdrawal outcome', () => {
@@ -1628,6 +1658,85 @@ function frameBounds(shapes, property, id) {
   const maxY = Math.max(...owned.map(shape => shape.y + shape.height));
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
+
+describe('THREEFOLD resident identity marker', () => {
+  test('distinguishes resident sprites from Mara on the 2px grid', () => {
+    const scene = createBrokenGateScene();
+    const watchkeeper = scene.interactables.find(
+      item => item.id === 'latchfolk-watchkeeper'
+    );
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+    const residentOutline = frame.shapes.filter(
+      shape =>
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarkerKind === 'outline'
+    );
+    const npcLabel = frame.shapes.filter(
+      shape =>
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarkerKind === 'role-label'
+    );
+    const residentArt = frame.shapes.filter(
+      shape =>
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarker !== true &&
+        shape.npcMarkerKind !== 'role-label'
+    );
+    const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
+    const playerLabel = mara.filter(shape => shape.playerMarker === true);
+
+    expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#f2ca59')).toBe(true);
+    expect(residentOutline.length).toBeGreaterThan(0);
+    expect(
+      residentOutline.every(
+        shape =>
+          shape.fill === '#e9d88d' &&
+          shape.spriteGridSize === 2 &&
+          shape.npcMarker === true
+      )
+    ).toBe(true);
+    expect(npcLabel.length).toBeGreaterThan(0);
+    expect(
+      npcLabel.every(
+        shape =>
+          ['#43e9da', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0 &&
+          shape.npcMarkerText === 'NPC'
+      )
+    ).toBe(true);
+    expect(
+      [...new Set(npcLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
+    ).toEqual(['C', 'N', 'P']);
+    expect(mara.length).toBeGreaterThan(0);
+    expect(playerLabel.length).toBeGreaterThan(0);
+    expect(
+      playerLabel.every(
+        shape =>
+          ['#e9d88d', '#182f36', '#f3f6d2'].includes(shape.fill) &&
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0 &&
+          shape.width % 2 === 0 &&
+          shape.height % 2 === 0 &&
+          shape.playerMarkerText === 'YOU'
+      )
+    ).toBe(true);
+    expect(
+      [...new Set(playerLabel.map(shape => shape.npcGlyph).filter(Boolean))].sort()
+    ).toEqual(['O', 'U', 'Y']);
+    expect(playerLabel.some(shape => npcLabel.includes(shape))).toBe(false);
+    expect(
+      mara.some(shape => shape.npcMarker !== true && shape.playerMarker !== true)
+    ).toBe(true);
+  });
+});
 
 describe('THREEFOLD legacy withdrawal rendering', () => {
   test.each([
