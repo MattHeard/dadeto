@@ -2102,6 +2102,8 @@ describe('THREEFOLD resident identity marker', () => {
     expect(playerSprite.length).toBeGreaterThan(0);
     expect(playerSprite.some(shape => shape.fill === '#37e7ed')).toBe(true);
     expect(playerSprite.some(shape => shape.fill === '#f3f6d2')).toBe(true);
+    expect(playerSprite.some(shape => shape.fill === '#e9d88d')).toBe(true);
+    expect(residentArt.every(shape => shape.fill !== '#e9d88d')).toBe(true);
     expect(
       playerSprite.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
     ).toBe(false);

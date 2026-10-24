@@ -165,6 +165,36 @@ test('shows attributed testimony and unresolved responsibility in field notes', 
   expect(text).toContain('  UNRESOLVED');
 });
 
+test('shows saved episode disclosures in the in-game field notes', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      witnessLedger: [],
+      iriWitnessLead: {
+        title: "The Watchkeeper's relay account",
+        text: 'After the surge, the watchkeeper remembers a faint relay call asking for Iri. They cannot say who sent it or whether Iri heard.',
+      },
+      campaignPlaces: [],
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+  press(menu, 'y');
+  for (let index = 0; index < 3; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('JOURNAL');
+  expect(text).toContain("> THE WATCHKEEPER'S");
+  expect(text).toContain('  RELAY ACCOUNT:');
+  expect(text).toContain('  AFTER THE SURGE,');
+});
+
 test('returns from the in-game guide to the main menu with A', () => {
   const { menu } = createMenuRuntime();
   press(menu, 'y');
