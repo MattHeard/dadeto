@@ -2508,8 +2508,11 @@ function personSprite(actor, camera, tick, heightMeters) {
   if (actor.growthPreview !== true) applyResidentRoleAccents(personPixels);
   const outline = new Map();
   for (const pixel of cells.values()) {
-    for (let offsetY = -1; offsetY <= 1; offsetY += 1) {
-      for (let offsetX = -1; offsetX <= 1; offsetX += 1) {
+    // A single 2px edge disappears against the busy pixel landscape on phones.
+    // Give residents a two-cell cyan halo; Mara keeps the thinner gold outline
+    // and downward pointer, so character role remains visible without reading.
+    for (let offsetY = -2; offsetY <= 2; offsetY += 1) {
+      for (let offsetX = -2; offsetX <= 2; offsetX += 1) {
         if (offsetX === 0 && offsetY === 0) continue;
         const x = pixel.x + offsetX * PERSON_GRID_PIXELS;
         const y = pixel.y + offsetY * PERSON_GRID_PIXELS;

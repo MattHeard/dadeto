@@ -113,6 +113,65 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     );
   });
 
+  test('surfaces the conditional Assembly plan and its costs inside the handheld', () => {
+    const state = createThreefoldSimulation(
+      CRISIS_THRESHOLDS,
+      createThreefoldHearthgapsScene()
+    );
+    state.scene.interactables = [];
+    const tide = createThreefoldReturnTide();
+    const prepared = presentThreefoldReturnTide(state, tide, {
+      ...facts(),
+      intactMechanisms: ['seal'],
+      availableFactions: ['assembly'],
+    });
+    const frame = renderThreefoldReturnTide(
+      { shapes: [], toast: '' },
+      state,
+      prepared
+    );
+    const cueShapes = frame.shapes.filter(shape =>
+      prepared.planCue.includes(shape.text)
+    );
+    const noAssembly = presentThreefoldReturnTide(state, tide, {
+      ...facts(),
+      intactMechanisms: ['seal'],
+    });
+    const closedSeal = presentThreefoldReturnTide(
+      state,
+      { ...tide, controls: { ...tide.controls, sealClosed: true } },
+      {
+        ...facts(),
+        intactMechanisms: ['seal'],
+        availableFactions: ['assembly'],
+      }
+    );
+    const brokenSeal = presentThreefoldReturnTide(state, tide, {
+      ...facts(),
+      availableFactions: ['assembly'],
+    });
+    const aftermath = presentThreefoldReturnTide(state, observedAftermath(), {
+      ...facts(),
+      intactMechanisms: ['seal'],
+      availableFactions: ['assembly'],
+    });
+
+    expect(prepared.text).toContain('independently preparing the Final Seal');
+    expect(prepared.text).toContain('cuts deep Choir branches');
+    expect(prepared.text).toContain('can combine');
+    expect(cueShapes.map(shape => shape.text)).toEqual(prepared.planCue);
+    expect(cueShapes.every(shape => shape.y % 8 === 0)).toBe(true);
+    expect(noAssembly.text).toContain('No surviving Assembly representative');
+    expect(noAssembly.planCue[0]).toBe('ASSEMBLY CREW ABSENT');
+    expect(closedSeal.text).toContain('The Final Seal is closed');
+    expect(closedSeal.planCue[0]).toBe('FINAL SEAL IS CLOSED');
+    expect(closedSeal.text).not.toContain('independently preparing');
+    expect(brokenSeal.text).toContain('Final Seal mechanism is destroyed');
+    expect(brokenSeal.planCue[0]).toBe('FINAL SEAL DEVICE BROKEN');
+    expect(aftermath.text).not.toContain('independently preparing');
+    expect(aftermath.planCue).toEqual([]);
+  });
+
   test('reports every surveyed physical loss, survival, displacement, death and continuing obligation', () => {
     const state = createThreefoldSimulation(
       CRISIS_THRESHOLDS,

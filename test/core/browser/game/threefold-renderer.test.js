@@ -1660,6 +1660,22 @@ function frameBounds(shapes, property, id) {
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
 }
 
+/**
+ * Require the resident's cyan outline to extend at least one 2px cell beyond art.
+ * @param {Array<Record<string, any>>} outline Resident outline shapes.
+ * @param {Array<Record<string, any>>} art Resident sprite shapes.
+ * @param {string} id Resident identity.
+ * @returns {void} Throws when the bright role halo is too thin.
+ */
+function expectResidentHalo(outline, art, id) {
+  const artBounds = frameBounds(art, 'geometryId', id);
+  const outlineBounds = frameBounds(outline, 'geometryId', id);
+  expect(outlineBounds.x).toBeLessThanOrEqual(artBounds.x - 4);
+  expect(outlineBounds.x + outlineBounds.width).toBeGreaterThanOrEqual(
+    artBounds.x + artBounds.width + 4
+  );
+}
+
 describe('THREEFOLD resident identity marker', () => {
   test('draws the prepared resident role art in the shared Mosslight presenter', () => {
     const scene = createBrokenGateScene();
@@ -1718,6 +1734,7 @@ describe('THREEFOLD resident identity marker', () => {
       residentArt.every(shape => !['#f2ca59', '#e9d88d'].includes(shape.fill))
     ).toBe(true);
     expect(residentOutline.length).toBeGreaterThan(0);
+    expectResidentHalo(residentOutline, residentArt, watchkeeper.id);
     expect(
       residentOutline.every(
         shape =>

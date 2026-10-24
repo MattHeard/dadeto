@@ -45,15 +45,19 @@ const SITE_LOSSES = {
  * @param {import('./return-tide.js').ThreefoldReturnTide} tide Actual macro timeline.
  * @param {import('./return-tide.js').ReturnTideFacts} facts Available preparations.
  * @param {string} [notice] Result of the most recent deliberate interaction.
- * @returns {{phase:string,title:string,text:string,hud:string,notice:string,epilogue:string[],finished:boolean,interaction:ReturnType<typeof getThreefoldReturnTideInteraction>}} Player-facing context.
+ * @returns {{phase:string,title:string,text:string,hud:string,planCue:string[],notice:string,epilogue:string[],finished:boolean,interaction:ReturnType<typeof getThreefoldReturnTideInteraction>}} Player-facing context.
  */
 export function presentThreefoldReturnTide(state, tide, facts, notice = '') {
   const phase = getThreefoldReturnTidePhase(tide);
   const interaction = getThreefoldReturnTideInteraction(state, tide, facts);
   const until = Math.max(0, 1800 - tide.elapsedGameSeconds);
+  const sealPlan =
+    phase === 'warning'
+      ? assemblySealPlan(tide, facts)
+      : { text: '', lines: [] };
   const text =
     phase === 'warning'
-      ? `Return Tide rises in ${Math.ceil(until / 60)} game minutes, peaks at minute 60 and recedes at minute 90 of this tide horizon. Independent seal, spillway and manifold controls can combine. Waiting or refusing still changes the world.`
+      ? `Return Tide rises in ${Math.ceil(until / 60)} game minutes, peaks at minute 60 and recedes at minute 90 of this tide horizon. ${sealPlan.text} Waiting or refusing still changes the world.`
       : `Return Tide ${phase}. ${tide.regulatorFailed ? 'The incomplete or damaged distributed regulator failed. ' : 'Historical damage and deaths remain. '}${phase === 'aftermath' ? 'The story can conclude without victory or intervention. E surveys local high-water records; other places remain unsurveyed.' : 'Surviving preparation changes casualties, not past material losses.'}`;
   return {
     phase,
@@ -61,9 +65,57 @@ export function presentThreefoldReturnTide(state, tide, facts, notice = '') {
     notice,
     text: `${interaction ? `${text} ${interaction.detail}` : text}${notice ? ` ${notice}` : ''}`,
     hud: interaction?.label || `RETURN TIDE · ${phase.toUpperCase()}`,
+    planCue: sealPlan.lines,
     epilogue: observedEpilogue(tide, facts),
     finished: phase === 'aftermath',
     interaction,
+  };
+}
+
+/**
+ * Describe the Assembly plan from surviving people and actual seal hardware.
+ * @param {import('./return-tide.js').ThreefoldReturnTide} tide Current physical state.
+ * @param {import('./return-tide.js').ReturnTideFacts} facts Current campaign facts.
+ * @returns {{text:string,lines:string[]}} Accessible detail and compact handheld cue.
+ */
+function assemblySealPlan(tide, facts) {
+  const sealIntact =
+    facts.intactMechanisms.includes('seal') &&
+    !tide.brokenMechanisms.includes('seal');
+  if (!sealIntact)
+    return {
+      text: 'The Final Seal mechanism is destroyed; the Assembly plan is unavailable, while other surviving controls can still combine.',
+      lines: [
+        'FINAL SEAL DEVICE BROKEN',
+        'SEAL PLAN UNAVAILABLE',
+        'OTHER CONTROLS CAN MIX',
+      ],
+    };
+  if (tide.controls.sealClosed)
+    return {
+      text: 'The Final Seal is closed. It protects much of the Quay but cuts deep Choir branches; reopening cannot restore them. A spillway can bypass it.',
+      lines: [
+        'FINAL SEAL IS CLOSED',
+        'CLOSING CUTS DEEP ROOTS',
+        'SPILLWAY CAN BYPASS IT',
+      ],
+    };
+  if (!facts.availableFactions.includes('assembly'))
+    return {
+      text: 'No surviving Assembly representative can organize the Final Seal plan. Mara can still operate the intact control directly; other tide controls can combine.',
+      lines: [
+        'ASSEMBLY CREW ABSENT',
+        'SEAL CONTROL STILL WORKS',
+        'OTHER CONTROLS CAN MIX',
+      ],
+    };
+  return {
+    text: 'The Assembly is independently preparing the Final Seal. Closing protects much of the Quay but cuts deep Choir branches. The spillway and manifolds remain independent controls and can combine.',
+    lines: [
+      'ASSEMBLY PLANS THE SEAL',
+      'CLOSING CUTS DEEP ROOTS',
+      'SPILLWAY + MANIFOLDS MIX',
+    ],
   };
 }
 
@@ -170,22 +222,35 @@ export function renderThreefoldReturnTide(frame, state, content) {
         RETURN_TIDE_PEOPLE.some(person => person.id === id)
       )
     : [];
-  if (content.interaction || content.phase !== 'warning' || warned.length) {
+  const showPlanCue =
+    content.phase === 'warning' &&
+    content.planCue?.length > 0 &&
+    !content.interaction &&
+    !content.notice &&
+    !warned.length;
+  if (
+    content.interaction ||
+    content.phase !== 'warning' ||
+    warned.length ||
+    showPlanCue
+  ) {
     const warning = warned.length
       ? `A GROWS THROUGH ${warned.map(id => RETURN_TIDE_PEOPLE.find(person => person.id === id)?.key.toUpperCase()).join('/')}`
       : '';
-    const words = (
-      warning ||
-      content.notice ||
-      content.interaction?.label ||
-      frame.toast ||
-      content.hud
-    ).split(' ');
-    const lines = [''];
-    for (const word of words) {
-      const last = lines.length - 1;
-      if (`${lines[last]}${word}`.length > 27) lines.push(`${word} `);
-      else lines[last] += `${word} `;
+    const lines = showPlanCue ? content.planCue : [''];
+    if (!showPlanCue) {
+      const words = (
+        warning ||
+        content.notice ||
+        content.interaction?.label ||
+        frame.toast ||
+        content.hud
+      ).split(' ');
+      for (const word of words) {
+        const last = lines.length - 1;
+        if (`${lines[last]}${word}`.length > 27) lines.push(`${word} `);
+        else lines[last] += `${word} `;
+      }
     }
     shapes.push({
       type: 'rect',
@@ -195,13 +260,13 @@ export function renderThreefoldReturnTide(frame, state, content) {
       height: 32,
       fill: '#182f36',
     });
-    lines.slice(0, 2).forEach((line, index) =>
+    lines.slice(0, 3).forEach((line, index) =>
       shapes.push({
         type: 'text',
         x: 8,
-        y: 120 + index * 16,
+        y: showPlanCue ? 120 + index * 8 : 120 + index * 16,
         text: line.trim(),
-        font: '8px monospace',
+        font: showPlanCue ? '6px monospace' : '8px monospace',
         fill: '#e9d88d',
       })
     );

@@ -8,6 +8,8 @@ Press Y at any time to open the handheld menu. It contains the in-game guide, tr
 
 Play begins immediately in the Broken Gate. The opening objective and nearby characters appear in the game world; there is no dialogue or reading step before movement.
 
+Mara is marked with a gold downward arrow; residents have a broad cyan outline and a square `NPC` badge. These role markers stay visible as the character sprites change size.
+
 ## Input
 
 Before a growth action, the frame highlights and names intact structures the next scale rung will break. If the next body volume overlaps the still-present Latchfolk watchkeeper, the frame also highlights them and says `A KILLS LATCHFOLK`, including when Mara has entered their bounds at small size. It also highlights every authored creature Mara currently fits inside when the next body overlaps it. These warnings are informational: pressing A still grows and commits the shown outcomes.
@@ -178,6 +180,8 @@ A destroyed crane cannot supply its governor, and a destroyed regulator cannot a
 The Return Tide starts with a 20,000 m³ reservoir and advances only through deliberate game actions. Its warning lasts 30 game minutes, the rise reaches its peak at 60 minutes, and recession completes at 90 minutes. Waiting is a choice: the tide still resolves if Mara does nothing. Pausing, opening menus, drawing frames, or loading a save does not advance it.
 
 The finale has no ending selector. Reach physical controls in their existing regions to close or reopen the city seal, open the Crownback spillway, fit finite human/root/coast manifolds, and bind Foldglass control when its evidence, engineering, hardware and cross-community agreements are actually available. The seal protects the Quay while cutting deep roots; the spillway protects those roots by flooding the Quay. A shared regulator spreads exposure and requires ongoing labor, with sacrifice-channel homes still at risk. Controls can combine into hybrid outcomes. Missing or later-destroyed machinery can leave a partial regulator that fails at the peak; past damage and deaths remain.
+
+Before the tide rises, the handheld identifies the Assembly's independent Final Seal plan and its deep-root cost. If no Assembly representative survives or the seal mechanism is destroyed, the cue says so; other controls can still combine. The warning does not appear as an aftermath outcome if the plan was never carried out.
 
 The Assembly, Latchfolk, Threadbound, Nursery, Choir and Crownback accords are explicit reachable conversations based on surviving people and real prior preparation. Each signed accord carries its own daily manual-control duty. Found evidence and discovered outcomes remain separate: a physical event elsewhere is not reported until Mara surveys that region after the tide. The accessible aftermath account describes surveyed local losses, displacement, deaths, survivors and asset-specific repair or relocation duties. Other regions remain unknown until visited. Foldglass restrictions appear only if Mara actually bound the regulator. Full scenario coverage and remaining epilogue breadth are tracked in `acceptance.md`; this slice does not mark the complete campaign spec done.
 

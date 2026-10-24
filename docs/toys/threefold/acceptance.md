@@ -253,3 +253,11 @@ The pointer and labels still did not make the characters distinct enough at game
 Follow-up readability check: color and text alone still did not separate residents from Mara at handheld size. Residents now wear a bright cyan cap attached to the top of the scaled sprite; its width follows the rendered sprite with an 8px minimum role cue. The cap is snapped to the resident 2px subgrid and does not appear on Mara. The renderer regression checks its color, size bounds, metadata, and grid alignment.
 
 Follow-up playtest: the player still could not distinguish Mara from the residents. Enlarge Mara's gold pointer into a prominent six-row arrow that leads from the `YOU` badge to the top of her sprite; keep resident markers square and cyan. The renderer regression checks its size, alignment, color, and that its tip meets Mara's rendered sprite. This adds a shape cue that remains conspicuous when the handheld is scaled down.
+
+## NPC contrast follow-up — 2026-10-24
+
+Bead `dadeto-pajf` strengthens the resident outline from a thin cyan edge to a 4px cyan halo around NPC pixels, while Mara keeps her thin gold outline and downward gold pointer. Focused renderer coverage verifies the larger cyan footprint extends around NPC art and remains separate from the player's gold identity cues.
+
+## Assembly Final Seal warning — 2026-10-24
+
+Bead `dadeto-4lxr` covers the missing Return Tide warning. While the tide is in its warning phase, the handheld now names the Assembly's independently prepared Final Seal and its irreversible deep-root cost; it notes that the spillway and manifolds can combine. The cue instead reports absent Assembly representation or a destroyed seal mechanism when those facts apply, and disappears in aftermath rather than describing an unchosen plan as an outcome. Focused renderer/presentation regression checks the 160×144 cue, 8px-aligned rows, conditional state, and after-state.
