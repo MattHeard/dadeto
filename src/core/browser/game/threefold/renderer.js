@@ -2784,7 +2784,7 @@ function playerRoleOutline(sprites) {
  * @param {ThreefoldSpriteShape[]} otherCharacters NPC bodies and role markers.
  * @returns {ThreefoldSpriteShape[]} Readable role tag and attached leader.
  */
-function maraRoleLabel(sprites, otherCharacters = []) {
+function maraRoleLabel(sprites, otherCharacters) {
   if (sprites.length === 0) return [];
   const minX = Math.min(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
@@ -2925,17 +2925,23 @@ function maraRoleArrow(sprites, otherCharacters) {
     ...sprites.map(shape => shape.y + /** @type {number} */ (shape.height))
   );
   const centerX = snapCanvasCoordinate((minX + maxX) / 2, PERSON_GRID_PIXELS);
-  const arrowWidth = 10;
-  const arrowHeight = 10;
+  const arrowWidth = 16;
+  const arrowHeight = 16;
+  const outlineWidth = arrowWidth + PERSON_GRID_PIXELS * 2;
+  const outlineHeight = arrowHeight + PERSON_GRID_PIXELS * 2;
   const candidates = [
-    { direction: 'down', x: centerX - arrowWidth / 2, y: minY - arrowHeight },
-    { direction: 'up', x: centerX - arrowWidth / 2, y: maxY },
+    {
+      direction: 'down',
+      x: centerX - outlineWidth / 2,
+      y: minY - outlineHeight,
+    },
+    { direction: 'up', x: centerX - outlineWidth / 2, y: maxY },
   ].filter(
     candidate =>
       candidate.x >= 0 &&
-      candidate.x + arrowWidth <= 160 &&
+      candidate.x + outlineWidth <= 160 &&
       candidate.y >= 0 &&
-      candidate.y + arrowHeight <= 108
+      candidate.y + outlineHeight <= 108
   );
   const placement = candidates.find(
     candidate =>
@@ -2951,24 +2957,34 @@ function maraRoleArrow(sprites, otherCharacters) {
   const rows =
     placement.direction === 'down'
       ? [
-          { offset: 0, start: 4, width: 2 },
-          { offset: 2, start: 4, width: 2 },
-          { offset: 4, start: 0, width: 10 },
-          { offset: 6, start: 2, width: 6 },
-          { offset: 8, start: 4, width: 2 },
+          { offset: 0, width: 4 },
+          { offset: 2, width: 4 },
+          { offset: 4, width: 8 },
+          { offset: 6, width: 12 },
+          { offset: 8, width: 16 },
+          { offset: 10, width: 12 },
+          { offset: 12, width: 8 },
+          { offset: 14, width: 4 },
         ]
       : [
-          { offset: 0, start: 4, width: 2 },
-          { offset: 2, start: 2, width: 6 },
-          { offset: 4, start: 0, width: 10 },
-          { offset: 6, start: 4, width: 2 },
-          { offset: 8, start: 4, width: 2 },
+          { offset: 0, width: 4 },
+          { offset: 2, width: 8 },
+          { offset: 4, width: 12 },
+          { offset: 6, width: 16 },
+          { offset: 8, width: 12 },
+          { offset: 10, width: 8 },
+          { offset: 12, width: 4 },
+          { offset: 14, width: 4 },
         ];
-  return rows.flatMap(row =>
+  const core = rows.flatMap(row =>
     Array.from({ length: row.width / PERSON_GRID_PIXELS }, (_, index) => ({
       type: 'rect',
-      x: placement.x + row.start + index * PERSON_GRID_PIXELS,
-      y: placement.y + row.offset,
+      x:
+        placement.x +
+        PERSON_GRID_PIXELS +
+        (arrowWidth - row.width) / 2 +
+        index * PERSON_GRID_PIXELS,
+      y: placement.y + PERSON_GRID_PIXELS + row.offset,
       width: PERSON_GRID_PIXELS,
       height: PERSON_GRID_PIXELS,
       fill: '#f3f6d2',
@@ -2978,6 +2994,46 @@ function maraRoleArrow(sprites, otherCharacters) {
       spriteGridSize: PERSON_GRID_PIXELS,
     }))
   );
+  const outline = new Map();
+  core.forEach(pixel => {
+    for (
+      let offsetY = -PERSON_GRID_PIXELS;
+      offsetY <= PERSON_GRID_PIXELS;
+      offsetY += PERSON_GRID_PIXELS
+    ) {
+      for (
+        let offsetX = -PERSON_GRID_PIXELS;
+        offsetX <= PERSON_GRID_PIXELS;
+        offsetX += PERSON_GRID_PIXELS
+      ) {
+        if (offsetX === 0 && offsetY === 0) continue;
+        const x = pixel.x + offsetX;
+        const y = pixel.y + offsetY;
+        if (
+          x >= placement.x &&
+          x < placement.x + outlineWidth &&
+          y >= placement.y &&
+          y < placement.y + outlineHeight &&
+          !core.some(shape => shape.x === x && shape.y === y)
+        )
+          outline.set(`${x}:${y}`, { x, y });
+      }
+    }
+  });
+  return [
+    ...[...outline.values()].map(pixel => ({
+      type: 'rect',
+      ...pixel,
+      width: PERSON_GRID_PIXELS,
+      height: PERSON_GRID_PIXELS,
+      fill: '#172c34',
+      actorId: 'mara',
+      playerMarker: true,
+      playerMarkerKind: /** @type {'arrow-outline'} */ ('arrow-outline'),
+      spriteGridSize: PERSON_GRID_PIXELS,
+    })),
+    ...core,
+  ];
 }
 
 /**

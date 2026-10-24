@@ -1778,6 +1778,9 @@ describe('THREEFOLD resident identity marker', () => {
     const arrow = frame.shapes.filter(
       shape => shape.playerMarkerKind === 'arrow'
     );
+    const arrowOutline = frame.shapes.filter(
+      shape => shape.playerMarkerKind === 'arrow-outline'
+    );
     const playerBody = frame.shapes.filter(
       shape =>
         shape.actorId === 'mara' &&
@@ -1792,6 +1795,16 @@ describe('THREEFOLD resident identity marker', () => {
       ...playerBody.map(shape => shape.y + (shape.height ?? 0))
     );
     const arrowBounds = frameBounds(arrow, 'playerMarkerKind', 'arrow');
+    const fullMarkerBounds = {
+      x: Math.min(...arrowOutline.map(shape => shape.x)),
+      y: Math.min(...arrowOutline.map(shape => shape.y)),
+      width:
+        Math.max(...arrowOutline.map(shape => shape.x + shape.width)) -
+        Math.min(...arrowOutline.map(shape => shape.x)),
+      height:
+        Math.max(...arrowOutline.map(shape => shape.y + shape.height)) -
+        Math.min(...arrowOutline.map(shape => shape.y)),
+    };
     const arrowRowWidths = Array.from(new Set(arrow.map(shape => shape.y))).map(
       y =>
         arrow
@@ -1799,10 +1812,23 @@ describe('THREEFOLD resident identity marker', () => {
           .reduce((width, shape) => width + shape.width, 0)
     );
 
-    expect(arrow).toHaveLength(11);
-    expect(arrowRowWidths).toEqual([2, 2, 10, 6, 2]);
-    expect(arrowBounds.width).toBe(10);
-    expect(arrowBounds.height).toBe(10);
+    expect(arrow).toHaveLength(34);
+    expect(arrowRowWidths).toEqual([4, 4, 8, 12, 16, 12, 8, 4]);
+    expect(arrowBounds.width).toBe(16);
+    expect(arrowBounds.height).toBe(16);
+    expect(arrowOutline.length).toBeGreaterThan(0);
+    expect(fullMarkerBounds.width).toBe(20);
+    expect(fullMarkerBounds.height).toBe(20);
+    expect(arrowOutline.every(shape => shape.fill === '#172c34')).toBe(true);
+    expect(
+      arrowOutline.every(
+        shape =>
+          shape.width === 2 &&
+          shape.height === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0
+      )
+    ).toBe(true);
     expect(arrow.every(shape => shape.actorId === 'mara')).toBe(true);
     expect(arrow.every(shape => shape.fill === '#f3f6d2')).toBe(true);
     expect(
@@ -1815,8 +1841,8 @@ describe('THREEFOLD resident identity marker', () => {
       )
     ).toBe(true);
     expect(
-      arrowBounds.y + arrowBounds.height === playerTop ||
-        arrowBounds.y === playerBottom
+      fullMarkerBounds.y + fullMarkerBounds.height === playerTop ||
+        fullMarkerBounds.y === playerBottom
     ).toBe(true);
     expect(
       residentShapes.some(shape => shape.playerMarkerKind === 'arrow')
