@@ -1678,9 +1678,17 @@ describe('THREEFOLD resident identity marker', () => {
         shape.geometryId === watchkeeper.id &&
         shape.npcMarkerKind === 'role-label'
     );
+    const residentArt = frame.shapes.filter(
+      shape =>
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarker !== true &&
+        shape.npcMarkerKind !== 'role-label'
+    );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
     const playerLabel = mara.filter(shape => shape.playerMarker === true);
 
+    expect(residentArt.some(shape => shape.fill === '#19a9a0')).toBe(true);
+    expect(residentArt.some(shape => shape.fill === '#f2ca59')).toBe(true);
     expect(residentOutline.length).toBeGreaterThan(0);
     expect(
       residentOutline.every(

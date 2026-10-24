@@ -2473,7 +2473,12 @@ function personSprite(actor, camera, tick, heightMeters) {
   const centerX = (actor.x - camera.x) * TILE_PIXELS;
   const centerY = (actor.y - camera.y) * TILE_PIXELS;
   const sourceCenter = { x: 78, y: 54 };
-  const source = spriteShapes({ id: 'mira', x: 6, y: 4 }, { x: 0, y: 0 }, tick);
+  // The residents' broad cap and bright coat keep their silhouette distinct from Mara.
+  const source = spriteShapes(
+    { id: 'resident', x: 6, y: 4 },
+    { x: 0, y: 0 },
+    tick
+  );
   const heightRatio =
     ((bounds.max.z ?? 1.7) - (bounds.min.z ?? 0)) / heightMeters;
   const scale = Math.max(1 / 12, Math.min(8, heightRatio));
