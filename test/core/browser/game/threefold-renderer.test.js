@@ -6,6 +6,7 @@ import { createThreefoldHearthgapsScene } from '../../../../src/core/browser/gam
 import { createThreefoldSluiceScene } from '../../../../src/core/browser/game/threefold/sluice-scene.js';
 import { createThreefoldWakeformShoalsScene } from '../../../../src/core/browser/game/threefold/wakeform-shoals.js';
 import { renderThreefoldFrame } from '../../../../src/core/browser/game/threefold/renderer.js';
+import { drawGameFrame } from '../../../../src/core/browser/game/mosslight-valley/renderer.js';
 import {
   restoreThreefoldSimulation,
   serializeThreefoldSimulation,
@@ -1660,6 +1661,25 @@ function frameBounds(shapes, property, id) {
 }
 
 describe('THREEFOLD resident identity marker', () => {
+  test('draws the prepared resident role art in the shared Mosslight presenter', () => {
+    const scene = createBrokenGateScene();
+    const frame = renderThreefoldFrame(
+      createThreefoldSimulation(THRESHOLDS, scene)
+    );
+    const paintedColors = [];
+    const context = {
+      fillStyle: '',
+      imageSmoothingEnabled: true,
+      fillRect() {
+        paintedColors.push(this.fillStyle);
+      },
+    };
+
+    drawGameFrame(context, frame);
+
+    expect(paintedColors).toContain('#43e9da');
+  });
+
   test('distinguishes resident sprites from Mara on the 2px grid', () => {
     const scene = createBrokenGateScene();
     const watchkeeper = scene.interactables.find(
