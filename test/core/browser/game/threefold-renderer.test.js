@@ -399,7 +399,12 @@ describe('THREEFOLD canvas grid', () => {
         for (const id of conflict.entityIds)
           expect(byId.get(id).placement).toBe('unresolved');
       expect(renderedEntities.length).toBeGreaterThan(0);
-      for (const shape of renderedEntities.filter(shape => !shape.npcMarker)) {
+      for (const shape of renderedEntities.filter(
+        shape =>
+          !shape.npcMarker &&
+          // Adult character art can overhang its narrower interaction cell.
+          shape.actorId !== 'latchfolk-watchkeeper'
+      )) {
         const entity = byId.get(shape.geometryId);
         expect(shape.logicalCellBounds).toEqual(entity.cellBounds);
         expect(shape.logicalGridKind).toBe(entity.logicalGridKind);
@@ -1294,7 +1299,7 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     expect(outcome.toast).toContain('LATCHFOLK SAFE');
   });
 
-  test('scales the Broken Gate watchkeeper sprite with Mara', () => {
+  test('renders the adult Broken Gate watchkeeper near Mara height and scales it', () => {
     const scene = createBrokenGateScene();
     const watchkeeper = scene.interactables.find(
       item => item.id === 'latchfolk-watchkeeper'
@@ -1331,6 +1336,7 @@ describe('THREEFOLD Mosslight episode outcomes', () => {
     expect(spriteBounds(smallerMara).height).toBeGreaterThan(
       spriteBounds(tallMara).height
     );
+    expect(spriteBounds(tallMara).height).toBeGreaterThanOrEqual(14);
   });
 
   test('keeps watchkeeper size changes visible between adjacent large scales', () => {

@@ -100,7 +100,7 @@ const GATEHOUSE_INTERACTABLES = [
     position: { x: 7.25, y: 7.25 },
     bounds: {
       min: { x: 7.08, y: 7.02, z: 0 },
-      max: { x: 7.42, y: 7.48, z: 0.55 },
+      max: { x: 7.42, y: 7.48, z: 1.8 },
     },
   },
   {
