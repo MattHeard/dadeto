@@ -264,6 +264,8 @@ Bead `dadeto-9gba` makes the Assembly's independently prepared plan a real, dete
 
 ## NPC contrast follow-up — 2026-10-24
 
+The Broken Gate NPC badge previously overlapped Mara's sprite at the default camera position. Badge layout now keeps the NPC label inside the 160×108 playfield and shifts it along the 2px grid until it clears Mara's sprite and outline. Regression coverage checks the rendered badge rectangle against every player sprite cell, in addition to role colors, labels, and responsive NPC sizing. This prevents the `NPC` marker from visually attaching to Mara.
+
 Bead `dadeto-pajf` strengthens the resident outline from a thin cyan edge to a 4px cyan halo around NPC pixels, while Mara keeps her thin gold outline and downward gold pointer. Focused renderer coverage verifies the larger cyan footprint extends around NPC art and remains separate from the player's gold identity cues.
 
 ## Assembly Final Seal warning — 2026-10-24

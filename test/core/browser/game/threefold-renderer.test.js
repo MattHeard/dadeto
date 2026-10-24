@@ -1676,6 +1676,30 @@ function expectResidentHalo(outline, art, id) {
   );
 }
 
+/**
+ * Keep the NPC badge inside the handheld and clear of every player sprite cell.
+ * @param {Array<Record<string, any>>} npcLabel NPC label shapes.
+ * @param {Array<Record<string, any>>} playerBody Player outline and art cells.
+ * @returns {void} Throws when character identity tags overlap on screen.
+ */
+function expectResidentBadgeClearOfPlayer(npcLabel, playerBody) {
+  const badge = npcLabel.find(shape => shape.width === 46);
+  expect(badge).toBeDefined();
+  expect(badge.x).toBeGreaterThanOrEqual(0);
+  expect(badge.x + badge.width).toBeLessThanOrEqual(160);
+  expect(badge.y).toBeGreaterThanOrEqual(0);
+  expect(badge.y + badge.height).toBeLessThanOrEqual(108);
+  expect(
+    playerBody.every(
+      shape =>
+        badge.x + badge.width <= shape.x ||
+        badge.x >= shape.x + (shape.width ?? 0) ||
+        badge.y + badge.height <= shape.y ||
+        badge.y >= shape.y + (shape.height ?? 0)
+    )
+  ).toBe(true);
+}
+
 describe('THREEFOLD resident identity marker', () => {
   test('draws the prepared resident role art in the shared Mosslight presenter', () => {
     const scene = createBrokenGateScene();
@@ -1725,6 +1749,10 @@ describe('THREEFOLD resident identity marker', () => {
       shape => shape.playerMarkerKind === 'pointer'
     );
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
+    const playerBody = mara.filter(
+      shape =>
+        shape.playerMarker !== true && shape.playerMarkerKind !== 'pointer'
+    );
     const playerOutline = mara.filter(shape => shape.fill === '#37e7ed');
 
     expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
@@ -1744,6 +1772,7 @@ describe('THREEFOLD resident identity marker', () => {
       )
     ).toBe(true);
     expect(npcLabel.length).toBeGreaterThan(0);
+    expectResidentBadgeClearOfPlayer(npcLabel, playerBody);
     expect(
       npcLabel.every(
         shape =>

@@ -62,6 +62,8 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
+const RESIDENT_BADGE_WIDTH = 46;
+const RESIDENT_BADGE_HEIGHT = 20;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const PERSON_ACTOR_IDS = new Set([
@@ -151,14 +153,27 @@ export function renderThreefoldFrame(
       /** @type {Parameters<typeof spriteShapes>[2]} */ tick
     ) => {
       const worldActor =
-        /** @type {typeof actor & {id: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}}} */ (
+        /** @type {typeof actor & {id: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, bounds?: {min: {x: number, y: number}, max: {x: number, y: number}}, physicalBounds?: {min: {z: number}, max: {z: number}}}} */ (
           actor
         );
       const bounds = worldActor.bounds;
       if (typeof worldActor.id === 'string' && bounds) {
         if (PERSON_ACTOR_IDS.has(worldActor.id))
           return personSprite(
-            { ...worldActor, bounds },
+            {
+              ...worldActor,
+              bounds,
+              physicalBounds:
+                /** @type {{min: {z: number}, max: {z: number}}} */ (
+                  worldActor.physicalBounds
+                ),
+              playerKeepout: {
+                x: (world.player.x - camera.x) * TILE_PIXELS - 2,
+                y: (world.player.y - camera.y) * TILE_PIXELS - 2,
+                width: 16,
+                height: 16,
+              },
+            },
             camera,
             tick,
             heightMeters
@@ -2463,7 +2478,7 @@ function alignThreefoldFrame(frame) {
 
 /**
  * Render a person from their 12px shared Mosslight sprite at their physical size.
- * @param {{id: string, x: number, y: number, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, physicalBounds?: {min: {z?: number}, max: {z?: number}}, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} actor Projected person with original physical bounds.
+ * @param {{id: string, x: number, y: number, bounds: {min: {x: number, y: number}, max: {x: number, y: number}}, physicalBounds: {min: {z: number}, max: {z: number}}, playerKeepout:{x:number,y:number,width:number,height:number}, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} actor Projected person, validated physical bounds, and player display bounds.
  * @param {{x: number, y: number}} camera Mosslight tile camera.
  * @param {number} tick Animation tick.
  * @param {number} heightMeters Mara's current physical height.
@@ -2471,12 +2486,6 @@ function alignThreefoldFrame(frame) {
  */
 function personSprite(actor, camera, tick, heightMeters) {
   const bounds = actor.physicalBounds;
-  if (!bounds)
-    return geometrySprite(
-      /** @type {Parameters<typeof geometrySprite>[0]} */ (actor),
-      camera,
-      heightMeters
-    );
   const centerX = (actor.x - camera.x) * TILE_PIXELS;
   const centerY = (actor.y - camera.y) * TILE_PIXELS;
   const sourceCenter = { x: 78, y: 54 };
@@ -2486,8 +2495,7 @@ function personSprite(actor, camera, tick, heightMeters) {
     { x: 0, y: 0 },
     tick
   );
-  const heightRatio =
-    ((bounds.max.z ?? 1.7) - (bounds.min.z ?? 0)) / heightMeters;
+  const heightRatio = (bounds.max.z - bounds.min.z) / heightMeters;
   const scale = Math.max(1 / 12, Math.min(8, heightRatio));
   const cells = new Map();
   for (const pixel of source) {
@@ -2555,8 +2563,8 @@ function personSprite(actor, camera, tick, heightMeters) {
   const personBottom = Math.max(
     ...personPixels.map(pixel => pixel.y + PERSON_GRID_PIXELS)
   );
-  const markerHeight = 20;
-  const markerWidth = 46;
+  const markerHeight = RESIDENT_BADGE_HEIGHT;
+  const markerWidth = RESIDENT_BADGE_WIDTH;
   const markerAbove = personTop - markerHeight - 2;
   const markerBelow = personBottom + 2;
   const markerTop =
@@ -2565,12 +2573,10 @@ function personSprite(actor, camera, tick, heightMeters) {
       : markerBelow + markerHeight <= 108
         ? markerBelow
         : 0;
-  const markerLeft = Math.max(
-    0,
-    Math.min(
-      160 - markerWidth,
-      snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - markerWidth / 2
-    )
+  const markerLeft = placeResidentBadge(
+    centerX,
+    markerTop,
+    actor.playerKeepout
   );
   const markerProperties = {
     geometryId: actor.id,
@@ -2615,6 +2621,42 @@ function personSprite(actor, camera, tick, heightMeters) {
     markerProperties
   );
   return [...outlineShapes, ...markerShapes, ...personShapes, residentCap];
+}
+
+/**
+ * Keep an NPC's role badge attached to that NPC without covering Mara.
+ * @param {number} centerX NPC center on the handheld screen.
+ * @param {number} top Badge top on the handheld screen.
+ * @param {{x:number,y:number,width:number,height:number}} playerKeepout Mara and her outline.
+ * @returns {number} Grid-aligned badge left coordinate inside the display.
+ */
+function placeResidentBadge(centerX, top, playerKeepout) {
+  const width = RESIDENT_BADGE_WIDTH;
+  const height = RESIDENT_BADGE_HEIGHT;
+  const centered = Math.max(
+    0,
+    Math.min(
+      160 - width,
+      snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - width / 2
+    )
+  );
+  const step = PERSON_GRID_PIXELS;
+  const candidates = Array.from(
+    { length: 160 / step },
+    (_, index) => index * step
+  )
+    .filter(left => left + width <= 160)
+    .filter(
+      left =>
+        left + width <= playerKeepout.x ||
+        left >= playerKeepout.x + playerKeepout.width ||
+        top + height <= playerKeepout.y ||
+        top >= playerKeepout.y + playerKeepout.height
+    )
+    .sort(
+      (left, right) => Math.abs(left - centered) - Math.abs(right - centered)
+    );
+  return candidates[0] ?? centered;
 }
 
 /**
