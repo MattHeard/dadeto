@@ -84,6 +84,49 @@ test('opens the empty field notes from the main menu using only the controls', (
   expect(text).toContain('> NO FIELD NOTES YET');
 });
 
+test('shows saved witness facts in the in-game field notes', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      witnessLedger: [
+        {
+          title: 'CHOICE · 4.25 GAME MINUTES',
+          intention:
+            'Increase Mara scale by one rung. Intended outcome: lift the gate.',
+          knowledge: 'Known then: Gate was intact.',
+          consequence: 'Observed: The gate is now forced open.',
+          relation: null,
+        },
+        {
+          title: 'OBSERVATION · 9 GAME MINUTES',
+          intention: 'Wait for the surge.',
+          knowledge: 'Known then: Tide rising.',
+          consequence: 'Observed: Lower channel flooded.',
+          relation: 'Linked to witness-1.',
+        },
+      ],
+      campaignPlaces: [],
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+  press(menu, 'y');
+  for (let index = 0; index < 3; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('JOURNAL');
+  expect(text).toContain('> CHOICE · 4.25 GAME');
+  expect(text).toContain('  INCREASE MARA');
+  expect(text).toContain('  KNOWN THEN: GATE');
+  expect(text).toContain('  OBSERVED: THE GATE');
+});
+
 test('returns from the in-game guide to the main menu with A', () => {
   const { menu } = createMenuRuntime();
   press(menu, 'y');

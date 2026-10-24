@@ -567,11 +567,13 @@ export function createThreefoldMenuRuntime(runtime, documentObj) {
         data.siltMarginQuietingEvidence,
       ].filter(Boolean);
       return [
-        ...entries.flatMap((/** @type {Record<string, any>} */ entry) =>
-          wrapMenuText(
-            `${entry.speaker || 'MARA'}: ${entry.statement || entry.text || entry.action}`
-          )
-        ),
+        ...entries.flatMap((/** @type {Record<string, any>} */ entry) => [
+          ...wrapMenuText(entry.title),
+          ...wrapMenuText(entry.intention),
+          ...wrapMenuText(entry.knowledge),
+          ...wrapMenuText(entry.consequence),
+          ...(entry.relation ? wrapMenuText(entry.relation) : []),
+        ]),
         ...testimony.flatMap((/** @type {Record<string, any>} */ account) =>
           wrapMenuText(`${account.speaker}: ${account.statement}`)
         ),
