@@ -63,12 +63,18 @@ describe('THREEFOLD Wakeform Shoals', () => {
     expect(frame.toast).toBe('FIND WAKEFORM · A TO DIVERT');
     expect(labels).toContain('A BREAKS OUTER TIDE WALL');
     expect(
-      frame.shapes.every(shape => shape.x % 8 === 0 && shape.y % 8 === 0)
+      frame.shapes.every(shape => {
+        const grid = shape.spriteGridSize || 8;
+        return shape.x % grid === 0 && shape.y % grid === 0;
+      })
     ).toBe(true);
     expect(
       frame.shapes
         .filter(shape => shape.type === 'rect')
-        .every(shape => shape.width % 8 === 0 && shape.height % 8 === 0)
+        .every(shape => {
+          const grid = shape.spriteGridSize || 8;
+          return shape.width % grid === 0 && shape.height % grid === 0;
+        })
     ).toBe(true);
   });
 
