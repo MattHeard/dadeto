@@ -260,6 +260,10 @@ function frameText(text, y, fill, font = '7px monospace') {
  * @param {CanvasFrame} frame Shared frame payload.
  */
 export function drawGameFrame(context, frame) {
+  if (frame.type === 'threefold') {
+    drawCanvasShapes(context, frame.shapes);
+    return;
+  }
   const [p0, , , p3] = frame.palette;
   context.imageSmoothingEnabled = false;
   const layers = worldLayers(frame);
