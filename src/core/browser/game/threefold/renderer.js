@@ -72,7 +72,7 @@ const PERSON_ACTOR_IDS = new Set([
   'belltops-iri',
   'belltops-foldglass-rival',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, geometryId?: string, growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, npcGlyph?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'pointer'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -2625,13 +2625,17 @@ function personSprite(actor, camera, tick, heightMeters) {
     }),
     ...roleGlyphs(markerLeft + 22, markerTop + 6, markerProperties, 'NPC'),
   ];
-  const residentCap = residentRoleCap(
-    personPixels,
+  const residentHeadpiece = residentRoleHeadpiece(
     centerX,
     personTop,
     markerProperties
   );
-  return [...outlineShapes, ...markerShapes, ...personShapes, residentCap];
+  return [
+    ...outlineShapes,
+    ...markerShapes,
+    ...personShapes,
+    ...residentHeadpiece,
+  ];
 }
 
 /**
@@ -2703,42 +2707,34 @@ function npcRoleEmblem(x, y, metadata) {
 }
 
 /**
- * Add a bright magenta, grid-snapped silhouette cue to a resident.
- * @param {Array<{x: number, y: number}>} personPixels Rendered resident pixels.
+ * Add a bold magenta headpiece directly above a resident's sprite.
  * @param {number} centerX Resident center in handheld coordinates.
  * @param {number} personTop Top pixel row of the resident.
  * @param {Record<string, any>} markerProperties Resident identity metadata.
- * @returns {ThreefoldSpriteShape} Scale-responsive resident cap.
+ * @returns {ThreefoldSpriteShape[]} Grid-snapped resident-only silhouette cue.
  */
-function residentRoleCap(personPixels, centerX, personTop, markerProperties) {
-  const personLeft = Math.min(...personPixels.map(pixel => pixel.x));
-  const personRight = Math.max(
-    ...personPixels.map(pixel => pixel.x + PERSON_GRID_PIXELS)
+function residentRoleHeadpiece(centerX, personTop, markerProperties) {
+  const center = Math.max(
+    10,
+    Math.min(150, snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS))
   );
-  const width = Math.max(
-    8,
-    Math.min(
-      18,
-      snapCanvasCoordinate(personRight - personLeft + 4, PERSON_GRID_PIXELS)
-    )
-  );
-  const x = Math.max(
-    0,
-    Math.min(
-      160 - width,
-      snapCanvasCoordinate(centerX, PERSON_GRID_PIXELS) - width / 2
-    )
-  );
-  return {
+  const top = Math.max(0, personTop - 10);
+  const rows = [
+    { width: 4, offset: -2 },
+    { width: 8, offset: -4 },
+    { width: 12, offset: -6 },
+    { width: 20, offset: -10 },
+  ];
+  return rows.map((row, index) => ({
     type: 'rect',
-    x,
-    y: Math.max(0, personTop - PERSON_GRID_PIXELS),
-    width,
+    x: center + row.offset,
+    y: top + index * PERSON_GRID_PIXELS,
+    width: row.width,
     height: PERSON_GRID_PIXELS,
-    fill: '#f14bd3',
+    fill: index === 2 ? '#ffe1fa' : '#f14bd3',
     ...markerProperties,
-    npcMarkerKind: 'cap',
-  };
+    npcMarkerKind: 'headpiece',
+  }));
 }
 
 /**

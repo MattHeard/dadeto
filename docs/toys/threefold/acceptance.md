@@ -275,3 +275,7 @@ Bead `dadeto-4lxr` covers the missing Return Tide warning. While the tide is in 
 ## NPC identity emblem follow-up — 2026-10-24
 
 Bead `dadeto-pajf` responds to another playtest report that residents still blend into Mara. Each resident now has a 14×14 magenta diamond with a cream center inside the NPC badge; Mara keeps her gold downward pointer. This uses shape as well as color and tiny text to distinguish roles. Regression coverage asserts the diamond's snapped pixel geometry and confirms the player does not receive it; resident sprite scaling remains covered by the existing adjacent-scale tests. Focused renderer tests passed 1 suite / 44 tests. `npm run check` passed all 10 gates (six impact shards); `npm run build` passed. Exact-head CI evidence will be recorded after the commit is pushed.
+
+## NPC silhouette follow-up — 2026-10-24
+
+Play feedback still could not distinguish residents from Mara. Residents now receive a four-row magenta headpiece with a pale inset, centered immediately above their sprite; Mara does not. This larger, attached shape cue supplements the badge and colors and remains on the 2px sprite grid. The renderer regression asserts its shape, colors, alignment, and player absence; existing tests continue to verify NPC body size changes with scale. Focused and full local validation remain pending.

@@ -1885,7 +1885,7 @@ describe('THREEFOLD resident identity marker', () => {
     ).toBe(true);
   });
 
-  test('attaches a magenta cap to each resident and never to Mara', () => {
+  test('attaches a bold magenta headpiece to residents and never to Mara', () => {
     const scene = createBrokenGateScene();
     const watchkeeper = scene.interactables.find(
       item => item.id === 'latchfolk-watchkeeper'
@@ -1893,26 +1893,38 @@ describe('THREEFOLD resident identity marker', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, scene)
     );
-    const residentCap = frame.shapes.filter(
+    const residentHeadpiece = frame.shapes.filter(
       shape =>
-        shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'cap'
+        shape.geometryId === watchkeeper.id &&
+        shape.npcMarkerKind === 'headpiece'
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
+    const residentBody = frame.shapes.filter(
+      shape => shape.geometryId === watchkeeper.id && shape.npcMarker !== true
+    );
 
-    expect(residentCap).toHaveLength(1);
-    expect(residentCap[0]).toMatchObject({
-      type: 'rect',
-      height: 2,
-      fill: '#f14bd3',
-      npcMarker: true,
-      npcMarkerKind: 'cap',
-      spriteGridSize: 2,
-    });
-    expect(residentCap[0].width).toBeGreaterThanOrEqual(8);
-    expect(residentCap[0].width).toBeLessThanOrEqual(18);
-    expect(residentCap[0].x % 2).toBe(0);
-    expect(residentCap[0].y % 2).toBe(0);
-    expect(mara.some(shape => shape.npcMarkerKind === 'cap')).toBe(false);
+    expect(residentHeadpiece.map(({ width }) => width)).toEqual([4, 8, 12, 20]);
+    expect(residentHeadpiece.map(({ fill }) => fill)).toEqual([
+      '#f14bd3',
+      '#f14bd3',
+      '#ffe1fa',
+      '#f14bd3',
+    ]);
+    expect(
+      residentHeadpiece.every(
+        shape =>
+          shape.type === 'rect' &&
+          shape.height === 2 &&
+          shape.npcMarker === true &&
+          shape.spriteGridSize === 2 &&
+          shape.x % 2 === 0 &&
+          shape.y % 2 === 0
+      )
+    ).toBe(true);
+    expect(
+      Math.max(...residentHeadpiece.map(shape => shape.y + (shape.height ?? 0)))
+    ).toBe(Math.min(...residentBody.map(shape => shape.y)) - 2);
+    expect(mara.some(shape => shape.npcMarkerKind === 'headpiece')).toBe(false);
   });
 });
 
