@@ -2600,10 +2600,9 @@ function personSprite(actor, camera, tick, heightMeters) {
  * @param {number} y Label's top coordinate.
  * @param {Record<string, any>} metadata Actor identity metadata.
  * @param {string} label Short character role label.
- * @param {string} [fill] Glyph color.
  * @returns {ThreefoldSpriteShape[]} Visible role glyph cells.
  */
-function roleGlyphs(x, y, metadata, label, fill = '#f3f6d2') {
+function roleGlyphs(x, y, metadata, label) {
   /** @type {Record<string, string[]>} */
   const glyphs = {
     N: ['101', '111', '111', '111', '101'],
@@ -2625,7 +2624,7 @@ function roleGlyphs(x, y, metadata, label, fill = '#f3f6d2') {
           y: y + rowIndex * PERSON_GRID_PIXELS,
           width: PERSON_GRID_PIXELS,
           height: PERSON_GRID_PIXELS,
-          fill,
+          fill: '#f3f6d2',
           npcGlyph: letter,
           ...metadata,
         });
