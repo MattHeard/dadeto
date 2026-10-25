@@ -70,6 +70,37 @@ test('resumes play when A selects the main menu resume item', () => {
   expect(menu.isRunning()).toBe(true);
 });
 
+test('uses B and X to return and B or Y to close the menu', () => {
+  const { menu, runtime } = createMenuRuntime();
+  press(menu, 'y');
+  press(menu, 'down');
+  press(menu, 'a');
+  press(menu, 'b');
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    true
+  );
+
+  press(menu, 'down');
+  press(menu, 'a');
+  press(menu, 'x');
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    true
+  );
+
+  press(menu, 'b');
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    false
+  );
+  expect(runtime.resume).toHaveBeenCalledTimes(1);
+
+  press(menu, 'y');
+  press(menu, 'y');
+  expect(menu.frame().shapes.some(shape => shape.text === 'THREEFOLD')).toBe(
+    false
+  );
+  expect(runtime.resume).toHaveBeenCalledTimes(2);
+});
+
 test('opens the empty field notes from the main menu using only the controls', () => {
   const { menu, runtime } = createMenuRuntime();
   runtime.frame.mockReturnValue({
