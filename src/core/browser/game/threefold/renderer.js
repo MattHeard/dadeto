@@ -2545,7 +2545,12 @@ function smallWorldRoleLabels(shapes) {
   }
   const bodies = [...actors.values()].map(actor => ({
     ...actor,
-    bounds: boundsOf(actor.shapes),
+    // smallWorldActorSprite emits fixed-size pixel rectangles for every body.
+    bounds: boundsOf(
+      /** @type {Array<ThreefoldSpriteShape & {width:number,height:number}>} */ (
+        actor.shapes
+      )
+    ),
   }));
   /** @type {Array<{id:string,bounds:{x:number,y:number,width:number,height:number}}>} */
   const placedBounds = [];
@@ -2625,7 +2630,7 @@ function smallWorldRoleLabels(shapes) {
 }
 
 /**
- * @param {ThreefoldSpriteShape[]} shapes Actor pixel cells.
+ * @param {Array<ThreefoldSpriteShape & {width:number,height:number}>} shapes Actor pixel rectangles.
  * @returns {{x:number,y:number,width:number,height:number}} Their visible bounds.
  */
 function boundsOf(shapes) {
@@ -2633,10 +2638,10 @@ function boundsOf(shapes) {
     x: Math.min(...shapes.map(shape => shape.x)),
     y: Math.min(...shapes.map(shape => shape.y)),
     width:
-      Math.max(...shapes.map(shape => shape.x + (shape.width ?? 0))) -
+      Math.max(...shapes.map(shape => shape.x + shape.width)) -
       Math.min(...shapes.map(shape => shape.x)),
     height:
-      Math.max(...shapes.map(shape => shape.y + (shape.height ?? 0))) -
+      Math.max(...shapes.map(shape => shape.y + shape.height)) -
       Math.min(...shapes.map(shape => shape.y)),
   };
 }

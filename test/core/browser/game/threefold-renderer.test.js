@@ -2274,6 +2274,11 @@ describe('THREEFOLD resident identity marker', () => {
       shape => shape.actorSpritePart === 'body'
     );
 
+    expect(
+      bodies.every(
+        ({ width, height }) => Number.isFinite(width) && Number.isFinite(height)
+      )
+    ).toBe(true);
     expect(playerTag).toMatchObject({ fill: '#37e7ed', width: 22, height: 10 });
     expect(residentTag).toMatchObject({
       fill: '#f14bd3',
