@@ -62,7 +62,7 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
-const ROLE_TAG_WIDTH = 42;
+const ROLE_TAG_WIDTH = 54;
 const ROLE_TAG_HEIGHT = 18;
 const NPC_EMBLEM_WIDTH = 48;
 const NPC_EMBLEM_HEIGHT = 24;
@@ -2568,8 +2568,8 @@ function smallWorldRoleLabels(shapes) {
   /** @type {ThreefoldSpriteShape[]} */
   const labels = [];
   for (const actor of bodies) {
-    const label = actor.role === 'player' ? 'YOU' : 'NPC';
-    const width = 34;
+    const label = actor.role === 'player' ? 'PLAYER' : 'NPC';
+    const width = actor.role === 'player' ? 48 : 34;
     const height = 16;
     const body = actor.bounds;
     const centeredX = snapCanvasCoordinate(
@@ -2848,7 +2848,7 @@ function personSprite(actor, camera, tick, heightMeters) {
   const outline = new Map();
   for (const pixel of cells.values()) {
     // A single 2px edge disappears against the busy pixel landscape on phones.
-    // Give residents a two-cell magenta halo; Mara keeps the thinner gold outline
+    // Give residents a two-cell magenta halo; Mara keeps the thinner ivory outline
     // and downward pointer, so character role remains visible without reading.
     for (let offsetY = -2; offsetY <= 2; offsetY += 1) {
       for (let offsetX = -2; offsetX <= 2; offsetX += 1) {
@@ -3026,7 +3026,7 @@ function applyResidentRoleAccents(pixels) {
 }
 
 /**
- * Reserve the warm gold palette for Mara so she reads differently from
+ * Reserve the bright gold palette for Mara so she reads differently from
  * violet/magenta residents even when the role markers are small.
  * @param {string} fill Source Mosslight sprite pixel color.
  * @returns {string} High-contrast Threefold player role color.
@@ -3036,7 +3036,7 @@ function playerRoleColor(fill) {
   const colors = {
     '#442f37': '#172c34',
     '#e9794d': '#ffcb55',
-    '#f7dc9f': '#f3f6d2',
+    '#f7dc9f': '#fff3c4',
     '#e8be62': '#fff3c4',
   };
   return colors[fill] || fill;
@@ -3126,7 +3126,7 @@ function maraCapeFrill(sprites) {
  * @returns {ThreefoldSpriteShape[]} Visible role glyph cells.
  */
 /**
- * Mark Mara as the player with a readable gold YOU tag directly above her sprite.
+ * Mark Mara with an explicit gold PLAYER tag directly above her sprite.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
  * @param {ThreefoldSpriteShape[]} otherCharacters NPC bodies and role markers.
  * @returns {ThreefoldSpriteShape[]} Readable role tag and attached leader.
@@ -3192,7 +3192,7 @@ function maraRoleLabel(sprites, otherCharacters) {
   const metadata = {
     actorId: 'mara',
     playerMarker: true,
-    playerMarkerText: 'YOU',
+    playerMarkerText: 'PLAYER',
     spriteGridSize: 2,
   };
   const leader =
@@ -3250,7 +3250,7 @@ function maraRoleLabel(sprites, otherCharacters) {
       type: 'text',
       x: markerLeft + 6,
       y: placement.top + 12,
-      text: 'YOU',
+      text: 'PLAYER',
       fill: '#172c34',
       font: '12px monospace',
       bitmap: true,

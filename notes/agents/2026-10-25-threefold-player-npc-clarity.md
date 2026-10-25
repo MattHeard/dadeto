@@ -62,3 +62,7 @@ patterns and reran the test.
 - `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --runTestsByPath test/core/browser/game/threefold-renderer.test.js --no-watchman` — PASS, 52/52.
 - `npm run build` — PASS.
 - `npm run check` — FAIL (8/10 gates pass). `lint` and `non-core-thin` report warnings/shape violations in the in-progress `src/local/interpretability/atlasResearchJourney.js` and `atlasResearchStorage.js`; these files are outside this Threefold patch and remain part of the active Atlas cleanup.
+
+## Explicit PLAYER label revision
+
+Fresh play feedback still could not tell Mara from the Threefold residents. The compact `YOU` badge was too ambiguous at phone size, so Mara now carries an explicit `PLAYER` badge; compact scenes widen that plaque to 48 pixels and the main player plaque to 54 pixels. Residents keep their bright magenta `NPC` badges. The gold player palette was retained because earlier cyan art blended into the green/teal scenery. No actor positions, scale, collision, or simulation behavior changed. Focused Threefold renderer Jest passes 52/52; a new production phone capture remains necessary for device-level confirmation.

@@ -1854,7 +1854,7 @@ function expectPlayerPointerClearFromActors(
   npcLabel
 ) {
   const pointer = frameBounds(playerPointer, 'actorId', 'mara');
-  expect(pointer.width).toBe(42);
+  expect(pointer.width).toBe(54);
   expect(pointer.height).toBe(18);
   expect(pointer.y).toBeGreaterThanOrEqual(28);
   expect(pointer.y + pointer.height).toBeLessThanOrEqual(108);
@@ -2268,26 +2268,26 @@ describe('THREEFOLD resident identity marker', () => {
     expect(playerPointer).toHaveLength(2);
     expect(playerPointer[0]).toMatchObject({
       type: 'rect',
-      width: 42,
+      width: 54,
       height: 18,
       fill: '#ffcb55',
       spriteGridSize: 2,
-      playerMarkerText: 'YOU',
+      playerMarkerText: 'PLAYER',
     });
     expect(playerPointer[1]).toMatchObject({
       type: 'text',
-      text: 'YOU',
+      text: 'PLAYER',
       fill: '#172c34',
       font: '12px monospace',
       bitmap: true,
-      playerMarkerText: 'YOU',
+      playerMarkerText: 'PLAYER',
     });
     expect(
       playerPointer.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)
     ).toBe(true);
-    expect(playerPointer.some(shape => shape.playerMarkerText === 'YOU')).toBe(
-      true
-    );
+    expect(
+      playerPointer.some(shape => shape.playerMarkerText === 'PLAYER')
+    ).toBe(true);
     expect(playerPointer.some(shape => npcMarker.includes(shape))).toBe(false);
     expectPlayerPointerClearFromActors(
       playerPointer,
@@ -2381,7 +2381,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(lastResidentCueIndex).toBeGreaterThan(returnTideOverlayIndex);
   });
 
-  test('labels compact scene actors with YOU and NPC tags clear of their bodies', () => {
+  test('labels compact scene actors with PLAYER and NPC tags clear of their bodies', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, createThreefoldWeftwaysScene())
     );
@@ -2389,7 +2389,7 @@ describe('THREEFOLD resident identity marker', () => {
       shape => shape.actorSpritePart === 'role-label' && shape.type === 'rect'
     );
     const playerTag = labels.find(
-      shape => shape.actorId === 'mara' && shape.playerMarkerText === 'YOU'
+      shape => shape.actorId === 'mara' && shape.playerMarkerText === 'PLAYER'
     );
     const residentTag = labels.find(
       shape =>
@@ -2405,14 +2405,14 @@ describe('THREEFOLD resident identity marker', () => {
         ({ width, height }) => Number.isFinite(width) && Number.isFinite(height)
       )
     ).toBe(true);
-    expect(playerTag).toMatchObject({ fill: '#ffcb55', width: 34, height: 16 });
+    expect(playerTag).toMatchObject({ fill: '#ffcb55', width: 48, height: 16 });
     expect(residentTag).toMatchObject({
       fill: '#f14bd3',
       width: 34,
       height: 16,
     });
     expect(frame.shapes).toContainEqual(
-      expect.objectContaining({ actorId: 'mara', text: 'YOU' })
+      expect.objectContaining({ actorId: 'mara', text: 'PLAYER' })
     );
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
@@ -2481,7 +2481,7 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
         shape.width === 2 &&
         shape.height === 2 &&
         shape.spriteGridSize === 2 &&
-        shape.playerMarkerText === 'YOU' &&
+        shape.playerMarkerText === 'PLAYER' &&
         shape.x % 2 === 0 &&
         shape.y % 2 === 0
     )
@@ -2505,7 +2505,7 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
   ).toBe(true);
 });
 
-test('gives residents an NPC label distinct from Mara’s YOU label', () => {
+test('gives residents an NPC label distinct from Mara’s PLAYER label', () => {
   const scene = createBrokenGateScene();
   const watchkeeper = scene.interactables.find(
     item => item.id === 'latchfolk-watchkeeper'
