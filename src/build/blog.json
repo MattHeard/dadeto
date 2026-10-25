@@ -33,6 +33,22 @@
       "tags": ["toy", "interpretability", "research", "atlas"]
     },
     {
+      "key": "HTHP1",
+      "title": "High-temperature Industrial Heat Pump Screening",
+      "publicationDate": "2026-10-25",
+      "release": "beta",
+      "content": [
+        "Review a transparent, illustrative process-heat comparison and its technical and economic assumptions. The current beta documents the pure screening calculation; it is not an interactive sizing tool.",
+        {
+          "type": "manual",
+          "id": "HTHP1-manual",
+          "title": "Field guide",
+          "src": "/manuals/industrial-heat-pump-readiness.md"
+        }
+      ],
+      "tags": ["toy", "energy", "industrial-heat", "screening"]
+    },
+    {
       "key": "CHAT1",
       "title": "OpenAI Chat",
       "publicationDate": "2026-10-23",
