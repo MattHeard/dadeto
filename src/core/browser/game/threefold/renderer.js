@@ -2618,7 +2618,7 @@ function smallWorldRoleLabels(shapes) {
       spriteGridSize: PERSON_GRID_PIXELS,
     };
     const fill = '#f14bd3';
-    const textFill = '#342041';
+    const textFill = '#fff3c4';
     placedBounds.push({ id: actor.id, bounds: { ...position, width, height } });
     labels.push({
       type: 'rect',
@@ -2630,6 +2630,17 @@ function smallWorldRoleLabels(shapes) {
       actorSpritePart: 'role-label',
     });
     labels.push({
+      type: 'rect',
+      x: position.x + 2,
+      y: position.y + 2,
+      width: width - 4,
+      height: height - 4,
+      fill: '#342041',
+      textBacking: true,
+      ...metadata,
+      actorSpritePart: 'role-label',
+    });
+    labels.push({
       type: 'text',
       x: position.x + 6,
       y: position.y + 12,
@@ -2637,6 +2648,7 @@ function smallWorldRoleLabels(shapes) {
       fill: textFill,
       font: '10px monospace',
       bitmap: true,
+      textBacking: true,
       ...metadata,
       actorSpritePart: 'role-label',
     });

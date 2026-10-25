@@ -2361,12 +2361,27 @@ describe('THREEFOLD resident identity marker', () => {
       height: 16,
     });
     expect(
+      labels.find(
+        shape =>
+          shape.actorId === THREEFOLD_WEFTWAYS_PELL_ID &&
+          shape.fill === '#342041'
+      )
+    ).toMatchObject({
+      x: residentTag.x + 2,
+      y: residentTag.y + 2,
+      width: residentTag.width - 4,
+      height: residentTag.height - 4,
+      textBacking: true,
+    });
+    expect(
       frame.shapes.some(shape => shape.actorId === 'mara' && shape.text)
     ).toBe(false);
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         actorId: THREEFOLD_WEFTWAYS_PELL_ID,
         text: 'NPC',
+        fill: '#fff3c4',
+        textBacking: true,
       })
     );
     for (const tag of labels) {

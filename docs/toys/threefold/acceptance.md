@@ -401,3 +401,15 @@ cue, backings, and all four icon groups. Focused renderer Jest passed 55/55;
 390×844 Playwright capture rendered the 160×144 screen with no page errors at
 `/tmp/threefold-after.png`. The screenshot was reviewed; a production/device
 capture has not been made.
+
+## Strengthen compact NPC badge contrast — 2026-10-25
+
+Follow-up feedback found the compact-scene NPC wordmark too easy to miss beside
+Mara's unlabelled gold marker. Kept Mara's identity text-free and changed the
+NPC badge to a dark inset, ivory lettering, and magenta frame. Renderer
+regressions verify the badge backing, foreground contrast, and player remaining
+free of a word label. Focused Threefold renderer Jest passed 55/55; `npm run
+build` passed; and `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed
+all 10 local gates after six test shards, with zero clones and zero audit
+vulnerabilities. The refreshed 390×844 capture rendered a 160×144 canvas with
+no browser errors at `/tmp/threefold-badge-contrast.png`.

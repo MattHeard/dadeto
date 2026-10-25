@@ -12,3 +12,10 @@
 - Diagnosis: inspect the 160×144 renderer layering and the phone capture; the oversized PLAYER plaque occupied more visual area than Mara, and HUD rows had no compact icon language.
 - Fix: remove Mara's word plaque, keep her gold/ivory identity with a small gold pixel diamond, retain framed resident emblems, give text dark plates, and add clock/scale/movement/button pixels beside HUD rows.
 - Guidance: validate at native 160×144 size and keep tests asserting no player word label, complete text backings, and the icon categories. A fresh live phone capture remains necessary for final device-size confirmation.
+
+## 2026-10-25 compact badge contrast follow-up
+
+- Unexpected hurdle: the compact NPC badge used dark lettering directly on magenta, which was hard to parse beside the unlabeled PC marker at handheld scale.
+- Diagnosis: inspect the badge's 34×16 rendered bounds and verify foreground/background contrast in the frame data.
+- Fix: preserve the magenta frame, add a dark inset, and use ivory `NPC` lettering; add renderer assertions for all three layers.
+- Guidance: continue reviewing role cues at native 160×144 resolution and keep Mara's identity graphical rather than adding a word plaque.
