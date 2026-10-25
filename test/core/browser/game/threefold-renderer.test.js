@@ -1851,6 +1851,9 @@ function expectPlayerPointerClearFromActors(
  * @returns {void} Throws when either body mask lacks a role-specific shape.
  */
 function expectDifferentCharacterMasks(playerArt, residentArt) {
+  expectConnectedWideningCape(
+    playerArt.filter(shape => shape.playerSpritePart === 'cape')
+  );
   const normalizedMask = shapes => {
     const minX = Math.min(...shapes.map(shape => shape.x));
     const minY = Math.min(...shapes.map(shape => shape.y));
@@ -1868,6 +1871,27 @@ function expectDifferentCharacterMasks(playerArt, residentArt) {
   ).length;
   expect(playerOnlyCells).toBeGreaterThan(8);
   expect(residentOnlyCells).toBeGreaterThan(10);
+}
+
+/**
+ * Verify Mara's cloak is one connected silhouette that widens by row.
+ * @param {Array<Record<string, any>>} cape Rendered 2px cloak cells.
+ * @returns {void} Throws when the cloak fragments or loses its widening shape.
+ */
+function expectConnectedWideningCape(cape) {
+  const rows = [...new Set(cape.map(shape => shape.y))]
+    .sort((left, right) => left - right)
+    .map(y => {
+      const cells = cape
+        .filter(shape => shape.y === y)
+        .map(shape => shape.x)
+        .sort((left, right) => left - right);
+      expect(
+        cells.every((x, index) => index === 0 || x - cells[index - 1] === 2)
+      ).toBe(true);
+      return cells.length * 2;
+    });
+  expect(rows).toEqual([12, 16, 20, 24]);
 }
 
 /**
@@ -1905,7 +1929,8 @@ function expectRolePaletteContrast(frameShapes, residentBody) {
   const playerCloak = frameShapes.filter(
     shape =>
       shape.actorId === 'mara' &&
-      shape.playerSpritePart === 'body' &&
+      (shape.playerSpritePart === 'body' ||
+        shape.playerSpritePart === 'cape') &&
       shape.fill === '#37e7ed'
   );
   expect(playerCloak.length).toBeGreaterThan(20);
@@ -2116,7 +2141,10 @@ describe('THREEFOLD resident identity marker', () => {
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
     const playerMantle = frameBounds(
       frame.shapes.filter(
-        shape => shape.actorId === 'mara' && shape.playerSpritePart === 'body'
+        shape =>
+          shape.actorId === 'mara' &&
+          (shape.playerSpritePart === 'body' ||
+            shape.playerSpritePart === 'cape')
       ),
       'actorId',
       'mara'
@@ -2230,8 +2258,8 @@ describe('THREEFOLD resident identity marker', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, scene)
     );
-    const playerArt = frame.shapes.filter(
-      shape => shape.playerSpritePart === 'body'
+    const playerArt = frame.shapes.filter(shape =>
+      ['body', 'cape'].includes(shape.playerSpritePart)
     );
     const residentArt = frame.shapes.filter(
       shape =>

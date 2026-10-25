@@ -109,7 +109,7 @@ const SMALL_WORLD_NPC_IDS = new Set([
   'silt-margin-guardian',
   'weftways-pell',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'cape'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'|'cape'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -3069,7 +3069,7 @@ function playerRoleOutline(sprites) {
 }
 
 /**
- * Extend Mara's cloak into a widening player-only silhouette.
+ * Extend Mara's cloak into a connected, widening player-only silhouette.
  * @param {ThreefoldSpriteShape[]} sprites Mara's pixel-art body cells.
  * @returns {ThreefoldSpriteShape[]} Player-only cloak cells on the 2px grid.
  */
@@ -3077,20 +3077,23 @@ function maraCapeFrill(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
   const maxX = Math.max(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
-  // Mara gets a pointed hood and a cape that widens toward its hem. Residents
-  // have a flat hat and a straight magenta robe. These decorative cells do not
-  // change collision or physical bounds.
+  // Mara's full-width cape grows from the narrow torso into one connected
+  // wedge. Residents keep a broad flat cap and straight robe. At handheld size
+  // the connected wedge reads as a different body shape, even without color.
+  // These decorative cells do not change collision or physical bounds.
+  const centerX = snapCanvasCoordinate((minX + maxX + 2) / 2, 2);
   const cells = [
-    { offset: 4, spread: 1 },
-    { offset: 6, spread: 2 },
-    { offset: 8, spread: 3 },
-    { offset: 10, spread: 4 },
-  ].flatMap(({ offset, spread }) =>
-    Array.from({ length: spread }, (_, index) => [
-      { x: minX - (index + 1) * 2, y: minY + offset },
-      { x: maxX + index * 2, y: minY + offset },
-    ]).flat()
-  );
+    { offset: 8, width: 12 },
+    { offset: 10, width: 16 },
+    { offset: 12, width: 20 },
+    { offset: 14, width: 24 },
+  ].flatMap(({ offset, width }) => {
+    const left = centerX - width / 2;
+    return Array.from({ length: width / PERSON_GRID_PIXELS }, (_, index) => ({
+      x: left + index * PERSON_GRID_PIXELS,
+      y: minY + offset,
+    }));
+  });
   return cells.map(({ x, y }) => ({
     type: 'rect',
     x,
@@ -3099,7 +3102,7 @@ function maraCapeFrill(sprites) {
     height: PERSON_GRID_PIXELS,
     fill: '#37e7ed',
     actorId: 'mara',
-    playerSpritePart: /** @type {'body'} */ ('body'),
+    playerSpritePart: /** @type {'cape'} */ ('cape'),
     spriteGridSize: PERSON_GRID_PIXELS,
   }));
 }
