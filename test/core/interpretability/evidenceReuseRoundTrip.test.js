@@ -21,7 +21,13 @@ import {
 } from '../../../src/core/interpretability/interpretability.js';
 import { calculateAlgZooM16x10Activation } from '../../../src/core/interpretability/algZooReplay.js';
 import { createAlgZooNormalSequence } from '../../../src/core/interpretability/algZooPilotHarness/index.js';
+import {
+  parseAtlasResearchJourneyArgs,
+  runAtlasResearchJourneyCli as runAtlasResearchJourneyCore,
+  runAtlasResearchJourneyV1,
+} from '../../../src/core/local/interpretability/atlasResearchJourney.js';
 import { runAtlasResearchJourneyCli } from '../../../src/local/interpretability/atlasResearchJourney.js';
+import { createAtomicAtlasResearchStorage } from '../../../src/local/interpretability/atlasResearchStorage.js';
 import { createTestZod } from './testZod.js';
 
 const fixture = JSON.parse(
@@ -897,8 +903,468 @@ describe('offline AlgZoo evidence-reuse software fixture', () => {
     await expectProposalValidationRefusals(firstImport.bundle);
 
     await expectConcurrentAtlasJourneys(secondExport.json, bundleSchemas);
+    await expectAtlasJourneyCoreBranches(
+      secondImport.bundle,
+      secondExport.json,
+      bundleSchemas
+    );
   });
 });
+
+/**
+ * Exercise bounded journey outcomes and CLI argument parsing with injected services.
+ * @param {Record<string, any>} bundle Valid portable research bundle.
+ * @param {string} bundleJson Valid portable research bundle JSON.
+ * @param {object} schemas Injected test schemas.
+ * @returns {Promise<void>} Resolves after all deterministic refusal paths.
+ */
+async function expectAtlasJourneyCoreBranches(bundle, bundleJson, schemas) {
+  await expectAtlasJourneyArgumentBranches();
+  await expectAtlasJourneyServiceBranches(bundle);
+  await expectAtlasJourneyCliBranches(bundleJson, schemas);
+  await expectAtlasJourneyStorageBranches(bundle, bundleJson, schemas);
+}
+
+/** Verify the CLI argument parser accepts documented options and rejects bad arguments. */
+function expectAtlasJourneyArgumentBranches() {
+  const parsed = parseAtlasResearchJourneyArgs([
+    '--bundle',
+    'research.json',
+    '--author-id',
+    'researcher',
+    '--design-id',
+    'design-explicit',
+    '--agent-id',
+    'agent-explicit',
+    '--created-at',
+    '2026-10-25T04:00:00Z',
+  ]);
+  expect(parsed).toMatchObject({
+    valid: true,
+    options: { ['design_id']: 'design-explicit' },
+  });
+  expect(parseAtlasResearchJourneyArgs(['--unknown', 'value'])).toMatchObject({
+    valid: false,
+    errors: [{ code: 'unknown-option' }],
+  });
+  expect(parseAtlasResearchJourneyArgs(['--bundle'])).toMatchObject({
+    valid: false,
+    errors: [{ code: 'option-value-required' }],
+  });
+  expect(
+    parseAtlasResearchJourneyArgs(['--bundle', 'a', '--bundle', 'b'])
+  ).toMatchObject({ valid: false, errors: [{ code: 'duplicate-option' }] });
+  expect(parseAtlasResearchJourneyArgs(['--bundle', 'a'])).toMatchObject({
+    valid: false,
+    errors: [{ code: 'bundle-and-author-required' }],
+  });
+}
+
+/**
+ * Verify CLI defaults, invalid input, and effect-bound failures.
+ * @param {string} bundleJson Valid portable research bundle JSON.
+ * @param {object} schemas Injected test schemas.
+ */
+async function expectAtlasJourneyCliBranches(bundleJson, schemas) {
+  const proposal = { createdAt: '2026-10-25T04:00:00Z' };
+  const arguments_ = ['--bundle', 'research.json', '--author-id', 'researcher'];
+  const cliMissingSchemas = await runAtlasResearchJourneyCli(arguments_);
+  expect(cliMissingSchemas).toMatchObject({
+    exitCode: 2,
+    result: { errors: [{ code: 'schemas-required' }] },
+  });
+  expect(
+    await runAtlasResearchJourneyCli(['--unknown', 'value'], { schemas })
+  ).toMatchObject({
+    exitCode: 2,
+    result: { errors: [{ code: 'unknown-option' }] },
+  });
+  expect(
+    await runAtlasResearchJourneyCore(['--unknown', 'value'])
+  ).toMatchObject({
+    exitCode: 2,
+    result: { errors: [{ code: 'unknown-option' }] },
+  });
+  const cliJourney = await runAtlasResearchJourneyCli(arguments_, {
+    schemas,
+    createStorage: () => ({
+      loadBundle: async () => bundleJson,
+      submitExperimentDesign: async () => ({ valid: true }),
+    }),
+    bindEffect: operation => operation({}),
+    hashCanonicalSnapshot: value =>
+      createHash('sha256').update(value).digest('hex'),
+    nowIso: () => proposal.createdAt,
+    randomId: () => 'default-random-design',
+    readFileImpl: async () => bundleJson,
+  });
+  expect(cliJourney).toMatchObject({
+    exitCode: 0,
+    result: { valid: true, design: { id: 'default-random-design' } },
+  });
+  const cliInvalidBundle = await runAtlasResearchJourneyCli(arguments_, {
+    schemas,
+    createStorage: () => ({ loadBundle: async () => '{}' }),
+    bindEffect: operation => operation({}),
+  });
+  expect(cliInvalidBundle.exitCode).toBe(1);
+  const cliThrows = await runAtlasResearchJourneyCli(arguments_, {
+    schemas,
+    createStorage: () => ({ loadBundle: async () => '{}' }),
+    bindEffect: async () => {
+      throw new Error('effect binding failed');
+    },
+  });
+  expect(cliThrows).toMatchObject({
+    exitCode: 1,
+    result: { errors: [{ code: 'atlas-journey-failed' }] },
+  });
+}
+
+/**
+ * Exercise the journey's successful, refused, capped, and inconsistent states.
+ * @param {Record<string, any>} bundle Valid portable research bundle.
+ */
+async function expectAtlasJourneyServiceBranches(bundle) {
+  const resolved = await resolveAlgZooDesignInput(bundle);
+  const allowEffects = {};
+  const proposal = {
+    id: 'coverage-design',
+    authorId: 'coverage-agent',
+    createdAt: '2026-10-25T04:00:00Z',
+  };
+  const run = service =>
+    runAtlasResearchJourneyV1(bundle, { allowEffects, service, proposal });
+  const complete = resolved.context;
+  const readable = {
+    readContextSnapshot: async () => complete,
+    submitExperimentDesign: async () => ({ valid: true }),
+  };
+  expect((await run(readable)).valid).toBe(true);
+  expect(
+    await run({
+      readContextSnapshot: async () => ({
+        ...complete,
+        items: complete.items.slice(0, 1),
+      }),
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({
+    valid: false,
+    errors: [{ code: 'no-evidence-sensitive-design' }],
+  });
+  expect(
+    await run({
+      readContextSnapshot: async () => ({
+        valid: false,
+        errors: [{ code: 'fixture-context-refused' }],
+      }),
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'fixture-context-refused' }] });
+  expect(
+    await run({
+      readContextSnapshot: async () => ({ valid: false, errors: [{}] }),
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-unavailable' }] });
+  expect(
+    await run({
+      readContextSnapshot: async () => {
+        throw new Error('read unavailable');
+      },
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-read-failed' }] });
+  expect(
+    await run({
+      readContextSnapshot: async () => ({
+        ...complete,
+        continuationCursor: 'more-context',
+      }),
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-exceeds-journey-bound' }] });
+  const firstPage = {
+    ...complete,
+    items: complete.items.slice(0, 1),
+    nextCursor: 'next',
+  };
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) =>
+        query.cursor
+          ? { ...complete, snapshotId: 'changed-snapshot' }
+          : firstPage,
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-snapshot-incomplete' }] });
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) =>
+        query.cursor
+          ? { ...complete, mechanism: { id: 'wrong-mechanism' } }
+          : firstPage,
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-snapshot-incomplete' }] });
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) =>
+        query.cursor
+          ? { ...complete, continuationCursor: 'capped' }
+          : firstPage,
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-snapshot-incomplete' }] });
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) => {
+        if (!query.cursor) return firstPage;
+        throw new Error('later page unavailable');
+      },
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'context-read-failed' }] });
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) =>
+        query.cursor
+          ? { valid: false, errors: [{ code: 'later-page-refused' }] }
+          : firstPage,
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ attempts: [{ code: 'later-page-refused' }] });
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) =>
+        query.cursor
+          ? { ...complete, items: complete.items.slice(1) }
+          : firstPage,
+      submitExperimentDesign: async () => ({ valid: true }),
+    })
+  ).toMatchObject({ valid: true });
+  expect(
+    await run({
+      readContextSnapshot: async (_effects, query) =>
+        query.cursor
+          ? { ...complete, items: complete.items.slice(1) }
+          : firstPage,
+      submitExperimentDesign: async (_effects, design) => ({
+        valid: design.id !== proposal.id,
+        errors: [{ code: 'invalid-submission' }],
+      }),
+    })
+  ).toMatchObject({ valid: false, errors: [{ code: 'invalid-submission' }] });
+  expect(
+    await run({
+      readContextSnapshot: async () => complete,
+      submitExperimentDesign: async () => {
+        throw new Error('write unavailable');
+      },
+    })
+  ).toMatchObject({ errors: [{ code: 'design-submission-failed' }] });
+  expect(
+    await runAtlasResearchJourneyV1(bundle, {
+      allowEffects,
+      service: readable,
+      proposal: { ...proposal, id: '' },
+    })
+  ).toMatchObject({ attempts: [{ code: 'invalid-design-input' }] });
+  expect(
+    await runAtlasResearchJourneyV1(bundle, {
+      allowEffects,
+      service: {
+        ...readable,
+        proposeDesign: () => ({ valid: false, errors: [] }),
+      },
+      proposal,
+    })
+  ).toMatchObject({ attempts: [{ code: 'design-refused' }] });
+
+  const noCandidate = {
+    ...bundle,
+    evidenceGraph: {
+      ...bundle.evidenceGraph,
+      mechanisms: [],
+      hypotheses: [],
+      experiments: [],
+      evidence: [],
+      edges: [],
+    },
+  };
+  expect(
+    await runAtlasResearchJourneyV1(noCandidate, {
+      allowEffects,
+      service: readable,
+      proposal,
+    })
+  ).toMatchObject({ errors: [{ code: 'no-eligible-research-candidates' }] });
+
+  const invalidDiscovery = await runAtlasResearchJourneyV1(null, {
+    allowEffects,
+    service: readable,
+    proposal,
+  });
+  expect(invalidDiscovery.valid).toBe(false);
+
+  const unresolvedIdentity = {
+    ...bundle,
+    identityGraph: {
+      ...bundle.identityGraph,
+      components: [],
+      activationPositions: [],
+      observations: [],
+      structuralConnections: [],
+      circuitSnapshots: [],
+    },
+    mechanismIdentityLinks: [],
+  };
+  const unresolved = await runAtlasResearchJourneyV1(unresolvedIdentity, {
+    allowEffects,
+    service: readable,
+    proposal,
+  });
+  expect(unresolved.attempts).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ code: 'unresolved-candidate-identity' }),
+    ])
+  );
+
+  const incompletePages = {
+    readContextSnapshot: async (_effects, query) =>
+      query.cursor
+        ? { ...complete, items: [], nextCursor: query.cursor }
+        : { ...complete, items: [], totalItems: 0, nextCursor: 'page-1' },
+    submitExperimentDesign: async () => ({ valid: true }),
+  };
+  expect(await run(incompletePages)).toMatchObject({
+    attempts: [{ code: 'context-page-limit-exceeded' }],
+  });
+}
+
+/**
+ * Exercise atomic storage's validation, conflict, locking, and export paths.
+ * @param {Record<string, any>} bundle Valid portable research bundle.
+ * @param {string} bundleJson Valid portable research bundle JSON.
+ * @param {object} schemas Injected test schemas.
+ */
+async function expectAtlasJourneyStorageBranches(bundle, bundleJson, schemas) {
+  const scratchRoot = path.join(process.cwd(), '.tmp');
+  await mkdir(scratchRoot, { recursive: true });
+  const scratchDirectory = await mkdtemp(
+    path.join(scratchRoot, 'atlas-storage-branches-')
+  );
+  try {
+    const bundlePath = path.join(scratchDirectory, 'bundle.json');
+    await writeFile(bundlePath, bundleJson, 'utf8');
+    const storage = createAtomicAtlasResearchStorage({ bundlePath, schemas });
+    await expect(storage.saveBundle({}, bundleJson)).rejects.toMatchObject({
+      code: 'bundle-read-required',
+    });
+
+    const conflictToken = {};
+    await storage.loadBundle(conflictToken);
+    await writeFile(bundlePath, `${bundleJson}\n`, 'utf8');
+    await expect(
+      storage.saveBundle(conflictToken, bundleJson)
+    ).rejects.toMatchObject({ code: 'bundle-write-conflict' });
+
+    const invalidToken = {};
+    await storage.loadBundle(invalidToken);
+    await expect(
+      storage.saveBundle(invalidToken, '{invalid json')
+    ).rejects.toMatchObject({ code: 'invalid-research-bundle' });
+
+    const validSaveToken = {};
+    await storage.loadBundle(validSaveToken);
+    await storage.saveBundle(validSaveToken, bundleJson);
+    expect(await readFile(bundlePath, 'utf8')).toBe(bundleJson);
+
+    const invalidCurrentPath = path.join(
+      scratchDirectory,
+      'invalid-current.json'
+    );
+    await writeFile(invalidCurrentPath, '{invalid json', 'utf8');
+    const invalidCurrent = createAtomicAtlasResearchStorage({
+      bundlePath: invalidCurrentPath,
+      schemas,
+    });
+    expect(
+      await invalidCurrent.submitExperimentDesign({}, { id: 'design' })
+    ).toMatchObject({ valid: false });
+
+    expect(await storage.submitExperimentDesign({}, {})).toMatchObject({
+      valid: false,
+    });
+    const validDesign = await draftAlgZooDesign(bundle, 'storage-design');
+    expect(validDesign.valid).toBe(true);
+    if (!validDesign.valid) return;
+    expect(
+      (await storage.submitExperimentDesign({}, validDesign.design)).valid
+    ).toBe(true);
+
+    const exportFailurePath = path.join(
+      scratchDirectory,
+      'export-failure.json'
+    );
+    await writeFile(exportFailurePath, bundleJson, 'utf8');
+    const exportFailureStorage = createAtomicAtlasResearchStorage({
+      bundlePath: exportFailurePath,
+      schemas,
+      logic: {
+        exportBundleV7: () => ({
+          valid: false,
+          errors: [{ code: 'fixture-export-refused' }],
+        }),
+      },
+    });
+    expect(
+      await exportFailureStorage.submitExperimentDesign({}, validDesign.design)
+    ).toMatchObject({
+      valid: false,
+      errors: [{ code: 'fixture-export-refused' }],
+    });
+    expect(await readFile(exportFailurePath, 'utf8')).toBe(bundleJson);
+
+    const timeoutStorage = createAtomicAtlasResearchStorage({
+      bundlePath,
+      schemas,
+      mkdirImpl: async (target, options) => {
+        if (String(target).endsWith('.lock')) {
+          throw Object.assign(new Error('lock exists'), { code: 'EEXIST' });
+        }
+        return mkdir(target, options);
+      },
+      nowImpl: (() => {
+        let now = 0;
+        return () => (now += 6000);
+      })(),
+      sleepImpl: async () => {},
+    });
+    await expect(
+      timeoutStorage.submitExperimentDesign({}, validDesign.design)
+    ).rejects.toMatchObject({ code: 'bundle-storage-lock-timeout' });
+
+    const errorStorage = createAtomicAtlasResearchStorage({
+      bundlePath,
+      schemas,
+      mkdirImpl: async (target, options) => {
+        if (String(target).endsWith('.lock')) {
+          throw Object.assign(new Error('permission denied'), {
+            code: 'EACCES',
+          });
+        }
+        return mkdir(target, options);
+      },
+    });
+    await expect(
+      errorStorage.submitExperimentDesign({}, validDesign.design)
+    ).rejects.toMatchObject({ code: 'EACCES' });
+  } finally {
+    await rm(scratchDirectory, { recursive: true, force: true });
+  }
+}
 
 /**
  * Persist two deterministic agent journeys concurrently and read back both.

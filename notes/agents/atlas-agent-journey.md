@@ -24,6 +24,7 @@ planning, and concurrent-safe V7 submission.
 - `npm run non-core-thin`: passed (378 non-core JS files; 2 existing exemptions; 50-line limit).
 - `npm run build`: passed.
 - `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check`: passed all 10 gates; six impact shards passed (1,047 suites / 7,677 tests), audit reported 0 vulnerabilities, and duplication found 0 clones.
+- Changed-core coverage command: `node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage test/core/interpretability/evidenceReuseRoundTrip.test.js --collectCoverageFrom=src/core/local/interpretability/atlasResearchJourney.js --collectCoverageFrom=src/core/local/interpretability/atlasResearchStorage.js --coverageThreshold='{"global":{"statements":100,"branches":100,"functions":100,"lines":100}}' --coverageReporters=text --coverageDirectory=.tmp/atlas-coverage`; both changed core files pass statements, branches, functions, and lines at 100%.
 - `git diff --check`: passed. Exact-head GitHub Full Check remains pending until after this change is pushed.
 
 ## Next-time guidance

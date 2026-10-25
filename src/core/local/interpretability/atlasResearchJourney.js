@@ -37,6 +37,9 @@ export async function runAtlasResearchJourneyV1(
   bundle,
   { allowEffects, service, proposal }
 ) {
+  const proposeDesign =
+    /** @type {any} */ (service).proposeDesign ??
+    proposeAlgZooEvidenceSensitiveExperimentDesignV1;
   const discovery = discoverResearchCandidatesV1(bundle, {
     pageSize: MAX_CANDIDATE_PAGE,
   });
@@ -62,11 +65,7 @@ export async function runAtlasResearchJourneyV1(
       });
       continue;
     }
-    const drafted = proposeAlgZooEvidenceSensitiveExperimentDesignV1(
-      candidate,
-      snapshot,
-      proposal
-    );
+    const drafted = proposeDesign(candidate, snapshot, proposal);
     if (!drafted.valid) {
       attempts.push({
         mechanismId: candidate.legacyMechanismId,

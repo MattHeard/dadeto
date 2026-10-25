@@ -8,9 +8,10 @@
 - [x] Core journey and storage logic receive their runtime effects as dependencies. The CLI wrapper injects filesystem, crypto, clock, random ID, and allow-effects bindings.
 - [x] Jest uses `createTestZod`; the focused suite does not require the runtime Zod package.
 - [x] The local journey has no hosted/billable operation or Firestore adapter; future hosted billing must reuse the existing operation-billing, billing-protocol, pricing-core, and GCP effect-adapter modules.
-- [x] Focused Atlas journey/storage tests pass (14/14); local ESLint and non-core-thin pass.
-- [x] `npm run build` passes; `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passes all 10 gates, including six impact-test shards (1,047 suites / 7,677 tests). Audit found 0 vulnerabilities and duplication found 0 clones. This is fast local evidence, not full-coverage evidence.
-- [ ] Exact-head Full Check: pending after this loop is committed and pushed; do not treat the preceding `557195a` workflow as evidence for this change.
+- [x] Focused journey/storage regression passes, including bounded context, refusing malformed/incomplete paths, lock timeout, stale-write conflict, atomic submission, and concurrent submissions.
+- [x] Changed core files reach 100% statements, branches, functions, and lines with the focused coverage command documented in `notes/agents/atlas-agent-journey.md`.
+- [x] Targeted ESLint and `npm run non-core-thin` pass; `npm run build` and `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` pass all 10 gates, including six impact-test shards (1,047 suites / 7,677 tests). Audit found 0 vulnerabilities and duplication found 0 clones. This is fast local evidence; exact-head Full Check is tracked separately.
+- [ ] Exact-head Full Check: pending for the final pushed Atlas implementation; do not use the workflow from an earlier head as evidence.
 
 ### Evidence Collection
 - CLI instructions and bounds: `docs/toys/atlas/agent-journey.md`.

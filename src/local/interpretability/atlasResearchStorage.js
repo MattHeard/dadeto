@@ -5,7 +5,11 @@ import { createAtlasResearchStorageCore as coreFactory } from '../../core/local/
 
 const handle = options =>
   coreFactory({
-    bundle: { bundlePath: options.bundlePath, schemas: options.schemas },
+    bundle: {
+      bundlePath: options.bundlePath,
+      schemas: options.schemas,
+      logic: options.logic,
+    },
     fileSystem: {
       pathModule: options.pathModule ?? path,
       readFileImpl: options.readFileImpl ?? readFile,

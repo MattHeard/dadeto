@@ -8,7 +8,7 @@ import {
 
 /**
  * Create a cross-process atomic local adapter for portable Atlas bundle writes.
- * @param {{bundle: {bundlePath: string, schemas: any}, fileSystem: {pathModule: {resolve: (...parts: string[]) => string, dirname: (path: string) => string}, readFileImpl: Function, mkdirImpl: Function, writeFileImpl: Function, renameImpl: Function, rmImpl: Function}, lock: {lockTimeoutMs?: number, retryDelayMs?: number, sleepImpl: (delayMs: number) => Promise<void>, nowImpl: () => number}, identity: {randomIdImpl: () => string, digestImpl: (json: string) => string}}} dependencies Bundle metadata and injected filesystem, lock, and identity operations.
+ * @param {{bundle: {bundlePath: string, schemas: any, logic?: {importBundleV2?: Function, appendDesignV1?: Function, exportBundleV7?: Function}}, fileSystem: {pathModule: {resolve: (...parts: string[]) => string, dirname: (path: string) => string}, readFileImpl: Function, mkdirImpl: Function, writeFileImpl: Function, renameImpl: Function, rmImpl: Function}, lock: {lockTimeoutMs?: number, retryDelayMs?: number, sleepImpl: (delayMs: number) => Promise<void>, nowImpl: () => number}, identity: {randomIdImpl: () => string, digestImpl: (json: string) => string}}} dependencies Bundle metadata and injected filesystem, lock, and identity operations.
  * @returns {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, submitExperimentDesign: (allowEffects: AllowEffects, design: Record<string, any>) => Promise<Record<string, any>>}} Permission-aware atomic storage.
  */
 export function createAtlasResearchStorageCore({
@@ -17,6 +17,12 @@ export function createAtlasResearchStorageCore({
   lock,
   identity,
 }) {
+  const { logic = {} } = bundle;
+  const importBundleV2 =
+    logic.importBundleV2 ?? importInterpretabilityResearchBundleV2;
+  const appendDesignV1 = logic.appendDesignV1 ?? appendExperimentDesignV1;
+  const exportBundleV7 =
+    logic.exportBundleV7 ?? exportInterpretabilityResearchBundleV7;
   const { bundlePath, schemas } = bundle;
   const {
     pathModule,
@@ -96,7 +102,7 @@ export function createAtlasResearchStorageCore({
         if (digestImpl(current) !== expectedDigest) {
           throw storageError('bundle-write-conflict');
         }
-        const imported = importInterpretabilityResearchBundleV2(json, schemas);
+        const imported = importBundleV2(json, schemas);
         if (!imported.valid) throw storageError('invalid-research-bundle');
         await writeAtomically(json);
         loadedDigests.delete(allowEffects);
@@ -106,21 +112,11 @@ export function createAtlasResearchStorageCore({
       void allowEffects;
       return withLock(async () => {
         const current = await readCurrent();
-        const imported = importInterpretabilityResearchBundleV2(
-          current,
-          schemas
-        );
+        const imported = importBundleV2(current, schemas);
         if (!imported.valid) return imported;
-        const appended = appendExperimentDesignV1(
-          imported.bundle,
-          design,
-          schemas
-        );
+        const appended = appendDesignV1(imported.bundle, design, schemas);
         if (!appended.valid) return appended;
-        const exported = exportInterpretabilityResearchBundleV7(
-          appended.bundle,
-          schemas
-        );
+        const exported = exportBundleV7(appended.bundle, schemas);
         if (exported.valid) await writeAtomically(exported.json);
         return exported;
       });
