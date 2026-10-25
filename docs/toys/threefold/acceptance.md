@@ -1,6 +1,6 @@
 # THREEFOLD Acceptance
 
-- [ ] Confirm by phone-size production capture that Mara is immediately distinct from residents at 160 × 144. Fresh feedback says the current role colors, body silhouettes, and labels still do not separate the actors quickly enough. Mara now has a fixed 22 × 26px gold arrow with an ivory outline attached to her sprite, plus the gold PLAYER plaque; NPCs keep their magenta NPC plaque and contrasting silhouettes. Verify after deployment with a fresh 393 × 873 capture. Simulation and collision bounds stay unchanged.
+- [ ] Confirm by phone-size production capture that Mara is immediately distinct from residents at 160 × 144. Fresh feedback says the current role colors, body silhouettes, and labels still do not separate the actors quickly enough. Mara has a fixed 22 × 26px gold arrow with an ivory outline attached to her sprite, plus the gold PLAYER plaque. NPCs now have a broad cyan cap, magenta robe and plaque, and their compact-scene role labels remain visible even when no clear slot exists. Verify after deployment with a fresh 393 × 873 capture. Simulation and collision bounds stay unchanged.
 
 ## Machine-Checkable Criteria
 

@@ -2593,18 +2593,23 @@ function smallWorldRoleLabels(shapes) {
         return { x: x + offset, y };
       })
     );
-    const position = candidates.find(
+    const inBoundsCandidates = candidates.filter(
       candidate =>
         candidate.x >= 0 &&
         candidate.x + width <= 160 &&
         candidate.y >= 28 &&
-        candidate.y + height <= 104 &&
+        candidate.y + height <= 104
+    );
+    const position =
+      inBoundsCandidates.find(candidate =>
         [...bodies, ...placedBounds].every(other =>
           other.id === actor.id
             ? true
             : !rectanglesOverlap({ ...candidate, width, height }, other.bounds)
         )
-    );
+      ) ?? inBoundsCandidates[0];
+    // Keep a role tag visible in crowded scenes. A tag that touches a sprite is
+    // still clearer than silently dropping the only textual role cue.
     if (!position) continue;
     const player = actor.role === 'player';
     const metadata = {
@@ -2686,11 +2691,17 @@ function smallWorldActorSprite(shape, role, actorCell) {
   const player = role === 'player';
   const source = player
     ? ['..f.', '.fff', 'cccc', 'c..c']
-    : ['nnnn', 'nffn', '.nn.', '.nn.'];
+    : ['.hhhh.', 'nnnnnn', 'nfffnn', '.nnn.', '.nnn.', '.nnn.'];
   /** @type {Record<string, string>} */
   const colors = player
     ? { c: '#ffcb55', f: '#fff3c4', k: '#172c34' }
-    : { n: '#f14bd3', v: '#8d4bb0', f: '#ffe1fa', k: '#342041' };
+    : {
+        n: '#f14bd3',
+        v: '#8d4bb0',
+        f: '#ffe1fa',
+        h: '#28e6d2',
+        k: '#342041',
+      };
   const bodyWidth = Math.min(actorCell.width, shape.width ?? actorCell.width);
   const bodyHeight = Math.min(
     actorCell.height,
