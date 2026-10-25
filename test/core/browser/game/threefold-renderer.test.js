@@ -2423,16 +2423,60 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
-test('backs every caption and gives the status rows compact pixel icons', () => {
+test.each([0.04, 2.36])(
+  'keeps an offscreen resident at x=%s from leaving a floating NPC badge',
+  x => {
+    const scene = createThreefoldWeftwaysScene();
+    for (const entity of [...scene.interactables, ...scene.creatures]) {
+      if (entity.id !== THREEFOLD_WEFTWAYS_PELL_ID) continue;
+      entity.position = { x, y: 0.76 };
+      entity.bounds = {
+        min: { x: x - 0.04, y: 0.72, z: 0 },
+        max: { x: x + 0.04, y: 0.8, z: 0.18 },
+      };
+    }
+    const state = createThreefoldSimulation(THRESHOLDS, scene);
+    const frame = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, scale: -3 },
+    });
+    const resident = frame.shapes.filter(
+      shape => shape.actorId === THREEFOLD_WEFTWAYS_PELL_ID
+    );
+    const body = resident.filter(shape => shape.actorSpritePart === 'body');
+    expect(body.length).toBeGreaterThan(0);
+    expect(
+      body.every(shape => shape.x + shape.width <= 0 || shape.x >= 160)
+    ).toBe(true);
+    expect(resident.some(shape => shape.actorSpritePart === 'role-label')).toBe(
+      false
+    );
+  }
+);
+
+test.each([
+  createBrokenGateScene,
+  createThreefoldBelltopsScene,
+  createThreefoldCrownbackReachScene,
+  createThreefoldSiltMarginScene,
+  createThreefoldHearthgapsScene,
+  createThreefoldWeftwaysScene,
+  createThreefoldSluiceScene,
+  createThreefoldWakeformShoalsScene,
+])('backs every caption with a valid pixel font in %p', createScene => {
   const frame = renderThreefoldFrame(
-    createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+    createThreefoldSimulation(THRESHOLDS, createScene())
   );
   const textIndexes = frame.shapes.flatMap((shape, index) =>
     shape.type === 'text' ? [index] : []
   );
-  const backedTextCount = textIndexes.filter(index =>
-    frame.shapes.slice(0, index).some(shape => shape.textBacking === true)
-  ).length;
+  for (const index of textIndexes) {
+    expect(frame.shapes[index].font).toMatch(/^[1-9]\d*px monospace$/);
+    expect(frame.shapes[index - 1]).toMatchObject({
+      type: 'rect',
+      textBacking: true,
+    });
+  }
   const iconKinds = new Set(
     frame.shapes
       .filter(shape => shape.hudIconKind)
@@ -2440,7 +2484,6 @@ test('backs every caption and gives the status rows compact pixel icons', () => 
   );
 
   expect(textIndexes.length).toBeGreaterThan(0);
-  expect(backedTextCount).toBe(textIndexes.length);
   expect(iconKinds).toEqual(new Set(['clock', 'scale', 'move', 'buttons']));
 });
 

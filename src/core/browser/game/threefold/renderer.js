@@ -2509,7 +2509,13 @@ function finishSmallWorldFrame(frame, threefold) {
             height: shape.height ?? 0,
           };
       return actorRole && shape.type === 'rect'
-        ? smallWorldActorSprite(shape, actorRole, actorCell)
+        ? smallWorldActorSprite(
+            /** @type {ThreefoldSpriteShape & {width:number,height:number}} */ (
+              shape
+            ),
+            actorRole,
+            actorCell
+          )
         : [shape];
     }
   );
@@ -2691,7 +2697,7 @@ function rectanglesOverlap(first, second) {
  * Replace the small-world actor placeholder with a readable role-specific sprite.
  * These scenes use a compressed logical map, so contrasting masks occupy each
  * actor's existing cell rather than expanding into neighboring cells.
- * @param {ThreefoldSpriteShape} shape Scale-aware actor cell or player marker.
+ * @param {ThreefoldSpriteShape & {width:number,height:number}} shape Scale-aware rectangular actor cell or player marker.
  * @param {'player'|'npc'} role Actor identity.
  * @param {{x:number,y:number,width:number,height:number}} actorCell Projected logical actor cell.
  * @returns {ThreefoldSpriteShape[]} Two-pixel-grid character cells.
@@ -2711,11 +2717,8 @@ function smallWorldActorSprite(shape, role, actorCell) {
         h: '#28e6d2',
         k: '#342041',
       };
-  const bodyWidth = Math.min(actorCell.width, shape.width ?? actorCell.width);
-  const bodyHeight = Math.min(
-    actorCell.height,
-    shape.height ?? actorCell.height
-  );
+  const bodyWidth = Math.min(actorCell.width, shape.width);
+  const bodyHeight = Math.min(actorCell.height, shape.height);
   /**
    * @param {{x:number,y:number,width:number,height:number}} bounds Pixel mask bounds.
    * @param {'identity-cue'|'body'} part Sprite layer.
@@ -2843,7 +2846,8 @@ function alignThreefoldFrame(frame) {
 function addThreefoldTextBackings(shapes) {
   return shapes.flatMap(shape => {
     if (shape.type !== 'text' || typeof shape.text !== 'string') return [shape];
-    const fontSize = Number.parseInt(shape.font || '6px', 10) || 6;
+    // All caption producers supply a fixed pixel font; there is no external font input.
+    const fontSize = Number.parseInt(/** @type {string} */ (shape.font), 10);
     const width = Math.min(
       160,
       Math.max(8, shape.text.length * fontSize * 0.62 + 4)
@@ -3087,20 +3091,18 @@ function npcRoleConnector(badge, actor, metadata) {
           },
         ]
       : []),
-    ...(verticalHeight > 0
-      ? [
-          {
-            ...part,
-            x: snapCanvasCoordinate(
-              badgeCenterX - connectorWidth / 2,
-              PERSON_GRID_PIXELS
-            ),
-            y: verticalTop,
-            width: connectorWidth,
-            height: verticalHeight,
-          },
-        ]
-      : []),
+    // Badge placement leaves a two-pixel gap above/below the body, or places
+    // the badge at zero beside a tall body whose bottom is strictly positive.
+    {
+      ...part,
+      x: snapCanvasCoordinate(
+        badgeCenterX - connectorWidth / 2,
+        PERSON_GRID_PIXELS
+      ),
+      y: verticalTop,
+      width: connectorWidth,
+      height: verticalHeight,
+    },
   ];
 }
 
@@ -3137,7 +3139,9 @@ function placeResidentMarker(centerX, top, playerKeepout) {
     .sort(
       (left, right) => Math.abs(left - centered) - Math.abs(right - centered)
     );
-  return candidates[0] ?? centered;
+  // The only caller reserves a 40px player region; a 32px badge always has
+  // a horizontal slot in the 160px display, independent of vertical overlap.
+  return candidates[0];
 }
 
 /**
@@ -3300,7 +3304,7 @@ function maraCapeFrill(sprites) {
 
 /**
  * Mark Mara with a compact gold selection frame and diamond above her sprite.
- * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
+ * @param {Array<ThreefoldSpriteShape & {width:number,height:number}>} sprites Mara's rendered rectangular sprite cells.
  * @returns {ThreefoldSpriteShape[]} Her outline and compact gold marker.
  */
 function maraRoleLabel(sprites) {
@@ -3310,14 +3314,14 @@ function maraRoleLabel(sprites) {
 
 /**
  * Give Mara a compact gold diamond that remains distinct as her body scales.
- * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
+ * @param {Array<ThreefoldSpriteShape & {width:number,height:number}>} sprites Mara's rendered rectangular pixel cells.
  * @returns {ThreefoldSpriteShape[]} Two-pixel grid cells forming the beacon.
  */
 function maraPlayerArrow(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
-  const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
-  const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
+  const maxY = Math.max(...sprites.map(shape => shape.y + shape.height));
+  const maxX = Math.max(...sprites.map(shape => shape.x + shape.width));
   const centerX = snapCanvasCoordinate(
     Math.min(158, Math.max(2, (minX + maxX) / 2)),
     2
@@ -3345,7 +3349,7 @@ function maraPlayerArrow(sprites) {
 
 /**
  * Frame Mara's full body with a player-only selection bracket.
- * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
+ * @param {Array<ThreefoldSpriteShape & {width:number,height:number}>} sprites Mara's rendered rectangular pixel cells.
  * @returns {ThreefoldSpriteShape[]} 2px-grid corner brackets surrounding Mara.
  */
 function maraRoleFrame(sprites) {
@@ -4107,13 +4111,11 @@ function geometrySprite(actor, camera, heightMeters) {
             ? '#25a9b8'
             : actor.id === 'ferry-mooring-line'
               ? PALETTE[3]
-              : actor.id === 'latchfolk-watchkeeper'
-                ? '#b6d8dc'
-                : actor.id === 'upland-road-exit'
-                  ? '#f1ead0'
-                  : actor.id === 'relief-gate'
-                    ? PALETTE[2]
-                    : PALETTE[3],
+              : actor.id === 'upland-road-exit'
+                ? '#f1ead0'
+                : actor.id === 'relief-gate'
+                  ? PALETTE[2]
+                  : PALETTE[3],
       growthPreview: actor.growthPreview === true,
     },
   ];
