@@ -511,7 +511,7 @@ jobs:
           download_tree test-results
 
       - name: Upload e2e artifacts
-        if: always()
+        if: always() && steps.run_playwright_job.outcome != 'skipped'
         uses: actions/upload-artifact@v6
         with:
           name: e2e-${{ steps.environment.outputs.environment }}
@@ -519,7 +519,7 @@ jobs:
             /tmp/playwright.log
             playwright-report
             test-results
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Dump Cloud Run job logs
         if: always()

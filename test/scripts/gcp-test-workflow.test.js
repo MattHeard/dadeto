@@ -16,6 +16,33 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('gcloud storage cp -r "${REPORT_ROOT}/${tree}" .');
   });
 
+  it('persists Playwright attachments and requires a non-empty E2E artifact', () => {
+    const workflow = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+    const config = readFileSync('test/e2e/cloud.config.ts', 'utf8');
+    const runner = readFileSync('scripts/run-e2e.js', 'utf8');
+    const uploadStep = workflow
+      .split('      - name: Upload e2e artifacts\n')[1]
+      ?.split('\n      - name: ')[0];
+
+    expect(config).toContain("outputDir: 'test-results'");
+    expect(config).toContain(
+      "['html', { outputFolder: 'playwright-report', open: 'never' }]"
+    );
+    expect(runner).toContain(
+      "for (const reportDirectory of ['playwright-report', 'test-results'])"
+    );
+    expect(runner).toContain(
+      'throw new Error(`Cloud Playwright did not create ${reportDirectory}`)'
+    );
+    expect(runner).toContain("await run('gcloud', args);");
+    expect(uploadStep).toContain(
+      "if: always() && steps.run_playwright_job.outcome != 'skipped'"
+    );
+    expect(uploadStep).toContain('if-no-files-found: error');
+    expect(uploadStep).toContain('playwright-report');
+    expect(uploadStep).toContain('test-results');
+  });
+
   it('filters Cloud Run logs by the execution label used by the log URI', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 

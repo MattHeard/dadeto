@@ -96,6 +96,12 @@ async function uploadCloudArtifacts(environment) {
     return;
   }
 
+  for (const reportDirectory of ['playwright-report', 'test-results']) {
+    if (!fs.existsSync(reportDirectory)) {
+      throw new Error(`Cloud Playwright did not create ${reportDirectory}`);
+    }
+  }
+
   const reportPrefix = process.env.REPORT_PREFIX ?? '';
   const dest = reportPrefix
     ? `gs://${reportBucket}/${reportPrefix}`
@@ -117,7 +123,7 @@ async function uploadPath(src, dest) {
     args.push('-r');
   }
   args.push(src, `${dest}/`);
-  await run('gcloud', args, true);
+  await run('gcloud', args);
 }
 
 async function run(command, commandArgs, allowFailure = false) {

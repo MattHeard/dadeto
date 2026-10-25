@@ -32,6 +32,11 @@ if (allowedPorts.size > 0) {
 export default defineConfig({
   testDir: '.',
   testIgnore: ['**/local/**'],
+  outputDir: 'test-results',
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+  ],
   workers: 1,
   testMatch: [
     '**/api-key-credit-v2.spec.ts',
