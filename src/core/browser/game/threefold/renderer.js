@@ -3305,7 +3305,6 @@ function maraPlayerArrow(sprites) {
  * @returns {ThreefoldSpriteShape[]} 2px-grid corner brackets surrounding Mara.
  */
 function maraRoleFrame(sprites) {
-  if (sprites.length === 0) return [];
   const minX = Math.min(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
   const maxX = Math.max(
