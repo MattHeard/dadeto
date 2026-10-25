@@ -53,6 +53,7 @@
     "interpretability:algzoo:render-accuracy-report": "node src/local/render-algzoo-accuracy-report.js",
     "interpretability:algzoo:replay-activation-trace": "node src/local/replay-algzoo-activation-trace.js",
     "interpretability:algzoo:render-coverage-cost-report": "node src/local/render-algzoo-coverage-cost-report.js",
+    "interpretability:algzoo:audit-ledger-status": "node src/local/verify-algzoo-audit-ledger.js",
     "core-parse": "npm run parse-not-validate && npm run parse-boundary",
     "parse-not-validate": "node src/local/check-parse-not-validate.js",
     "parse-boundary": "node src/local/check-parse-boundary.js",
