@@ -3139,42 +3139,23 @@ function maraRoleLabel(sprites, otherCharacters) {
   const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
   const markerWidth = ROLE_TAG_WIDTH;
   const markerHeight = ROLE_TAG_HEIGHT;
-  const sideMarkerTop = snapCanvasCoordinate(
-    (minY + maxY - markerHeight) / 2,
-    2
-  );
-  const markerTop = Math.max(
-    PLAYER_BADGE_MIN_Y,
-    Math.min(108 - markerHeight, minY - markerHeight - 4)
-  );
-  const candidates = [
-    {
-      side: 'above',
-      left: snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2),
-      top: markerTop,
-    },
-    {
-      side: 'below',
-      left: snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2),
-      top: Math.min(108 - markerHeight, maxY + 4),
-    },
-    {
-      side: 'left',
-      left: snapCanvasCoordinate(minX - markerWidth - 4, 2),
-      top: sideMarkerTop,
-    },
-    {
-      side: 'right',
-      left: snapCanvasCoordinate(maxX + 4, 2),
-      top: sideMarkerTop,
-    },
-  ].filter(
-    candidate =>
-      candidate.left >= 0 &&
-      candidate.left + markerWidth <= 160 &&
-      candidate.top >= PLAYER_BADGE_MIN_Y &&
-      candidate.top + markerHeight <= 108
-  );
+  const labelLeft = snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2);
+  const candidates = Array.from(
+    { length: (108 - markerHeight - PLAYER_BADGE_MIN_Y) / 2 + 1 },
+    (_, index) => ({ top: PLAYER_BADGE_MIN_Y + index * 2 })
+  )
+    .filter(({ top }) => top + markerHeight <= minY - 4 || top >= maxY + 4)
+    .map(({ top }) => ({
+      left: labelLeft,
+      top,
+      side: top + markerHeight <= minY ? 'above' : 'below',
+      gap: top + markerHeight <= minY ? minY - top - markerHeight : top - maxY,
+    }))
+    .sort(
+      (first, second) =>
+        first.gap - second.gap ||
+        (first.side === second.side ? 0 : first.side === 'above' ? -1 : 1)
+    );
   const clearCandidate = candidates.find(
     candidate =>
       ![...sprites, ...otherCharacters].some(
@@ -3185,10 +3166,13 @@ function maraRoleLabel(sprites, otherCharacters) {
           candidate.top + markerHeight > shape.y
       )
   );
+  // Keep the PLAYER tag vertically aligned with Mara. Moving it sideways to
+  // avoid an NPC can make the tag look like it belongs to that resident.
+  // If both vertical positions are busy, a local overlap is less ambiguous
+  // than a detached label; the attached arrow and leader still identify Mara.
   const placement = clearCandidate ?? candidates[0];
   if (!placement) return [];
   const markerLeft = placement.left;
-  const badgeCenterY = placement.top + markerHeight / 2;
   const metadata = {
     actorId: 'mara',
     playerMarker: true,
@@ -3196,34 +3180,23 @@ function maraRoleLabel(sprites, otherCharacters) {
     spriteGridSize: 2,
   };
   const leader =
-    placement.side === 'left'
+    placement.side === 'above'
       ? [
           {
-            x: markerLeft + markerWidth,
-            y: badgeCenterY,
-            width: minX - markerLeft - markerWidth,
-            height: 2,
+            x: snapCanvasCoordinate((minX + maxX) / 2, 2),
+            y: placement.top + markerHeight,
+            width: 4,
+            height: minY - placement.top - markerHeight,
           },
         ]
-      : placement.side === 'right'
-        ? [{ x: maxX, y: badgeCenterY, width: markerLeft - maxX, height: 2 }]
-        : placement.side === 'above'
-          ? [
-              {
-                x: snapCanvasCoordinate((minX + maxX) / 2, 2),
-                y: placement.top + markerHeight,
-                width: 2,
-                height: minY - placement.top - markerHeight,
-              },
-            ]
-          : [
-              {
-                x: snapCanvasCoordinate((minX + maxX) / 2, 2),
-                y: maxY,
-                width: 2,
-                height: placement.top - maxY,
-              },
-            ];
+      : [
+          {
+            x: snapCanvasCoordinate((minX + maxX) / 2, 2),
+            y: maxY,
+            width: 4,
+            height: placement.top - maxY,
+          },
+        ];
   return [
     ...maraRoleFrame(sprites),
     ...maraPlayerArrow(sprites),

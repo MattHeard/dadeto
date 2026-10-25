@@ -1862,6 +1862,10 @@ function expectPlayerPointerClearFromActors(
   const bodyRight = Math.max(
     ...playerBody.map(shape => shape.x + (shape.width ?? 0))
   );
+  const bodyCenterX = (bodyLeft + bodyRight) / 2;
+  expect(
+    Math.abs(pointer.x + pointer.width / 2 - bodyCenterX)
+  ).toBeLessThanOrEqual(1);
   expect(
     npcLabel.every(
       shape =>
@@ -1881,12 +1885,11 @@ function expectPlayerPointerClearFromActors(
     ...playerBody.map(shape => shape.y + (shape.height ?? 0))
   );
   const leader = playerLeader[0];
-  const leaderIsVertical = leader.width === 2 && leader.height > 0;
-  const leaderIsHorizontal = leader.height === 2 && leader.width > 0;
-  expect(leaderIsVertical || leaderIsHorizontal).toBe(true);
+  const leaderIsVertical = leader.width === 4 && leader.height > 0;
+  expect(leaderIsVertical).toBe(true);
   if (leaderIsVertical) {
-    expect(leader.x).toBeGreaterThanOrEqual(bodyLeft);
-    expect(leader.x).toBeLessThan(bodyRight);
+    expect(leader.x + leader.width / 2).toBeGreaterThanOrEqual(bodyLeft);
+    expect(leader.x + leader.width / 2).toBeLessThan(bodyRight);
     expect(
       Math.abs(leader.y - (pointer.y + pointer.height)) <= 2 ||
         Math.abs(leader.y + leader.height - pointer.y) <= 2
@@ -1894,17 +1897,6 @@ function expectPlayerPointerClearFromActors(
     expect(
       Math.abs(leader.y + leader.height - bodyTop) <= 2 ||
         Math.abs(leader.y - bodyBottom) <= 2
-    ).toBe(true);
-  } else {
-    expect(leader.y).toBeGreaterThanOrEqual(bodyTop);
-    expect(leader.y).toBeLessThan(bodyBottom);
-    expect(
-      Math.abs(leader.x - (pointer.x + pointer.width)) <= 2 ||
-        Math.abs(leader.x + leader.width - pointer.x) <= 2
-    ).toBe(true);
-    expect(
-      Math.abs(leader.x + leader.width - bodyLeft) <= 2 ||
-        Math.abs(leader.x - bodyRight) <= 2
     ).toBe(true);
   }
 }
@@ -2472,6 +2464,23 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
   );
   const playerBeacon = frame.shapes.filter(
     shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
+  );
+  expectPlayerPointerClearFromActors(
+    frame.shapes.filter(
+      shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'pointer'
+    ),
+    frame.shapes.filter(
+      shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'leader'
+    ),
+    frame.shapes.filter(
+      shape =>
+        shape.actorId === 'mara' &&
+        shape.playerMarker !== true &&
+        shape.playerMarkerKind !== 'leader'
+    ),
+    frame.shapes.filter(
+      shape => shape.npcMarkerKind === 'emblem' && shape.type === 'rect'
+    )
   );
 
   expect(playerBeacon).toHaveLength(63);

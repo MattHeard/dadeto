@@ -76,3 +76,24 @@ edge, and kept its point attached to Mara whether it appears above or below her.
 The renderer regression checks its dimensions, 2px grid, attachment, and role
 metadata. This is display-only; NPC scale and simulation/collision bounds do
 not change. A new production-size visual review is still required.
+
+## Keep the PLAYER plaque attached in crowded frames
+
+Fresh feedback still reported confusion. A new local browser capture showed
+that collision avoidance could move Mara's role plaque to the side, where it
+could be read as belonging to an NPC. The renderer now searches centered
+positions above and below Mara only, preferring the nearest position clear of
+resident badges. The 4px vertical connector keeps the badge tied to her even
+when it must move farther away. A regression checks centered alignment,
+connector geometry, the top-edge fallback, and separation from NPC badges.
+
+- Native canvas capture: `.tmp/threefold-player-linked-native.png`.
+- Focused renderer Jest: PASS, 52/52.
+- `npx eslint src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js`: PASS.
+- `npm run build`: PASS.
+- `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check`: PASS, 10/10 gates;
+  six impact shards passed (1,047 suites, 7,677 tests).
+- `git diff --check`: PASS.
+
+Next time, inspect the actual browser canvas at native dimensions. Distinct
+colors and masks are not enough if collision avoidance detaches the role cue.

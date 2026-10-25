@@ -351,3 +351,17 @@ Fresh feedback still found the characters too similar despite the role colors an
 ## Keep NPC badges visible over scene layers — 2026-10-25
 
 Follow-up feedback still found residents hard to distinguish from Mara. The NPC role emblems were emitted with their world sprites, where later signs and interface layers could cover them. NPC emblems now render above those layers and use a dark outer frame around the magenta badge for separation from the playfield. Mara keeps her gold `YOU` badge and selection markers. Source diff and `git diff --check` reviewed; focused renderer tests, phone-size capture, and build were not run in this loop.
+
+## Keep Mara's role label attached when NPCs are nearby — 2026-10-25
+
+Fresh feedback still could not distinguish Mara from the residents. A native
+browser capture showed the PLAYER plaque could shift sideways to avoid an NPC,
+making the role cue look detached from the controlled character. The plaque
+now remains horizontally centered over or under Mara, with a thicker vertical
+connector; it searches nearby vertical positions to avoid NPC badges before
+falling back to the nearest attached position. Renderer regressions cover
+normal and top-edge placement, alignment, connector width, safe bounds, and
+NPC-badge separation. This changes only presentation. The 160×144 local browser
+capture is `.tmp/threefold-player-linked-native.png`; focused renderer Jest
+passes 52/52, `npm run build` passes, and `npm run check` passes all 10 gates
+with six impact shards. Production phone review remains open.
