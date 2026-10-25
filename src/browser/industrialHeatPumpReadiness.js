@@ -12,8 +12,25 @@ export function calculateIndustrialHeatPumpReadiness(input) {
   if (errors.length > 0) return { valid: false, errors };
   const assumptions = /** @type {Record<string, number>} */ (input);
   const values = calculateIndustrialHeatPumpValues(assumptions);
-  return {
-    valid: true,
-    comparison: buildIndustrialHeatPumpComparison(assumptions, values),
-  };
+  const comparison = buildIndustrialHeatPumpComparison(assumptions, values);
+  if (containsNonFiniteNumber(comparison))
+    return {
+      valid: false,
+      errors: [{ field: 'input', code: 'calculation-not-finite' }],
+    };
+  return { valid: true, comparison };
+}
+
+/**
+ * Reject numeric overflow in the trusted comparison's nested record schema.
+ * Its values are numbers, status strings, and non-null nested records.
+ * @param {Record<string,any>} comparison Calculated comparison record.
+ * @returns {boolean} Whether a displayed or exported number is non-finite.
+ */
+function containsNonFiniteNumber(comparison) {
+  return Object.values(comparison).some(value =>
+    typeof value === 'number'
+      ? !Number.isFinite(value)
+      : typeof value === 'object' && containsNonFiniteNumber(value)
+  );
 }

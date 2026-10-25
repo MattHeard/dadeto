@@ -40,7 +40,7 @@
 - Fixture/regressions: `test/core/industrialHeatPumpReadiness.test.js`.
 - Loop command and outcomes: owning Bead `dadeto-2j89`.
 
-## Later browser presenter (not in this loop)
+## Browser presenter
 
 - [x] A non-programmer can edit the example without an account.
 - [x] COP, tariffs, process temperature, and electrical capacity update the
@@ -66,8 +66,36 @@
   functions, and lines (53/53 tests). Repository check/build evidence is
   recorded in Bead `dadeto-m5lz`.
 
+## Portable export and final acceptance — 2026-10-25
+
+- [x] The version-one export contract preserves optional industry-graph entity
+  references for sector, process, inputs, and outputs without requiring a graph.
+- [x] JSON serialization and recalculation from the exported assumptions
+  reproduce the exported comparison, including linked-reference metadata.
+- [x] Extreme finite inputs that overflow a displayed calculation produce an
+  explicit numeric-range error; stale results/briefs are hidden and export is
+  disabled until assumptions are corrected.
+- Focused model/presenter tests pass 59/59 with 100% statements, branches,
+  functions, and lines for all three heat-pump core modules; artifact:
+  `/tmp/heat-pump-export-coverage/coverage-final.json`.
+- The pure arithmetic mutation run killed all 17 mutants, with no survivors or
+  timeouts; artifact: `reports/mutation/mutation.json`.
+- Existing mobile capture `/tmp/industrial-heat-pump-mobile.png` was visually
+  reviewed for readable labels, separate result cards, caveats, and the brief.
+- The prior production deployment for `02535c1` passed. Global Full Check
+  remains separately tracked in `dadeto-3jh8`; the failed `40176886902` run
+  passed every unit shard but missed the global branch threshold in other
+  modules. Do not describe focused coverage as global coverage or E2E evidence.
+
+- Final export-loop gates: `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check`
+  passed all 10 fast local gates across six test shards with zero clones;
+  `npm run build` passed (log `/tmp/dadeto-heat-pump-export-build.log`);
+  `npm run manuals:check` validated 85 manuals; `git diff --check` passed.
+
 ## Pass/Fail Rules
 
-Pass the pure slice only when all first-section checks are verified by focused
-tests, changed-core coverage, and repository gates. Do not count this slice as
-proof of the later browser or vendor-brief acceptance.
+Verify the calculator, presenter, and portable-export criteria together before
+closing the feature. Record local checks/build and authoritative CI evidence
+separately. Any unrelated global failure must retain an owning quality Bead
+and triage note; the overarching quality issue stays open until Full Check
+passes.

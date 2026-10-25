@@ -109,6 +109,26 @@ Payback is available only for positive operating savings. A required
 temperature beyond the assumed equipment limit, insufficient site electrical
 capacity, and unattractive economics are independent statuses.
 
+## Portable scenario format
+
+The JSON download is a versioned record with `schemaVersion: 1`, a
+`scenarioName`, the unit-labelled `assumptions` described above, the calculated
+`result`, and the hypothetical-screening `disclosure`. Recalculate the exported
+assumptions to reproduce the result; results are derived data, not measured
+performance. The browser never exports a non-finite calculated number: extreme
+input combinations produce an explicit numeric-range error instead.
+
+An optional `industryGraphReferences` object may link the scenario to an
+existing industry graph. Its `sector` and `process` values are opaque string
+entity IDs; `inputs` and `outputs` are arrays of opaque string entity IDs.
+References are metadata and do not change the calculation. Omit the object or
+individual keys when no corresponding entities are known; the synthetic example
+does not invent graph entities or require a catalog. For example, a consuming
+application can attach its own IDs for the customer's sector, heating process,
+fuel/electricity inputs, useful heat and product outputs. The export builder
+preserves these optional links through JSON serialization. No graph lookup,
+server, account, or ontology is required to use the tool.
+
 ## Limits and assumptions
 
 The fixture is illustrative. The model does not estimate thermodynamic COP,

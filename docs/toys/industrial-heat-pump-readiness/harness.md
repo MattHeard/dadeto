@@ -54,3 +54,22 @@ print actions. No network endpoint is required.
   and presenter evidence is in Bead `dadeto-m5lz`.
 - Cleanup command: remove only the local generated coverage artifact if needed;
   no external state is created.
+
+## Portable data and numeric limits
+
+The presenter tests serialize exported assumptions/results, recalculate the
+comparison, and preserve optional sector/process/input/output graph references.
+The core fixture suite exercises finite values whose combinations overflow
+energy, power, or financial arithmetic. The UI must hide stale output, state
+the numeric-range error, and disable export; resetting restores the example.
+
+For scoped pure-calculator mutation validation, run this separately from the
+unit gate (the isolated mutation worktree runner is also available):
+
+```sh
+npx stryker run --mutate src/core/industrialHeatPumpReadiness.js --reporters json,progress --concurrency 1
+```
+
+The latest run killed all 17 mutants. The report is
+`reports/mutation/mutation.json`; the report applies to the arithmetic file,
+not the entire repository.

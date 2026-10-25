@@ -1,4 +1,5 @@
-/** @typedef {{label:string,description:string,inputs:Readonly<Record<string,number>>}} HeatPumpScenario */
+/** @typedef {{sector?:string,process?:string,inputs?:string[],outputs?:string[]}} IndustrialHeatPumpEntityReferences */
+/** @typedef {{label:string,description:string,inputs:Readonly<Record<string,number>>,industryGraphReferences?:IndustrialHeatPumpEntityReferences}} HeatPumpScenario */
 
 const BASE_INPUTS = Object.freeze({
   requiredSupplyTemperatureC: 120,
@@ -65,4 +66,24 @@ function createScenario(label, description, overrides = {}) {
     description,
     inputs: Object.freeze({ ...BASE_INPUTS, ...overrides }),
   });
+}
+
+/**
+ * Build a portable screening scenario from trusted assumptions and results.
+ * Graph references are optional opaque entity IDs and do not affect arithmetic.
+ * @param {{scenarioName:string,assumptions:Record<string,number>,result:Record<string,any>,industryGraphReferences?:IndustrialHeatPumpEntityReferences}} scenario Validated scenario with optional graph links.
+ * @returns {Record<string,unknown>} Version-one portable screening record.
+ */
+export function createIndustrialHeatPumpScenarioExport(scenario) {
+  return {
+    schemaVersion: 1,
+    scenarioName: scenario.scenarioName,
+    assumptions: scenario.assumptions,
+    result: scenario.result,
+    ...(scenario.industryGraphReferences
+      ? { industryGraphReferences: scenario.industryGraphReferences }
+      : {}),
+    disclosure:
+      'Hypothetical user-supplied screening calculation; not engineering advice or evidence of commercially available equipment.',
+  };
 }

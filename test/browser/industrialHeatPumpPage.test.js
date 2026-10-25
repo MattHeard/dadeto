@@ -3,6 +3,8 @@ import { jest } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import { startIndustrialHeatPumpReadinessPage } from '../../src/browser/industrialHeatPump/page.js';
 import { INDUSTRIAL_HEAT_PUMP_FIXTURE } from '../fixtures/industrialHeatPumpReadiness.js';
+import { createIndustrialHeatPumpScenarioExport } from '../../src/core/browser/industrialHeatPump/scenarios.js';
+import { calculateIndustrialHeatPumpReadiness } from '../../src/browser/industrialHeatPumpReadiness.js';
 
 const PAGE = readFileSync(
   new URL(
@@ -193,12 +195,56 @@ test('exports the current assumptions and print brief through injected effects',
     assumptions: INDUSTRIAL_HEAT_PUMP_FIXTURE,
   });
   expect(downloaded[0][0].disclosure).toContain('Hypothetical');
+  const restored = JSON.parse(JSON.stringify(downloaded[0][0]));
+  expect(restored).not.toHaveProperty('industryGraphReferences');
+  expect(
+    calculateIndustrialHeatPumpReadiness(restored.assumptions).comparison
+  ).toEqual(restored.result);
   expect(downloaded[0][1]).toBe('industrial-heat-pump-screening.json');
   expect(downloaded[1][0].scenarioName).toBe('Custom assumptions');
   expect(document.querySelector('#export-status').textContent).toContain(
     'Exported'
   );
   expect(printPage).toHaveBeenCalledTimes(1);
+});
+
+test('portable exports reproduce the result and preserve optional industry graph links', () => {
+  const assumptions = { ...INDUSTRIAL_HEAT_PUMP_FIXTURE, heatPumpCop: 3 };
+  const result = calculateIndustrialHeatPumpReadiness(assumptions).comparison;
+  const industryGraphReferences = {
+    sector: 'test:food-processing',
+    process: 'test:process-heat',
+    inputs: ['test:electricity', 'test:fuel'],
+    outputs: ['test:useful-heat'],
+  };
+  const exported = createIndustrialHeatPumpScenarioExport({
+    scenarioName: 'Linked illustrative process',
+    assumptions,
+    result,
+    industryGraphReferences,
+  });
+  const restored = JSON.parse(JSON.stringify(exported));
+  expect(restored.industryGraphReferences).toEqual(industryGraphReferences);
+  expect(calculateIndustrialHeatPumpReadiness(restored.assumptions)).toEqual({
+    valid: true,
+    comparison: restored.result,
+  });
+});
+
+test('finite inputs that overflow the calculation show a range error without stale results', () => {
+  const dom = createPage();
+  const { document, Event } = dom.window;
+  const cop = document.querySelector('[name="heatPumpCop"]');
+  cop.value = String(Number.MIN_VALUE);
+  cop.dispatchEvent(new Event('input', { bubbles: true }));
+  expect(document.querySelector('#validation-summary').textContent).toContain(
+    'numeric range'
+  );
+  expect(document.querySelector('.comparison-grid').hidden).toBe(true);
+  expect(document.querySelector('.brief-card').hidden).toBe(true);
+  expect(document.querySelector('#export-button').disabled).toBe(true);
+  document.querySelector('#reset-button').click();
+  expect(document.querySelector('.comparison-grid').hidden).toBe(false);
 });
 
 test('the presenter stays client-only and disposes its listeners', () => {

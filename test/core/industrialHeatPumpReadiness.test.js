@@ -188,6 +188,21 @@ describe('industrial heat-pump screening calculation', () => {
     });
   });
 
+  test.each([
+    { annualUsefulHeatKwh: 1e308, incumbentEfficiency: 0.01 },
+    { heatPumpCop: Number.MIN_VALUE },
+    { annualOperatingHours: Number.MIN_VALUE },
+    { targetPaybackYears: Number.MAX_VALUE, heatPumpCop: 3 },
+  ])(
+    'rejects finite assumptions that overflow displayed arithmetic: %p',
+    overrides => {
+      expect(calculate(overrides)).toEqual({
+        valid: false,
+        errors: [{ field: 'input', code: 'calculation-not-finite' }],
+      });
+    }
+  );
+
   test('reports target payback when savings meet it exactly', () => {
     const savings = calculate().comparison.annualOperatingSavings;
     const result = calculate({ installedCost: savings * 5 });

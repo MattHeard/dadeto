@@ -58,3 +58,15 @@
   injects calculation, download, and print dependencies.
 - Guardrail added (test/doc/harness): `npm run non-core-thin` plus the focused
   Jest command now check the boundary and the presenter behavior.
+
+## Portable export and arithmetic overflow
+
+- Finite operands can still overflow arithmetic. The boundary inspects the
+  calculated comparison before display/export and returns a numeric-range
+  error if any emitted number is non-finite. Do not reject legitimate
+  not-applicable thresholds by validating unused raw division results.
+- Keep the export's optional industry-graph references as metadata. They must
+  survive serialization without changing the calculation or requiring a
+  catalog lookup. Recalculate from exported assumptions to detect drift.
+- Regression evidence: model overflow cases and the presenter export,
+  reference-retention, stale-result hiding, and reset tests.

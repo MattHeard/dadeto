@@ -1,4 +1,7 @@
-import { INDUSTRIAL_HEAT_PUMP_SCENARIOS } from './scenarios.js';
+import {
+  INDUSTRIAL_HEAT_PUMP_SCENARIOS,
+  createIndustrialHeatPumpScenarioExport,
+} from './scenarios.js';
 
 const FIELD_NAMES = Object.keys(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs);
 const FORMAT_NUMBER = new Intl.NumberFormat('de-DE', {
@@ -13,6 +16,8 @@ const FORMAT_CURRENCY = new Intl.NumberFormat('de-DE', {
 /** @type {Record<string,string>} */
 const ERROR_MESSAGES = {
   required: 'Enter a value.',
+  'calculation-not-finite':
+    'These assumptions exceed the supported numeric range. Reduce the extreme values to calculate a screening result.',
   'finite-number-required': 'Enter a finite number.',
   'below-minimum': 'Use a value above the required minimum.',
   'above-maximum': 'This value exceeds the supported range.',
@@ -131,9 +136,12 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
       if (error) error.textContent = issue ? ERROR_MESSAGES[issue.code] : '';
     }
     activeValidationSummary.hidden = errors.length === 0;
-    activeValidationSummary.textContent = errors.length
-      ? `${errors.length} assumption${errors.length === 1 ? '' : 's'} need attention. Results are hidden until corrected.`
-      : '';
+    const calculationIssue = errors.find(issue => issue.field === 'input');
+    activeValidationSummary.textContent = calculationIssue
+      ? ERROR_MESSAGES[calculationIssue.code]
+      : errors.length
+        ? `${errors.length} assumption${errors.length === 1 ? '' : 's'} need attention. Results are hidden until corrected.`
+        : '';
     if (errors.length > 0)
       setText(
         '#overall-status',
@@ -327,17 +335,15 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
         'Correct the scenario before exporting it.';
       return;
     }
-    const scenarioName =
-      getScenario(activeScenarioSelect.value)?.label ?? 'Custom assumptions';
+    const selectedScenario = getScenario(activeScenarioSelect.value);
+    const scenarioName = selectedScenario?.label ?? 'Custom assumptions';
     downloadJson(
-      {
-        schemaVersion: 1,
+      createIndustrialHeatPumpScenarioExport({
         scenarioName,
         assumptions: currentResult.inputs,
         result: currentResult.comparison,
-        disclosure:
-          'Hypothetical user-supplied screening calculation; not engineering advice or evidence of commercially available equipment.',
-      },
+        industryGraphReferences: selectedScenario?.industryGraphReferences,
+      }),
       'industrial-heat-pump-screening.json'
     );
     setText(
