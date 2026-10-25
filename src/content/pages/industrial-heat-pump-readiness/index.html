@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#122620" />
+    <meta
+      name="description"
+      content="Screen a hypothetical industrial heat-pump retrofit using editable site assumptions."
+    />
+    <title>Process Heat Screening — Dadeto</title>
+    <link rel="stylesheet" href="/industrial-heat-pump-readiness/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <a class="back-link" href="/">← Dadeto</a>
+        <p class="eyebrow">PROCESS HEAT · SCREENING TOOL</p>
+        <h1>Could a heat pump fit this process?</h1>
+        <p class="lede">
+          Change the assumptions below to see how temperature, electrical
+          capacity, and operating costs affect an illustrative food-processing
+          case.
+        </p>
+        <p class="disclosure" id="model-disclosure">
+          Hypothetical screening only. Values are user supplied or illustrative;
+          this is not equipment sizing, engineering advice, or evidence of
+          commercially available performance.
+        </p>
+      </header>
+
+      <section class="scenario-panel" aria-labelledby="scenario-heading">
+        <div class="scenario-heading">
+          <div>
+            <p class="eyebrow">STARTING POINT</p>
+            <h2 id="scenario-heading">Illustrative food process</h2>
+          </div>
+          <div class="scenario-actions">
+            <label for="scenario-select">Assumption set</label>
+            <select id="scenario-select" name="scenario">
+              <option value="base">Base example</option>
+              <option value="conservative">Conservative case</option>
+              <option value="optimistic">Improved COP / temperature case</option>
+              <option value="custom">Custom inputs</option>
+            </select>
+            <button id="reset-button" class="quiet-button" type="button">
+              Reset example
+            </button>
+          </div>
+        </div>
+
+        <form id="assumptions-form" novalidate>
+          <fieldset>
+            <legend>Site and process assumptions</legend>
+            <div class="input-grid">
+              <label>
+                Required supply temperature
+                <span class="input-unit">°C</span>
+                <input name="requiredSupplyTemperatureC" type="number" min="0" max="300" step="1" required />
+                <small class="field-error" data-error-for="requiredSupplyTemperatureC"></small>
+              </label>
+              <label>
+                Useful heat demand per year
+                <span class="input-unit">kWh/year</span>
+                <input name="annualUsefulHeatKwh" type="number" min="0" step="1000" required />
+                <small class="field-error" data-error-for="annualUsefulHeatKwh"></small>
+              </label>
+              <label>
+                Operating hours per year
+                <span class="input-unit">hours/year</span>
+                <input name="annualOperatingHours" type="number" min="0" max="8760" step="100" required />
+                <small class="field-error" data-error-for="annualOperatingHours"></small>
+              </label>
+              <label>
+                Current fuel price
+                <span class="input-unit">€/kWh fuel</span>
+                <input name="incumbentFuelPricePerKwh" type="number" min="0" step="0.01" required />
+                <small class="field-error" data-error-for="incumbentFuelPricePerKwh"></small>
+              </label>
+              <label>
+                Current system efficiency
+                <span class="input-unit">fraction (0–1)</span>
+                <input name="incumbentEfficiency" type="number" min="0" max="1" step="0.01" required />
+                <small class="field-error" data-error-for="incumbentEfficiency"></small>
+              </label>
+              <label>
+                Electricity price
+                <span class="input-unit">€/kWh</span>
+                <input name="electricityPricePerKwh" type="number" min="0" step="0.01" required />
+                <small class="field-error" data-error-for="electricityPricePerKwh"></small>
+              </label>
+              <label>
+                Assumed heat-pump COP
+                <span class="input-unit">unitless</span>
+                <input name="heatPumpCop" type="number" min="0" step="0.1" required />
+                <small class="field-error" data-error-for="heatPumpCop"></small>
+              </label>
+              <label>
+                Assumed maximum supply temperature
+                <span class="input-unit">°C</span>
+                <input name="heatPumpMaxTemperatureC" type="number" min="0" max="300" step="1" required />
+                <small class="field-error" data-error-for="heatPumpMaxTemperatureC"></small>
+              </label>
+              <label>
+                Illustrative installed cost
+                <span class="input-unit">€</span>
+                <input name="installedCost" type="number" min="0" step="1000" required />
+                <small class="field-error" data-error-for="installedCost"></small>
+              </label>
+              <label>
+                Annual maintenance cost
+                <span class="input-unit">€/year</span>
+                <input name="annualMaintenanceCost" type="number" min="0" step="100" required />
+                <small class="field-error" data-error-for="annualMaintenanceCost"></small>
+              </label>
+              <label>
+                Available electrical capacity
+                <span class="input-unit">kW</span>
+                <input name="availableElectricalPowerKw" type="number" min="0" step="1" required />
+                <small class="field-error" data-error-for="availableElectricalPowerKw"></small>
+              </label>
+              <label>
+                Target simple payback
+                <span class="input-unit">years</span>
+                <input name="targetPaybackYears" type="number" min="0" step="1" required />
+                <small class="field-error" data-error-for="targetPaybackYears"></small>
+              </label>
+            </div>
+            <p class="currency-note">
+              Costs use euros here. Keep all price and cost assumptions in the
+              same currency when editing.
+            </p>
+          </fieldset>
+        </form>
+      </section>
+
+      <section id="results" class="results" aria-labelledby="results-heading" hidden>
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow">UPDATED AS YOU EDIT</p>
+            <h2 id="results-heading">Screening result</h2>
+          </div>
+          <p id="overall-status" class="overall-status" role="status" aria-live="polite"></p>
+        </div>
+
+        <div id="validation-summary" class="validation-summary" role="alert" hidden></div>
+
+        <div class="feasibility-grid" aria-label="Independent feasibility results">
+          <article class="result-card">
+            <span class="result-icon icon-temperature" aria-hidden="true">↗</span>
+            <p class="eyebrow">TEMPERATURE</p>
+            <h3 id="temperature-status"></h3>
+            <p id="temperature-detail" class="result-detail"></p>
+          </article>
+          <article class="result-card">
+            <span class="result-icon icon-power" aria-hidden="true">ϟ</span>
+            <p class="eyebrow">SITE POWER</p>
+            <h3 id="power-status"></h3>
+            <p id="power-detail" class="result-detail"></p>
+          </article>
+          <article class="result-card">
+            <span class="result-icon icon-economics" aria-hidden="true">€</span>
+            <p class="eyebrow">OPERATING ECONOMICS</p>
+            <h3 id="economics-status"></h3>
+            <p id="economics-detail" class="result-detail"></p>
+          </article>
+        </div>
+
+        <div class="comparison-grid">
+          <section class="data-card" aria-labelledby="energy-heading">
+            <p class="eyebrow">ANNUAL COMPARISON</p>
+            <h3 id="energy-heading">Energy and operating cost</h3>
+            <dl class="metrics">
+              <div><dt>Incumbent fuel input</dt><dd id="fuel-input"></dd></div>
+              <div><dt>Heat-pump electricity</dt><dd id="electricity-input"></dd></div>
+              <div><dt>Incumbent fuel cost</dt><dd id="fuel-cost"></dd></div>
+              <div><dt>Heat-pump electricity cost</dt><dd id="electricity-cost"></dd></div>
+              <div><dt>Heat-pump maintenance</dt><dd id="maintenance-cost"></dd></div>
+              <div class="metric-total"><dt>Annual operating savings</dt><dd id="annual-savings"></dd></div>
+              <div><dt>Simple payback</dt><dd id="simple-payback"></dd></div>
+            </dl>
+          </section>
+
+          <section class="data-card thresholds" aria-labelledby="threshold-heading">
+            <p class="eyebrow">BREAKTHROUGH THRESHOLD</p>
+            <h3 id="threshold-heading">What would need to change?</h3>
+            <p>For the target payback selected above:</p>
+            <dl class="metrics">
+              <div><dt>Minimum COP</dt><dd id="minimum-cop"></dd></div>
+              <div><dt>Maximum installed cost</dt><dd id="maximum-installed-cost"></dd></div>
+            </dl>
+            <p class="fine-print">These are equation-based thresholds, not predicted equipment performance or a quote.</p>
+          </section>
+        </div>
+
+        <section class="brief-card" aria-labelledby="brief-heading">
+          <div class="brief-heading">
+            <div>
+              <p class="eyebrow">TAKE TO A CONVERSATION</p>
+              <h3 id="brief-heading">Vendor discussion brief</h3>
+            </div>
+            <div class="brief-actions">
+              <button id="export-button" type="button">Export scenario JSON</button>
+              <button id="print-button" class="quiet-button" type="button">Print brief</button>
+            </div>
+          </div>
+          <p id="brief-summary"></p>
+          <h4>Measurements to confirm</h4>
+          <ul id="missing-measurements"></ul>
+          <h4>Questions for a qualified installer</h4>
+          <ul id="commissioning-questions"></ul>
+          <p class="brief-disclosure">All inputs are illustrative or user supplied. Ask a qualified professional to assess the actual process, equipment, integration, and safety requirements.</p>
+          <p id="export-status" class="fine-print" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <div id="page-status" class="page-status" role="status" aria-live="polite"></div>
+      <footer>
+        <a href="/manuals/industrial-heat-pump-readiness.md">Field guide</a>
+        <span>CLIENT-SIDE SCREENING · NO ACCOUNT REQUIRED</span>
+      </footer>
+    </main>
+    <script type="module" src="/industrial-heat-pump-readiness/app.js"></script>
+  </body>
+</html>

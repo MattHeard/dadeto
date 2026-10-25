@@ -2,17 +2,21 @@
 
 ## What this toy does
 
-This first slice is a deterministic calculation module, not an interactive
-page. It compares an illustrative food-processing heat demand with a
-hypothetical heat-pump scenario using only explicit assumptions supplied by
-the caller. The calculation does not establish equipment availability or
-suitability.
+Open the standalone tool at
+`/industrial-heat-pump-readiness/`. It compares an illustrative food-process
+heat demand with a hypothetical heat-pump scenario using only the assumptions
+shown on the page. It runs in your browser without an account or service.
+The result is a screening aid; it does not establish equipment availability,
+site suitability, or a design.
 
 ## Input
 
 All annual energy values use kWh/year, power uses kW, temperatures use °C,
-efficiency and COP are unitless, and prices/costs must use one consistent
-currency. The synthetic fixture is:
+efficiency and COP are unitless, and prices/costs use euros. Edit any input to
+recalculate immediately. The scenario selector provides a conservative case,
+the base example, and an improved assumed COP/temperature case. These are
+sensitivity assumptions, not commercially validated equipment combinations.
+The base synthetic fixture is:
 
 ### Example
 
@@ -37,7 +41,9 @@ currency. The synthetic fixture is:
 
 The input boundary is `calculateIndustrialHeatPumpReadiness` in
 `src/browser/industrialHeatPumpReadiness.js`; its pure arithmetic is in
-`src/core/industrialHeatPumpReadiness.js`.
+`src/core/industrialHeatPumpReadiness.js`. The interactive presenter and
+scenario presets are in `src/core/browser/industrialHeatPump/`; a small
+`src/browser/` adapter supplies the calculation and local browser effects.
 
 ```json
 {
@@ -63,10 +69,17 @@ The input boundary is `calculateIndustrialHeatPumpReadiness` in
 
 ## Output
 
-The calculator reports incumbent fuel consumption and cost, heat-pump
-electricity and cost, average thermal and electrical power, savings, simple
-payback, separate temperature/power/economic feasibility, and COP/installed
-cost thresholds. Invalid values return explicit field-specific errors.
+The page reports incumbent fuel consumption and cost, heat-pump electricity
+and cost, average thermal and electrical power, savings, simple payback,
+separate temperature/power/economic feasibility, and COP/installed-cost
+thresholds. Invalid values show field-specific errors and hide stale results.
+If annual operating savings are not positive, payback is marked not applicable.
+
+The vendor discussion brief summarizes the current user assumptions, lists
+measurements to confirm, and suggests commissioning questions. **Export
+scenario JSON** downloads the current assumptions, results, and caveat.
+**Print brief** opens the browser's print flow. Neither action sends data to a
+server.
 
 ### Example
 
@@ -102,3 +115,10 @@ The fixture is illustrative. The model does not estimate thermodynamic COP,
 part-load performance, peak demand, equipment sizing, financing, replacement,
 carbon impact, or commercial equipment availability. It is not engineering,
 procurement, or investment advice.
+
+## Local preview
+
+Run `npm run build`, then serve the generated static site with
+`npm start -- --listen 4173` and open
+`http://localhost:4173/industrial-heat-pump-readiness/`. The presenter tests are
+in `test/browser/industrialHeatPumpPage.test.js`.

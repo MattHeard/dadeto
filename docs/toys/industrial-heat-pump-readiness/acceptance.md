@@ -42,13 +42,29 @@
 
 ## Later browser presenter (not in this loop)
 
-- [ ] A non-programmer can edit the example without an account.
-- [ ] COP, tariffs, process temperature, and electrical capacity update the
-  displayed result immediately.
-- [ ] A vendor discussion brief identifies user assumptions, critical missing
-  measurements, and commissioning questions.
-- [ ] Portable JSON/CSV or print output preserves the scenario and screening
-  caveats.
+- [x] A non-programmer can edit the example without an account.
+- [x] COP, tariffs, process temperature, and electrical capacity update the
+  displayed result immediately; invalid values clear stale result cards.
+- [x] Temperature, site-power, and operating-economics results are separate.
+- [x] Conservative/base/improved-COP-and-temperature scenarios and reset work.
+- [x] A vendor discussion brief identifies user assumptions, critical missing
+  measurements, commissioning questions, and screening caveats.
+- [x] Portable JSON export and print output preserve the scenario and caveats.
+- [x] The responsive page loads through the static site and has no account,
+  remote API, backend, or browser-storage dependency.
+- [x] The presenter and scenario definitions live in `src/core/browser`; the
+  `src/browser` adapter injects calculation and browser-only effects and passes
+  the non-core thin-file gate.
+
+### Presenter evidence — 2026-10-25
+
+- `test/browser/industrialHeatPumpPage.test.js`: 14 cases cover initial base
+  results, live edits, presets/reset, invalid/stale-result hiding, no-payback
+  output, independent temperature/power constraints, export/print adapters,
+  missing DOM states, no remote API/storage, and disposal.
+- Focused model and presenter coverage is 100% for statements, branches,
+  functions, and lines (53/53 tests). Repository check/build evidence is
+  recorded in Bead `dadeto-m5lz`.
 
 ## Pass/Fail Rules
 

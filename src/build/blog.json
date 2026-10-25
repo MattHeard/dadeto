@@ -38,7 +38,7 @@
       "publicationDate": "2026-10-25",
       "release": "beta",
       "content": [
-        "Review a transparent, illustrative process-heat comparison and its technical and economic assumptions. The current beta documents the pure screening calculation; it is not an interactive sizing tool.",
+        "Try the editable screening tool at /industrial-heat-pump-readiness/. Change the illustrative process assumptions to compare temperature, site-power, operating-cost, and payback results. This is not equipment sizing or evidence of commercially available performance.",
         {
           "type": "manual",
           "id": "HTHP1-manual",
