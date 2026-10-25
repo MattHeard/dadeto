@@ -23,6 +23,16 @@ cape that visibly widens toward the hem. Added regression coverage requiring a
 substantial cyan player shape and magenta NPC body, with role plaques excluded.
 No actor position, scale, collision, or physical bounds changed.
 
+The player reported the characters remained hard to distinguish after this
+pass. The cool cyan player palette still competed with the green/teal scene.
+Changed Mara's body and player-only cues to warm gold and pale ivory, while
+keeping NPCs magenta/violet. Extended renderer assertions to check both sides
+of that role contrast; physical and collision behavior remain untouched.
+The first gold preview still made the cape read as a broad terrain patch, so
+shortened it to a shoulder-length flare and kept the hooded body visible. The
+updated `/tmp/threefold-gold-player.png` preview makes the player warm gold and
+the capped NPC magenta at native 160 × 144 proportions (shown at 4×).
+
 ## Evidence
 
 - `node scripts/run-jest.js test/core/browser/game/threefold-renderer.test.js --runInBand --coverage=false` — PASS, 1 suite / 52 tests.
@@ -34,6 +44,10 @@ No actor position, scale, collision, or physical bounds changed.
 - Reopened follow-up: `npx jest test/core/browser/game/threefold-renderer.test.js --runInBand --coverage=false` — PASS, 52 tests; `npx eslint src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js` — PASS.
 - Follow-up `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` — PASS, all 10 gates, six impact shards; `npm run build` — PASS; `git diff --check` — PASS.
 - Updated default-frame preview: `/tmp/threefold-frame-after.png`.
+- Follow-up renderer Jest: 1 suite / 52 tests passed after warm-gold palette and shorter cape.
+- `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 local gates after an initial sandbox run failed with `EPERM` spawning Node and npm audit network access. Elevated rerun passed all six test shards, lint, core parse, dependency checks, duplication (zero clones), TSDoc, and audit (zero vulnerabilities).
+- `npm run build` passed after the renderer update.
+- Fresh 4× SVG preview `/tmp/threefold-gold-player.png` was reviewed; production capture remains open until the new build is deployed.
 
 ## Next-time guidance
 

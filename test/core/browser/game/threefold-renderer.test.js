@@ -717,7 +717,7 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
         expect.arrayContaining([
           expect.objectContaining({
             geometryId: 'mara',
-            fill: '#37e7ed',
+            fill: '#ffcb55',
             actorRole: 'player',
             actorSpritePart: 'body',
           }),
@@ -1798,6 +1798,28 @@ function expectFramedNpcEmblem(marker) {
 }
 
 /**
+ * Keep character palettes separate from each other and the green playfield.
+ * @param {Array<Record<string, any>>} playerArt Mara's rendered body cells.
+ * @param {Array<Record<string, any>>} residentArt Resident rendered body cells.
+ * @returns {void} Throws when the role palettes converge.
+ */
+function expectPlayerNpcPalettes(playerArt, residentArt) {
+  expect(playerArt.some(shape => shape.fill === '#ffcb55')).toBe(true);
+  expect(playerArt.some(shape => shape.fill === '#fff3c4')).toBe(true);
+  expect(
+    playerArt.every(shape => !['#f14bd3', '#8d4bb0'].includes(shape.fill))
+  ).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#f14bd3')).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#ffe1fa')).toBe(true);
+  expect(
+    residentArt.every(
+      shape => !['#ffcb55', '#fff3c4', '#e9d88d'].includes(shape.fill)
+    )
+  ).toBe(true);
+}
+
+/**
  * Keep Mara's role tag inside the playfield and separate from both actors.
  * @param {Array<Record<string, any>>} playerPointer Player tag shapes.
  * @param {Array<Record<string, any>>} playerLeader Connector to Mara.
@@ -1832,7 +1854,7 @@ function expectPlayerPointerClearFromActors(
   expect(playerLeader[0]).toMatchObject({
     width: 4,
     height: 2,
-    fill: '#37e7ed',
+    fill: '#ffcb55',
     playerMarker: true,
   });
   expect(playerLeader[0].y).toBeGreaterThanOrEqual(pointer.y);
@@ -1891,7 +1913,7 @@ function expectConnectedWideningCape(cape) {
       ).toBe(true);
       return cells.length * 2;
     });
-  expect(rows).toEqual([12, 16, 20, 24]);
+  expect(rows).toEqual([8, 12, 16]);
 }
 
 /**
@@ -1913,7 +1935,7 @@ function expectResidentCapWiderThanMaraHood(residentBody, frameShapes) {
     shape =>
       shape.actorId === 'mara' &&
       shape.playerSpritePart === 'body' &&
-      shape.fill !== '#37e7ed'
+      shape.fill !== '#ffcb55'
   );
   expect(topBandWidth(residentBody)).toBeGreaterThanOrEqual(16);
   expect(topBandWidth(residentBody)).toBeGreaterThan(topBandWidth(maraHood));
@@ -1931,7 +1953,7 @@ function expectRolePaletteContrast(frameShapes, residentBody) {
       shape.actorId === 'mara' &&
       (shape.playerSpritePart === 'body' ||
         shape.playerSpritePart === 'cape') &&
-      shape.fill === '#37e7ed'
+      shape.fill === '#ffcb55'
   );
   expect(playerCloak.length).toBeGreaterThan(20);
   expect(
@@ -2041,7 +2063,7 @@ describe('THREEFOLD resident identity marker', () => {
         shape.actorId === 'mara' &&
         shape.playerMarker !== true &&
         shape.playerMarkerKind !== 'leader' &&
-        shape.fill !== '#37e7ed'
+        shape.fill !== '#ffcb55'
     );
     const silhouette = shapes => {
       const minX = Math.min(...shapes.map(shape => shape.x));
@@ -2072,7 +2094,7 @@ describe('THREEFOLD resident identity marker', () => {
           shape.npcMarker !== true &&
           shape.playerMarker !== true &&
           shape.playerMarkerKind !== 'leader' &&
-          shape.fill !== '#37e7ed'
+          shape.fill !== '#ffcb55'
       );
     const bottomRowXs = shapes => {
       const bottom = Math.max(...shapes.map(shape => shape.y));
@@ -2153,14 +2175,11 @@ describe('THREEFOLD resident identity marker', () => {
       shape =>
         shape.playerMarker !== true && shape.playerMarkerKind !== 'leader'
     );
-    const playerOutline = mara.filter(shape => shape.fill === '#37e7ed');
+    const playerOutline = mara.filter(
+      shape => shape.playerSpritePart === 'outline'
+    );
 
-    expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
-    expect(residentArt.some(shape => shape.fill === '#f14bd3')).toBe(true);
-    expect(residentArt.some(shape => shape.fill === '#ffe1fa')).toBe(true);
-    expect(
-      residentArt.every(shape => !['#37e7ed', '#e9d88d'].includes(shape.fill))
-    ).toBe(true);
+    expectPlayerNpcPalettes(playerSprite, residentArt);
     expect(residentOutline.length).toBeGreaterThan(0);
     expectResidentHalo(residentOutline, residentArt, watchkeeper.id);
     expect(
@@ -2180,22 +2199,7 @@ describe('THREEFOLD resident identity marker', () => {
     );
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
-    expect(playerMantle.width).toBeGreaterThanOrEqual(20);
-    expect(playerSprite.some(shape => shape.fill === '#37e7ed')).toBe(true);
-    expect(playerSprite.some(shape => shape.fill === '#f3f6d2')).toBe(true);
-    expect(playerSprite.some(shape => shape.fill === '#e9d88d')).toBe(true);
-    expect(residentArt.every(shape => shape.fill !== '#e9d88d')).toBe(true);
-    expect(
-      playerSprite.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
-    ).toBe(false);
-    expect(
-      residentArt.some(shape => ['#f14bd3', '#8d4bb0'].includes(shape.fill))
-    ).toBe(true);
-
-    expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
-    expect(
-      residentArt.some(shape => ['#37e7ed', '#e9d88d'].includes(shape.fill))
-    ).toBe(false);
+    expect(playerMantle.width).toBeGreaterThanOrEqual(16);
     expect(
       playerSprite.every(
         shape =>
@@ -2213,7 +2217,7 @@ describe('THREEFOLD resident identity marker', () => {
           shape.spriteGridSize === 2 &&
           shape.x % 2 === 0 &&
           shape.y % 2 === 0 &&
-          shape.fill === '#37e7ed'
+          shape.fill === '#fff3c4'
       )
     ).toBe(true);
     expect(playerPointer).toHaveLength(2);
@@ -2221,7 +2225,7 @@ describe('THREEFOLD resident identity marker', () => {
       type: 'rect',
       width: 34,
       height: 16,
-      fill: '#37e7ed',
+      fill: '#ffcb55',
       spriteGridSize: 2,
       playerMarkerText: 'YOU',
     });
@@ -2268,9 +2272,13 @@ describe('THREEFOLD resident identity marker', () => {
 
     expectDifferentCharacterMasks(playerArt, residentArt);
     expect(
-      playerArt.filter(shape => shape.fill === '#37e7ed').length
+      playerArt.filter(shape => shape.fill === '#ffcb55').length
     ).toBeGreaterThan(20);
-    expect(residentArt.every(shape => shape.fill !== '#e9d88d')).toBe(true);
+    expect(
+      residentArt.every(
+        shape => !['#ffcb55', '#fff3c4', '#e9d88d'].includes(shape.fill)
+      )
+    ).toBe(true);
   });
 
   test('keeps Mara and small-world residents distinct in the Threadbound scene', () => {
@@ -2303,7 +2311,7 @@ describe('THREEFOLD resident identity marker', () => {
       [...residentMask].filter(cell => !playerMask.has(cell)).length
     ).toBeGreaterThan(2);
     expect(playerArt.every(shape => shape.spriteGridSize === 2)).toBe(true);
-    expect(playerArt.some(shape => shape.fill === '#37e7ed')).toBe(true);
+    expect(playerArt.some(shape => shape.fill === '#ffcb55')).toBe(true);
     expect(
       residentArt.every(
         shape =>
@@ -2352,7 +2360,7 @@ describe('THREEFOLD resident identity marker', () => {
         ({ width, height }) => Number.isFinite(width) && Number.isFinite(height)
       )
     ).toBe(true);
-    expect(playerTag).toMatchObject({ fill: '#37e7ed', width: 34, height: 16 });
+    expect(playerTag).toMatchObject({ fill: '#ffcb55', width: 34, height: 16 });
     expect(residentTag).toMatchObject({
       fill: '#f14bd3',
       width: 34,

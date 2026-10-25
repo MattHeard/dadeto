@@ -237,7 +237,7 @@ export function renderThreefoldFrame(
         {
           ...actor,
           art: THREEFOLD_MARA_ART,
-          colours: ['#172c34', '#37e7ed', '#f3f6d2', '#e9d88d'],
+          colours: ['#172c34', '#ffcb55', '#fff3c4', '#fff3c4'],
         },
         camera,
         tick
@@ -2602,7 +2602,7 @@ function smallWorldRoleLabels(shapes) {
         : { npcMarker: true, npcMarkerText: label }),
       spriteGridSize: PERSON_GRID_PIXELS,
     };
-    const fill = player ? '#37e7ed' : '#f14bd3';
+    const fill = player ? '#ffcb55' : '#f14bd3';
     const textFill = player ? '#172c34' : '#fff3fc';
     placedBounds.push({ id: actor.id, bounds: { ...position, width, height } });
     labels.push({
@@ -2676,7 +2676,7 @@ function smallWorldActorSprite(shape, role, actorCell) {
     : ['nnnn', '.nn.', '.nn.', '.nn.'];
   /** @type {Record<string, string>} */
   const colors = player
-    ? { c: '#37e7ed', f: '#f3f6d2', k: '#172c34' }
+    ? { c: '#ffcb55', f: '#fff3c4', k: '#172c34' }
     : { n: '#f14bd3', v: '#8d4bb0', f: '#ffe1fa', k: '#342041' };
   const bodyWidth = Math.min(actorCell.width, shape.width ?? actorCell.width);
   const bodyHeight = Math.min(
@@ -3014,7 +3014,7 @@ function applyResidentRoleAccents(pixels) {
 }
 
 /**
- * Reserve the bright cyan palette for Mara so she reads differently from
+ * Reserve the warm gold palette for Mara so she reads differently from
  * violet/magenta residents even when the role markers are small.
  * @param {string} fill Source Mosslight sprite pixel color.
  * @returns {string} High-contrast Threefold player role color.
@@ -3023,15 +3023,15 @@ function playerRoleColor(fill) {
   /** @type {Record<string, string>} */
   const colors = {
     '#442f37': '#172c34',
-    '#e9794d': '#37e7ed',
+    '#e9794d': '#ffcb55',
     '#f7dc9f': '#f3f6d2',
-    '#e8be62': '#e9d88d',
+    '#e8be62': '#fff3c4',
   };
   return colors[fill] || fill;
 }
 
 /**
- * Give the player sprite a cyan outline, distinct from resident magenta outlines.
+ * Give the player sprite an ivory outline, distinct from resident magenta outlines.
  * @param {ThreefoldSpriteShape[]} sprites Mara's source sprite pixels.
  * @returns {ThreefoldSpriteShape[]} Grid-aligned outline cells behind Mara.
  */
@@ -3061,7 +3061,7 @@ function playerRoleOutline(sprites) {
     ...pixel,
     width: PERSON_GRID_PIXELS,
     height: PERSON_GRID_PIXELS,
-    fill: '#37e7ed',
+    fill: '#fff3c4',
     actorId: 'mara',
     playerSpritePart: /** @type {'outline'} */ ('outline'),
     spriteGridSize: PERSON_GRID_PIXELS,
@@ -3069,7 +3069,7 @@ function playerRoleOutline(sprites) {
 }
 
 /**
- * Extend Mara's cloak into a connected, widening player-only silhouette.
+ * Extend Mara's cloak into a connected, modestly widening player-only silhouette.
  * @param {ThreefoldSpriteShape[]} sprites Mara's pixel-art body cells.
  * @returns {ThreefoldSpriteShape[]} Player-only cloak cells on the 2px grid.
  */
@@ -3077,16 +3077,14 @@ function maraCapeFrill(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
   const maxX = Math.max(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
-  // Mara's full-width cape grows from the narrow torso into one connected
-  // wedge. Residents keep a broad flat cap and straight robe. At handheld size
-  // the connected wedge reads as a different body shape, even without color.
-  // These decorative cells do not change collision or physical bounds.
+  // The short shoulder cape widens the person silhouette without turning Mara
+  // into a landscape-sized wedge. Residents keep a broad flat cap and straight
+  // robe. These decorative cells never change collision or physical bounds.
   const centerX = snapCanvasCoordinate((minX + maxX + 2) / 2, 2);
   const cells = [
-    { offset: 8, width: 12 },
-    { offset: 10, width: 16 },
-    { offset: 12, width: 20 },
-    { offset: 14, width: 24 },
+    { offset: 8, width: 8 },
+    { offset: 10, width: 12 },
+    { offset: 12, width: 16 },
   ].flatMap(({ offset, width }) => {
     const left = centerX - width / 2;
     return Array.from({ length: width / PERSON_GRID_PIXELS }, (_, index) => ({
@@ -3100,7 +3098,7 @@ function maraCapeFrill(sprites) {
     y,
     width: PERSON_GRID_PIXELS,
     height: PERSON_GRID_PIXELS,
-    fill: '#37e7ed',
+    fill: '#ffcb55',
     actorId: 'mara',
     playerSpritePart: /** @type {'cape'} */ ('cape'),
     spriteGridSize: PERSON_GRID_PIXELS,
@@ -3116,7 +3114,7 @@ function maraCapeFrill(sprites) {
  * @returns {ThreefoldSpriteShape[]} Visible role glyph cells.
  */
 /**
- * Mark Mara as the player with a readable cyan YOU tag beside her sprite.
+ * Mark Mara as the player with a readable gold YOU tag beside her sprite.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
  * @param {ThreefoldSpriteShape[]} otherCharacters NPC bodies and role markers.
  * @returns {ThreefoldSpriteShape[]} Readable role tag and attached leader.
@@ -3219,7 +3217,7 @@ function maraRoleLabel(sprites, otherCharacters) {
       .map(shape => ({
         type: 'rect',
         ...shape,
-        fill: '#37e7ed',
+        fill: '#ffcb55',
         ...metadata,
         playerMarkerKind: /** @type {'leader'} */ ('leader'),
       })),
@@ -3229,7 +3227,7 @@ function maraRoleLabel(sprites, otherCharacters) {
       y: placement.top,
       width: markerWidth,
       height: markerHeight,
-      fill: '#37e7ed',
+      fill: '#ffcb55',
       ...metadata,
       playerMarkerKind: /** @type {'pointer'} */ ('pointer'),
     },
@@ -3297,7 +3295,7 @@ function maraPlayerArrow(sprites) {
       fill:
         (above ? rowIndex === 7 : rowIndex === 0) && x === centerX
           ? '#f3f6d2'
-          : '#37e7ed',
+          : '#ffcb55',
       actorId: 'mara',
       playerMarker: true,
       playerMarkerKind: /** @type {'beacon'} */ ('beacon'),
@@ -3352,7 +3350,7 @@ function maraRoleFrame(sprites) {
     ...pixel,
     width: thickness,
     height: thickness,
-    fill: '#37e7ed',
+    fill: '#ffcb55',
     actorId: 'mara',
     playerMarker: true,
     playerMarkerKind: /** @type {'selection-frame'} */ ('selection-frame'),
