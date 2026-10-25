@@ -109,7 +109,7 @@ const SMALL_WORLD_NPC_IDS = new Set([
   'silt-margin-guardian',
   'weftways-pell',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'cape'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'|'cape'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'cape'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'emblem-connector'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'|'cape'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -403,11 +403,13 @@ export function renderThreefoldFrame(
   // and HUD layers so the residents cannot read as part of the scenery.
   const npcEmblems = frame.shapes.filter(
     (/** @type {ThreefoldSpriteShape} */ shape) =>
-      shape.npcMarkerKind === 'emblem'
+      shape.npcMarkerKind === 'emblem' ||
+      shape.npcMarkerKind === 'emblem-connector'
   );
   frame.shapes = frame.shapes.filter(
     (/** @type {ThreefoldSpriteShape} */ shape) =>
-      shape.npcMarkerKind !== 'emblem'
+      shape.npcMarkerKind !== 'emblem' &&
+      shape.npcMarkerKind !== 'emblem-connector'
   );
   frame.shapes.push(...npcEmblems);
   frame.shapes.push(...maraRoleLabel(maraShapes, otherCharacterShapes));
@@ -2920,7 +2922,79 @@ function personSprite(actor, camera, tick, heightMeters) {
     npcMarkerText: 'NPC',
   };
   const markerShapes = npcRoleEmblem(markerLeft, markerTop, markerProperties);
-  return [...outlineShapes, ...markerShapes, ...personShapes];
+  const connectorShapes = npcRoleConnector(
+    { left: markerLeft, top: markerTop },
+    { centerX, top: personTop, bottom: personBottom },
+    markerProperties
+  );
+  return [
+    ...outlineShapes,
+    ...connectorShapes,
+    ...markerShapes,
+    ...personShapes,
+  ];
+}
+
+/**
+ * Attach a visible resident badge to its actor, including when collision
+ * avoidance moves the badge sideways around Mara.
+ * @param {{left:number,top:number}} badge Badge position.
+ * @param {{centerX:number,top:number,bottom:number}} actor Resident sprite bounds.
+ * @param {Record<string, any>} metadata Resident identity metadata.
+ * @returns {ThreefoldSpriteShape[]} Grid-aligned badge connector.
+ */
+function npcRoleConnector(badge, actor, metadata) {
+  const badgeCenterX = badge.left + NPC_EMBLEM_WIDTH / 2;
+  const above = badge.top + NPC_EMBLEM_HEIGHT <= actor.top;
+  const startY = above ? badge.top + NPC_EMBLEM_HEIGHT : actor.bottom;
+  const endY = above ? actor.top : badge.top;
+  const connectorWidth = PERSON_GRID_PIXELS * 2;
+  const horizontalY = snapCanvasCoordinate(
+    above ? actor.top - connectorWidth : actor.bottom,
+    PERSON_GRID_PIXELS
+  );
+  const left = Math.min(badgeCenterX, actor.centerX) - connectorWidth / 2;
+  const width = Math.abs(badgeCenterX - actor.centerX) + connectorWidth;
+  const verticalTop = Math.min(startY, endY);
+  const verticalHeight = Math.abs(endY - startY);
+  const part = /** @type {ThreefoldSpriteShape} */ ({
+    type: 'rect',
+    fill: '#ffe1fa',
+    geometryId: metadata.geometryId,
+    actorId: metadata.actorId,
+    logicalGridKind: metadata.logicalGridKind,
+    logicalCellBounds: metadata.logicalCellBounds,
+    spriteGridSize: PERSON_GRID_PIXELS,
+    npcMarker: true,
+    npcMarkerKind: 'emblem-connector',
+  });
+  return [
+    ...(width > connectorWidth
+      ? [
+          {
+            ...part,
+            x: left,
+            y: horizontalY,
+            width,
+            height: connectorWidth,
+          },
+        ]
+      : []),
+    ...(verticalHeight > 0
+      ? [
+          {
+            ...part,
+            x: snapCanvasCoordinate(
+              badgeCenterX - connectorWidth / 2,
+              PERSON_GRID_PIXELS
+            ),
+            y: verticalTop,
+            width: connectorWidth,
+            height: verticalHeight,
+          },
+        ]
+      : []),
+  ];
 }
 
 /**

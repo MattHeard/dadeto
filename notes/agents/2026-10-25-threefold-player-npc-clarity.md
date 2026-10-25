@@ -97,3 +97,29 @@ connector geometry, the top-edge fallback, and separation from NPC badges.
 
 Next time, inspect the actual browser canvas at native dimensions. Distinct
 colors and masks are not enough if collision avoidance detaches the role cue.
+
+## Link NPC badges directly to residents — 2026-10-25
+
+Play feedback still could not reliably associate each NPC with its badge. The
+resident badge could shift sideways around Mara without a connector, leaving a
+magenta `NPC` plaque visually detached from the actor. Added a two-cell-wide,
+light-pink connector that follows the badge's above/below and left/right
+placement and renders with the badge above scenery. Renderer coverage checks
+that the connector is keyed to the resident and never appears on Mara. This is
+display-only; simulation, physical size, and collision bounds are unchanged.
+
+- Native 160×144 frame-shape preview: `/tmp/threefold-npc-preview.png` (proxy
+  renderer; Chromium screenshot was unavailable because process sandboxing
+  blocks Chromium's crashpad socket).
+- Focused renderer Jest: PASS, 52/52.
+- Focused renderer Jest: PASS, 52/52 after the final connector color and size.
+- ESLint and TSDoc checks: PASS.
+- `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check`: PASS, all 10 gates;
+  six serial fallback shards passed. The sandboxed first attempt hit process-
+  spawn EPERM, so the check was rerun with elevated host access.
+- `npm run build`: PASS after the final connector type annotation.
+- `git diff --check`: PASS.
+
+Next time, inspect the deployed handheld page as well as the native frame; the
+compact pixels alone have not been enough to confirm that the live presentation
+communicates role clearly.

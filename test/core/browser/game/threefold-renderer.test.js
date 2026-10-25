@@ -2534,11 +2534,30 @@ test('gives residents an NPC label distinct from Mara’s PLAYER label', () => {
     shape =>
       shape.geometryId === watchkeeper.id && shape.npcMarkerKind === 'emblem'
   );
+  const connectors = frame.shapes.filter(
+    shape =>
+      shape.geometryId === watchkeeper.id &&
+      shape.npcMarkerKind === 'emblem-connector'
+  );
   const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
 
   expectFramedNpcEmblem(emblem);
+  expect(connectors.length).toBeGreaterThan(0);
+  expect(
+    connectors.every(
+      shape =>
+        shape.actorId === watchkeeper.id &&
+        shape.fill === '#ffe1fa' &&
+        Math.max(shape.width, shape.height) >= 4 &&
+        shape.width % 2 === 0 &&
+        shape.height % 2 === 0
+    )
+  ).toBe(true);
   expect(emblem.every(shape => shape.npcMarkerKind === 'emblem')).toBe(true);
   expect(mara.some(shape => shape.npcMarkerKind === 'emblem')).toBe(false);
+  expect(mara.some(shape => shape.npcMarkerKind === 'emblem-connector')).toBe(
+    false
+  );
   expect(mara.some(shape => shape.playerMarkerKind === 'leader')).toBe(true);
 });
 

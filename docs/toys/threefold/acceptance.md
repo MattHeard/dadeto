@@ -365,3 +365,15 @@ NPC-badge separation. This changes only presentation. The 160×144 local browser
 capture is `.tmp/threefold-player-linked-native.png`; focused renderer Jest
 passes 52/52, `npm run build` passes, and `npm run check` passes all 10 gates
 with six impact shards. Production phone review remains open.
+
+## Connect NPC badges to their characters — 2026-10-25
+
+Fresh feedback still found it difficult to tell which character the NPC plaque
+described. When the badge moved sideways to avoid the player, its ownership was
+ambiguous. Added a bright, two-cell-wide connector between each resident and
+its magenta `NPC` badge; the connector follows the collision-aware badge
+placement and is layered above scenery. Regression coverage verifies that the
+connector belongs to the resident, remains on the 2px grid, and is absent from
+the player's marker. This changes display only. A native frame-shape preview
+was reviewed at `/tmp/threefold-npc-preview.png`; a fresh browser/device capture
+and final quality-gate results remain pending.
