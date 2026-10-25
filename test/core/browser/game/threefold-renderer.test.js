@@ -2069,6 +2069,13 @@ describe('THREEFOLD resident identity marker', () => {
       shape => shape.playerMarkerKind === 'leader'
     );
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
+    const playerMantle = frameBounds(
+      frame.shapes.filter(
+        shape => shape.actorId === 'mara' && shape.playerSpritePart === 'body'
+      ),
+      'actorId',
+      'mara'
+    );
     const playerBody = mara.filter(
       shape =>
         shape.playerMarker !== true && shape.playerMarkerKind !== 'leader'
@@ -2100,6 +2107,7 @@ describe('THREEFOLD resident identity marker', () => {
     );
     expect(mara.length).toBeGreaterThan(0);
     expect(playerSprite.length).toBeGreaterThan(0);
+    expect(playerMantle.width).toBeGreaterThanOrEqual(20);
     expect(playerSprite.some(shape => shape.fill === '#37e7ed')).toBe(true);
     expect(playerSprite.some(shape => shape.fill === '#f3f6d2')).toBe(true);
     expect(playerSprite.some(shape => shape.fill === '#e9d88d')).toBe(true);
@@ -2187,10 +2195,8 @@ describe('THREEFOLD resident identity marker', () => {
 
     expectDifferentCharacterMasks(playerArt, residentArt);
     expect(
-      playerArt.filter(shape => shape.fill === '#e9d88d').length
-    ).toBeGreaterThan(
       playerArt.filter(shape => shape.fill === '#37e7ed').length
-    );
+    ).toBeGreaterThan(20);
     expect(residentArt.every(shape => shape.fill !== '#e9d88d')).toBe(true);
   });
 
@@ -2322,7 +2328,7 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
-test('points a six-row player beacon at Mara when she is near the top edge', () => {
+test('points a broad player beacon at Mara when she is near the top edge', () => {
   const scene = createBrokenGateScene();
   scene.spawn = createScaleState({ x: -5, y: -5 });
   const frame = renderThreefoldFrame(
@@ -2337,7 +2343,7 @@ test('points a six-row player beacon at Mara when she is near the top edge', () 
     shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
   );
 
-  expect(playerBeacon).toHaveLength(12);
+  expect(playerBeacon).toHaveLength(16);
   expect(
     playerBeacon.every(
       shape =>
@@ -2356,7 +2362,7 @@ test('points a six-row player beacon at Mara when she is near the top edge', () 
     [...new Set(playerBeacon.map(shape => shape.y))].map(
       y => playerBeacon.filter(shape => shape.y === y).length
     )
-  ).toEqual([1, 3, 5, 1, 1, 1]);
+  ).toEqual([1, 3, 5, 3, 1, 1, 1, 1]);
   expect(
     Math.max(...playerBeacon.map(shape => shape.y + shape.height))
   ).toBeLessThanOrEqual(108);

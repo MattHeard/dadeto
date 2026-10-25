@@ -3071,7 +3071,9 @@ function maraCapeFrill(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
   const maxX = Math.max(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
-  const cells = [6, 8].flatMap(offset => [
+  // A broad cyan mantle gives Mara a player-only silhouette that survives the
+  // busy scenery. These pixels are decorative and do not change collision.
+  const cells = [4, 6, 8].flatMap(offset => [
     { x: minX - 6, y: minY + offset },
     { x: minX - 4, y: minY + offset },
     { x: minX - 2, y: minY + offset },
@@ -3233,7 +3235,7 @@ function maraRoleLabel(sprites, otherCharacters) {
 }
 
 /**
- * Give Mara a fixed-size, six-row beacon pointing from the role cue to her body.
+ * Give Mara a fixed-size, high-contrast beacon pointing from the role cue to her body.
  * The beacon stays legible when scale changes make the character tiny, while
  * the actor's body and collision size remain untouched.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
@@ -3249,12 +3251,14 @@ function maraPlayerArrow(sprites) {
     ...sprites.map(shape => shape.y + /** @type {number} */ (shape.height))
   );
   const centerX = snapCanvasCoordinate((minX + maxX) / 2, 2);
-  const above = minY - 12 >= 28;
-  const beaconTop = above ? minY - 12 : maxY;
+  const above = minY - 16 >= 28 || maxY + 16 > 108;
+  const beaconTop = above ? Math.max(28, minY - 16) : maxY;
   const upRows = [
     [centerX],
     [centerX - 2, centerX, centerX + 2],
     [centerX - 4, centerX - 2, centerX, centerX + 2, centerX + 4],
+    [centerX - 2, centerX, centerX + 2],
+    [centerX],
     [centerX],
     [centerX],
     [centerX],
@@ -3263,6 +3267,8 @@ function maraPlayerArrow(sprites) {
     [centerX],
     [centerX],
     [centerX],
+    [centerX],
+    [centerX - 2, centerX, centerX + 2],
     [centerX - 4, centerX - 2, centerX, centerX + 2, centerX + 4],
     [centerX - 2, centerX, centerX + 2],
     [centerX],
@@ -3276,7 +3282,7 @@ function maraPlayerArrow(sprites) {
       width: 2,
       height: 2,
       fill:
-        (above ? rowIndex === 5 : rowIndex === 0) && x === centerX
+        (above ? rowIndex === 7 : rowIndex === 0) && x === centerX
           ? '#f3f6d2'
           : '#37e7ed',
       actorId: 'mara',
