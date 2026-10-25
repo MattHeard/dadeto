@@ -124,6 +124,32 @@ describe('AlgZoo audit ledger', () => {
     );
   });
 
+  it('persists blinded pair score outcomes and scoring failures', async () => {
+    const { ledger } = createLedgerHarness();
+    const scored = await ledger.append('pair-scored', {
+      pairId: 'pair-01',
+      scores: [
+        {
+          submissionIndex: 0,
+          targetUnit: 4,
+          predictionStatus: 'scored',
+          predictionMetrics: { normalizedRmse: 0.08 },
+        },
+      ],
+    });
+    const failed = await ledger.append('pair-scoring-failed', {
+      pairId: 'pair-02',
+      failureCode: 'scorer-error',
+    });
+
+    expect(await ledger.readAll()).toEqual([scored, failed]);
+    await expect(
+      ledger.append('pair-scored', { evaluatorInput: 'held-out secret' })
+    ).rejects.toThrow(
+      'Audit payload must be a record without held-out fields.'
+    );
+  });
+
   it('rejects missing dependencies and invalid event payloads', async () => {
     const base = {
       ledgerPath,

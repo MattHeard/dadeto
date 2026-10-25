@@ -446,7 +446,7 @@ export function createAlgZooBlindedSubmission(sessionRecord) {
  * @property {(entries: Array<Record<string, any>>) => string|Promise<string>} hashMapSnapshot Snapshot hasher.
  * @property {(elapsedMillis: number) => AlgZooPilotDeadline} createDeadline Per-session deadline adapter.
  * @property {(result: unknown) => boolean} validateCausalInterventionResult Strict parser for a new submission's typed causal record.
- * @property {(eventType: string, payload: Record<string, any>) => Promise<void>} [appendAuditRecord] Optional durable audit writer.
+ * @property {(eventType: string, payload: Record<string, any>) => Promise<void>} appendAuditRecord Required durable audit writer.
  */
 
 /**
@@ -460,10 +460,11 @@ export function createAlgZooPilotRunner(adapters) {
     typeof adapters?.scoreBlindedSubmissions !== 'function' ||
     typeof adapters?.hashMapSnapshot !== 'function' ||
     typeof adapters?.createDeadline !== 'function' ||
-    typeof adapters?.validateCausalInterventionResult !== 'function'
+    typeof adapters?.validateCausalInterventionResult !== 'function' ||
+    typeof adapters?.appendAuditRecord !== 'function'
   ) {
     throw new TypeError(
-      'Pilot adapters must supply investigator, scorer, snapshot hasher, deadline factory, and causal-result validator.'
+      'Pilot adapters must supply investigator, scorer, snapshot hasher, deadline factory, causal-result validator, and audit writer.'
     );
   }
   return Object.freeze({
@@ -500,7 +501,7 @@ export function createAlgZooPilotRunner(adapters) {
           mapSnapshotHash,
           retrievedMapEntryIds: retrieval.entries.map(entry => entry.id),
         };
-        await adapters.appendAuditRecord?.('session-started', auditMetadata);
+        await adapters.appendAuditRecord('session-started', auditMetadata);
         const budget = createPilotSessionBudget(session.budget, deadline);
         /** @type {Record<string, any>} */
         let execution;
@@ -568,7 +569,7 @@ export function createAlgZooPilotRunner(adapters) {
             : sessionRecord.attemptStatus === 'budget-stopped'
               ? 'budget-stopped'
               : 'run-failed';
-        await adapters.appendAuditRecord?.(auditEventType, {
+        await adapters.appendAuditRecord(auditEventType, {
           ...auditMetadata,
           status: sessionRecord.attemptStatus,
           costMeasurementStatus: sessionRecord.costMeasurementStatus,
@@ -587,9 +588,39 @@ export function createAlgZooPilotRunner(adapters) {
       const blindedSubmissions = sessionRecords.map(
         createAlgZooBlindedSubmission
       );
-      const blindedScores = await adapters.scoreBlindedSubmissions({
-        submissions: blindedSubmissions,
-        heldOutEvaluationData,
+      /** @type {Array<Record<string, any>>} */
+      let blindedScores;
+      try {
+        blindedScores = await adapters.scoreBlindedSubmissions({
+          submissions: blindedSubmissions,
+          heldOutEvaluationData,
+        });
+      } catch {
+        await adapters.appendAuditRecord('pair-scoring-failed', {
+          pairId: pair.pairId,
+          pairOrder: pair.pairOrder,
+          unitIndex: pair.unitIndex,
+          failureCode: 'scorer-error',
+          submissionCount: blindedSubmissions.length,
+        });
+        throw new Error('Blinded pair scoring failed.');
+      }
+      if (!Array.isArray(blindedScores)) {
+        await adapters.appendAuditRecord('pair-scoring-failed', {
+          pairId: pair.pairId,
+          pairOrder: pair.pairOrder,
+          unitIndex: pair.unitIndex,
+          failureCode: 'invalid-scorer-result',
+          submissionCount: blindedSubmissions.length,
+        });
+        throw new Error('Blinded pair scoring returned an invalid result.');
+      }
+      await adapters.appendAuditRecord('pair-scored', {
+        pairId: pair.pairId,
+        pairOrder: pair.pairOrder,
+        unitIndex: pair.unitIndex,
+        submissionCount: blindedSubmissions.length,
+        scores: blindedScores.map(createAuditPredictionScore),
       });
       return {
         pairId: pair.pairId,
@@ -599,6 +630,66 @@ export function createAlgZooPilotRunner(adapters) {
       };
     },
   });
+}
+
+/**
+ * Keep only blinded score results and allowlisted prediction metrics in audit records.
+ * @param {unknown} score Candidate output from the scoring adapter.
+ * @param {number} index Position in the blinded submission batch.
+ * @returns {Record<string, any>} Redacted audit result without evaluator inputs.
+ */
+function createAuditPredictionScore(score, index) {
+  if (!isRecord(score)) {
+    return { submissionIndex: index, predictionStatus: 'invalid-score-result' };
+  }
+  const metrics = isRecord(score.predictionMetrics)
+    ? Object.fromEntries(
+        [
+          'candidateMse',
+          'constantMeanMse',
+          'normalizedRmse',
+          'perStepNormalizedRmse',
+          'constantMeanMseReduction',
+          'passesPredictionThresholds',
+        ]
+          .filter(field => {
+            if (!Object.hasOwn(score.predictionMetrics, field)) return false;
+            const value = score.predictionMetrics[field];
+            if (field === 'passesPredictionThresholds')
+              return typeof value === 'boolean';
+            if (field === 'perStepNormalizedRmse')
+              return (
+                Array.isArray(value) &&
+                value.every(item => Number.isFinite(item))
+              );
+            return typeof value === 'number' && Number.isFinite(value);
+          })
+          .map(field => [field, score.predictionMetrics[field]])
+      )
+    : undefined;
+  return {
+    submissionIndex: index,
+    ...(Number.isSafeInteger(score.targetUnit)
+      ? { targetUnit: score.targetUnit }
+      : {}),
+    predictionStatus:
+      typeof score.predictionStatus === 'string'
+        ? score.predictionStatus
+        : 'unscored',
+    ...(metrics && Object.keys(metrics).length > 0
+      ? { predictionMetrics: metrics }
+      : {}),
+    ...(Array.isArray(score.errors)
+      ? {
+          errors: score.errors.map(error => ({
+            code:
+              typeof error?.code === 'string'
+                ? error.code
+                : 'invalid-score-error',
+          })),
+        }
+      : {}),
+  };
 }
 
 /**

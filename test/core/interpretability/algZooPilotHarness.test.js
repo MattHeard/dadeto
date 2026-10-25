@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { jest } from '@jest/globals';
 import {
   compareAlgZooWholeModelAccuracy,
   createAlgZooBlindedSubmission,
@@ -45,6 +46,7 @@ const validateTestCausalInterventionResult = result => {
 const createTestAlgZooPilotRunner = adapters =>
   createAlgZooPilotRunner({
     validateCausalInterventionResult: validateTestCausalInterventionResult,
+    appendAuditRecord: async () => {},
     ...adapters,
   });
 
@@ -743,6 +745,15 @@ describe('AlgZoo pilot runner', () => {
         .exceededBudgetLimits
     ).toEqual([]);
     expect(() => createAlgZooPilotRunner({})).toThrow(TypeError);
+    expect(() =>
+      createTestAlgZooPilotRunner({
+        createDeadline: createTestDeadlineFactory().createDeadline,
+        hashMapSnapshot: async () => 'missing-audit-map-hash',
+        runInvestigator: async () => ({}),
+        scoreBlindedSubmissions: async () => [],
+        appendAuditRecord: undefined,
+      })
+    ).toThrow(/audit writer/);
 
     const noCostRunner = createTestAlgZooPilotRunner({
       createDeadline: createTestDeadlineFactory().createDeadline,
@@ -848,7 +859,27 @@ describe('AlgZoo pilot runner', () => {
             type: 'scorer',
             heldOutEvaluationData: request.heldOutEvaluationData,
           });
-          return [];
+          return [
+            {
+              targetUnit: pair.unitIndex,
+              predictionStatus: 'scored',
+              arm: 'treatment',
+              predictionMetrics: {
+                normalizedRmse: 0.08,
+                heldOutSecret: 'held-out audit sentinel',
+                perStepNormalizedRmse: [0.1, { heldOutSecret: 'not-a-metric' }],
+                candidateMse: Number.NaN,
+              },
+            },
+            {
+              targetUnit: pair.unitIndex,
+              predictionStatus: 'invalid',
+              evaluatorInput: 'held-out audit sentinel',
+              errors: [
+                { code: 'invalid-rule', detail: 'held-out audit sentinel' },
+              ],
+            },
+          ];
         },
       });
 
@@ -863,12 +894,14 @@ describe('AlgZoo pilot runner', () => {
         'investigator',
         'audit',
         'scorer',
+        'audit',
       ]);
       expect(auditEvents.map(event => event.eventType)).toEqual([
         'session-started',
         'session-finished',
         'session-started',
         terminalEvent,
+        'pair-scored',
       ]);
       expect(auditEvents[3].payload).toMatchObject({
         status: expectedStatus,
@@ -883,8 +916,90 @@ describe('AlgZoo pilot runner', () => {
       expect(JSON.stringify(auditEvents)).not.toContain(
         'held-out audit sentinel'
       );
+      expect(auditEvents[4].payload).toEqual({
+        pairId: pair.pairId,
+        pairOrder: pair.pairOrder,
+        unitIndex: pair.unitIndex,
+        submissionCount: 2,
+        scores: [
+          {
+            submissionIndex: 0,
+            targetUnit: pair.unitIndex,
+            predictionStatus: 'scored',
+            predictionMetrics: { normalizedRmse: 0.08 },
+          },
+          {
+            submissionIndex: 1,
+            targetUnit: pair.unitIndex,
+            predictionStatus: 'invalid',
+            errors: [{ code: 'invalid-rule' }],
+          },
+        ],
+      });
     }
   );
+
+  it('does not invoke an investigator when the start record cannot be persisted', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const investigator = jest.fn(async () => ({}));
+    const runner = createTestAlgZooPilotRunner({
+      appendAuditRecord: async eventType => {
+        if (eventType === 'session-started')
+          throw new Error('audit sink unavailable');
+      },
+      createDeadline: createTestDeadlineFactory().createDeadline,
+      hashMapSnapshot: async () => 'unpersisted-start-map-hash',
+      runInvestigator: investigator,
+      scoreBlindedSubmissions: async () => [],
+    });
+
+    await expect(
+      runner.runTargetPair(plan.schedule.pairs[0], [], [])
+    ).rejects.toThrow('audit sink unavailable');
+    expect(investigator).not.toHaveBeenCalled();
+  });
+
+  it('records a redacted failure when blinded scoring throws', async () => {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const auditEvents = [];
+    const runner = createTestAlgZooPilotRunner({
+      appendAuditRecord: async (eventType, payload) =>
+        auditEvents.push({ eventType, payload }),
+      createDeadline: createTestDeadlineFactory().createDeadline,
+      hashMapSnapshot: async () => 'scoring-failure-map-hash',
+      runInvestigator: async request => {
+        request.budget.reserve({ investigatorTokens: 1 }).complete({
+          investigatorTokens: 1,
+        });
+        return {
+          submission: {
+            causalInterventionResult: {
+              schemaVersion: 1,
+              status: 'not-tested',
+            },
+          },
+          cost: { investigatorTokens: 1 },
+        };
+      },
+      scoreBlindedSubmissions: async () => {
+        throw new Error('held-out-only scorer detail');
+      },
+    });
+
+    await expect(
+      runner.runTargetPair(plan.schedule.pairs[0], [], [])
+    ).rejects.toThrow('Blinded pair scoring failed.');
+    expect(auditEvents.at(-1)).toEqual({
+      eventType: 'pair-scoring-failed',
+      payload: expect.objectContaining({
+        failureCode: 'scorer-error',
+        submissionCount: 2,
+      }),
+    });
+    expect(JSON.stringify(auditEvents)).not.toContain(
+      'held-out-only scorer detail'
+    );
+  });
 });
 
 describe('AlgZoo typed causal result enforcement', () => {

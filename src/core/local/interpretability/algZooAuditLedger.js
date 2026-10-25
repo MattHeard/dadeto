@@ -7,6 +7,8 @@ const TERMINAL_SESSION_EVENT_TYPES = new Set([
 const AUDIT_EVENT_TYPES = new Set([
   'session-started',
   ...TERMINAL_SESSION_EVENT_TYPES,
+  'pair-scored',
+  'pair-scoring-failed',
 ]);
 const GENESIS_HASH = '0'.repeat(64);
 
