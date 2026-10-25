@@ -538,9 +538,7 @@ export function createThreefoldMenuRuntime(runtime, documentObj) {
         'B/X BACK OUT',
         'MOVE NEAR PEOPLE',
         'PRESS A TO ACT',
-        ...wrapMenuText(
-          SCENE_OBJECTIVES[sceneKey(frame)] || 'EXPLORE THE REGION'
-        ),
+        ...wrapMenuText(SCENE_OBJECTIVES[sceneKey(frame)]),
         'BACK',
       ];
     if (section === 'journal') {
@@ -633,14 +631,14 @@ export function createThreefoldMenuRuntime(runtime, documentObj) {
   };
   /**
    * @param {Record<string, any>} frame Current game frame.
-   * @returns {string} Canonical key for the visible scene.
+   * @returns {ThreefoldSceneKey} Canonical key for the visible scene.
    */
   const sceneKey = frame => {
     const name = frame.world?.map?.name || '';
     return (
-      Object.entries(SCENE_LABELS).find(([, label]) =>
-        name.includes(label.replace(/^The /, '').toUpperCase())
-      )?.[0] || 'broken-gate'
+      SCENE_KEYS.find(key =>
+        name.includes(SCENE_LABELS[key].replace(/^The /, '').toUpperCase())
+      ) || 'broken-gate'
     );
   };
   facade.frame = () => {
@@ -761,7 +759,21 @@ function describeThreefoldInput(actions) {
   return labels[action] || 'Input received';
 }
 
-/** @type {Record<string, string>} */
+/** @typedef {'broken-gate'|'sluice'|'silt-margin'|'hearthgaps'|'weftways'|'grainlands'|'lantern-ward'|'belltops'|'crownback-reach'|'shoals'} ThreefoldSceneKey */
+/** @type {ThreefoldSceneKey[]} */
+const SCENE_KEYS = [
+  'broken-gate',
+  'sluice',
+  'silt-margin',
+  'hearthgaps',
+  'weftways',
+  'grainlands',
+  'lantern-ward',
+  'belltops',
+  'crownback-reach',
+  'shoals',
+];
+/** @type {Record<ThreefoldSceneKey, string> & Record<string, string>} */
 const SCENE_OBJECTIVES = {
   'broken-gate': 'Reach the west wall and grow through it before the surge.',
   sluice: 'Open the service valve and raise the lower basin to cross.',
@@ -776,7 +788,7 @@ const SCENE_OBJECTIVES = {
   'crownback-reach': 'Find Tharn and decide whether to guide the encounter.',
   shoals: 'Explore the shoals and respond to the Wakeform and tide wall.',
 };
-/** @type {Record<string, string>} */
+/** @type {Record<ThreefoldSceneKey, string> & Record<string, string>} */
 const SCENE_LABELS = {
   'broken-gate': 'The Broken Gate',
   sluice: 'The Tidal Archive',
