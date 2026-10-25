@@ -340,6 +340,10 @@ Play feedback still could not distinguish Threefold residents from Mara. Switche
 
 2026-10-25: Follow-up feedback confirmed the cyan NPC treatment still blended into the green/teal scene at phone size. Restored the saturated magenta/violet resident palette, badge, and outline so NPCs contrast with Mara's warm gold/ivory silhouette; kept the flat-cap NPC art and explicit `NPC` badge. The renderer test asserts the role colors and badge. A fresh production-size capture remains required; Beads contract recording is still blocked by the shared Dolt lock.
 
+## Strengthen player and NPC body silhouettes — 2026-10-25
+
+Fresh feedback still found the characters too similar despite the role colors and labels. Residents now have a wide, flat cap and straight coat at normal human scale; Mara keeps her narrow pointed hood, widening cloak, and separate boots. Compact regional sprites use correspondingly different 4×4 masks: hood-and-cloak versus flat-cap-and-robe. Renderer regressions compare body masks without color or role text, including the scale-shifted Threadbound scene. All art stays on the 2px sprite grid; simulation and collision bounds are unchanged. The generated page was inspected from a native 160×144 canvas capture at `.tmp/threefold-npc-audit/threefold-updated-native.png`. Focused Threefold renderer Jest passed 52/52; `npm run build` passed. `npm run check` ran all 10 gates; lint and non-core-thin failed on the in-progress Atlas journey/storage files, while the other 8 gates passed. Do not claim the overall check passed until those Atlas wrappers are fixed.
+
 ## Keep NPC badges visible over scene layers — 2026-10-25
 
 Follow-up feedback still found residents hard to distinguish from Mara. The NPC role emblems were emitted with their world sprites, where later signs and interface layers could cover them. NPC emblems now render above those layers and use a dark outer frame around the magenta badge for separation from the playfield. Mara keeps her gold `YOU` badge and selection markers. Source diff and `git diff --check` reviewed; focused renderer tests, phone-size capture, and build were not run in this loop.

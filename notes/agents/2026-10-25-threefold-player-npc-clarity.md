@@ -44,3 +44,21 @@ plaque. This remains presentation-only.
 - `npx eslint src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js` — PASS.
 - `npm run build` — PASS.
 - `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` — PASS, all 10 gates. The sandbox attempt was retried with host permissions after child processes failed with `EPERM`.
+
+## Latest silhouette revision
+
+Fresh play feedback still could not distinguish residents from the player, so
+I checked the rendered frame at native resolution and found the compact 4-cell
+actor masks were too abstract. Residents now use a broad flat-cap and straight
+robe shape; Mara uses a pointed hood, widening cloak, and separate feet. At
+normal human scenes, resident source art is also wider than Mara's narrow
+silhouette. These are renderer-only changes on the existing 2px grid; world
+positions, physical dimensions, simulation, and collision behavior are
+unchanged. A first compact-mask attempt collapsed to the same mask in the
+Threadbound regression, so I reduced it to deliberately contrasting 4×4
+patterns and reran the test.
+
+- Native 160 × 144 preview: `.tmp/threefold-npc-audit/threefold-updated-native.png`.
+- `node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --runTestsByPath test/core/browser/game/threefold-renderer.test.js --no-watchman` — PASS, 52/52.
+- `npm run build` — PASS.
+- `npm run check` — FAIL (8/10 gates pass). `lint` and `non-core-thin` report warnings/shape violations in the in-progress `src/local/interpretability/atlasResearchJourney.js` and `atlasResearchStorage.js`; these files are outside this Threefold patch and remain part of the active Atlas cleanup.

@@ -73,15 +73,15 @@ const THREEFOLD_RESIDENT_ART = [
   '....aaaaaaaa....',
   '..aaaaaaaaaaaa..',
   'aaaaaaaaaaaaaaaa',
-  'hssssssssssh',
-  'hsksssssskh.',
-  '.ssssssssss.',
-  'hcccccccccch',
-  'sccccccccccs',
-  'sccccccccccs',
-  'sccccccccccs',
-  '.sccccccccs.',
-  '...ssssss...',
+  '.hssssssssssssh.',
+  'hsksssssssksskh.',
+  '.ssssssssssssss.',
+  'hccccccccccccch.',
+  'sccccccccccccccs',
+  'sccccccccccccccs',
+  '.cccccccccccccc.',
+  '...ssssssssss...',
+  '....kk....kk....',
 ];
 const THREEFOLD_MARA_ART = [
   '.....hh.....',
@@ -2683,8 +2683,8 @@ function rectanglesOverlap(first, second) {
 function smallWorldActorSprite(shape, role, actorCell) {
   const player = role === 'player';
   const source = player
-    ? ['...c', '..fc', '.ccc', 'cccc']
-    : ['nnnn', '.nn.', '.nn.', '.nn.'];
+    ? ['..f.', '.fff', 'cccc', 'c..c']
+    : ['nnnn', 'nffn', '.nn.', '.nn.'];
   /** @type {Record<string, string>} */
   const colors = player
     ? { c: '#ffcb55', f: '#fff3c4', k: '#172c34' }
@@ -2713,10 +2713,11 @@ function smallWorldActorSprite(shape, role, actorCell) {
             Math.floor(((row + 0.5) / rows) * source.length)
           )
         ];
+      const sourceColumns = sourceRow.length;
       for (let column = 0; column < columns; column += 1) {
         const sourceColumn = Math.min(
-          3,
-          Math.floor(((column + 0.5) / columns) * 4)
+          sourceColumns - 1,
+          Math.floor(((column + 0.5) / columns) * sourceColumns)
         );
         const pixel = sourceRow[sourceColumn];
         if (pixel === '.') continue;
