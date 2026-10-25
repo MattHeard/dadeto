@@ -3138,6 +3138,10 @@ function maraRoleLabel(sprites, otherCharacters) {
   const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
   const markerWidth = ROLE_TAG_WIDTH;
   const markerHeight = ROLE_TAG_HEIGHT;
+  const sideMarkerTop = snapCanvasCoordinate(
+    (minY + maxY - markerHeight) / 2,
+    2
+  );
   const markerTop = Math.max(
     PLAYER_BADGE_MIN_Y,
     Math.min(108 - markerHeight, minY - markerHeight - 4)
@@ -3156,12 +3160,12 @@ function maraRoleLabel(sprites, otherCharacters) {
     {
       side: 'left',
       left: snapCanvasCoordinate(minX - markerWidth - 4, 2),
-      top: markerTop,
+      top: sideMarkerTop,
     },
     {
       side: 'right',
       left: snapCanvasCoordinate(maxX + 4, 2),
-      top: markerTop,
+      top: sideMarkerTop,
     },
   ].filter(
     candidate =>

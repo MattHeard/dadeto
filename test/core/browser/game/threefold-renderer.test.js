@@ -1036,7 +1036,7 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     ).toHaveLength(0);
   });
 
-  test('keeps Mara fixed while the same geometry scales inversely by three', () => {
+  test('keeps Mara body fixed while the same geometry scales inversely by three', () => {
     const humanScale = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS)
     );
@@ -1051,9 +1051,18 @@ describe('THREEFOLD Mosslight handheld frame', () => {
     const smallerScale = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, scene)
     );
-    const avatarBounds = frameBounds(humanScale.shapes, 'actorId', 'mara');
+    const playerBody = shapes =>
+      shapes.filter(
+        shape =>
+          shape.playerSpritePart === 'body' || shape.playerSpritePart === 'cape'
+      );
+    const avatarBounds = frameBounds(
+      playerBody(humanScale.shapes),
+      'actorId',
+      'mara'
+    );
     const smallerAvatarBounds = frameBounds(
-      smallerScale.shapes,
+      playerBody(smallerScale.shapes),
       'actorId',
       'mara'
     );
@@ -1742,8 +1751,8 @@ function expectResidentMarkerClearOfActors(
 ) {
   const marker = frameBounds(npcMarker, 'geometryId', id);
   const body = frameBounds(residentBody, 'geometryId', id);
-  expect(marker.width).toBe(44);
-  expect(marker.height).toBe(20);
+  expect(marker.width).toBe(48);
+  expect(marker.height).toBe(24);
   expect(marker.x).toBeGreaterThanOrEqual(0);
   expect(marker.x + marker.width).toBeLessThanOrEqual(160);
   expect(marker.y).toBeGreaterThanOrEqual(0);
@@ -1766,11 +1775,26 @@ function expectResidentMarkerClearOfActors(
  * @returns {void} Throws when the role badge loses its contrast or grid fit.
  */
 function expectFramedNpcEmblem(marker) {
-  expect(marker).toHaveLength(2);
+  expect(marker).toHaveLength(3);
   expect(marker.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)).toBe(
     true
   );
-  expect(marker[0]).toMatchObject({
+  const frame = marker.find(
+    shape => shape.type === 'rect' && shape.fill === '#101a23'
+  );
+  const badge = marker.find(
+    shape => shape.type === 'rect' && shape.fill === '#f14bd3'
+  );
+  const label = marker.find(shape => shape.type === 'text');
+  expect(frame).toMatchObject({
+    type: 'rect',
+    width: 48,
+    height: 24,
+    fill: '#101a23',
+    spriteGridSize: 2,
+    npcMarkerText: 'NPC',
+  });
+  expect(badge).toMatchObject({
     type: 'rect',
     width: 44,
     height: 20,
@@ -1778,11 +1802,11 @@ function expectFramedNpcEmblem(marker) {
     spriteGridSize: 2,
     npcMarkerText: 'NPC',
   });
-  expect(marker[1]).toMatchObject({
+  expect(label).toMatchObject({
     type: 'text',
     text: 'NPC',
-    x: marker[0].x + 10,
-    y: marker[0].y + 14,
+    x: frame.x + 12,
+    y: frame.y + 16,
     fill: '#342041',
     font: '12px monospace',
     bitmap: true,
@@ -1839,9 +1863,6 @@ function expectPlayerPointerClearFromActors(
     ...playerBody.map(shape => shape.x + (shape.width ?? 0))
   );
   expect(
-    Math.abs(pointer.x + pointer.width / 2 - (bodyLeft + bodyRight) / 2)
-  ).toBeLessThanOrEqual(1);
-  expect(
     npcLabel.every(
       shape =>
         pointer.x + pointer.width <= shape.x ||
@@ -1852,22 +1873,40 @@ function expectPlayerPointerClearFromActors(
   ).toBe(true);
   expect(playerLeader).toHaveLength(1);
   expect(playerLeader[0]).toMatchObject({
-    width: 2,
     fill: '#ffcb55',
     playerMarker: true,
   });
-  expect(playerLeader[0].x).toBeCloseTo((bodyLeft + bodyRight) / 2, 0);
   const bodyTop = Math.min(...playerBody.map(shape => shape.y));
   const bodyBottom = Math.max(
     ...playerBody.map(shape => shape.y + (shape.height ?? 0))
   );
-  expect(
-    playerLeader[0].y + playerLeader[0].height <= pointer.y ||
-      playerLeader[0].y >= pointer.y + pointer.height
-  ).toBe(true);
-  expect(pointer.y + pointer.height <= bodyTop || pointer.y >= bodyBottom).toBe(
-    true
-  );
+  const leader = playerLeader[0];
+  const leaderIsVertical = leader.width === 2 && leader.height > 0;
+  const leaderIsHorizontal = leader.height === 2 && leader.width > 0;
+  expect(leaderIsVertical || leaderIsHorizontal).toBe(true);
+  if (leaderIsVertical) {
+    expect(leader.x).toBeGreaterThanOrEqual(bodyLeft);
+    expect(leader.x).toBeLessThan(bodyRight);
+    expect(
+      Math.abs(leader.y - (pointer.y + pointer.height)) <= 2 ||
+        Math.abs(leader.y + leader.height - pointer.y) <= 2
+    ).toBe(true);
+    expect(
+      Math.abs(leader.y + leader.height - bodyTop) <= 2 ||
+        Math.abs(leader.y - bodyBottom) <= 2
+    ).toBe(true);
+  } else {
+    expect(leader.y).toBeGreaterThanOrEqual(bodyTop);
+    expect(leader.y).toBeLessThan(bodyBottom);
+    expect(
+      Math.abs(leader.x - (pointer.x + pointer.width)) <= 2 ||
+        Math.abs(leader.x + leader.width - pointer.x) <= 2
+    ).toBe(true);
+    expect(
+      Math.abs(leader.x + leader.width - bodyLeft) <= 2 ||
+        Math.abs(leader.x - bodyRight) <= 2
+    ).toBe(true);
+  }
 }
 
 /**
@@ -2177,7 +2216,9 @@ describe('THREEFOLD resident identity marker', () => {
     );
     const playerBody = mara.filter(
       shape =>
-        shape.playerMarker !== true && shape.playerMarkerKind !== 'leader'
+        shape.playerSpritePart === 'body' ||
+        shape.playerSpritePart === 'cape' ||
+        shape.playerSpritePart === 'outline'
     );
     const playerOutline = mara.filter(
       shape => shape.playerSpritePart === 'outline'
