@@ -2322,15 +2322,22 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
-test('places a bright player beacon by Mara when the sprite is near the screen edge', () => {
+test('points a six-row player beacon at Mara when she is near the top edge', () => {
+  const scene = createBrokenGateScene();
+  scene.spawn = createScaleState({ x: -5, y: -5 });
   const frame = renderThreefoldFrame(
-    createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+    createThreefoldSimulation(THRESHOLDS, scene)
+  );
+  const playerSprite = frame.shapes.filter(
+    shape =>
+      shape.actorId === 'mara' &&
+      ['body', 'outline'].includes(shape.playerSpritePart)
   );
   const playerBeacon = frame.shapes.filter(
     shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
   );
 
-  expect(playerBeacon).toHaveLength(9);
+  expect(playerBeacon).toHaveLength(12);
   expect(
     playerBeacon.every(
       shape =>
@@ -2342,6 +2349,17 @@ test('places a bright player beacon by Mara when the sprite is near the screen e
         shape.y % 2 === 0
     )
   ).toBe(true);
+  expect(Math.min(...playerBeacon.map(shape => shape.y))).toBe(
+    Math.max(...playerSprite.map(shape => shape.y + shape.height))
+  );
+  expect(
+    [...new Set(playerBeacon.map(shape => shape.y))].map(
+      y => playerBeacon.filter(shape => shape.y === y).length
+    )
+  ).toEqual([1, 3, 5, 1, 1, 1]);
+  expect(
+    Math.max(...playerBeacon.map(shape => shape.y + shape.height))
+  ).toBeLessThanOrEqual(108);
   expect(playerBeacon.some(shape => shape.fill === '#f3f6d2')).toBe(true);
   expect(
     frame.shapes

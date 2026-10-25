@@ -3233,44 +3233,52 @@ function maraRoleLabel(sprites, otherCharacters) {
 }
 
 /**
- * Give Mara a fixed-size, downward-pointing player beacon above her sprite.
+ * Give Mara a fixed-size, six-row beacon pointing from the role cue to her body.
  * The beacon stays legible when scale changes make the character tiny, while
  * the actor's body and collision size remain untouched.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
  * @returns {ThreefoldSpriteShape[]} Two-pixel grid cells forming the beacon.
  */
 function maraPlayerArrow(sprites) {
-  if (sprites.length === 0) return [];
   const minX = Math.min(...sprites.map(shape => shape.x));
-  const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
+  const maxX = Math.max(
+    ...sprites.map(shape => shape.x + /** @type {number} */ (shape.width))
+  );
   const minY = Math.min(...sprites.map(shape => shape.y));
-  const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
+  const maxY = Math.max(
+    ...sprites.map(shape => shape.y + /** @type {number} */ (shape.height))
+  );
   const centerX = snapCanvasCoordinate((minX + maxX) / 2, 2);
-  const above = minY - 10 >= 28;
-  const beaconTop = above ? minY - 10 : maxY + 2;
-  if (beaconTop + 6 > 108) return [];
-  const rows = [
-    [{ x: centerX, fill: '#f3f6d2' }],
-    [
-      { x: centerX - 2, fill: '#37e7ed' },
-      { x: centerX, fill: '#f3f6d2' },
-      { x: centerX + 2, fill: '#37e7ed' },
-    ],
-    [
-      { x: centerX - 4, fill: '#37e7ed' },
-      { x: centerX - 2, fill: '#37e7ed' },
-      { x: centerX, fill: '#37e7ed' },
-      { x: centerX + 2, fill: '#37e7ed' },
-      { x: centerX + 4, fill: '#37e7ed' },
-    ],
+  const above = minY - 12 >= 28;
+  const beaconTop = above ? minY - 12 : maxY;
+  const upRows = [
+    [centerX],
+    [centerX - 2, centerX, centerX + 2],
+    [centerX - 4, centerX - 2, centerX, centerX + 2, centerX + 4],
+    [centerX],
+    [centerX],
+    [centerX],
   ];
+  const downRows = [
+    [centerX],
+    [centerX],
+    [centerX],
+    [centerX - 4, centerX - 2, centerX, centerX + 2, centerX + 4],
+    [centerX - 2, centerX, centerX + 2],
+    [centerX],
+  ];
+  const rows = above ? downRows : upRows;
   return rows.flatMap((row, rowIndex) =>
-    row.map(pixel => ({
+    row.map(x => ({
       type: 'rect',
-      ...pixel,
-      y: beaconTop + (above ? rowIndex : 2 - rowIndex) * 2,
+      x,
+      y: beaconTop + rowIndex * 2,
       width: 2,
       height: 2,
+      fill:
+        (above ? rowIndex === 5 : rowIndex === 0) && x === centerX
+          ? '#f3f6d2'
+          : '#37e7ed',
       actorId: 'mara',
       playerMarker: true,
       playerMarkerKind: /** @type {'beacon'} */ ('beacon'),
