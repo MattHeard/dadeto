@@ -1,9 +1,11 @@
 import {
   appendIdentityReferenceV1,
+  appendExperimentDesignV1,
   appendAccuracyEvaluationV1,
   appendMechanisticEstimateV1,
   appendExperimentSubmissionV1,
   exportInterpretabilityResearchBundleV6,
+  exportInterpretabilityResearchBundleV7,
   getEvidenceGraphContextV1,
   getEvidenceGraphContextSnapshotV1,
   importInterpretabilityResearchBundleV2,
@@ -23,27 +25,33 @@ import {
 /** @typedef {Parameters<typeof appendMechanisticEstimateV1>[1]} MechanisticEstimate */
 /** @typedef {Parameters<typeof appendAccuracyEvaluationV1>[1]} AccuracyEvaluation */
 /** @typedef {Parameters<typeof appendIdentityReferenceV1>[1]} IdentityReference */
+/** @typedef {Parameters<typeof appendExperimentDesignV1>[1]} ExperimentDesign */
 /** @typedef {ReturnType<typeof importInterpretabilityResearchBundleV2>} BundleImportResult */
 /** @typedef {Extract<BundleImportResult, {valid: true}>['bundle']} ResearchBundle */
 /** @typedef {ReturnType<typeof summarizeIdentityReferencesV1>|Extract<BundleImportResult, {valid: false}>} IdentityReferenceServiceResult */
 /** @typedef {{valid: true, evaluations: Array<AccuracyEvaluation>}|Extract<BundleImportResult, {valid: false}>} AccuracyEvaluationsServiceResult */
 /** @typedef {(bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference, schemas: ResearchSchemas) => any} ResearchAppender */
-/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof appendIdentityReferenceV1>|ReturnType<typeof exportInterpretabilityResearchBundleV6>} BundleOperationResult */
+/** @typedef {ReturnType<typeof getEvidenceGraphContextV1>|ReturnType<typeof appendExperimentSubmissionV1>|ReturnType<typeof appendMechanisticEstimateV1>|ReturnType<typeof appendAccuracyEvaluationV1>|ReturnType<typeof appendIdentityReferenceV1>|ReturnType<typeof appendExperimentDesignV1>|ReturnType<typeof exportInterpretabilityResearchBundleV6>|ReturnType<typeof exportInterpretabilityResearchBundleV7>} BundleOperationResult */
 /** @typedef {BundleImportResult|BundleOperationResult} ResearchServiceResult */
 /** @typedef {Extract<BundleImportResult, {valid: false}>|ResearchContextFailure|ResearchContextPage} ResearchContextServiceResult */
 /** @typedef {{allowEffects: AllowEffects, bundle: ResearchBundle, submission: ExperimentSubmission|MechanisticEstimate|AccuracyEvaluation|IdentityReference, append: ResearchAppender}} ResearchWrite */
+/** @typedef {(allowEffects: AllowEffects, design: ExperimentDesign) => Promise<ResearchServiceResult>} ExperimentDesignSubmitter */
 
 /**
  * Create the pure Atlas read/submission service over injected bundle storage.
- * @param {{loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, schemas: ResearchSchemas, hashContextSnapshot?: (canonicalSnapshot: string) => string|Promise<string>}} options Storage capabilities, caller-provided schema adapters, and pure hash function.
- * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readContextSnapshot: (allowEffects: AllowEffects, query: EvidenceContextSnapshotQuery) => Promise<ResearchContextSnapshotServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, readIdentityReferences: (allowEffects: AllowEffects) => Promise<IdentityReferenceServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>, submitIdentityReference: (allowEffects: AllowEffects, reference: IdentityReference) => Promise<ResearchServiceResult>}} Permission-aware service methods.
+ * @param {{storage: {loadBundle: (allowEffects: AllowEffects) => Promise<string>, saveBundle: (allowEffects: AllowEffects, json: string) => Promise<void>, submitExperimentDesign?: ExperimentDesignSubmitter}, schemas: ResearchSchemas, hashContextSnapshot?: (canonicalSnapshot: string) => string|Promise<string>}} options Injected storage operations, caller-provided schema adapters, and pure hash function. Design submission storage must provide atomic append semantics.
+ * @returns {{readContext: (allowEffects: AllowEffects, query: EvidenceContextQuery) => Promise<ResearchContextServiceResult>, readContextSnapshot: (allowEffects: AllowEffects, query: EvidenceContextSnapshotQuery) => Promise<ResearchContextSnapshotServiceResult>, readEvaluations: (allowEffects: AllowEffects) => Promise<AccuracyEvaluationsServiceResult>, readIdentityReferences: (allowEffects: AllowEffects) => Promise<IdentityReferenceServiceResult>, submitExperiment: (allowEffects: AllowEffects, submission: ExperimentSubmission) => Promise<ResearchServiceResult>, submitExperimentDesign: (allowEffects: AllowEffects, design: ExperimentDesign) => Promise<ResearchServiceResult>, submitEstimate: (allowEffects: AllowEffects, estimate: MechanisticEstimate) => Promise<ResearchServiceResult>, submitEvaluation: (allowEffects: AllowEffects, evaluation: AccuracyEvaluation) => Promise<ResearchServiceResult>, submitIdentityReference: (allowEffects: AllowEffects, reference: IdentityReference) => Promise<ResearchServiceResult>}} Permission-aware service methods.
  */
 export function createInterpretabilityResearchServiceV1({
-  loadBundle,
-  saveBundle,
+  storage,
   schemas,
   hashContextSnapshot,
 }) {
+  const {
+    loadBundle,
+    saveBundle,
+    submitExperimentDesign: submitDesignStorage,
+  } = storage;
   /**
    * @param {AllowEffects} allowEffects Permission token forwarded to storage.
    * @template T
@@ -88,6 +96,20 @@ export function createInterpretabilityResearchServiceV1({
       },
       submission
     );
+  /**
+   * Submit a proposed design through an atomic storage update so concurrent
+   * investigators cannot overwrite one another's immutable plans.
+   * @param {AllowEffects} allowEffects Permission token forwarded to storage.
+   * @param {ExperimentDesign} design Proposed, untested design.
+   * @returns {Promise<ResearchServiceResult>} V7 export or validation failure.
+   */
+  const submitDesign = (allowEffects, design) =>
+    typeof submitDesignStorage === 'function'
+      ? submitDesignStorage(allowEffects, design)
+      : Promise.resolve({
+          valid: false,
+          errors: [{ code: 'atomic-experiment-design-storage-required' }],
+        });
 
   /**
    * Attach an optional canonical identity link without changing invalid context results.
@@ -141,6 +163,7 @@ export function createInterpretabilityResearchServiceV1({
       ),
     submitExperiment: (allowEffects, submission) =>
       submitGraphRecord(allowEffects, appendExperimentSubmissionV1, submission),
+    submitExperimentDesign: submitDesign,
     submitEstimate: (allowEffects, estimate) =>
       submitGraphRecord(allowEffects, appendMechanisticEstimateV1, estimate),
     submitEvaluation: (allowEffects, evaluation) =>
@@ -210,10 +233,9 @@ function createResearchWriter(schemas, saveBundle) {
     const appended = append(bundle, submission, schemas);
     if (!appended.valid) return appended;
 
-    const exported = exportInterpretabilityResearchBundleV6(
-      appended.bundle,
-      schemas
-    );
+    const exported = Array.isArray(appended.bundle?.experimentDesigns)
+      ? exportInterpretabilityResearchBundleV7(appended.bundle, schemas)
+      : exportInterpretabilityResearchBundleV6(appended.bundle, schemas);
     if (!exported.valid) return exported;
 
     await saveBundle(allowEffects, exported.json);

@@ -64,13 +64,15 @@ function createMemoryService(initialJson) {
   const loadPermissions = [];
   const savePermissions = [];
   const service = createInterpretabilityResearchServiceV1({
-    loadBundle: async allowEffects => {
-      loadPermissions.push(allowEffects);
-      return storedJson;
-    },
-    saveBundle: async (allowEffects, json) => {
-      savePermissions.push(allowEffects);
-      storedJson = json;
+    storage: {
+      loadBundle: async allowEffects => {
+        loadPermissions.push(allowEffects);
+        return storedJson;
+      },
+      saveBundle: async (allowEffects, json) => {
+        savePermissions.push(allowEffects);
+        storedJson = json;
+      },
     },
     schemas,
   });
@@ -167,8 +169,10 @@ describe('additive identity-reference service', () => {
         schemas.identityGraphSchemasV2.identityReferenceSchemaV1,
     };
     const service = createInterpretabilityResearchServiceV1({
-      loadBundle: async () => json,
-      saveBundle: async () => {},
+      storage: {
+        loadBundle: async () => json,
+        saveBundle: async () => {},
+      },
       schemas: directSchemas,
     });
 

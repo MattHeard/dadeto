@@ -521,13 +521,15 @@ describe('portable held-out accuracy evaluations V4', () => {
     const loadPermissions = [];
     const savePermissions = [];
     const service = createInterpretabilityResearchServiceV1({
-      loadBundle: async token => {
-        loadPermissions.push(token);
-        return storedJson;
-      },
-      saveBundle: async (token, json) => {
-        savePermissions.push(token);
-        storedJson = json;
+      storage: {
+        loadBundle: async token => {
+          loadPermissions.push(token);
+          return storedJson;
+        },
+        saveBundle: async (token, json) => {
+          savePermissions.push(token);
+          storedJson = json;
+        },
       },
       schemas,
     });
@@ -608,11 +610,13 @@ describe('permission-aware held-out accuracy report reads', () => {
     const loadPermissions = [];
     const savePermissions = [];
     const service = createInterpretabilityResearchServiceV1({
-      loadBundle: async token => {
-        loadPermissions.push(token);
-        return initial.json;
+      storage: {
+        loadBundle: async token => {
+          loadPermissions.push(token);
+          return initial.json;
+        },
+        saveBundle: async token => savePermissions.push(token),
       },
-      saveBundle: async token => savePermissions.push(token),
       schemas,
     });
     const token = Object.freeze({ testPermission: true });
@@ -638,11 +642,13 @@ describe('permission-aware held-out accuracy report reads', () => {
     if (!legacy.valid) throw new Error('Legacy bundle fixture invalid.');
     const permissions = [];
     const service = createInterpretabilityResearchServiceV1({
-      loadBundle: async token => {
-        permissions.push(token);
-        return legacy.json;
+      storage: {
+        loadBundle: async token => {
+          permissions.push(token);
+          return legacy.json;
+        },
+        saveBundle: async () => {},
       },
-      saveBundle: async () => {},
       schemas,
     });
     const token = Object.freeze({ testPermission: true });
@@ -665,9 +671,11 @@ describe('permission-aware held-out accuracy report reads', () => {
     envelope.accuracyEvaluations[0].report.overall.samplingMse += 0.001;
     let saves = 0;
     const service = createInterpretabilityResearchServiceV1({
-      loadBundle: async () => JSON.stringify(envelope),
-      saveBundle: async () => {
-        saves += 1;
+      storage: {
+        loadBundle: async () => JSON.stringify(envelope),
+        saveBundle: async () => {
+          saves += 1;
+        },
       },
       schemas,
     });

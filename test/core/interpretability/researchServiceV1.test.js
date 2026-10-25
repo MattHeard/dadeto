@@ -7,8 +7,11 @@ import {
   createNativeNeuronComponentV2,
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
+  appendExperimentDesignV1,
+  exportInterpretabilityResearchBundleV7,
   exportInterpretabilityResearchBundleV2,
   exportInterpretabilityResearchBundleV3,
+  importInterpretabilityResearchBundleV7,
   importInterpretabilityResearchBundleV2,
 } from '../../../src/core/interpretability/interpretability.js';
 import { createTestZod } from './testZod.js';
@@ -34,6 +37,80 @@ const schemas = {
   identityGraphSchemasV2: createInterpretabilitySchemasV2(createTestZod()),
 };
 const createdAt = '2026-10-20T15:00:00Z';
+
+/**
+ * Create a complete, untested plan linked to the seeded mechanism and evidence.
+ * @param {string} id Immutable plan identifier.
+ * @param {string} authorId Attributed investigator.
+ * @returns {Record<string, any>} Proposed plan.
+ */
+function createExperimentDesign(id, authorId) {
+  const graph = createEvidenceGraph();
+  const component = createNativeNeuronComponentV2(model, 'mlp', {
+    layerIndex: 0,
+    activationHook: 'blocks.0.mlp.output',
+    neuronIndex: 7,
+  });
+  return {
+    schemaVersion: 1,
+    id,
+    status: 'proposed',
+    executionStatus: 'untested',
+    authorId,
+    agentId: `agent-${authorId}`,
+    createdAt,
+    mechanism: {
+      mechanismId: graph.mechanisms[0].id,
+      componentId: component.id,
+      model,
+    },
+    contextSnapshotId: `atlas:context:v1:${'a'.repeat(64)}`,
+    citations: [
+      { targetType: 'hypothesis', targetId: 'hypothesis-a', relation: 'tests' },
+      {
+        targetType: 'evidence',
+        targetId: 'evidence-a',
+        relation: 'challenges',
+      },
+    ],
+    uncertainty: 'The initial observation may depend on the selected input.',
+    favoredHypothesis: 'The unit responds consistently across the input class.',
+    alternativeHypothesis: {
+      kind: 'null',
+      statement: 'The observed response does not replicate.',
+    },
+    test: {
+      inputSelection: 'Use 12 held-out sequences from a new seed range.',
+      inputConstruction: 'Generate sequences with the deterministic fixture.',
+      measurements: ['Activation at the pinned recurrent position.'],
+      interventions: ['Compare each value with the cited threshold.'],
+      controls: ['Keep model, checkpoint and tokenizer fixed.'],
+      expectedOutcomes: [
+        {
+          hypothesis: 'favored',
+          observation: 'Most values exceed the threshold.',
+        },
+        {
+          hypothesis: 'alternative',
+          observation: 'Values remain at or below the threshold.',
+        },
+      ],
+      weakeningCondition:
+        'A consistent failure to exceed the threshold weakens the claim.',
+    },
+    reproducibility: {
+      status: 'not-yet-executable',
+      inputSpecification:
+        'Twelve deterministic held-out sequences with new seeds.',
+      budget: {
+        maxInputs: 12,
+        maxComputeUnits: 12,
+        computeUnit: 'fixture-forward-pass',
+      },
+      sourceReferences: [],
+    },
+  };
+}
 
 /**
  * Build a V1 graph with one attributed experiment and evidence record.
@@ -241,15 +318,47 @@ function createMemoryAdapter(
   let storedJson = initialJson;
   const loadPermissions = [];
   const savePermissions = [];
+  const mutatePermissions = [];
+  let mutationQueue = Promise.resolve();
+  const submitDesign = (allowEffects, design) => {
+    mutatePermissions.push(allowEffects);
+    const task = mutationQueue.then(async () => {
+      const imported = importInterpretabilityResearchBundleV2(
+        storedJson,
+        serviceSchemas
+      );
+      if (!imported.valid) return imported;
+      const appended = appendExperimentDesignV1(
+        imported.bundle,
+        design,
+        serviceSchemas
+      );
+      if (!appended.valid) return appended;
+      const exported = exportInterpretabilityResearchBundleV7(
+        appended.bundle,
+        serviceSchemas
+      );
+      if (exported.valid) storedJson = exported.json;
+      return exported;
+    });
+    mutationQueue = task.then(
+      () => undefined,
+      () => undefined
+    );
+    return task;
+  };
   const createService = () =>
     createInterpretabilityResearchServiceV1({
-      loadBundle: async allowEffects => {
-        loadPermissions.push(allowEffects);
-        return storedJson;
-      },
-      saveBundle: async (allowEffects, json) => {
-        savePermissions.push(allowEffects);
-        storedJson = json;
+      storage: {
+        loadBundle: async allowEffects => {
+          loadPermissions.push(allowEffects);
+          return storedJson;
+        },
+        saveBundle: async (allowEffects, json) => {
+          savePermissions.push(allowEffects);
+          storedJson = json;
+        },
+        submitExperimentDesign: submitDesign,
       },
       schemas: serviceSchemas,
       hashContextSnapshot,
@@ -259,6 +368,7 @@ function createMemoryAdapter(
     createService,
     loadPermissions,
     savePermissions,
+    mutatePermissions,
     getStoredJson: () => storedJson,
   };
 }
@@ -817,5 +927,86 @@ describe('permission-aware interpretability research service V1', () => {
     expect(result.valid).toBe(false);
     expect(memory.loadPermissions).toEqual([allowEffects]);
     expect(memory.savePermissions).toEqual([]);
+  });
+});
+
+describe('atomic Atlas experiment-design storage', () => {
+  it('preserves concurrent attributed designs and later graph submissions', async () => {
+    const allowEffectsA = createAllowEffects();
+    const allowEffectsB = createAllowEffects();
+    const memory = createMemoryAdapter(
+      createPortableBundle(createEvidenceGraph())
+    );
+
+    const [savedA, savedB] = await Promise.all([
+      memory
+        .createService()
+        .submitExperimentDesign(
+          allowEffectsA,
+          createExperimentDesign('design-a', 'investigator-a')
+        ),
+      memory
+        .createService()
+        .submitExperimentDesign(
+          allowEffectsB,
+          createExperimentDesign('design-b', 'investigator-b')
+        ),
+    ]);
+
+    expect(savedA.valid).toBe(true);
+    expect(savedB.valid).toBe(true);
+    expect(memory.mutatePermissions).toEqual([allowEffectsA, allowEffectsB]);
+    expect(memory.savePermissions).toEqual([]);
+    const imported = importInterpretabilityResearchBundleV7(
+      memory.getStoredJson(),
+      schemas
+    );
+    expect(imported.valid).toBe(true);
+    if (!imported.valid) return;
+    expect(imported.bundle.experimentDesigns).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'design-a', authorId: 'investigator-a' }),
+        expect.objectContaining({ id: 'design-b', authorId: 'investigator-b' }),
+      ])
+    );
+
+    const followUp = await memory.service.submitExperiment(
+      createAllowEffects(),
+      createSubmission(0.5)
+    );
+    expect(followUp.valid).toBe(true);
+    const afterFollowUp = importInterpretabilityResearchBundleV7(
+      memory.getStoredJson(),
+      schemas
+    );
+    expect(afterFollowUp.valid).toBe(true);
+    if (!afterFollowUp.valid) return;
+    expect(afterFollowUp.bundle.experimentDesigns).toHaveLength(2);
+    expect(afterFollowUp.bundle.evidenceGraph.experiments).toHaveLength(2);
+  });
+
+  it('requires an injected atomic submitter and never falls back to ordinary save', async () => {
+    const allowEffects = createAllowEffects();
+    let savedBundle = false;
+    const service = createInterpretabilityResearchServiceV1({
+      storage: {
+        loadBundle: async () => createPortableBundle(createEvidenceGraph()),
+        saveBundle: async () => {
+          savedBundle = true;
+        },
+      },
+      schemas,
+    });
+
+    await expect(
+      service.submitExperimentDesign(
+        allowEffects,
+        createExperimentDesign('design-non-atomic', 'investigator-a')
+      )
+    ).resolves.toEqual({
+      valid: false,
+      errors: [{ code: 'atomic-experiment-design-storage-required' }],
+    });
+    expect(savedBundle).toBe(false);
   });
 });
