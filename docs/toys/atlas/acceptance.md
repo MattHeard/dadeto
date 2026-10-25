@@ -1,5 +1,23 @@
 # Atlas Context Snapshot Acceptance
 
+## Deterministic local agent journey — 2026-10-25
+
+### Machine-Checkable Criteria
+- [x] CLI discovers a candidate from the bundle without a mechanism ID argument, reads complete bounded context, drafts an evidence-sensitive proposed/untested design, and atomically stores it.
+- [x] Concurrent invocations preserve both submitted designs; snapshot and planning metadata remain attributable and no provider or GCP call is made.
+- [x] Core journey and storage logic receive their runtime effects as dependencies. The CLI wrapper injects filesystem, crypto, clock, random ID, and allow-effects bindings.
+- [x] Jest uses `createTestZod`; the focused suite does not require the runtime Zod package.
+- [x] The local journey has no hosted/billable operation or Firestore adapter; future hosted billing must reuse the existing operation-billing, billing-protocol, pricing-core, and GCP effect-adapter modules.
+- [x] Focused Atlas journey/storage tests pass (14/14); local ESLint and non-core-thin pass.
+- [x] `npm run build` passes; `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passes all 10 gates, including six impact-test shards (1,047 suites / 7,677 tests). Audit found 0 vulnerabilities and duplication found 0 clones. This is fast local evidence, not full-coverage evidence.
+- [ ] Exact-head Full Check: pending after this loop is committed and pushed; do not treat the preceding `557195a` workflow as evidence for this change.
+
+### Evidence Collection
+- CLI instructions and bounds: `docs/toys/atlas/agent-journey.md`.
+- Paired evidence and concurrent submission regression: `test/core/interpretability/evidenceReuseRoundTrip.test.js`.
+- Core implementations: `src/core/local/interpretability/atlasResearchJourney.js`, `src/core/local/interpretability/atlasResearchStorage.js`.
+- Bead: `dadeto-up3v`.
+
 ## Experiment Design Record Slice — 2026-10-24
 
 ### Machine-Checkable Criteria

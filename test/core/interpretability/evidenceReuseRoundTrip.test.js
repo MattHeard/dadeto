@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import {
   appendExperimentDesignV1,
   appendExperimentSubmissionV1,
@@ -19,6 +21,7 @@ import {
 } from '../../../src/core/interpretability/interpretability.js';
 import { calculateAlgZooM16x10Activation } from '../../../src/core/interpretability/algZooReplay.js';
 import { createAlgZooNormalSequence } from '../../../src/core/interpretability/algZooPilotHarness/index.js';
+import { runAtlasResearchJourneyCli } from '../../../src/local/interpretability/atlasResearchJourney.js';
 import { createTestZod } from './testZod.js';
 
 const fixture = JSON.parse(
@@ -892,5 +895,75 @@ describe('offline AlgZoo evidence-reuse software fixture', () => {
       secondImport.bundle
     );
     await expectProposalValidationRefusals(firstImport.bundle);
+
+    await expectConcurrentAtlasJourneys(secondExport.json, bundleSchemas);
   });
 });
+
+/**
+ * Persist two deterministic agent journeys concurrently and read back both.
+ * @param {string} bundleJson Complete prior research bundle JSON.
+ * @param {object} schemas Injected research schemas used at each CLI boundary.
+ * @returns {Promise<void>} Resolves after both proposals are imported.
+ */
+async function expectConcurrentAtlasJourneys(bundleJson, schemas) {
+  const scratchRoot = path.join(process.cwd(), '.tmp');
+  await mkdir(scratchRoot, { recursive: true });
+  const scratchDirectory = await mkdtemp(
+    path.join(scratchRoot, 'atlas-research-journey-')
+  );
+  try {
+    const bundlePath = path.join(scratchDirectory, 'research-bundle.json');
+    await writeFile(bundlePath, bundleJson, 'utf8');
+    const runJourney = (designId, authorId) =>
+      runAtlasResearchJourneyCli(
+        [
+          '--bundle',
+          bundlePath,
+          '--author-id',
+          authorId,
+          '--design-id',
+          designId,
+          '--agent-id',
+          `agent-${authorId}`,
+          '--created-at',
+          '2026-10-25T04:00:00.000Z',
+        ],
+        { schemas }
+      );
+    const [firstJourney, secondJourney] = await Promise.all([
+      runJourney('journey-design-a', 'journey-agent-a'),
+      runJourney('journey-design-b', 'journey-agent-b'),
+    ]);
+    expect(firstJourney.exitCode).toBe(0);
+    expect(secondJourney.exitCode).toBe(0);
+    expect(firstJourney.result).toMatchObject({
+      valid: true,
+      context: { snapshotId: expect.stringMatching(/^atlas:context:v1:/) },
+      design: {
+        status: 'proposed',
+        executionStatus: 'untested',
+        test: {
+          inputSelection: expect.stringContaining('counterexample seed 2'),
+        },
+      },
+    });
+    expect(secondJourney.result.candidate).toEqual(
+      firstJourney.result.candidate
+    );
+    const submitted = importInterpretabilityResearchBundleV7(
+      await readFile(bundlePath, 'utf8'),
+      schemas
+    );
+    expect(submitted.valid).toBe(true);
+    if (submitted.valid) {
+      expect(
+        submitted.bundle.experimentDesigns.map(design => design.id)
+      ).toEqual(
+        expect.arrayContaining(['journey-design-a', 'journey-design-b'])
+      );
+    }
+  } finally {
+    await rm(scratchDirectory, { recursive: true, force: true });
+  }
+}
