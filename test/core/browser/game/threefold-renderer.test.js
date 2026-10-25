@@ -727,7 +727,7 @@ describe('THREEFOLD Hearthgaps logical grid', () => {
         frame.shapes.some(
           shape =>
             shape.geometryId === 'hearthgaps-brin' &&
-            shape.fill === '#f14bd3' &&
+            shape.fill === '#27c8e8' &&
             shape.actorRole === 'npc' &&
             shape.actorSpritePart === 'body'
         )
@@ -1774,14 +1774,14 @@ function expectFramedNpcEmblem(marker) {
     type: 'rect',
     width: 44,
     height: 20,
-    fill: '#f14bd3',
+    fill: '#27c8e8',
     spriteGridSize: 2,
     npcMarkerText: 'NPC',
   });
   expect(marker[1]).toMatchObject({
     type: 'text',
     text: 'NPC',
-    x: marker[0].x + 15,
+    x: marker[0].x + 16,
     y: marker[0].y + 14,
     fill: '#182f36',
     font: '12px monospace',
@@ -1800,11 +1800,14 @@ function expectPlayerNpcPalettes(playerArt, residentArt) {
   expect(playerArt.some(shape => shape.fill === '#ffcb55')).toBe(true);
   expect(playerArt.some(shape => shape.fill === '#fff3c4')).toBe(true);
   expect(
-    playerArt.every(shape => !['#f14bd3', '#8d4bb0'].includes(shape.fill))
+    playerArt.every(
+      shape => !['#27c8e8', '#d84cf0', '#6040a8'].includes(shape.fill)
+    )
   ).toBe(true);
-  expect(residentArt.some(shape => shape.fill === '#f14bd3')).toBe(true);
-  expect(residentArt.some(shape => shape.fill === '#8d4bb0')).toBe(true);
-  expect(residentArt.some(shape => shape.fill === '#ffe1fa')).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#27c8e8')).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#d84cf0')).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#6040a8')).toBe(true);
+  expect(residentArt.some(shape => shape.fill === '#e8fbff')).toBe(true);
   expect(
     residentArt.every(
       shape => !['#ffcb55', '#fff3c4', '#e9d88d'].includes(shape.fill)
@@ -1958,7 +1961,7 @@ function expectRolePaletteContrast(frameShapes, residentBody) {
   );
   expect(playerCloak.length).toBeGreaterThan(20);
   expect(
-    residentBody.filter(shape => shape.fill === '#f14bd3').length
+    residentBody.filter(shape => shape.fill === '#27c8e8').length
   ).toBeGreaterThan(8);
 }
 
@@ -2132,7 +2135,7 @@ describe('THREEFOLD resident identity marker', () => {
 
     drawGameFrame(context, frame);
 
-    expect(paintedColors).toContain('#f14bd3');
+    expect(paintedColors).toContain('#27c8e8');
   });
 
   test('distinguishes resident sprites from Mara on the 2px grid', () => {
@@ -2186,7 +2189,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(
       residentOutline.every(
         shape =>
-          shape.fill === '#f14bd3' &&
+          shape.fill === '#27c8e8' &&
           shape.spriteGridSize === 2 &&
           shape.npcMarker === true
       )
@@ -2363,7 +2366,7 @@ describe('THREEFOLD resident identity marker', () => {
     ).toBe(true);
     expect(playerTag).toMatchObject({ fill: '#ffcb55', width: 34, height: 16 });
     expect(residentTag).toMatchObject({
-      fill: '#f14bd3',
+      fill: '#27c8e8',
       width: 34,
       height: 16,
     });

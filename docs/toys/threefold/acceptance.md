@@ -333,3 +333,7 @@ Follow-up feedback still could not distinguish NPCs from the player in normal pl
 ## Make resident labels unmistakable — 2026-10-25
 
 Play feedback still could not distinguish NPCs from Mara at handheld size. Enlarged the NPC badge to 44 × 20 pixels and changed it to solid magenta with centered dark `NPC` lettering, while Mara keeps her smaller gold `YOU` badge and pale selection frame. Updated the renderer regression expectations and field guide. This is a renderer-only change; local validation and a phone-size capture remain pending.
+
+## Separate resident and player colors — 2026-10-25
+
+Play feedback still could not distinguish Threefold residents from Mara. Switched resident outlines, body accents, and role badges to cyan, with violet clothing and a brighter violet cap; Mara keeps her gold/ivory player palette. The compact regional sprite palette uses the same cyan/violet assignment. Updated renderer assertions and the player guide. The focused renderer suite passes 52/52. `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` ran all 10 gates but did not pass: `test:impact` and `core-parse` hit sandbox `spawnSync ... EPERM`, `audit` could not complete in this environment, and unrelated staged interpretability work failed duplication and TSDoc gates. The visual change itself passed focused tests and ESLint. Beads could not acquire the Dolt lock to record the loop contract; retry Beads when the lock is released. A new production phone capture is still required to confirm the distinction at device size.

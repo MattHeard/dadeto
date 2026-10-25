@@ -2602,8 +2602,8 @@ function smallWorldRoleLabels(shapes) {
         : { npcMarker: true, npcMarkerText: label }),
       spriteGridSize: PERSON_GRID_PIXELS,
     };
-    const fill = player ? '#ffcb55' : '#f14bd3';
-    const textFill = player ? '#172c34' : '#fff3fc';
+    const fill = player ? '#ffcb55' : '#27c8e8';
+    const textFill = player ? '#172c34' : '#102b46';
     placedBounds.push({ id: actor.id, bounds: { ...position, width, height } });
     labels.push({
       type: 'rect',
@@ -2677,7 +2677,7 @@ function smallWorldActorSprite(shape, role, actorCell) {
   /** @type {Record<string, string>} */
   const colors = player
     ? { c: '#ffcb55', f: '#fff3c4', k: '#172c34' }
-    : { n: '#f14bd3', v: '#8d4bb0', f: '#ffe1fa', k: '#342041' };
+    : { n: '#27c8e8', v: '#6040a8', f: '#e8fbff', k: '#182f55' };
   const bodyWidth = Math.min(actorCell.width, shape.width ?? actorCell.width);
   const bodyHeight = Math.min(
     actorCell.height,
@@ -2855,7 +2855,7 @@ function personSprite(actor, camera, tick, heightMeters) {
     ...pixel,
     width: PERSON_GRID_PIXELS,
     height: PERSON_GRID_PIXELS,
-    fill: '#f14bd3',
+    fill: '#27c8e8',
     geometryId: actor.id,
     growthPreview: actor.growthPreview === true,
     logicalGridKind: actor.logicalGridKind,
@@ -2962,12 +2962,12 @@ function npcRoleEmblem(x, y, metadata) {
       y,
       width: NPC_EMBLEM_WIDTH,
       height: NPC_EMBLEM_HEIGHT,
-      fill: '#f14bd3',
+      fill: '#27c8e8',
       ...metadata,
     },
     {
       type: 'text',
-      x: x + 15,
+      x: x + 16,
       y: y + 14,
       text: 'NPC',
       fill: '#182f36',
@@ -2985,10 +2985,10 @@ function npcRoleEmblem(x, y, metadata) {
  */
 function applyResidentRoleAccents(pixels) {
   const residentPalette = /** @type {Record<string, string>} */ ({
-    '#283b4b': '#342041',
-    '#19a9a0': '#f14bd3',
-    '#f4c89b': '#ffe1fa',
-    '#f2ca59': '#8d4bb0',
+    '#283b4b': '#182f55',
+    '#19a9a0': '#27c8e8',
+    '#f4c89b': '#e8fbff',
+    '#f2ca59': '#6040a8',
   });
   pixels.forEach(pixel => {
     pixel.fill = residentPalette[pixel.fill] || pixel.fill;
@@ -2999,9 +2999,9 @@ function applyResidentRoleAccents(pixels) {
     (current, pixel) => (pixel.y > current.y ? pixel : current),
     pixels[0]
   );
-  top.fill = '#f14bd3';
+  top.fill = '#d84cf0';
   const body = bottom === top ? pixels.find(pixel => pixel !== top) : bottom;
-  if (body) body.fill = '#8d4bb0';
+  if (body) body.fill = '#6040a8';
 }
 
 /**
