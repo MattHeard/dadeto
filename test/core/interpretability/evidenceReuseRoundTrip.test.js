@@ -1,15 +1,21 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import {
+  appendExperimentDesignV1,
   appendExperimentSubmissionV1,
   createActivationObservationV2,
   createInterpretabilitySchemasV1,
   createInterpretabilitySchemasV2,
   createRecurrentActivationPositionV2,
   createRecurrentNeuronComponentV2,
+  discoverResearchCandidatesV1,
   exportInterpretabilityResearchBundleV3,
+  exportInterpretabilityResearchBundleV7,
   getEvidenceGraphContextV1,
+  getEvidenceGraphContextSnapshotV1,
   importInterpretabilityResearchBundleV2,
+  importInterpretabilityResearchBundleV7,
+  proposeAlgZooEvidenceSensitiveExperimentDesignV1,
 } from '../../../src/core/interpretability/interpretability.js';
 import { calculateAlgZooM16x10Activation } from '../../../src/core/interpretability/algZooReplay.js';
 import { createAlgZooNormalSequence } from '../../../src/core/interpretability/algZooPilotHarness/index.js';
@@ -55,6 +61,352 @@ function createInputSequenceId(sequence) {
     .update(JSON.stringify(sequence))
     .digest('hex');
   return `sha256:${digest}`;
+}
+
+/**
+ * Resolve the deterministic candidate and complete context for one bundle.
+ * @param {Record<string, any>} bundle Portable evidence and identity bundle.
+ * @returns {Promise<{candidate: Record<string, any>, context: Record<string, any>}>} Resolved design inputs.
+ */
+async function resolveAlgZooDesignInput(bundle) {
+  const discovery = discoverResearchCandidatesV1(bundle);
+  expect(discovery.valid).toBe(true);
+  if (!discovery.valid)
+    throw new Error('seeded candidate should be discoverable');
+  const candidate = discovery.candidates.find(
+    item => item.legacyMechanismId === 'legacy-algzoo-neuron-0-step-9'
+  );
+  expect(candidate).toBeDefined();
+  if (!candidate) throw new Error('seeded candidate is missing');
+  const context = await getEvidenceGraphContextSnapshotV1(
+    bundle.evidenceGraph,
+    {
+      mechanismId: candidate.legacyMechanismId,
+      maxDepth: 4,
+      pageSize: 100,
+      maxItems: 100,
+    },
+    canonical => createHash('sha256').update(canonical).digest('hex')
+  );
+  expect(context.valid).toBe(true);
+  if (!context.valid) throw new Error('seeded context should be complete');
+  return { candidate, context };
+}
+
+/**
+ * Run the deterministic discovery → complete-context → design path for one bundle.
+ * @param {Record<string, any>} bundle Portable evidence and identity bundle.
+ * @param {string} designId Stable proposal identity.
+ * @returns {Promise<Record<string, any>>} Evidence-sensitive untested proposal.
+ */
+async function draftAlgZooDesign(bundle, designId) {
+  const { candidate, context } = await resolveAlgZooDesignInput(bundle);
+  return proposeAlgZooEvidenceSensitiveExperimentDesignV1(candidate, context, {
+    id: designId,
+    authorId: 'atlas-fixture-agent',
+    agentId: 'atlas-researcher',
+    createdAt: '2026-10-25T04:00:00Z',
+  });
+}
+
+/**
+ * Require the decisive negative record to change the proposed follow-up test.
+ * @param {Record<string, any>} observationOnlyBundle Bundle with the initial observation.
+ * @param {Record<string, any>} conflictingBundle Bundle with positive and negative evidence.
+ * @returns {Promise<void>} Resolves when the paired design is evidence-sensitive and appendable.
+ */
+async function expectEvidenceSensitiveDesigns(
+  observationOnlyBundle,
+  conflictingBundle
+) {
+  const observationOnly = await draftAlgZooDesign(
+    observationOnlyBundle,
+    'design-positive-only'
+  );
+  const conflictAware = await draftAlgZooDesign(
+    conflictingBundle,
+    'design-positive-and-negative'
+  );
+  expect(observationOnly.valid).toBe(true);
+  expect(conflictAware.valid).toBe(true);
+  if (!observationOnly.valid || !conflictAware.valid) return;
+  expect(observationOnly.design.executionStatus).toBe('untested');
+  expect(conflictAware.design.executionStatus).toBe('untested');
+  expect(observationOnly.design.test.inputSelection).not.toBe(
+    conflictAware.design.test.inputSelection
+  );
+  expect(observationOnly.design.test.measurements).not.toEqual(
+    conflictAware.design.test.measurements
+  );
+  expect(conflictAware.design.test.inputSelection).toContain(
+    'counterexample seed 2'
+  );
+  expect(conflictAware.design.reproducibility.budget).toMatchObject({
+    maxInputs: 16,
+    maxComputeUnits: 16,
+  });
+  expect(conflictAware.design.test.expectedOutcomes[0].observation).toBe(
+    'Held-out activations include values above 2 and at-or-below 2, reproducing the sequence-dependent threshold crossing.'
+  );
+  expect(conflictAware.design.citations).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        targetType: 'evidence',
+        targetId: 'evidence-investigator-a',
+        relation: 'tests',
+      }),
+      expect.objectContaining({
+        targetType: 'evidence',
+        targetId: 'evidence-investigator-b',
+        relation: 'challenges',
+      }),
+    ])
+  );
+  const appended = appendExperimentDesignV1(
+    conflictingBundle,
+    conflictAware.design,
+    bundleSchemas
+  );
+  expect(appended.valid).toBe(true);
+  if (!appended.valid) return;
+  expect(appended.bundle.experimentDesigns).toContainEqual(
+    conflictAware.design
+  );
+  expect(appended.bundle.evidenceGraph).toEqual(
+    conflictingBundle.evidenceGraph
+  );
+  const portable = exportInterpretabilityResearchBundleV7(
+    appended.bundle,
+    bundleSchemas
+  );
+  expect(portable.valid).toBe(true);
+  if (!portable.valid) return;
+  const restored = importInterpretabilityResearchBundleV7(
+    portable.json,
+    bundleSchemas
+  );
+  expect(restored.valid).toBe(true);
+  if (!restored.valid) return;
+  expect(restored.bundle.experimentDesigns).toEqual([conflictAware.design]);
+}
+
+/**
+ * Preserve predictable refusals for malformed, incomplete, or mismatched input.
+ * @param {Record<string, any>} bundle Portable seeded AlgZoo bundle.
+ * @returns {Promise<void>} Resolves after each refusal code is asserted.
+ */
+async function expectProposalValidationRefusals(bundle) {
+  const { candidate, context } = await resolveAlgZooDesignInput(bundle);
+  const proposal = {
+    id: 'validation-proposal',
+    authorId: 'atlas-fixture-agent',
+    createdAt: '2026-10-25T04:00:00Z',
+  };
+  const expectRefusal = (nextCandidate, nextContext, nextProposal, code) => {
+    expect(
+      proposeAlgZooEvidenceSensitiveExperimentDesignV1(
+        nextCandidate,
+        nextContext,
+        nextProposal
+      )
+    ).toMatchObject({ valid: false, errors: [{ code }] });
+  };
+  const invalidContexts = [
+    { ...context, valid: false },
+    { ...context, items: null },
+    { ...context, totalItems: context.totalItems + 1 },
+    { ...context, mechanism: null },
+    { ...context, contextStatus: 'capped' },
+    { ...context, nextCursor: 'next-page' },
+    { ...context, continuationCursor: 'next-page' },
+    { ...context, snapshotId: null },
+    { ...context, snapshotId: 'atlas:context:v1:incomplete' },
+  ];
+  invalidContexts.forEach(invalidContext =>
+    expectRefusal(candidate, invalidContext, proposal, 'invalid-design-input')
+  );
+  expectRefusal(null, context, proposal, 'invalid-design-input');
+  expectRefusal(candidate, context, null, 'invalid-design-input');
+  [
+    { ...proposal, id: 1 },
+    { ...proposal, id: ' ' },
+    { ...proposal, authorId: null },
+    { ...proposal, authorId: ' ' },
+    { ...proposal, createdAt: 1 },
+    { ...proposal, createdAt: 'not-a-date' },
+  ].forEach(invalidProposal =>
+    expectRefusal(candidate, context, invalidProposal, 'invalid-design-input')
+  );
+
+  [
+    { ...candidate, identityStatus: 'unresolved' },
+    { ...candidate, canonicalMechanismId: null },
+    { ...candidate, canonicalMechanismId: ' ' },
+    { ...candidate, legacyMechanismId: 'different-mechanism' },
+    { ...candidate, model: null },
+    {
+      ...candidate,
+      model: { ...candidate.model, checkpoint: { sha256: 'different' } },
+    },
+  ].forEach(invalidCandidate =>
+    expectRefusal(
+      invalidCandidate,
+      context,
+      proposal,
+      'unresolved-candidate-identity'
+    )
+  );
+
+  [
+    { ...context.mechanism, kind: 'feed-forward' },
+    {
+      ...context.mechanism,
+      model: { ...context.mechanism.model, modelId: 'other' },
+    },
+    { ...context.mechanism, sourceId: 'other-source' },
+    { ...context.mechanism, activationHook: 'other.hook' },
+    { ...context.mechanism, neuronIndex: 1 },
+    { ...context.mechanism, timeStep: 8 },
+  ].forEach(mechanism => {
+    const domainCandidate =
+      JSON.stringify(candidate.model) === JSON.stringify(mechanism.model)
+        ? candidate
+        : { ...candidate, model: mechanism.model };
+    expectRefusal(
+      domainCandidate,
+      { ...context, mechanism },
+      proposal,
+      'unsupported-design-domain'
+    );
+  });
+
+  const recordItems = context.items.filter(item => item.itemType === 'record');
+  const withRecords = records => ({
+    ...context,
+    items: [
+      ...context.items.filter(item => item.itemType !== 'record'),
+      ...records.map(record => ({
+        id: record.id,
+        itemType: 'record',
+        record,
+      })),
+    ],
+    totalItems:
+      context.items.filter(item => item.itemType !== 'record').length +
+      records.length,
+  });
+  const hypothesis = recordItems.find(
+    item => item.record?.id === 'hypothesis-investigator-a'
+  ).record;
+  expectRefusal(
+    candidate,
+    withRecords(
+      recordItems
+        .map(item => item.record)
+        .filter(record => record !== hypothesis)
+    ),
+    proposal,
+    'insufficient-hypothesis-context'
+  );
+  expectRefusal(
+    candidate,
+    withRecords(
+      recordItems.map(item =>
+        item.record === hypothesis
+          ? { ...hypothesis, claim: 'A threshold claim without a number.' }
+          : item.record
+      )
+    ),
+    proposal,
+    'insufficient-hypothesis-context'
+  );
+  expectRefusal(
+    candidate,
+    withRecords(
+      recordItems.map(item =>
+        item.record === hypothesis
+          ? { ...hypothesis, claim: `Activation exceeds ${'9'.repeat(400)}.` }
+          : item.record
+      )
+    ),
+    proposal,
+    'insufficient-hypothesis-context'
+  );
+  expectRefusal(
+    candidate,
+    withRecords(
+      recordItems.map(item =>
+        item.record?.id === 'evidence-investigator-a'
+          ? { ...item.record, kind: 'negative' }
+          : item.record
+      )
+    ),
+    proposal,
+    'insufficient-observed-evidence'
+  );
+
+  const records = recordItems.map(item => item.record);
+  const firstExperiment = records.find(
+    record => record.id === 'experiment-investigator-a'
+  );
+  const observationOnlyWithZeroSeed = withRecords(
+    records.map(record =>
+      record === firstExperiment ? { ...firstExperiment, seed: 0 } : record
+    )
+  );
+  const replication = proposeAlgZooEvidenceSensitiveExperimentDesignV1(
+    candidate,
+    observationOnlyWithZeroSeed,
+    proposal
+  );
+  expect(replication.valid).toBe(true);
+  if (replication.valid) {
+    expect(replication.design.test.inputSelection).toContain('seed 1');
+    expect(replication.design).not.toHaveProperty('agentId');
+  }
+
+  const duplicateHypothesis = {
+    ...hypothesis,
+    id: 'hypothesis-investigator-z',
+  };
+  const secondExperiment = {
+    ...firstExperiment,
+    id: 'experiment-investigator-b',
+    seed: 2,
+  };
+  const attributedCounterexample = {
+    schemaVersion: 1,
+    id: 'evidence-investigator-b',
+    kind: 'negative',
+    summary: 'The related follow-up evidence challenges the prior threshold.',
+    hypothesisIds: [hypothesis.id],
+    experimentIds: [secondExperiment.id],
+    validationState: 'unreviewed',
+    artifactSha256: 'b'.repeat(64),
+    authorId: 'investigator-b',
+    createdAt,
+  };
+  const multiHypothesisAndCounterexample = withRecords([
+    ...records,
+    duplicateHypothesis,
+    secondExperiment,
+    attributedCounterexample,
+  ]);
+  const contrast = proposeAlgZooEvidenceSensitiveExperimentDesignV1(
+    candidate,
+    multiHypothesisAndCounterexample,
+    { ...proposal, agentId: 'atlas-researcher' }
+  );
+  expect(contrast.valid).toBe(true);
+  if (contrast.valid) {
+    expect(contrast.design.citations).toContainEqual(
+      expect.objectContaining({
+        targetId: attributedCounterexample.id,
+        relation: 'challenges',
+      })
+    );
+    expect(contrast.design.agentId).toBe('atlas-researcher');
+  }
 }
 
 /**
@@ -367,7 +719,7 @@ function expectInvestigatorRoundTrip({
 }
 
 describe('offline AlgZoo evidence-reuse software fixture', () => {
-  it('lets a second investigator retrieve, extend, and round-trip a replay record', () => {
+  it('lets a second investigator retrieve, extend, and round-trip a replay record', async () => {
     const firstActivation = calculateAlgZooM16x10Activation(
       firstInput,
       fixture,
@@ -534,5 +886,11 @@ describe('offline AlgZoo evidence-reuse software fixture', () => {
       firstInputSequenceId,
       secondInputSequenceId,
     });
+
+    await expectEvidenceSensitiveDesigns(
+      firstImport.bundle,
+      secondImport.bundle
+    );
+    await expectProposalValidationRefusals(firstImport.bundle);
   });
 });
