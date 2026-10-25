@@ -1002,6 +1002,108 @@ describe('AlgZoo pilot runner', () => {
   });
 });
 
+describe('AlgZoo audit score boundary', () => {
+  /**
+   * @param {unknown} scoringResult Synthetic scoring adapter response.
+   * @returns {{runner:ReturnType<typeof createTestAlgZooPilotRunner>,pair:Record<string,any>,events:Array<Record<string,any>>}} Paired runner and captured audit events.
+   */
+  function createScoringHarness(scoringResult) {
+    const plan = createAlgZooPilotPlan(configuration, fixture);
+    const events = [];
+    const runner = createTestAlgZooPilotRunner({
+      appendAuditRecord: async (eventType, payload) =>
+        events.push({ eventType, payload }),
+      createDeadline: createTestDeadlineFactory().createDeadline,
+      hashMapSnapshot: async () => 'synthetic-score-boundary-map',
+      runInvestigator: async request => {
+        request.budget.reserve({ investigatorTokens: 1 }).complete({
+          investigatorTokens: 1,
+        });
+        return {
+          submission: {
+            causalInterventionResult: {
+              schemaVersion: 1,
+              status: 'not-tested',
+            },
+          },
+          cost: { investigatorTokens: 1 },
+        };
+      },
+      scoreBlindedSubmissions: async () => scoringResult,
+    });
+    return { runner, pair: plan.schedule.pairs[0], events };
+  }
+
+  it('rejects a non-array scorer response with a redacted failure event', async () => {
+    const { runner, pair, events } = createScoringHarness({
+      detail: 'synthetic evaluator-only sentinel',
+    });
+    await expect(runner.runTargetPair(pair, [], [])).rejects.toThrow(
+      'Blinded pair scoring returned an invalid result.'
+    );
+    expect(events.at(-1)).toEqual({
+      eventType: 'pair-scoring-failed',
+      payload: expect.objectContaining({
+        failureCode: 'invalid-scorer-result',
+        submissionCount: 2,
+      }),
+    });
+    expect(JSON.stringify(events)).not.toContain('evaluator-only sentinel');
+  });
+
+  it('retains only finite allowlisted metrics and stable error codes in audit scores', async () => {
+    const { runner, pair, events } = createScoringHarness([
+      null,
+      {
+        predictionStatus: 99,
+        predictionMetrics: {
+          candidateMse: 0.04,
+          perStepNormalizedRmse: [0.1, 0.2],
+          passesPredictionThresholds: false,
+          secret: 'synthetic evaluator-only sentinel',
+        },
+        errors: [
+          null,
+          {},
+          { code: 42 },
+          { code: 'stable-code', detail: 'private detail' },
+        ],
+      },
+      {
+        predictionStatus: 'scored',
+        predictionMetrics: {
+          candidateMse: 'private detail',
+          perStepNormalizedRmse: 'private detail',
+          passesPredictionThresholds: 'private detail',
+        },
+      },
+    ]);
+    await runner.runTargetPair(pair, [], []);
+    expect(events.at(-1).payload.scores).toEqual([
+      { submissionIndex: 0, predictionStatus: 'invalid-score-result' },
+      {
+        submissionIndex: 1,
+        predictionStatus: 'unscored',
+        predictionMetrics: {
+          candidateMse: 0.04,
+          perStepNormalizedRmse: [0.1, 0.2],
+          passesPredictionThresholds: false,
+        },
+        errors: [
+          { code: 'invalid-score-error' },
+          { code: 'invalid-score-error' },
+          { code: 'invalid-score-error' },
+          { code: 'stable-code' },
+        ],
+      },
+      { submissionIndex: 2, predictionStatus: 'scored' },
+    ]);
+    expect(JSON.stringify(events)).not.toMatch(
+      /evaluator-only sentinel|private detail/
+    );
+  });
+});
+
 describe('AlgZoo typed causal result enforcement', () => {
   it('keeps explanations without a typed causal record out of scoring', async () => {
     const plan = createAlgZooPilotPlan(configuration, fixture);

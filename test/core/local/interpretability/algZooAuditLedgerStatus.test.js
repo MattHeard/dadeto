@@ -23,6 +23,33 @@ function createHarness(readAll) {
 }
 
 describe('AlgZoo audit ledger status command', () => {
+  it.each([undefined, null, {}])(
+    'rejects missing command dependencies: %p',
+    dependencies => {
+      expect(() => createAlgZooAuditLedgerStatusCommand(dependencies)).toThrow(
+        TypeError
+      );
+    }
+  );
+
+  it.each(['readAll', 'writeStdout', 'writeStderr', 'setExitCode'])(
+    'rejects a missing %s adapter before running effects',
+    field => {
+      const readAll = jest.fn(async () => []);
+      const dependencies = {
+        readAll,
+        writeStdout: jest.fn(),
+        writeStderr: jest.fn(),
+        setExitCode: jest.fn(),
+        [field]: null,
+      };
+      expect(() => createAlgZooAuditLedgerStatusCommand(dependencies)).toThrow(
+        TypeError
+      );
+      expect(readAll).not.toHaveBeenCalled();
+    }
+  );
+
   it('reports verified chain metadata without emitting record payloads', async () => {
     const { command, output } = createHarness(async () => [
       {
@@ -54,6 +81,44 @@ describe('AlgZoo audit ledger status command', () => {
     expect(output.stdout).not.toContain('never print this');
     expect(output.stderr).toBe('');
     expect(output.exitCode).toBe(0);
+  });
+
+  it('counts only started sessions without a terminal event and ignores malformed session IDs', async () => {
+    const ids = ['finished', 'failed', 'stopped', 'interrupted', 'pending'];
+    const terminalEvents = [
+      'session-finished',
+      'run-failed',
+      'budget-stopped',
+      'run-interrupted',
+    ];
+    const records = [
+      ...ids.map(sessionId => ({
+        eventType: 'session-started',
+        payload: { sessionId },
+        hash: 'a'.repeat(64),
+      })),
+      ...terminalEvents.map((eventType, index) => ({
+        eventType,
+        payload: { sessionId: ids[index] },
+        hash: 'a'.repeat(64),
+      })),
+      {
+        eventType: 'run-failed',
+        payload: { sessionId: 17 },
+        hash: 'a'.repeat(64),
+      },
+      { eventType: 'session-started', payload: {}, hash: 'b'.repeat(64) },
+    ];
+    const { command, output } = createHarness(async () => records);
+    await command();
+    expect(JSON.parse(output.stdout)).toEqual({
+      hashChain: 'verified',
+      recordCount: 11,
+      headHash: 'b'.repeat(64),
+      interruptedSessionCount: 1,
+    });
+    expect(output.stdout).not.toContain('pending');
+    expect(output.stderr).toBe('');
   });
 
   it('reports an empty ledger without inventing an external anchor', async () => {
