@@ -23,6 +23,14 @@
 - `npm run build` passed and `npm run manuals:check` validated 84 toy manuals.
 - The production deploy was already verified as run 40015046690 for commit `fc379d1367c7c5503eba473797443fb1a5c223d8`. A human browser trial is still missing: no interactive browser route is available here, and the prior host could not resolve `mattheard.net`. Do not infer that a novice can complete the task in under two minutes; keep that acceptance item open.
 
+## 2026-10-25 acceptance recheck
+
+- `npm run test:impact -- --files test/core/browser/game/agriculturalRover.test.js test/core/browser/game/agricultural-rover-page.test.js` passed both suites / 40 tests.
+- `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` passed all 10 gates on current main (six serial impact shards); the sandbox attempt needed host permissions after Git/Node child processes failed with `EPERM`.
+- `npm run build` passed; the built `/agricultural-rover/` page is present, and `public/index.html` links to the beta catalogue entry with its plain-language value proposition.
+- Production deploy evidence remains run `40015046690` for commit `fc379d1`.
+- The only unverified criterion remains a real novice editing the seeded example and getting a meaningful comparison in under two minutes. Automated interaction tests do not prove this. Keep the spec Partial until that human trial is recorded.
+
 ## Pass/Fail Rules
 - The current loop passes only when the deterministic model slice, tests, and required toy docs are complete and required local checks succeed.
 - The overall spec remains open until the interactive toy and user-facing acceptance items above are delivered.
