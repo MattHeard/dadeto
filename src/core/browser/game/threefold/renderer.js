@@ -62,11 +62,11 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
-const ROLE_TAG_WIDTH = 34;
-const ROLE_TAG_HEIGHT = 16;
+const ROLE_TAG_WIDTH = 42;
+const ROLE_TAG_HEIGHT = 18;
 const NPC_EMBLEM_WIDTH = 36;
 const NPC_EMBLEM_HEIGHT = 16;
-const PLAYER_BADGE_MIN_Y = 54;
+const PLAYER_BADGE_MIN_Y = 28;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const THREEFOLD_RESIDENT_ART = [
@@ -3114,7 +3114,7 @@ function maraCapeFrill(sprites) {
  * @returns {ThreefoldSpriteShape[]} Visible role glyph cells.
  */
 /**
- * Mark Mara as the player with a readable gold YOU tag beside her sprite.
+ * Mark Mara as the player with a readable gold YOU tag directly above her sprite.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
  * @param {ThreefoldSpriteShape[]} otherCharacters NPC bodies and role markers.
  * @returns {ThreefoldSpriteShape[]} Readable role tag and attached leader.
@@ -3127,12 +3127,21 @@ function maraRoleLabel(sprites, otherCharacters) {
   const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
   const markerWidth = ROLE_TAG_WIDTH;
   const markerHeight = ROLE_TAG_HEIGHT;
-  const centerY = snapCanvasCoordinate((minY + maxY) / 2, 2);
   const markerTop = Math.max(
     PLAYER_BADGE_MIN_Y,
-    Math.min(108 - markerHeight, centerY - markerHeight / 2)
+    Math.min(108 - markerHeight, minY - markerHeight - 4)
   );
   const candidates = [
+    {
+      side: 'above',
+      left: snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2),
+      top: markerTop,
+    },
+    {
+      side: 'below',
+      left: snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2),
+      top: Math.min(108 - markerHeight, maxY + 4),
+    },
     {
       side: 'left',
       left: snapCanvasCoordinate(minX - markerWidth - 4, 2),
@@ -3142,16 +3151,6 @@ function maraRoleLabel(sprites, otherCharacters) {
       side: 'right',
       left: snapCanvasCoordinate(maxX + 4, 2),
       top: markerTop,
-    },
-    {
-      side: 'above',
-      left: snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2),
-      top: Math.max(42, minY - markerHeight - 4),
-    },
-    {
-      side: 'below',
-      left: snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2),
-      top: Math.min(108 - markerHeight, maxY + 4),
     },
   ].filter(
     candidate =>
@@ -3237,7 +3236,7 @@ function maraRoleLabel(sprites, otherCharacters) {
       y: placement.top + 12,
       text: 'YOU',
       fill: '#172c34',
-      font: '10px monospace',
+      font: '12px monospace',
       bitmap: true,
       ...metadata,
       playerMarkerKind: /** @type {'pointer'} */ ('pointer'),

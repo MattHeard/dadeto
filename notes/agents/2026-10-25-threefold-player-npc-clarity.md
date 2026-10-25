@@ -28,3 +28,19 @@ when colors and role labels are ignored.
 If role colors and labels still do not help players identify Mara at handheld
 size, inspect body-only masks at native resolution and make the player silhouette
 structurally different instead of adding more badges.
+
+## Latest play-feedback adjustment
+
+The player still read as separate from her `YOU` marker during play, despite
+the now-distinct gold player and magenta NPC silhouettes. The previous layout
+favored a side plaque. Mara's `YOU` plaque now prefers a larger, centered
+position directly above her, with a short vertical gold connector. NPC `NPC`
+plaques retain their magenta treatment. The native frame regression asserts
+the centered alignment, connector, safe bounds, and separation from the NPC
+plaque. This remains presentation-only.
+
+- Native 160 × 144 frame preview: `/tmp/threefold-player-label-current.png`.
+- Renderer Jest: `node scripts/run-jest.js test/core/browser/game/threefold-renderer.test.js --runInBand --coverage=false` — PASS, 52/52.
+- `npx eslint src/core/browser/game/threefold/renderer.js test/core/browser/game/threefold-renderer.test.js` — PASS.
+- `npm run build` — PASS.
+- `DADETO_CHECK_PROGRESS_INTERVAL_MS=3000 npm run check` — PASS, all 10 gates. The sandbox attempt was retried with host permissions after child processes failed with `EPERM`.

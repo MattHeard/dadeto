@@ -1834,13 +1834,17 @@ function expectPlayerPointerClearFromActors(
   npcLabel
 ) {
   const pointer = frameBounds(playerPointer, 'actorId', 'mara');
-  expect(pointer.width).toBe(34);
-  expect(pointer.height).toBe(16);
-  expect(pointer.y).toBeGreaterThanOrEqual(54);
+  expect(pointer.width).toBe(42);
+  expect(pointer.height).toBe(18);
+  expect(pointer.y).toBeGreaterThanOrEqual(28);
   expect(pointer.y + pointer.height).toBeLessThanOrEqual(108);
-  expect(pointer.x + pointer.width).toBeLessThanOrEqual(
-    Math.min(...playerBody.map(shape => shape.x))
+  const bodyLeft = Math.min(...playerBody.map(shape => shape.x));
+  const bodyRight = Math.max(
+    ...playerBody.map(shape => shape.x + (shape.width ?? 0))
   );
+  expect(
+    Math.abs(pointer.x + pointer.width / 2 - (bodyLeft + bodyRight) / 2)
+  ).toBeLessThanOrEqual(1);
   expect(
     npcLabel.every(
       shape =>
@@ -1852,17 +1856,21 @@ function expectPlayerPointerClearFromActors(
   ).toBe(true);
   expect(playerLeader).toHaveLength(1);
   expect(playerLeader[0]).toMatchObject({
-    width: 4,
-    height: 2,
+    width: 2,
     fill: '#ffcb55',
     playerMarker: true,
   });
-  expect(playerLeader[0].y).toBeGreaterThanOrEqual(pointer.y);
-  expect(playerLeader[0].y + playerLeader[0].height).toBeLessThanOrEqual(
-    pointer.y + pointer.height
+  expect(playerLeader[0].x).toBeCloseTo((bodyLeft + bodyRight) / 2, 0);
+  const bodyTop = Math.min(...playerBody.map(shape => shape.y));
+  const bodyBottom = Math.max(
+    ...playerBody.map(shape => shape.y + (shape.height ?? 0))
   );
-  expect(playerLeader[0].x + playerLeader[0].width).toBe(
-    Math.min(...playerBody.map(shape => shape.x))
+  expect(
+    playerLeader[0].y + playerLeader[0].height <= pointer.y ||
+      playerLeader[0].y >= pointer.y + pointer.height
+  ).toBe(true);
+  expect(pointer.y + pointer.height <= bodyTop || pointer.y >= bodyBottom).toBe(
+    true
   );
 }
 
@@ -2223,8 +2231,8 @@ describe('THREEFOLD resident identity marker', () => {
     expect(playerPointer).toHaveLength(2);
     expect(playerPointer[0]).toMatchObject({
       type: 'rect',
-      width: 34,
-      height: 16,
+      width: 42,
+      height: 18,
       fill: '#ffcb55',
       spriteGridSize: 2,
       playerMarkerText: 'YOU',
@@ -2233,7 +2241,7 @@ describe('THREEFOLD resident identity marker', () => {
       type: 'text',
       text: 'YOU',
       fill: '#172c34',
-      font: '10px monospace',
+      font: '12px monospace',
       bitmap: true,
       playerMarkerText: 'YOU',
     });
