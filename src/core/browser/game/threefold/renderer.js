@@ -64,8 +64,8 @@ const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
 const ROLE_TAG_WIDTH = 54;
 const ROLE_TAG_HEIGHT = 18;
-const NPC_EMBLEM_WIDTH = 48;
-const NPC_EMBLEM_HEIGHT = 24;
+const NPC_EMBLEM_WIDTH = 32;
+const NPC_EMBLEM_HEIGHT = 16;
 const PLAYER_BADGE_MIN_Y = 28;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
@@ -205,10 +205,13 @@ export function renderThreefoldFrame(
                   worldActor.physicalBounds
                 ),
               playerKeepout: {
-                x: (world.player.x - camera.x) * TILE_PIXELS - 8,
-                y: (world.player.y - camera.y) * TILE_PIXELS - 4,
-                width: 28,
-                height: 20,
+                // Reserve Mara's full screen-space sprite, not just the small
+                // logical tile at her feet. Resident badges are large at 160x144;
+                // placing one beside her body makes it look like her label.
+                x: (world.player.x - camera.x) * TILE_PIXELS - 16,
+                y: (world.player.y - camera.y) * TILE_PIXELS - 20,
+                width: 40,
+                height: 52,
               },
             },
             camera,
@@ -2959,9 +2962,9 @@ function npcRoleConnector(badge, actor, metadata) {
   const above = badge.top + NPC_EMBLEM_HEIGHT <= actor.top;
   const startY = above ? badge.top + NPC_EMBLEM_HEIGHT : actor.bottom;
   const endY = above ? actor.top : badge.top;
-  const connectorWidth = PERSON_GRID_PIXELS * 2;
+  const connectorWidth = PERSON_GRID_PIXELS;
   const horizontalY = snapCanvasCoordinate(
-    above ? actor.top - connectorWidth : actor.bottom,
+    above ? actor.top - connectorWidth * 2 : actor.bottom,
     PERSON_GRID_PIXELS
   );
   const left = Math.min(badgeCenterX, actor.centerX) - connectorWidth / 2;
@@ -3073,11 +3076,11 @@ function npcRoleEmblem(x, y, metadata) {
     },
     {
       type: 'text',
-      x: x + Math.round((NPC_EMBLEM_WIDTH - 24) / 2),
-      y: y + 16,
+      x: x + 6,
+      y: y + 11,
       text: 'NPC',
       fill: '#342041',
-      font: '12px monospace',
+      font: '10px monospace',
       bitmap: true,
       ...metadata,
     },

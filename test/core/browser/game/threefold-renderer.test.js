@@ -1751,8 +1751,8 @@ function expectResidentMarkerClearOfActors(
 ) {
   const marker = frameBounds(npcMarker, 'geometryId', id);
   const body = frameBounds(residentBody, 'geometryId', id);
-  expect(marker.width).toBe(48);
-  expect(marker.height).toBe(24);
+  expect(marker.width).toBe(32);
+  expect(marker.height).toBe(16);
   expect(marker.x).toBeGreaterThanOrEqual(0);
   expect(marker.x + marker.width).toBeLessThanOrEqual(160);
   expect(marker.y).toBeGreaterThanOrEqual(0);
@@ -1788,16 +1788,16 @@ function expectFramedNpcEmblem(marker) {
   const label = marker.find(shape => shape.type === 'text');
   expect(frame).toMatchObject({
     type: 'rect',
-    width: 48,
-    height: 24,
+    width: 32,
+    height: 16,
     fill: '#101a23',
     spriteGridSize: 2,
     npcMarkerText: 'NPC',
   });
   expect(badge).toMatchObject({
     type: 'rect',
-    width: 44,
-    height: 20,
+    width: 28,
+    height: 12,
     fill: '#f14bd3',
     spriteGridSize: 2,
     npcMarkerText: 'NPC',
@@ -1805,10 +1805,10 @@ function expectFramedNpcEmblem(marker) {
   expect(label).toMatchObject({
     type: 'text',
     text: 'NPC',
-    x: frame.x + 12,
-    y: frame.y + 16,
+    x: frame.x + 6,
+    y: frame.y + 12,
     fill: '#342041',
-    font: '12px monospace',
+    font: '10px monospace',
     bitmap: true,
     npcMarkerText: 'NPC',
   });
@@ -2373,6 +2373,39 @@ describe('THREEFOLD resident identity marker', () => {
     expect(lastResidentCueIndex).toBeGreaterThan(returnTideOverlayIndex);
   });
 
+  test.each([0, 1])(
+    'keeps the resident badge and connector off Mara at scale %i',
+    scale => {
+      const state = createThreefoldSimulation(
+        THRESHOLDS,
+        createBrokenGateScene()
+      );
+      const frame = renderThreefoldFrame({
+        ...state,
+        player: { ...state.player, scale },
+      });
+      const residentCues = frame.shapes.filter(
+        shape =>
+          shape.geometryId === 'latchfolk-watchkeeper' &&
+          ['emblem', 'emblem-connector'].includes(shape.npcMarkerKind)
+      );
+      const maraShapes = frame.shapes.filter(shape => shape.actorId === 'mara');
+
+      expect(residentCues.length).toBeGreaterThan(0);
+      expect(
+        residentCues.every(npc =>
+          maraShapes.every(
+            mara =>
+              npc.x + (npc.width ?? 0) <= mara.x ||
+              npc.x >= mara.x + (mara.width ?? 0) ||
+              npc.y + (npc.height ?? 0) <= mara.y ||
+              npc.y >= mara.y + (mara.height ?? 0)
+          )
+        )
+      ).toBe(true);
+    }
+  );
+
   test('labels compact scene actors with PLAYER and NPC tags clear of their bodies', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, createThreefoldWeftwaysScene())
@@ -2548,7 +2581,7 @@ test('gives residents an NPC label distinct from Mara’s PLAYER label', () => {
       shape =>
         shape.actorId === watchkeeper.id &&
         shape.fill === '#ffe1fa' &&
-        Math.max(shape.width, shape.height) >= 4 &&
+        Math.max(shape.width, shape.height) >= 2 &&
         shape.width % 2 === 0 &&
         shape.height % 2 === 0
     )

@@ -377,3 +377,12 @@ connector belongs to the resident, remains on the 2px grid, and is absent from
 the player's marker. This changes display only. A native frame-shape preview
 was reviewed at `/tmp/threefold-npc-preview.png`; a fresh browser/device capture
 and final quality-gate results remain pending.
+
+## Keep NPC identity cues clear of Mara — 2026-10-25
+
+Follow-up feedback found the NPC plaque too large beside the sprites and its
+connector could touch Mara's selection frame, making ownership unclear. Reduced
+the resident badge to 32×16 pixels, reserved Mara's full on-screen sprite for
+badge placement, and narrowed the connector. Renderer regressions pass at the
+default and enlarged-resident scales. Focused Jest passed 54/54; syntax and diff
+checks passed. A fresh browser/device capture and full local check remain open.
