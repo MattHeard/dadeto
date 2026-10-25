@@ -1742,8 +1742,8 @@ function expectResidentMarkerClearOfActors(
 ) {
   const marker = frameBounds(npcMarker, 'geometryId', id);
   const body = frameBounds(residentBody, 'geometryId', id);
-  expect(marker.width).toBe(36);
-  expect(marker.height).toBe(16);
+  expect(marker.width).toBe(44);
+  expect(marker.height).toBe(20);
   expect(marker.x).toBeGreaterThanOrEqual(0);
   expect(marker.x + marker.width).toBeLessThanOrEqual(160);
   expect(marker.y).toBeGreaterThanOrEqual(0);
@@ -1766,32 +1766,25 @@ function expectResidentMarkerClearOfActors(
  * @returns {void} Throws when the role badge loses its contrast or grid fit.
  */
 function expectFramedNpcEmblem(marker) {
-  expect(marker).toHaveLength(3);
+  expect(marker).toHaveLength(2);
   expect(marker.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)).toBe(
     true
   );
   expect(marker[0]).toMatchObject({
     type: 'rect',
-    width: 36,
-    height: 16,
+    width: 44,
+    height: 20,
     fill: '#f14bd3',
     spriteGridSize: 2,
     npcMarkerText: 'NPC',
   });
   expect(marker[1]).toMatchObject({
-    type: 'rect',
-    x: marker[0].x + 2,
-    y: marker[0].y + 2,
-    width: 32,
-    height: 12,
-    fill: '#182f36',
-    npcMarkerText: 'NPC',
-  });
-  expect(marker[2]).toMatchObject({
     type: 'text',
     text: 'NPC',
-    fill: '#f3f6d2',
-    font: '10px monospace',
+    x: marker[0].x + 15,
+    y: marker[0].y + 14,
+    fill: '#182f36',
+    font: '12px monospace',
     bitmap: true,
     npcMarkerText: 'NPC',
   });

@@ -64,8 +64,8 @@ const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
 const ROLE_TAG_WIDTH = 42;
 const ROLE_TAG_HEIGHT = 18;
-const NPC_EMBLEM_WIDTH = 36;
-const NPC_EMBLEM_HEIGHT = 16;
+const NPC_EMBLEM_WIDTH = 44;
+const NPC_EMBLEM_HEIGHT = 20;
 const PLAYER_BADGE_MIN_Y = 28;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
@@ -2966,21 +2966,12 @@ function npcRoleEmblem(x, y, metadata) {
       ...metadata,
     },
     {
-      type: 'rect',
-      x: x + 2,
-      y: y + 2,
-      width: NPC_EMBLEM_WIDTH - 4,
-      height: NPC_EMBLEM_HEIGHT - 4,
-      fill: '#182f36',
-      ...metadata,
-    },
-    {
       type: 'text',
-      x: x + 6,
-      y: y + 12,
+      x: x + 15,
+      y: y + 14,
       text: 'NPC',
-      fill: '#f3f6d2',
-      font: '10px monospace',
+      fill: '#182f36',
+      font: '12px monospace',
       bitmap: true,
       ...metadata,
     },
