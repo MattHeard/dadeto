@@ -39,6 +39,24 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('sleep "$((attempt * 15))"');
   });
 
+  it('builds and stages the Tetracube page inside the temporary test prefix', () => {
+    const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+    const pageSeedStep = source
+      .split('      - name: Seed Tetracube static page for Playwright\n')[1]
+      ?.split('\n      - name: ')[0];
+    const waitStep = source
+      .split('      - name: Wait for seeded pages\n')[1]
+      ?.split('\n      - name: ')[0];
+
+    expect(source).toContain('npm run build:mattheard-net');
+    expect(pageSeedStep).toContain('../public/tetracube/${asset}');
+    expect(pageSeedStep).toContain(
+      'gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/tetracube/${asset}'
+    );
+    expect(waitStep).toContain('wait_for_object tetracube/index.html');
+    expect(waitStep).toContain('wait_for_object tetracube/game.js');
+  });
+
   it('binds the workflow database id to the generated test environment', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 

@@ -116,6 +116,7 @@ jobs:
           npm ci
           npm run build:cloud
           npm run copy:dendrite
+          npm run build:mattheard-net
 
       - name: Set up Google Cloud auth
         uses: google-github-actions/auth@v2
@@ -343,6 +344,16 @@ jobs:
             sleep "$((attempt * 15))"
           done
 
+      - name: Seed Tetracube static page for Playwright
+        if: success()
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+          for asset in index.html game.js styles.css; do
+            gcloud storage cp "../public/tetracube/${asset}" \
+              "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/tetracube/${asset}"
+          done
+
       - name: Wait for seeded pages
         if: success()
         run: |
@@ -367,6 +378,8 @@ jobs:
           wait_for_object index.html
           wait_for_object p/1a.html
           wait_for_object p/2a.html
+          wait_for_object tetracube/index.html
+          wait_for_object tetracube/game.js
 
       - name: Seed temporary runner availability for search E2E
         if: success()

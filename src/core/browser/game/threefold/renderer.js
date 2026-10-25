@@ -3266,9 +3266,7 @@ function maraPlayerArrow(sprites) {
   const centerX = snapCanvasCoordinate((minX + maxX) / 2, 2);
   const markerHeight = 18;
   const above = minY - markerHeight >= 28 || maxY + markerHeight > 108;
-  const beaconTop = above
-    ? Math.max(28, minY - markerHeight)
-    : maxY;
+  const beaconTop = above ? Math.max(28, minY - markerHeight) : maxY;
   const shaft = [centerX];
   const wide = [
     centerX - 8,
@@ -3310,9 +3308,10 @@ function maraPlayerArrow(sprites) {
       y: beaconTop + rowIndex * 2,
       width: 2,
       height: 2,
-      fill: rowIndex === (above ? rows.length - 1 : 0) && x === centerX
-        ? '#fff3c4'
-        : '#ffcb55',
+      fill:
+        rowIndex === (above ? rows.length - 1 : 0) && x === centerX
+          ? '#fff3c4'
+          : '#ffcb55',
       actorId: 'mara',
       playerMarker: true,
       playerMarkerKind: /** @type {'beacon'} */ ('beacon'),
