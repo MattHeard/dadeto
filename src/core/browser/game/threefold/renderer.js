@@ -64,8 +64,8 @@ const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
 const ROLE_TAG_WIDTH = 42;
 const ROLE_TAG_HEIGHT = 18;
-const NPC_EMBLEM_WIDTH = 44;
-const NPC_EMBLEM_HEIGHT = 20;
+const NPC_EMBLEM_WIDTH = 48;
+const NPC_EMBLEM_HEIGHT = 24;
 const PLAYER_BADGE_MIN_Y = 28;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
@@ -399,6 +399,17 @@ export function renderThreefoldFrame(
     (/** @type {ThreefoldSpriteShape} */ shape) =>
       typeof shape.actorId === 'string' && shape.actorId !== 'mara'
   );
+  // NPC emblems are identity UI, not world art. Keep them above signs, water,
+  // and HUD layers so the residents cannot read as part of the scenery.
+  const npcEmblems = frame.shapes.filter(
+    (/** @type {ThreefoldSpriteShape} */ shape) =>
+      shape.npcMarkerKind === 'emblem'
+  );
+  frame.shapes = frame.shapes.filter(
+    (/** @type {ThreefoldSpriteShape} */ shape) =>
+      shape.npcMarkerKind !== 'emblem'
+  );
+  frame.shapes.push(...npcEmblems);
   frame.shapes.push(...maraRoleLabel(maraShapes, otherCharacterShapes));
   return alignThreefoldFrame(frame);
 }
@@ -2962,13 +2973,22 @@ function npcRoleEmblem(x, y, metadata) {
       y,
       width: NPC_EMBLEM_WIDTH,
       height: NPC_EMBLEM_HEIGHT,
+      fill: '#101a23',
+      ...metadata,
+    },
+    {
+      type: 'rect',
+      x: x + 2,
+      y: y + 2,
+      width: NPC_EMBLEM_WIDTH - 4,
+      height: NPC_EMBLEM_HEIGHT - 4,
       fill: '#f14bd3',
       ...metadata,
     },
     {
       type: 'text',
-      x: x + 16,
-      y: y + 14,
+      x: x + 18,
+      y: y + 16,
       text: 'NPC',
       fill: '#342041',
       font: '12px monospace',

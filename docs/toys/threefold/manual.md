@@ -179,7 +179,7 @@ A destroyed crane cannot supply its governor, and a destroyed regulator cannot a
 
 ## Recognizing Mara and residents
 
-Across the compact settlement and crossing scenes, Mara has a pointed hood and a cloak that widens toward the hem. Residents have a flat, broad brim and a straight robe. Cyan `YOU` and magenta `NPC` tags identify each role directly. Tags stay inside the handheld playfield and clear of other actor bodies; two-pixel identity shapes stay inside each logical actor cell, scale-aware body pixels keep their physical footprint, and characters draw above scenery so a shared cell cannot hide them.
+Across the compact settlement and crossing scenes, Mara has a pointed hood and a short gold cloak. Residents have a flat, broad brim and a straight magenta-and-violet robe. Mara's gold `YOU` tag and residents' magenta `NPC` tags identify each role directly; resident tags have a dark outline and draw in front of scene layers so they remain visible over the playfield. Tags stay inside the handheld playfield and clear of other actor bodies; two-pixel identity shapes stay inside each logical actor cell, scale-aware body pixels keep their physical footprint, and characters draw above scenery so a shared cell cannot hide them.
 
 ## Return Tide
 
