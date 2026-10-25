@@ -88,6 +88,39 @@ test('opens the empty field notes from the main menu using only the controls', (
   expect(text).toContain('> NO FIELD NOTES YET');
 });
 
+test('omits blank rows for an empty saved witness entry', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      witnessLedger: [
+        {
+          title: '',
+          intention: '',
+          knowledge: '',
+          consequence: '',
+        },
+      ],
+      campaignPlaces: [],
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+  press(menu, 'y');
+  for (let index = 0; index < 3; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('JOURNAL');
+  expect(text).toContain('> BACK');
+  expect(text).not.toContain('> NO FIELD NOTES YET');
+  expect(text.filter(line => line.startsWith('  '))).toHaveLength(0);
+});
+
 test('shows saved witness facts in the in-game field notes', () => {
   const { menu, runtime } = createMenuRuntime();
   runtime.frame.mockReturnValue({
