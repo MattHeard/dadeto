@@ -1870,6 +1870,31 @@ function expectDifferentCharacterMasks(playerArt, residentArt) {
   expect(residentOnlyCells).toBeGreaterThan(10);
 }
 
+/**
+ * Ensure residents' flat caps read wider than Mara's hood in the handheld frame.
+ * @param {Array<Record<string, any>>} residentBody Rendered resident pixels.
+ * @param {Array<Record<string, any>>} frameShapes All rendered frame shapes.
+ * @returns {void} Throws when the resident and player head silhouettes converge.
+ */
+function expectResidentCapWiderThanMaraHood(residentBody, frameShapes) {
+  const topBandWidth = shapes => {
+    const top = Math.min(...shapes.map(shape => shape.y));
+    const band = shapes.filter(shape => shape.y < top + 6);
+    return (
+      Math.max(...band.map(shape => shape.x + (shape.width ?? 0))) -
+      Math.min(...band.map(shape => shape.x))
+    );
+  };
+  const maraHood = frameShapes.filter(
+    shape =>
+      shape.actorId === 'mara' &&
+      shape.playerSpritePart === 'body' &&
+      shape.fill !== '#37e7ed'
+  );
+  expect(topBandWidth(residentBody)).toBeGreaterThanOrEqual(16);
+  expect(topBandWidth(residentBody)).toBeGreaterThan(topBandWidth(maraHood));
+}
+
 describe('THREEFOLD resident identity marker', () => {
   test('frames Mara with player-only selection brackets around her silhouette', () => {
     const frame = renderThreefoldFrame(
@@ -1979,10 +2004,10 @@ describe('THREEFOLD resident identity marker', () => {
       const minY = Math.min(...shapes.map(shape => shape.y));
       return shapes.map(shape => `${shape.x - minX}:${shape.y - minY}`).sort();
     };
-
     expect(residentBody.length).toBeGreaterThan(0);
     expect(maraBody.length).toBeGreaterThan(0);
     expect(silhouette(residentBody)).not.toEqual(silhouette(maraBody));
+    expectResidentCapWiderThanMaraHood(residentBody, frame.shapes);
     expect(
       residentBody.every(
         shape =>

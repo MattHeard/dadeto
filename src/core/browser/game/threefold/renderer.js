@@ -70,9 +70,9 @@ const PLAYER_BADGE_MIN_Y = 54;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const THREEFOLD_RESIDENT_ART = [
-  '.....aa.....',
-  '...aaaaaa...',
-  '.aaaaaaaaaa.',
+  '....aaaaaaaa....',
+  '..aaaaaaaaaaaa..',
+  'aaaaaaaaaaaaaaaa',
   'hssssssssssh',
   'hsksssssskh.',
   '.ssssssssss.',
@@ -2807,9 +2807,10 @@ function personSprite(actor, camera, tick, heightMeters) {
   const centerX = (actor.x - camera.x) * TILE_PIXELS;
   const centerY = (actor.y - camera.y) * TILE_PIXELS;
   const sourceCenter = { x: 78, y: 54 };
-  // The residents' broad cap and bright coat keep their silhouette distinct from Mara.
+  // The residents' exaggerated flat cap and bright coat keep their silhouette
+  // distinct from Mara's narrower hood, even in the tiny handheld frame.
   const source = spriteShapes(
-    { id: 'resident', x: 6, y: 4, art: THREEFOLD_RESIDENT_ART },
+    { id: 'resident', x: 35 / 6, y: 4, art: THREEFOLD_RESIDENT_ART },
     { x: 0, y: 0 },
     tick
   );
