@@ -2995,9 +2995,9 @@ function npcRoleEmblem(x, y, metadata) {
 function applyResidentRoleAccents(pixels) {
   const residentPalette = /** @type {Record<string, string>} */ ({
     '#283b4b': '#342041',
-    '#19a9a0': '#8d4bb0',
+    '#19a9a0': '#f14bd3',
     '#f4c89b': '#ffe1fa',
-    '#f2ca59': '#e866d2',
+    '#f2ca59': '#8d4bb0',
   });
   pixels.forEach(pixel => {
     pixel.fill = residentPalette[pixel.fill] || pixel.fill;
@@ -3069,7 +3069,7 @@ function playerRoleOutline(sprites) {
 }
 
 /**
- * Extend Mara's cloak beyond the residents' narrower robe silhouette.
+ * Extend Mara's cloak into a widening player-only silhouette.
  * @param {ThreefoldSpriteShape[]} sprites Mara's pixel-art body cells.
  * @returns {ThreefoldSpriteShape[]} Player-only cloak cells on the 2px grid.
  */
@@ -3077,16 +3077,20 @@ function maraCapeFrill(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
   const maxX = Math.max(...sprites.map(shape => shape.x));
   const minY = Math.min(...sprites.map(shape => shape.y));
-  // A broad cyan mantle gives Mara a player-only silhouette that survives the
-  // busy scenery. These pixels are decorative and do not change collision.
-  const cells = [4, 6, 8].flatMap(offset => [
-    { x: minX - 6, y: minY + offset },
-    { x: minX - 4, y: minY + offset },
-    { x: minX - 2, y: minY + offset },
-    { x: maxX + 2, y: minY + offset },
-    { x: maxX + 4, y: minY + offset },
-    { x: maxX + 6, y: minY + offset },
-  ]);
+  // Mara gets a pointed hood and a cape that widens toward its hem. Residents
+  // have a flat hat and a straight magenta robe. These decorative cells do not
+  // change collision or physical bounds.
+  const cells = [
+    { offset: 4, spread: 1 },
+    { offset: 6, spread: 2 },
+    { offset: 8, spread: 3 },
+    { offset: 10, spread: 4 },
+  ].flatMap(({ offset, spread }) =>
+    Array.from({ length: spread }, (_, index) => [
+      { x: minX - (index + 1) * 2, y: minY + offset },
+      { x: maxX + index * 2, y: minY + offset },
+    ]).flat()
+  );
   return cells.map(({ x, y }) => ({
     type: 'rect',
     x,

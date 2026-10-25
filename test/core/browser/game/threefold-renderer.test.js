@@ -1895,6 +1895,25 @@ function expectResidentCapWiderThanMaraHood(residentBody, frameShapes) {
   expect(topBandWidth(residentBody)).toBeGreaterThan(topBandWidth(maraHood));
 }
 
+/**
+ * Require unmistakable high-contrast color blocks on both handheld characters.
+ * @param {Array<Record<string, any>>} frameShapes Rendered handheld frame.
+ * @param {Array<Record<string, any>>} residentBody NPC body pixels, excluding markers.
+ * @returns {void} Throws when either role color is too sparse to read.
+ */
+function expectRolePaletteContrast(frameShapes, residentBody) {
+  const playerCloak = frameShapes.filter(
+    shape =>
+      shape.actorId === 'mara' &&
+      shape.playerSpritePart === 'body' &&
+      shape.fill === '#37e7ed'
+  );
+  expect(playerCloak.length).toBeGreaterThan(20);
+  expect(
+    residentBody.filter(shape => shape.fill === '#f14bd3').length
+  ).toBeGreaterThan(8);
+}
+
 describe('THREEFOLD resident identity marker', () => {
   test('frames Mara with player-only selection brackets around her silhouette', () => {
     const frame = renderThreefoldFrame(
@@ -2008,6 +2027,7 @@ describe('THREEFOLD resident identity marker', () => {
     expect(maraBody.length).toBeGreaterThan(0);
     expect(silhouette(residentBody)).not.toEqual(silhouette(maraBody));
     expectResidentCapWiderThanMaraHood(residentBody, frame.shapes);
+    expectRolePaletteContrast(frame.shapes, residentBody);
     expect(
       residentBody.every(
         shape =>
