@@ -199,6 +199,36 @@ test('shows saved episode disclosures in the in-game field notes', () => {
   expect(text).toContain('  AFTER THE SURGE,');
 });
 
+test('uses fallback text for saved disclosures without title or text', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({
+    shapes: [],
+    world: { map: { name: 'THE BROKEN GATE' } },
+    threefold: {
+      witnessLedger: [],
+      iriWitnessLead: {
+        paragraphs: ['A tide chart survives.', 'Its edge is torn.'],
+      },
+      ferryWreckSearch: {},
+      campaignPlaces: [],
+      campaignPressure: [],
+      campaignClock: { elapsedGameSeconds: 0 },
+    },
+  });
+  press(menu, 'y');
+  for (let index = 0; index < 3; index += 1) press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('> FIELD NOTE: A TIDE');
+  expect(text).toContain('  CHART SURVIVES.');
+  expect(text).toContain('  ITS EDGE IS TORN.');
+  expect(text.filter(line => line.includes('FIELD NOTE:'))).toHaveLength(2);
+});
+
 test('returns from the in-game guide to the main menu with A', () => {
   const { menu } = createMenuRuntime();
   press(menu, 'y');
