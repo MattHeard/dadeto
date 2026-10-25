@@ -33,6 +33,13 @@ shortened it to a shoulder-length flare and kept the hooded body visible. The
 updated `/tmp/threefold-gold-player.png` preview makes the player warm gold and
 the capped NPC magenta at native 160 × 144 proportions (shown at 4×).
 
+After the gold palette shipped, the player still reported difficulty spotting
+the controlled character. Increased the player-only gold pointer from a narrow
+10px marker to an 18px-wide arrow with a clear shaft and pointed head. It stays
+fixed-size while Mara and residents scale, so it identifies control without
+changing anyone's simulated height or collision bounds. Focused renderer check,
+full local check, build, and a fresh native-frame review are pending.
+
 ## Evidence
 
 - `node scripts/run-jest.js test/core/browser/game/threefold-renderer.test.js --runInBand --coverage=false` — PASS, 1 suite / 52 tests.

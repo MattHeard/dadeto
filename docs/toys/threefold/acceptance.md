@@ -1,6 +1,6 @@
 # THREEFOLD Acceptance
 
-- [ ] Confirm by phone-size production capture that Mara is immediately distinct from residents at 160 × 144. The earlier capture for deploy 40124385094 is superseded by later user feedback that the player and NPCs still look alike in play. The current code changes Mara's display palette to warm gold/ivory and shortens the widening cloak; verify after deployment with a fresh 393 × 873 capture. Simulation and collision bounds stay unchanged.
+- [ ] Confirm by phone-size production capture that Mara is immediately distinct from residents at 160 × 144. The earlier capture for deploy 40124385094 is superseded by later user feedback that the player and NPCs still look alike in play. The latest code uses Mara's warm gold/ivory palette, a shortened cloak, and an 18px-wide fixed-size gold pointer; verify after deployment with a fresh 393 × 873 capture. Simulation and collision bounds stay unchanged.
 
 ## Machine-Checkable Criteria
 
