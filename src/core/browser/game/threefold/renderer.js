@@ -62,10 +62,10 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
-const ROLE_TAG_WIDTH = 22;
-const ROLE_TAG_HEIGHT = 10;
-const NPC_EMBLEM_WIDTH = 28;
-const NPC_EMBLEM_HEIGHT = 12;
+const ROLE_TAG_WIDTH = 34;
+const ROLE_TAG_HEIGHT = 16;
+const NPC_EMBLEM_WIDTH = 36;
+const NPC_EMBLEM_HEIGHT = 16;
 const PLAYER_BADGE_MIN_Y = 54;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
@@ -205,10 +205,10 @@ export function renderThreefoldFrame(
                   worldActor.physicalBounds
                 ),
               playerKeepout: {
-                x: (world.player.x - camera.x) * TILE_PIXELS - 2,
-                y: (world.player.y - camera.y) * TILE_PIXELS - 2,
-                width: 16,
-                height: 16,
+                x: (world.player.x - camera.x) * TILE_PIXELS - 8,
+                y: (world.player.y - camera.y) * TILE_PIXELS - 4,
+                width: 28,
+                height: 20,
               },
             },
             camera,
@@ -2558,8 +2558,8 @@ function smallWorldRoleLabels(shapes) {
   const labels = [];
   for (const actor of bodies) {
     const label = actor.role === 'player' ? 'YOU' : 'NPC';
-    const width = 22;
-    const height = 10;
+    const width = 34;
+    const height = 16;
     const body = actor.bounds;
     const centeredX = snapCanvasCoordinate(
       body.x + (body.width - width) / 2,
@@ -2616,11 +2616,11 @@ function smallWorldRoleLabels(shapes) {
     });
     labels.push({
       type: 'text',
-      x: position.x + 2,
-      y: position.y + 7,
+      x: position.x + 6,
+      y: position.y + 12,
       text: label,
       fill: textFill,
-      font: '6px monospace',
+      font: '10px monospace',
       bitmap: true,
       ...metadata,
       actorSpritePart: 'role-label',
@@ -2975,11 +2975,11 @@ function npcRoleEmblem(x, y, metadata) {
     },
     {
       type: 'text',
-      x: x + 5,
-      y: y + 9,
+      x: x + 6,
+      y: y + 12,
       text: 'NPC',
       fill: '#f3f6d2',
-      font: '8px monospace',
+      font: '10px monospace',
       bitmap: true,
       ...metadata,
     },
@@ -3227,11 +3227,11 @@ function maraRoleLabel(sprites, otherCharacters) {
     },
     {
       type: 'text',
-      x: markerLeft + 2,
-      y: placement.top + 8,
+      x: markerLeft + 6,
+      y: placement.top + 12,
       text: 'YOU',
       fill: '#172c34',
-      font: '7px monospace',
+      font: '10px monospace',
       bitmap: true,
       ...metadata,
       playerMarkerKind: /** @type {'pointer'} */ ('pointer'),

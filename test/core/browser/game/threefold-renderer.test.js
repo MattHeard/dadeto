@@ -1742,8 +1742,8 @@ function expectResidentMarkerClearOfActors(
 ) {
   const marker = frameBounds(npcMarker, 'geometryId', id);
   const body = frameBounds(residentBody, 'geometryId', id);
-  expect(marker.width).toBe(28);
-  expect(marker.height).toBe(12);
+  expect(marker.width).toBe(36);
+  expect(marker.height).toBe(16);
   expect(marker.x).toBeGreaterThanOrEqual(0);
   expect(marker.x + marker.width).toBeLessThanOrEqual(160);
   expect(marker.y).toBeGreaterThanOrEqual(0);
@@ -1772,8 +1772,8 @@ function expectFramedNpcEmblem(marker) {
   );
   expect(marker[0]).toMatchObject({
     type: 'rect',
-    width: 28,
-    height: 12,
+    width: 36,
+    height: 16,
     fill: '#f14bd3',
     spriteGridSize: 2,
     npcMarkerText: 'NPC',
@@ -1782,8 +1782,8 @@ function expectFramedNpcEmblem(marker) {
     type: 'rect',
     x: marker[0].x + 2,
     y: marker[0].y + 2,
-    width: 24,
-    height: 8,
+    width: 32,
+    height: 12,
     fill: '#182f36',
     npcMarkerText: 'NPC',
   });
@@ -1791,7 +1791,7 @@ function expectFramedNpcEmblem(marker) {
     type: 'text',
     text: 'NPC',
     fill: '#f3f6d2',
-    font: '8px monospace',
+    font: '10px monospace',
     bitmap: true,
     npcMarkerText: 'NPC',
   });
@@ -1812,8 +1812,8 @@ function expectPlayerPointerClearFromActors(
   npcLabel
 ) {
   const pointer = frameBounds(playerPointer, 'actorId', 'mara');
-  expect(pointer.width).toBe(22);
-  expect(pointer.height).toBe(10);
+  expect(pointer.width).toBe(34);
+  expect(pointer.height).toBe(16);
   expect(pointer.y).toBeGreaterThanOrEqual(54);
   expect(pointer.y + pointer.height).toBeLessThanOrEqual(108);
   expect(pointer.x + pointer.width).toBeLessThanOrEqual(
@@ -2146,8 +2146,8 @@ describe('THREEFOLD resident identity marker', () => {
     expect(playerPointer).toHaveLength(2);
     expect(playerPointer[0]).toMatchObject({
       type: 'rect',
-      width: 22,
-      height: 10,
+      width: 34,
+      height: 16,
       fill: '#37e7ed',
       spriteGridSize: 2,
       playerMarkerText: 'YOU',
@@ -2156,7 +2156,7 @@ describe('THREEFOLD resident identity marker', () => {
       type: 'text',
       text: 'YOU',
       fill: '#172c34',
-      font: '7px monospace',
+      font: '10px monospace',
       bitmap: true,
       playerMarkerText: 'YOU',
     });
@@ -2279,11 +2279,11 @@ describe('THREEFOLD resident identity marker', () => {
         ({ width, height }) => Number.isFinite(width) && Number.isFinite(height)
       )
     ).toBe(true);
-    expect(playerTag).toMatchObject({ fill: '#37e7ed', width: 22, height: 10 });
+    expect(playerTag).toMatchObject({ fill: '#37e7ed', width: 34, height: 16 });
     expect(residentTag).toMatchObject({
       fill: '#f14bd3',
-      width: 22,
-      height: 10,
+      width: 34,
+      height: 16,
     });
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({ actorId: 'mara', text: 'YOU' })
