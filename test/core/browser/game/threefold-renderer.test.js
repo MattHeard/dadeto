@@ -1840,22 +1840,20 @@ function expectPlayerNpcPalettes(playerArt, residentArt) {
 }
 
 /**
- * Keep Mara's role tag inside the playfield and separate from both actors.
+ * Keep Mara's compact player marker inside the playfield and separate from residents.
  * @param {Array<Record<string, any>>} playerPointer Player tag shapes.
- * @param {Array<Record<string, any>>} playerLeader Connector to Mara.
  * @param {Array<Record<string, any>>} playerBody Mara's outline and sprite.
  * @param {Array<Record<string, any>>} npcLabel Resident badge cells.
  * @returns {void} Throws when the player identity cue is hidden or ambiguous.
  */
 function expectPlayerPointerClearFromActors(
   playerPointer,
-  playerLeader,
   playerBody,
   npcLabel
 ) {
   const pointer = frameBounds(playerPointer, 'actorId', 'mara');
-  expect(pointer.width).toBe(54);
-  expect(pointer.height).toBe(18);
+  expect(pointer.width).toBe(6);
+  expect(pointer.height).toBe(6);
   expect(pointer.y).toBeGreaterThanOrEqual(28);
   expect(pointer.y + pointer.height).toBeLessThanOrEqual(108);
   const bodyLeft = Math.min(...playerBody.map(shape => shape.x));
@@ -1875,30 +1873,8 @@ function expectPlayerPointerClearFromActors(
         pointer.y >= shape.y + (shape.height ?? 0)
     )
   ).toBe(true);
-  expect(playerLeader).toHaveLength(1);
-  expect(playerLeader[0]).toMatchObject({
-    fill: '#ffcb55',
-    playerMarker: true,
-  });
-  const bodyTop = Math.min(...playerBody.map(shape => shape.y));
-  const bodyBottom = Math.max(
-    ...playerBody.map(shape => shape.y + (shape.height ?? 0))
-  );
-  const leader = playerLeader[0];
-  const leaderIsVertical = leader.width === 4 && leader.height > 0;
-  expect(leaderIsVertical).toBe(true);
-  if (leaderIsVertical) {
-    expect(leader.x + leader.width / 2).toBeGreaterThanOrEqual(bodyLeft);
-    expect(leader.x + leader.width / 2).toBeLessThan(bodyRight);
-    expect(
-      Math.abs(leader.y - (pointer.y + pointer.height)) <= 2 ||
-        Math.abs(leader.y + leader.height - pointer.y) <= 2
-    ).toBe(true);
-    expect(
-      Math.abs(leader.y + leader.height - bodyTop) <= 2 ||
-        Math.abs(leader.y - bodyBottom) <= 2
-    ).toBe(true);
-  }
+  expect(playerPointer).toHaveLength(5);
+  expect(playerPointer.every(shape => shape.fill === '#ffcb55')).toBe(true);
 }
 
 /**
@@ -2190,10 +2166,7 @@ describe('THREEFOLD resident identity marker', () => {
     );
     const mara = frame.shapes.filter(shape => shape.actorId === 'mara');
     const playerPointer = mara.filter(
-      shape => shape.playerMarkerKind === 'pointer'
-    );
-    const playerLeader = mara.filter(
-      shape => shape.playerMarkerKind === 'leader'
+      shape => shape.playerMarkerKind === 'beacon'
     );
     const playerSprite = mara.filter(shape => shape.playerMarker !== true);
     const playerMantle = frameBounds(
@@ -2257,36 +2230,22 @@ describe('THREEFOLD resident identity marker', () => {
           shape.fill === '#fff3c4'
       )
     ).toBe(true);
-    expect(playerPointer).toHaveLength(2);
+    expect(playerPointer).toHaveLength(5);
     expect(playerPointer[0]).toMatchObject({
       type: 'rect',
-      width: 54,
-      height: 18,
+      width: 2,
+      height: 2,
       fill: '#ffcb55',
       spriteGridSize: 2,
-      playerMarkerText: 'PLAYER',
-    });
-    expect(playerPointer[1]).toMatchObject({
-      type: 'text',
-      text: 'PLAYER',
-      fill: '#172c34',
-      font: '12px monospace',
-      bitmap: true,
-      playerMarkerText: 'PLAYER',
     });
     expect(
       playerPointer.every(shape => shape.x % 2 === 0 && shape.y % 2 === 0)
     ).toBe(true);
     expect(
-      playerPointer.some(shape => shape.playerMarkerText === 'PLAYER')
-    ).toBe(true);
+      mara.some(shape => shape.type === 'text' && shape.text === 'PLAYER')
+    ).toBe(false);
     expect(playerPointer.some(shape => npcMarker.includes(shape))).toBe(false);
-    expectPlayerPointerClearFromActors(
-      playerPointer,
-      playerLeader,
-      playerBody,
-      npcMarker
-    );
+    expectPlayerPointerClearFromActors(playerPointer, playerBody, npcMarker);
     expect(
       mara.some(
         shape => shape.npcMarker !== true && shape.playerMarker !== true
@@ -2373,49 +2332,14 @@ describe('THREEFOLD resident identity marker', () => {
     expect(lastResidentCueIndex).toBeGreaterThan(returnTideOverlayIndex);
   });
 
-  test.each([0, 1])(
-    'keeps the resident badge and connector off Mara at scale %i',
-    scale => {
-      const state = createThreefoldSimulation(
-        THRESHOLDS,
-        createBrokenGateScene()
-      );
-      const frame = renderThreefoldFrame({
-        ...state,
-        player: { ...state.player, scale },
-      });
-      const residentCues = frame.shapes.filter(
-        shape =>
-          shape.geometryId === 'latchfolk-watchkeeper' &&
-          ['emblem', 'emblem-connector'].includes(shape.npcMarkerKind)
-      );
-      const maraShapes = frame.shapes.filter(shape => shape.actorId === 'mara');
-
-      expect(residentCues.length).toBeGreaterThan(0);
-      expect(
-        residentCues.every(npc =>
-          maraShapes.every(
-            mara =>
-              npc.x + (npc.width ?? 0) <= mara.x ||
-              npc.x >= mara.x + (mara.width ?? 0) ||
-              npc.y + (npc.height ?? 0) <= mara.y ||
-              npc.y >= mara.y + (mara.height ?? 0)
-          )
-        )
-      ).toBe(true);
-    }
-  );
-
-  test('labels compact scene actors with PLAYER and NPC tags clear of their bodies', () => {
+  test('labels compact residents while Mara uses a text-free gold marker', () => {
     const frame = renderThreefoldFrame(
       createThreefoldSimulation(THRESHOLDS, createThreefoldWeftwaysScene())
     );
     const labels = frame.shapes.filter(
       shape => shape.actorSpritePart === 'role-label' && shape.type === 'rect'
     );
-    const playerTag = labels.find(
-      shape => shape.actorId === 'mara' && shape.playerMarkerText === 'PLAYER'
-    );
+    const playerTag = labels.find(shape => shape.actorId === 'mara');
     const residentTag = labels.find(
       shape =>
         shape.actorId === THREEFOLD_WEFTWAYS_PELL_ID &&
@@ -2430,15 +2354,15 @@ describe('THREEFOLD resident identity marker', () => {
         ({ width, height }) => Number.isFinite(width) && Number.isFinite(height)
       )
     ).toBe(true);
-    expect(playerTag).toMatchObject({ fill: '#ffcb55', width: 48, height: 16 });
+    expect(playerTag).toBeUndefined();
     expect(residentTag).toMatchObject({
       fill: '#f14bd3',
       width: 34,
       height: 16,
     });
-    expect(frame.shapes).toContainEqual(
-      expect.objectContaining({ actorId: 'mara', text: 'PLAYER' })
-    );
+    expect(
+      frame.shapes.some(shape => shape.actorId === 'mara' && shape.text)
+    ).toBe(false);
     expect(frame.shapes).toContainEqual(
       expect.objectContaining({
         actorId: THREEFOLD_WEFTWAYS_PELL_ID,
@@ -2484,26 +2408,72 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
-test('points a broad player beacon at Mara when she is near the top edge', () => {
+test('backs every caption and gives the status rows compact pixel icons', () => {
+  const frame = renderThreefoldFrame(
+    createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+  );
+  const textIndexes = frame.shapes.flatMap((shape, index) =>
+    shape.type === 'text' ? [index] : []
+  );
+  const backedTextCount = textIndexes.filter(index =>
+    frame.shapes.slice(0, index).some(shape => shape.textBacking === true)
+  ).length;
+  const iconKinds = new Set(
+    frame.shapes
+      .filter(shape => shape.hudIconKind)
+      .map(shape => shape.hudIconKind)
+  );
+
+  expect(textIndexes.length).toBeGreaterThan(0);
+  expect(backedTextCount).toBe(textIndexes.length);
+  expect(iconKinds).toEqual(new Set(['clock', 'scale', 'move', 'buttons']));
+});
+
+test.each([0, 1])(
+  'keeps the resident badge and connector off Mara at scale %i',
+  scale => {
+    const state = createThreefoldSimulation(
+      THRESHOLDS,
+      createBrokenGateScene()
+    );
+    const frame = renderThreefoldFrame({
+      ...state,
+      player: { ...state.player, scale },
+    });
+    const residentCues = frame.shapes.filter(
+      shape =>
+        shape.geometryId === 'latchfolk-watchkeeper' &&
+        ['emblem', 'emblem-connector'].includes(shape.npcMarkerKind)
+    );
+    const maraShapes = frame.shapes.filter(shape => shape.actorId === 'mara');
+
+    expect(residentCues.length).toBeGreaterThan(0);
+    expect(
+      residentCues.every(npc =>
+        maraShapes.every(
+          mara =>
+            npc.x + (npc.width ?? 0) <= mara.x ||
+            npc.x >= mara.x + (mara.width ?? 0) ||
+            npc.y + (npc.height ?? 0) <= mara.y ||
+            npc.y >= mara.y + (mara.height ?? 0)
+        )
+      )
+    ).toBe(true);
+  }
+);
+
+test('uses a compact, text-free gold player marker near the top edge', () => {
   const scene = createBrokenGateScene();
   scene.spawn = createScaleState({ x: -5, y: -5 });
   const frame = renderThreefoldFrame(
     createThreefoldSimulation(THRESHOLDS, scene)
-  );
-  const playerSprite = frame.shapes.filter(
-    shape =>
-      shape.actorId === 'mara' &&
-      ['body', 'outline'].includes(shape.playerSpritePart)
   );
   const playerBeacon = frame.shapes.filter(
     shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
   );
   expectPlayerPointerClearFromActors(
     frame.shapes.filter(
-      shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'pointer'
-    ),
-    frame.shapes.filter(
-      shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'leader'
+      shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
     ),
     frame.shapes.filter(
       shape =>
@@ -2516,38 +2486,29 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
     )
   );
 
-  expect(playerBeacon).toHaveLength(63);
+  expect(playerBeacon).toHaveLength(5);
   expect(
     Math.max(...playerBeacon.map(shape => shape.x + shape.width)) -
       Math.min(...playerBeacon.map(shape => shape.x))
-  ).toBe(22);
+  ).toBe(6);
   expect(
     Math.max(...playerBeacon.map(shape => shape.y + shape.height)) -
       Math.min(...playerBeacon.map(shape => shape.y))
-  ).toBe(26);
+  ).toBe(6);
   expect(
     playerBeacon.every(
       shape =>
         shape.width === 2 &&
         shape.height === 2 &&
         shape.spriteGridSize === 2 &&
-        shape.playerMarkerText === 'PLAYER' &&
         shape.x % 2 === 0 &&
         shape.y % 2 === 0
     )
   ).toBe(true);
-  expect(Math.min(...playerBeacon.map(shape => shape.y))).toBe(
-    Math.max(...playerSprite.map(shape => shape.y + shape.height))
-  );
-  expect(
-    [...new Set(playerBeacon.map(shape => shape.y))].map(
-      y => playerBeacon.filter(shape => shape.y === y).length
-    )
-  ).toEqual([1, 3, 5, 7, 9, 11, 9, 7, 5, 3, 1, 1, 1]);
   expect(
     Math.max(...playerBeacon.map(shape => shape.y + shape.height))
   ).toBeLessThanOrEqual(108);
-  expect(playerBeacon.some(shape => shape.fill === '#fff3c4')).toBe(true);
+  expect(playerBeacon.every(shape => shape.fill === '#ffcb55')).toBe(true);
   expect(
     frame.shapes
       .filter(shape => shape.npcMarker === true)
@@ -2555,7 +2516,7 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
   ).toBe(true);
 });
 
-test('gives residents an NPC label distinct from Mara’s PLAYER label', () => {
+test('gives residents framed identity emblems and Mara no text label', () => {
   const scene = createBrokenGateScene();
   const watchkeeper = scene.interactables.find(
     item => item.id === 'latchfolk-watchkeeper'
@@ -2591,7 +2552,7 @@ test('gives residents an NPC label distinct from Mara’s PLAYER label', () => {
   expect(mara.some(shape => shape.npcMarkerKind === 'emblem-connector')).toBe(
     false
   );
-  expect(mara.some(shape => shape.playerMarkerKind === 'leader')).toBe(true);
+  expect(mara.some(shape => shape.text === 'PLAYER')).toBe(false);
 });
 
 describe('THREEFOLD legacy withdrawal rendering', () => {

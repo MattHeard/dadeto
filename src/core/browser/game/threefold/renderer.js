@@ -62,11 +62,8 @@ import { getThreefoldSluicePuzzleStatus } from './water-puzzle.js';
 const TILE_PIXELS = 12;
 const GRID_PIXELS = 8;
 const PERSON_GRID_PIXELS = 2;
-const ROLE_TAG_WIDTH = 54;
-const ROLE_TAG_HEIGHT = 18;
 const NPC_EMBLEM_WIDTH = 32;
 const NPC_EMBLEM_HEIGHT = 16;
-const PLAYER_BADGE_MIN_Y = 28;
 const VIEW_ORIGIN = { x: 7, y: 4 };
 const PALETTE = ['#182f36', '#315744', '#bfd77c', '#e9d88d'];
 const THREEFOLD_RESIDENT_ART = [
@@ -109,7 +106,7 @@ const SMALL_WORLD_NPC_IDS = new Set([
   'silt-margin-guardian',
   'weftways-pell',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'cape'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'emblem-connector'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'|'cape'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'cape'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'emblem-connector'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'|'cape', hudIconKind?: 'clock'|'scale'|'move'|'buttons', textBacking?: boolean}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -398,10 +395,6 @@ export function renderThreefoldFrame(
     (/** @type {ThreefoldSpriteShape} */ shape) =>
       shape.actorId === 'mara' && shape.playerMarker !== true
   );
-  const otherCharacterShapes = frame.shapes.filter(
-    (/** @type {ThreefoldSpriteShape} */ shape) =>
-      typeof shape.actorId === 'string' && shape.actorId !== 'mara'
-  );
   // NPC emblems are identity UI, not world art. Keep them above signs, water,
   // and HUD layers so the residents cannot read as part of the scenery.
   const npcEmblems = frame.shapes.filter(
@@ -415,7 +408,7 @@ export function renderThreefoldFrame(
       shape.npcMarkerKind !== 'emblem-connector'
   );
   frame.shapes.push(...npcEmblems);
-  frame.shapes.push(...maraRoleLabel(maraShapes, otherCharacterShapes));
+  frame.shapes.push(...maraRoleLabel(maraShapes));
   return alignThreefoldFrame(frame);
 }
 
@@ -2573,8 +2566,11 @@ function smallWorldRoleLabels(shapes) {
   /** @type {ThreefoldSpriteShape[]} */
   const labels = [];
   for (const actor of bodies) {
-    const label = actor.role === 'player' ? 'PLAYER' : 'NPC';
-    const width = actor.role === 'player' ? 48 : 34;
+    // Mara is identified by her gold mantle and compact selection diamond.
+    // A floating PLAYER word obscures the scene and makes her look like an NPC.
+    if (actor.role === 'player') continue;
+    const label = 'NPC';
+    const width = 34;
     const height = 16;
     const body = actor.bounds;
     const centeredX = snapCanvasCoordinate(
@@ -2614,17 +2610,15 @@ function smallWorldRoleLabels(shapes) {
     // Keep a role tag visible in crowded scenes. A tag that touches a sprite is
     // still clearer than silently dropping the only textual role cue.
     if (!position) continue;
-    const player = actor.role === 'player';
     const metadata = {
       actorId: actor.id,
       actorRole: actor.role,
-      ...(player
-        ? { playerMarker: true, playerMarkerText: label }
-        : { npcMarker: true, npcMarkerText: label }),
+      npcMarker: true,
+      npcMarkerText: label,
       spriteGridSize: PERSON_GRID_PIXELS,
     };
-    const fill = player ? '#ffcb55' : '#f14bd3';
-    const textFill = player ? '#172c34' : '#342041';
+    const fill = '#f14bd3';
+    const textFill = '#342041';
     placedBounds.push({ id: actor.id, bounds: { ...position, width, height } });
     labels.push({
       type: 'rect',
@@ -2809,17 +2803,104 @@ function createSmallWorldFrameWorld(mapId, name, elapsedGameSeconds, player) {
  * @returns {Record<string, any>} Frame with aligned canvas shapes.
  */
 function alignThreefoldFrame(frame) {
-  frame.shapes.push(captionShape({ x: 112, y: 16 }, 'Y MENU'));
+  frame.shapes.push(
+    createThreefoldRectShape([108, 8, 48, 12], '#102823'),
+    captionShape({ x: 112, y: 16 }, 'Y MENU')
+  );
   frame.shapes = frame.shapes.map(
     (/** @type {ThreefoldSpriteShape} */ shape) =>
       shape.type === 'text' && shape.y === 133
-        ? { ...shape, text: 'ARROWS MOVE · A GROW / USE' }
+        ? { ...shape, x: 12, text: 'ARROWS MOVE · A GROW / USE' }
         : shape.type === 'text' && shape.y === 142
-          ? { ...shape, text: 'B SHRINK · X WAIT · Y MENU' }
-          : shape
+          ? { ...shape, x: 12, text: 'B SHRINK · X WAIT · Y MENU' }
+          : shape.type === 'text' && [115, 124].includes(shape.y)
+            ? { ...shape, x: 12 }
+            : shape
   );
+  frame.shapes.push(...threefoldHudIcons());
+  frame.shapes = addThreefoldTextBackings(frame.shapes);
   frame.shapes = snapCanvasShapesToGrid(frame.shapes);
   return frame;
+}
+
+/**
+ * Give every bitmap caption an opaque plate sized to its glyphs.
+ * @param {ThreefoldSpriteShape[]} shapes Ordered game and interface shapes.
+ * @returns {ThreefoldSpriteShape[]} Shapes with high-contrast text backings.
+ */
+function addThreefoldTextBackings(shapes) {
+  return shapes.flatMap(shape => {
+    if (shape.type !== 'text' || typeof shape.text !== 'string') return [shape];
+    const fontSize = Number.parseInt(shape.font || '6px', 10) || 6;
+    const width = Math.min(
+      160,
+      Math.max(8, shape.text.length * fontSize * 0.62 + 4)
+    );
+    const x = Math.min(160 - width, Math.max(0, shape.x - 2));
+    const height = fontSize + 4;
+    const y = Math.min(144 - height, Math.max(0, shape.y - fontSize - 1));
+    return [
+      {
+        type: 'rect',
+        x: snapCanvasCoordinate(x, 2),
+        y: snapCanvasCoordinate(y, 2),
+        width: snapCanvasDimension(width),
+        height: snapCanvasDimension(height),
+        fill: '#102823',
+        textBacking: true,
+      },
+      shape,
+    ];
+  });
+}
+
+/**
+ * Draw compact pixel symbols beside the four fixed handheld HUD rows.
+ * @returns {ThreefoldSpriteShape[]} Solid, grid-aligned status icons.
+ */
+function threefoldHudIcons() {
+  /**
+   * @param {number} x Cell left coordinate.
+   * @param {number} y Cell top coordinate.
+   * @param {string} fill Pixel color.
+   * @param {'clock'|'scale'|'move'|'buttons'} kind Icon category.
+   * @returns {ThreefoldSpriteShape} One status icon pixel.
+   */
+  const pixel = (x, y, fill, kind) => ({
+    type: 'rect',
+    x,
+    y,
+    width: 2,
+    height: 2,
+    fill,
+    hudIconKind: kind,
+    spriteGridSize: 2,
+  });
+  return [
+    // Clock face with a two-pixel hand.
+    pixel(2, 110, '#bfd77c', 'clock'),
+    pixel(4, 110, '#bfd77c', 'clock'),
+    pixel(6, 110, '#bfd77c', 'clock'),
+    pixel(2, 112, '#bfd77c', 'clock'),
+    pixel(6, 112, '#bfd77c', 'clock'),
+    pixel(2, 114, '#bfd77c', 'clock'),
+    pixel(4, 114, '#bfd77c', 'clock'),
+    pixel(6, 114, '#bfd77c', 'clock'),
+    pixel(4, 112, '#f4edcf', 'clock'),
+    // Scale marks: upright body and two offset steps.
+    pixel(4, 120, '#ffcb55', 'scale'),
+    pixel(4, 122, '#ffcb55', 'scale'),
+    pixel(2, 120, '#ffcb55', 'scale'),
+    pixel(6, 124, '#ffcb55', 'scale'),
+    // Direction pad and action buttons.
+    pixel(4, 130, '#8fc7c1', 'move'),
+    pixel(2, 132, '#8fc7c1', 'move'),
+    pixel(4, 132, '#8fc7c1', 'move'),
+    pixel(6, 132, '#8fc7c1', 'move'),
+    pixel(4, 134, '#8fc7c1', 'move'),
+    pixel(2, 140, '#f18bc9', 'buttons'),
+    pixel(6, 140, '#91d1a4', 'buttons'),
+  ];
 }
 
 /**
@@ -3206,170 +3287,48 @@ function maraCapeFrill(sprites) {
 }
 
 /**
- * Draw an explicit character role label from 2px bitmap cells.
- * @param {number} x Label's left coordinate.
- * @param {number} y Label's top coordinate.
- * @param {Record<string, any>} metadata Actor identity metadata.
- * @param {string} label Short character role label.
- * @returns {ThreefoldSpriteShape[]} Visible role glyph cells.
- */
-/**
- * Mark Mara with an explicit gold PLAYER tag directly above her sprite.
+ * Mark Mara with a compact gold selection frame and diamond above her sprite.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered 12px sprite cells.
- * @param {ThreefoldSpriteShape[]} otherCharacters NPC bodies and role markers.
- * @returns {ThreefoldSpriteShape[]} Readable role tag and attached leader.
+ * @returns {ThreefoldSpriteShape[]} Her outline and compact gold marker.
  */
-function maraRoleLabel(sprites, otherCharacters) {
+function maraRoleLabel(sprites) {
   if (sprites.length === 0) return [];
-  const minX = Math.min(...sprites.map(shape => shape.x));
-  const minY = Math.min(...sprites.map(shape => shape.y));
-  const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
-  const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
-  const markerWidth = ROLE_TAG_WIDTH;
-  const markerHeight = ROLE_TAG_HEIGHT;
-  const labelLeft = snapCanvasCoordinate((minX + maxX - markerWidth) / 2, 2);
-  const candidates = Array.from(
-    { length: (108 - markerHeight - PLAYER_BADGE_MIN_Y) / 2 + 1 },
-    (_, index) => ({ top: PLAYER_BADGE_MIN_Y + index * 2 })
-  )
-    .filter(({ top }) => top + markerHeight <= minY - 4 || top >= maxY + 4)
-    .map(({ top }) => ({
-      left: labelLeft,
-      top,
-      side: top + markerHeight <= minY ? 'above' : 'below',
-      gap: top + markerHeight <= minY ? minY - top - markerHeight : top - maxY,
-    }))
-    .sort(
-      (first, second) =>
-        first.gap - second.gap ||
-        (first.side === second.side ? 0 : first.side === 'above' ? -1 : 1)
-    );
-  const clearCandidate = candidates.find(
-    candidate =>
-      ![...sprites, ...otherCharacters].some(
-        shape =>
-          candidate.left < shape.x + (shape.width ?? 0) &&
-          candidate.left + markerWidth > shape.x &&
-          candidate.top < shape.y + (shape.height ?? 0) &&
-          candidate.top + markerHeight > shape.y
-      )
-  );
-  // Keep the PLAYER tag vertically aligned with Mara. Moving it sideways to
-  // avoid an NPC can make the tag look like it belongs to that resident.
-  // If both vertical positions are busy, a local overlap is less ambiguous
-  // than a detached label; the attached arrow and leader still identify Mara.
-  const placement = clearCandidate ?? candidates[0];
-  if (!placement) return [];
-  const markerLeft = placement.left;
-  const metadata = {
-    actorId: 'mara',
-    playerMarker: true,
-    playerMarkerText: 'PLAYER',
-    spriteGridSize: 2,
-  };
-  const leader =
-    placement.side === 'above'
-      ? [
-          {
-            x: snapCanvasCoordinate((minX + maxX) / 2, 2),
-            y: placement.top + markerHeight,
-            width: 4,
-            height: minY - placement.top - markerHeight,
-          },
-        ]
-      : [
-          {
-            x: snapCanvasCoordinate((minX + maxX) / 2, 2),
-            y: maxY,
-            width: 4,
-            height: placement.top - maxY,
-          },
-        ];
-  return [
-    ...maraRoleFrame(sprites),
-    ...maraPlayerArrow(sprites),
-    ...leader
-      .filter(shape => shape.width > 0 || shape.height > 0)
-      .map(shape => ({
-        type: 'rect',
-        ...shape,
-        fill: '#ffcb55',
-        ...metadata,
-        playerMarkerKind: /** @type {'leader'} */ ('leader'),
-      })),
-    {
-      type: 'rect',
-      x: markerLeft,
-      y: placement.top,
-      width: markerWidth,
-      height: markerHeight,
-      fill: '#ffcb55',
-      ...metadata,
-      playerMarkerKind: /** @type {'pointer'} */ ('pointer'),
-    },
-    {
-      type: 'text',
-      x: markerLeft + 6,
-      y: placement.top + 12,
-      text: 'PLAYER',
-      fill: '#172c34',
-      font: '12px monospace',
-      bitmap: true,
-      ...metadata,
-      playerMarkerKind: /** @type {'pointer'} */ ('pointer'),
-    },
-  ];
+  return [...maraRoleFrame(sprites), ...maraPlayerArrow(sprites)];
 }
 
 /**
- * Give Mara an oversized, outlined pointer that remains distinct when her body
- * shrinks with scale. NPCs use magenta caps and badges; only the player gets
- * this broad, downward-facing gold pointer.
- * The beacon stays legible when scale changes make the character tiny, while
- * the actor's body and collision size remain untouched.
+ * Give Mara a compact gold diamond that remains distinct as her body scales.
  * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
  * @returns {ThreefoldSpriteShape[]} Two-pixel grid cells forming the beacon.
  */
 function maraPlayerArrow(sprites) {
   const minX = Math.min(...sprites.map(shape => shape.x));
-  const maxX = Math.max(
-    ...sprites.map(shape => shape.x + /** @type {number} */ (shape.width))
-  );
   const minY = Math.min(...sprites.map(shape => shape.y));
-  const maxY = Math.max(
-    ...sprites.map(shape => shape.y + /** @type {number} */ (shape.height))
+  const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
+  const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
+  const centerX = snapCanvasCoordinate(
+    Math.min(158, Math.max(2, (minX + maxX) / 2)),
+    2
   );
-  const centerX = snapCanvasCoordinate((minX + maxX) / 2, 2);
-  const arrowRows = [1, 1, 1, 3, 5, 7, 9, 11, 9, 7, 5, 3, 1].map(width =>
-    Array.from(
-      { length: width },
-      (_, index) => centerX + (index - (width - 1) / 2) * 2
-    )
-  );
-  const markerHeight = arrowRows.length * 2;
-  const above = minY - markerHeight >= 28 || maxY + markerHeight > 108;
-  const beaconTop = above ? Math.max(28, minY - markerHeight) : maxY;
-  const rows = above ? arrowRows : [...arrowRows].reverse();
-  return rows.flatMap((row, rowIndex) =>
-    row.map((x, columnIndex) => ({
-      type: 'rect',
-      x,
-      y: beaconTop + rowIndex * 2,
-      width: 2,
-      height: 2,
-      fill:
-        columnIndex === 0 ||
-        columnIndex === row.length - 1 ||
-        (rowIndex === (above ? rows.length - 1 : 0) && x === centerX)
-          ? '#fff3c4'
-          : '#ffcb55',
-      actorId: 'mara',
-      playerMarker: true,
-      playerMarkerKind: /** @type {'beacon'} */ ('beacon'),
-      playerMarkerText: 'PLAYER',
-      spriteGridSize: 2,
-    }))
-  );
+  const top = minY - 8 >= 28 ? minY - 8 : Math.min(102, maxY + 2);
+  return [
+    [centerX, top],
+    [centerX - 2, top + 2],
+    [centerX, top + 2],
+    [centerX + 2, top + 2],
+    [centerX, top + 4],
+  ].map(([x, y]) => ({
+    type: 'rect',
+    x,
+    y,
+    width: 2,
+    height: 2,
+    fill: '#ffcb55',
+    actorId: 'mara',
+    playerMarker: true,
+    playerMarkerKind: /** @type {'beacon'} */ ('beacon'),
+    spriteGridSize: 2,
+  }));
 }
 
 /**

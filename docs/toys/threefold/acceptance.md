@@ -386,3 +386,18 @@ the resident badge to 32×16 pixels, reserved Mara's full on-screen sprite for
 badge placement, and narrowed the connector. Renderer regressions pass at the
 default and enlarged-resident scales. Focused Jest passed 54/54; syntax and diff
 checks passed. A fresh browser/device capture and full local check remain open.
+
+## Clarify Threefold first-frame roles and HUD — 2026-10-25
+
+The 23 October phone capture showed that Mara's gold PLAYER plaque overwhelmed
+her sprite, captions lacked consistent contrast, and the first frame had no
+clear HUD hierarchy. Removed the player word plaque and replaced it with a
+small gold pixel diamond inside her ivory selection frame; NPCs retain their
+framed magenta identity emblems and distinct silhouettes. Added opaque dark
+backings to every rendered caption and clock, scale, movement, and button
+pictograms beside the status rows. Renderer tests cover the text-free player
+cue, backings, and all four icon groups. Focused renderer Jest passed 55/55;
+`npm run check` passed all 10 gates, and `npm run build` passed. A local
+390×844 Playwright capture rendered the 160×144 screen with no page errors at
+`/tmp/threefold-after.png`. The screenshot was reviewed; a production/device
+capture has not been made.
