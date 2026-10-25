@@ -119,6 +119,22 @@ test('opens the empty field notes from the main menu using only the controls', (
   expect(text).toContain('> NO FIELD NOTES YET');
 });
 
+test('uses the default guide objective when the frame has no world name', () => {
+  const { menu, runtime } = createMenuRuntime();
+  runtime.frame.mockReturnValue({ shapes: [] });
+  press(menu, 'y');
+  press(menu, 'down');
+  press(menu, 'a');
+
+  const text = menu
+    .frame()
+    .shapes.filter(shape => shape.type === 'text')
+    .map(shape => shape.text);
+  expect(text).toContain('GUIDE');
+  expect(text.some(line => line.includes('REACH THE WEST'))).toBe(true);
+  expect(text).toContain('A SELECT · B BACK · Y CLOSE');
+});
+
 test('omits blank rows for an empty saved witness entry', () => {
   const { menu, runtime } = createMenuRuntime();
   runtime.frame.mockReturnValue({

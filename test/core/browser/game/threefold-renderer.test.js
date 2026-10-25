@@ -2322,6 +2322,34 @@ describe('THREEFOLD resident identity marker', () => {
   });
 });
 
+test('places a bright player beacon by Mara when the sprite is near the screen edge', () => {
+  const frame = renderThreefoldFrame(
+    createThreefoldSimulation(THRESHOLDS, createBrokenGateScene())
+  );
+  const playerBeacon = frame.shapes.filter(
+    shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
+  );
+
+  expect(playerBeacon).toHaveLength(9);
+  expect(
+    playerBeacon.every(
+      shape =>
+        shape.width === 2 &&
+        shape.height === 2 &&
+        shape.spriteGridSize === 2 &&
+        shape.playerMarkerText === 'YOU' &&
+        shape.x % 2 === 0 &&
+        shape.y % 2 === 0
+    )
+  ).toBe(true);
+  expect(playerBeacon.some(shape => shape.fill === '#f3f6d2')).toBe(true);
+  expect(
+    frame.shapes
+      .filter(shape => shape.npcMarker === true)
+      .every(shape => shape.playerMarkerKind !== 'beacon')
+  ).toBe(true);
+});
+
 test('gives residents an NPC label distinct from Mara’s YOU label', () => {
   const scene = createBrokenGateScene();
   const watchkeeper = scene.interactables.find(

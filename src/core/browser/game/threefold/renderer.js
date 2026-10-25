@@ -109,7 +109,7 @@ const SMALL_WORLD_NPC_IDS = new Set([
   'silt-margin-guardian',
   'weftways-pell',
 ]);
-/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'}} ThreefoldSpriteShape */
+/** @typedef {{type: string, x: number, y: number, width?: number, height?: number, fill: string, text?: string, font?: string, bitmap?: boolean, geometryId?: string, actorId?: string, actorRole?: 'player'|'npc', actorSpritePart?: 'body'|'identity-cue'|'role-label', growthPreview?: boolean, logicalGridKind?: ThreefoldGridRenderKind, logicalCellBounds?: {x: number, y: number, width: number, height: number}, logicalGridKinds?: string[], fluidChamberId?: string, logicalContainerBounds?: {x: number, y: number, width: number, height: number}, surfaceMeters?: number, spriteGridSize?: number, npcMarker?: boolean, npcMarkerKind?: 'outline'|'role-label'|'cap'|'emblem'|'headpiece', npcMarkerText?: string, playerMarker?: boolean, playerMarkerText?: string, playerMarkerKind?: 'beacon'|'leader'|'pointer'|'selection-frame', playerSpritePart?: 'body'|'outline'}} ThreefoldSpriteShape */
 /** @typedef {'structure'|'interactable'|'creature'} ThreefoldGridRenderKind */
 /** @typedef {{id: string, bounds: {min: {x: number, y: number, z?: number}, max: {x: number, y: number, z?: number}}, logicalGridKind: ThreefoldGridRenderKind, parentId?: string, overlapGroupId?: string, hierarchy?: {parentId?: string, expandAtScale?: number}, growthPreview?: boolean, logicalCellBounds?: {x: number, y: number, width: number, height: number}}} ThreefoldGridRenderEntity */
 /** @typedef {Pick<ThreefoldGridRenderEntity, 'id'|'bounds'|'parentId'|'overlapGroupId'|'hierarchy'> & {kind:string}} HearthgapsGridFacet */
@@ -3198,6 +3198,7 @@ function maraRoleLabel(sprites, otherCharacters) {
             ];
   return [
     ...maraRoleFrame(sprites),
+    ...maraPlayerArrow(sprites),
     ...leader
       .filter(shape => shape.width > 0 || shape.height > 0)
       .map(shape => ({
@@ -3229,6 +3230,54 @@ function maraRoleLabel(sprites, otherCharacters) {
       playerMarkerKind: /** @type {'pointer'} */ ('pointer'),
     },
   ];
+}
+
+/**
+ * Give Mara a fixed-size, downward-pointing player beacon above her sprite.
+ * The beacon stays legible when scale changes make the character tiny, while
+ * the actor's body and collision size remain untouched.
+ * @param {ThreefoldSpriteShape[]} sprites Mara's rendered pixel cells.
+ * @returns {ThreefoldSpriteShape[]} Two-pixel grid cells forming the beacon.
+ */
+function maraPlayerArrow(sprites) {
+  if (sprites.length === 0) return [];
+  const minX = Math.min(...sprites.map(shape => shape.x));
+  const maxX = Math.max(...sprites.map(shape => shape.x + (shape.width ?? 0)));
+  const minY = Math.min(...sprites.map(shape => shape.y));
+  const maxY = Math.max(...sprites.map(shape => shape.y + (shape.height ?? 0)));
+  const centerX = snapCanvasCoordinate((minX + maxX) / 2, 2);
+  const above = minY - 10 >= 28;
+  const beaconTop = above ? minY - 10 : maxY + 2;
+  if (beaconTop + 6 > 108) return [];
+  const rows = [
+    [{ x: centerX, fill: '#f3f6d2' }],
+    [
+      { x: centerX - 2, fill: '#37e7ed' },
+      { x: centerX, fill: '#f3f6d2' },
+      { x: centerX + 2, fill: '#37e7ed' },
+    ],
+    [
+      { x: centerX - 4, fill: '#37e7ed' },
+      { x: centerX - 2, fill: '#37e7ed' },
+      { x: centerX, fill: '#37e7ed' },
+      { x: centerX + 2, fill: '#37e7ed' },
+      { x: centerX + 4, fill: '#37e7ed' },
+    ],
+  ];
+  return rows.flatMap((row, rowIndex) =>
+    row.map(pixel => ({
+      type: 'rect',
+      ...pixel,
+      y: beaconTop + (above ? rowIndex : 2 - rowIndex) * 2,
+      width: 2,
+      height: 2,
+      actorId: 'mara',
+      playerMarker: true,
+      playerMarkerKind: /** @type {'beacon'} */ ('beacon'),
+      playerMarkerText: 'YOU',
+      spriteGridSize: 2,
+    }))
+  );
 }
 
 /**
