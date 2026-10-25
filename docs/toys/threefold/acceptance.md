@@ -1,6 +1,6 @@
 # THREEFOLD Acceptance
 
-- [ ] Confirm by phone-size production capture that Mara is immediately distinct from residents at 160 × 144. The earlier capture for deploy 40124385094 is superseded by later user feedback that the player and NPCs still look alike in play. The latest code uses Mara's warm gold/ivory palette, a shortened cloak, and an 18px-wide fixed-size gold pointer; residents use violet/magenta silhouettes and an NPC badge whose text is centered within its frame. Verify after deployment with a fresh 393 × 873 capture. Simulation and collision bounds stay unchanged.
+- [ ] Confirm by phone-size production capture that Mara is immediately distinct from residents at 160 × 144. Fresh feedback says the current role colors, body silhouettes, and labels still do not separate the actors quickly enough. Mara now has a fixed 22 × 26px gold arrow with an ivory outline attached to her sprite, plus the gold PLAYER plaque; NPCs keep their magenta NPC plaque and contrasting silhouettes. Verify after deployment with a fresh 393 × 873 capture. Simulation and collision bounds stay unchanged.
 
 ## Machine-Checkable Criteria
 

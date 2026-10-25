@@ -2474,7 +2474,15 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
     shape => shape.actorId === 'mara' && shape.playerMarkerKind === 'beacon'
   );
 
-  expect(playerBeacon).toHaveLength(37);
+  expect(playerBeacon).toHaveLength(63);
+  expect(
+    Math.max(...playerBeacon.map(shape => shape.x + shape.width)) -
+      Math.min(...playerBeacon.map(shape => shape.x))
+  ).toBe(22);
+  expect(
+    Math.max(...playerBeacon.map(shape => shape.y + shape.height)) -
+      Math.min(...playerBeacon.map(shape => shape.y))
+  ).toBe(26);
   expect(
     playerBeacon.every(
       shape =>
@@ -2493,7 +2501,7 @@ test('points a broad player beacon at Mara when she is near the top edge', () =>
     [...new Set(playerBeacon.map(shape => shape.y))].map(
       y => playerBeacon.filter(shape => shape.y === y).length
     )
-  ).toEqual([1, 5, 7, 9, 7, 5, 1, 1, 1]);
+  ).toEqual([1, 3, 5, 7, 9, 11, 9, 7, 5, 3, 1, 1, 1]);
   expect(
     Math.max(...playerBeacon.map(shape => shape.y + shape.height))
   ).toBeLessThanOrEqual(108);

@@ -66,3 +66,13 @@ patterns and reran the test.
 ## Explicit PLAYER label revision
 
 Fresh play feedback still could not tell Mara from the Threefold residents. The compact `YOU` badge was too ambiguous at phone size, so Mara now carries an explicit `PLAYER` badge; compact scenes widen that plaque to 48 pixels and the main player plaque to 54 pixels. Residents keep their bright magenta `NPC` badges. The gold player palette was retained because earlier cyan art blended into the green/teal scenery. No actor positions, scale, collision, or simulation behavior changed. Focused Threefold renderer Jest passes 52/52; a new production phone capture remains necessary for device-level confirmation.
+
+## Oversize controlled-character pointer
+
+Fresh feedback says the gold player sprite and magenta resident sprites still
+blend together at a glance. The previous 18px pointer was too small to anchor
+Mara on the handheld display. Enlarged it to a 22 × 26px arrow, added an ivory
+edge, and kept its point attached to Mara whether it appears above or below her.
+The renderer regression checks its dimensions, 2px grid, attachment, and role
+metadata. This is display-only; NPC scale and simulation/collision bounds do
+not change. A new production-size visual review is still required.
