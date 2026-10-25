@@ -91,10 +91,10 @@ const THREEFOLD_MARA_ART = [
   '...hhskss...',
   '....ssss....',
   '....cc......',
-  '...cccc.....',
-  '..ccaacc....',
-  '..cccccc....',
-  '...cccc.....',
+  '...aaaa.....',
+  '..caaaac....',
+  '..aaaaaa....',
+  '...aaaa.....',
   '...kk..kk...',
 ];
 const PERSON_ACTOR_IDS = new Set([

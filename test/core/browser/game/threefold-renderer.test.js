@@ -2186,6 +2186,12 @@ describe('THREEFOLD resident identity marker', () => {
     );
 
     expectDifferentCharacterMasks(playerArt, residentArt);
+    expect(
+      playerArt.filter(shape => shape.fill === '#e9d88d').length
+    ).toBeGreaterThan(
+      playerArt.filter(shape => shape.fill === '#37e7ed').length
+    );
+    expect(residentArt.every(shape => shape.fill !== '#e9d88d')).toBe(true);
   });
 
   test('keeps Mara and small-world residents distinct in the Threadbound scene', () => {
