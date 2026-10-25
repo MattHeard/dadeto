@@ -2987,7 +2987,7 @@ function npcRoleEmblem(x, y, metadata) {
     },
     {
       type: 'text',
-      x: x + 18,
+      x: x + Math.round((NPC_EMBLEM_WIDTH - 24) / 2),
       y: y + 16,
       text: 'NPC',
       fill: '#342041',

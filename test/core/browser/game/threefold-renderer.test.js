@@ -1781,7 +1781,7 @@ function expectFramedNpcEmblem(marker) {
   expect(marker[1]).toMatchObject({
     type: 'text',
     text: 'NPC',
-    x: marker[0].x + 16,
+    x: marker[0].x + 10,
     y: marker[0].y + 14,
     fill: '#342041',
     font: '12px monospace',
