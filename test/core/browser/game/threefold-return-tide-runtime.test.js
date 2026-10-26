@@ -297,6 +297,7 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     const projected = projectThreefoldReturnTide(runtime.getState(), {
       ...createThreefoldReturnTide(),
       brokenMechanisms: ['seal'],
+      deathIds: ['sera'],
     });
     const scene = attachThreefoldReturnTideScene({
       id: 'silt-margin',
@@ -306,6 +307,9 @@ describe('THREEFOLD Return Tide through campaign controllers', () => {
     });
 
     expect(projected.player.destroyedGeometryIds).toContain('return-tide-seal');
+    expect(
+      projected.scene.creatures.some(person => person.id === 'belltops-sera')
+    ).toBe(false);
     expect(
       scene.interactables.some(item => item.id === 'return-tide-accord-choir')
     ).toBe(false);
