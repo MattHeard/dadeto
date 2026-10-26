@@ -28,7 +28,7 @@ test('renders the Broken Gate handheld cleanly at narrow mobile width', async ({
     }
     return (
       colors.size > 4 &&
-      colors.has('55,231,237') &&
+      colors.has('255,203,85') &&
       colors.has('241,75,211')
     );
   });
