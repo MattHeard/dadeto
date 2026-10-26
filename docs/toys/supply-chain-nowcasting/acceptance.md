@@ -6,7 +6,8 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - [x] `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js test/generator/decisionToolCatalogueLinks.test.js` exits with status 0 and proves the hand-computed sample and browser flow.
 - [x] `npm run check` exits with status 0 after each implementation loop.
 - [x] `npm run build` exits with status 0 when the standalone page is integrated.
-- [ ] Focused Stryker run is recorded and every surviving or timed-out behavioral mutant is classified as killed by a new assertion, equivalent, or intentionally excluded with rationale. Latest run: 486 mutants; 461 killed, 24 survived, 1 timed out. Report: `reports/mutation/mutation.json`; the timeout is an assignment mutation in the daily simulation loop. Capacity, buffer-cost, horizon, route-selection, malformed-record, and scalar validation boundaries now have explicit regression cases; remaining survivors are reviewed below; the missing-ID diagnostic case remains open.
+- [x] Focused Stryker evidence and review are recorded. The whole-planner run at `4c12c09` produced 486 mutants: 461 killed, 24 survived, 1 timeout. The new shared-allocation and sole-ID-diagnostic ranges then produced 26 mutants, all killed. Remaining earlier behavioral and diagnostic mutants are classified below. Reports: `reports/mutation/supply-chain-nowcasting-before-allocation.json` and `reports/mutation/mutation.json`.
+- [ ] Response options explicitly show the warning-time breakpoint for arrival within the planning horizon, including options that cannot arrive even with the earliest decision. The current warning toggle and arrival column do not yet state that threshold.
 - [ ] Cloud browser acceptance (`test/e2e/supply-chain-nowcasting.spec.ts`) records a sample network and one-click disruption with a useful plan in under two minutes, no signup, clear hypothetical warning labels, and no autonomous action.
 - [x] Export contains baseline, warning signal, ranked alternatives, ranking criterion, and all constraints/assumptions; optional JSON and CSV IDs round-trip without affecting calculations.
 - [x] Null supplier, route, and mitigation entries return explicit validation issues; multiple valid routes can be selected by disruption and mitigation IDs.
@@ -19,7 +20,7 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - Named malformed-record boundary test ensures Stryker's per-test run exercises null supplier, route, and mitigation records and invalid scalar boundaries.
 - Mutation report: `reports/mutation/mutation.json`.
 - Cloud browser evidence: the new Playwright journey attaches `supply-chain-response-plan` (screenshot) and `supply-chain-interaction-record` (observed results and elapsed time); its first cloud run is pending. This is automated task-completion evidence, not a human comprehension rating.
-- Acceptance audit reproduced a shared-supplier defect: two 10-unit routes can deliver 20 units from a supplier capped at 10 units/day. The owning Bead remains active until aggregate capacity is enforced.
+- Acceptance audit reproduced and fixed shared-supplier over-allocation: baseline routes reserve capacity collectively, and mitigations consume only the aggregate remainder. The exact-allocation and above-limit cases pass; the owning Bead remains active for browser acceptance and the final spec audit.
 
 ## Pass/Fail Rules
 - Pass each loop only when its named command succeeds and evidence is recorded on the owning Bead. Full toy acceptance also requires all browser criteria and mutation review above.
@@ -39,7 +40,14 @@ The full focused run exercised 66 planner tests and 486 mutants: 461 killed, 24 
 | 234, 239, 241 | The individual unknown-source/wrong-destination errors and the combined unsupported-path error overlap. Each mutation leaves explicit errors for unsupported paths; it changes the diagnostic list. |
 | 339 | The changed branch adds a buffer-quantity issue only for an already-rejected unknown mitigation kind. Valid capacity and buffer scenarios are unchanged. |
 | 140, 141, 191, 209, 236, 244, 245, 252, 280 | Diagnostic label or duplicate error wording changes. Rejection and explanatory numeric/reference errors remain. Exact labels are not a calculation invariant. |
-| 442 | Still needs a minimal missing-ID case proving the sole returned diagnostic is nonblank; do not classify an empty sole issue as acceptable. |
+| 442 | Killed by the new minimal scenario whose only issue is a missing supplier ID referenced consistently by its route. The test requires a nonblank sole explanation. The focused follow-up mutated this diagnostic at its new line 494. |
 | 352 (timeout) | The mutant changes `day += 1` to `day -= 1`, so the simulation never completes. The timeout detects that nontermination. |
 
-No mutation exclusions or scanner suppressions were introduced. The shared-supplier capacity defect is independently reproduced and remains a required source fix; mutation counts are not evidence that all valid networks obey capacity constraints.
+No mutation exclusions or scanner suppressions were introduced. The shared-supplier capacity defect was independently reproduced and fixed. A follow-up focused run covered lines 69–72 (supplier headroom), 305–329 (allocation calculation and rejection), and 494–495 (sole missing-ID issue): 26/26 mutants killed, no survivors or timeouts. This bounded run complements the earlier whole-planner report; it is not a new whole-planner mutation count.
+
+## Shared supplier allocation evidence
+
+- Scoped impact passed 2 suites / 113 tests, full planner line/branch coverage, ESLint, core parse, and zero clones.
+- `npm run build` passed with the fixed planner copied to the standalone page.
+- Source tests prove that exact total allocation is allowed, exceeding a shared supplier allocation is explicitly rejected, and mitigations at or above the remaining shared limit are distinguished correctly.
+- `npm run check` passed all 10 gates for this source loop, including all six serial Jest shards, lint/static gates, manual validation, zero clones, and audit. Cloud browser execution and the explicit warning-time breakpoint remain open.

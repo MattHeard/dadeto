@@ -895,3 +895,102 @@ test('uses the matching supplier when capacities differ from the first supplier'
   ]);
   expect(result.rankedMitigations[0].feasible).toBe(true);
 });
+
+test('reports a nonblank sole issue for a missing supplier ID referenced by its route', () => {
+  const result = planSupplyChain(
+    scenario({
+      suppliers: [{ ...scenario().suppliers[0], id: '' }],
+      routes: [{ ...scenario().routes[0], fromId: '' }],
+    })
+  );
+  expect(result.error).toBe('invalid-input');
+  expect(result.issues).toHaveLength(1);
+  expect(result.issues[0].trim().length).toBeGreaterThan(0);
+});
+
+test('rejects shared supplier allocations above capacity and allows exact allocation', () => {
+  const input = scenario({
+    suppliers: [{ id: 'north', capacityUnitsPerDay: 10, unit: 'units/day' }],
+    routes: [
+      { ...scenario().routes[0], capacityUnitsPerDay: 6 },
+      { ...scenario().routes[0], id: 'second-lane', capacityUnitsPerDay: 4 },
+    ],
+    disruption: { ...scenario().disruption, reductionPercent: 0 },
+    mitigations: [],
+  });
+  const exact = planSupplyChain(input);
+  expect(exact.error).toBeUndefined();
+  expect(exact.baseline.daily.map(({ deliveries }) => deliveries)).toEqual([
+    10, 10, 10, 10, 10,
+  ]);
+
+  const overallocated = planSupplyChain({
+    ...input,
+    routes: [input.routes[0], { ...input.routes[1], capacityUnitsPerDay: 5 }],
+  });
+  expect(overallocated.error).toBe('invalid-input');
+  expect(overallocated.issues.join(' ')).toContain(
+    'total route capacity exceeds supplier capacity'
+  );
+});
+
+test('limits mitigation to supplier capacity remaining across all allocated routes', () => {
+  const input = scenario({
+    horizonDays: 1,
+    suppliers: [{ id: 'north', capacityUnitsPerDay: 14, unit: 'units/day' }],
+    destination: {
+      ...scenario().destination,
+      dailyDemandUnits: 14,
+      startingInventoryUnits: 0,
+    },
+    routes: [
+      {
+        ...scenario().routes[0],
+        capacityUnitsPerDay: 6,
+        maxCapacityUnitsPerDay: 12,
+      },
+      {
+        ...scenario().routes[0],
+        id: 'second-lane',
+        capacityUnitsPerDay: 4,
+        maxCapacityUnitsPerDay: 4,
+      },
+    ],
+    disruption: {
+      ...scenario().disruption,
+      startsDay: 1,
+      warningLeadDays: 0,
+      reductionPercent: 0,
+    },
+    mitigations: [
+      {
+        ...scenario().mitigations[0],
+        id: 'uses-spare',
+        capacityUnitsPerDay: 4,
+        leadTimeDays: 0,
+      },
+      {
+        ...scenario().mitigations[0],
+        id: 'over-spare',
+        capacityUnitsPerDay: 5,
+        leadTimeDays: 0,
+      },
+    ],
+  });
+  const result = planSupplyChain(input);
+  expect(result.error).toBeUndefined();
+  expect(result.baseline.totalShortfallUnits).toBe(4);
+  expect(result.rankedMitigations[0]).toMatchObject({
+    id: 'uses-spare',
+    feasible: true,
+    shortfallAvoidedUnits: 4,
+    incrementalCostCents: 32,
+  });
+  expect(result.rankedMitigations[1]).toMatchObject({
+    id: 'over-spare',
+    feasible: false,
+    reason: 'exceeds-available-capacity',
+    shortfallAvoidedUnits: 0,
+    incrementalCostCents: null,
+  });
+});

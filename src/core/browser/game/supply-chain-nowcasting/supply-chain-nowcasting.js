@@ -67,7 +67,8 @@ export function planSupplyChain(input) {
                 /** @type {number} */ (mitigation.capacityUnitsPerDay) <=
                   route.maxCapacityUnitsPerDay - route.capacityUnitsPerDay &&
                 /** @type {number} */ (mitigation.capacityUnitsPerDay) <=
-                  supplier.capacityUnitsPerDay - route.capacityUnitsPerDay
+                  supplier.capacityUnitsPerDay -
+                    allocatedCapacity(routes, route.fromId)
             );
       const feasible = capacityFeasible && arrivalDay <= horizonDays;
       if (!feasible)
@@ -160,6 +161,7 @@ function validateSupplyChainInput(input) {
   const destinationId = scenario.destination?.id;
   suppliers.forEach(supplier => checkSupplier(supplier, issues));
   routes.forEach(route => checkRoute(route, suppliers, destinationId, issues));
+  checkSupplierAllocations(suppliers, routes, issues);
   checkDisruption(scenario.disruption, routes, issues);
   mitigations.forEach(mitigation =>
     checkMitigation(mitigation, routes, issues)
@@ -292,6 +294,37 @@ function checkRoute(route, suppliers, destinationId, issues) {
   const supplier = suppliers.find(supplier => supplier?.id === route.fromId);
   if (supplier && route.capacityUnitsPerDay > supplier.capacityUnitsPerDay)
     issues.push(`Route ${route.id} capacity exceeds supplier capacity.`);
+}
+
+/**
+ * Sum the supplier capacity already reserved across its outgoing routes.
+ * @param {SupplyRoute[]} routes Route allocations.
+ * @param {unknown} supplierId Supplier whose allocation is needed.
+ * @returns {number} Total reserved units per day.
+ */
+function allocatedCapacity(routes, supplierId) {
+  return routes
+    .filter(route => route && route.fromId === supplierId)
+    .reduce((total, route) => total + route.capacityUnitsPerDay, 0);
+}
+
+/**
+ * Reject a network that allocates the same supplier output more than once.
+ * @param {Record<string, any>[]} suppliers Supplier records.
+ * @param {SupplyRoute[]} routes Route allocations.
+ * @param {string[]} issues Validation issues.
+ * @returns {void} Appends errors for overallocated suppliers.
+ */
+function checkSupplierAllocations(suppliers, routes, issues) {
+  for (const supplier of suppliers) {
+    if (
+      supplier &&
+      allocatedCapacity(routes, supplier.id) > supplier.capacityUnitsPerDay
+    )
+      issues.push(
+        `Supplier ${supplier.id} total route capacity exceeds supplier capacity.`
+      );
+  }
 }
 
 /**

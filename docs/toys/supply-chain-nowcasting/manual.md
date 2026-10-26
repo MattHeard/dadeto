@@ -44,7 +44,7 @@ The pure model accepts suppliers, direct supplier-to-destination routes, a desti
 
 ### Schema
 
-The initial planner supports direct supplier-to-destination routes. That shape makes cycles impossible except as an invalid route direction, which is reported explicitly. Multi-hop networks and time-varying demand are not modeled yet.
+The initial planner supports direct supplier-to-destination routes. That shape makes cycles impossible except as an invalid route direction, which is reported explicitly. Multi-hop networks and time-varying demand are not modeled yet. A supplier reserves capacity across all of its outgoing routes: their combined baseline allocation cannot exceed its capacity. A capacity mitigation can use only the supplier capacity still unallocated across those routes, as well as the selected route’s remaining capacity. Disruption does not automatically release a route’s reserved allocation.
 
 ```json
 {
