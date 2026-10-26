@@ -27,6 +27,14 @@ test('sample disruption produces an inspectable response within two minutes', as
     'No supplier is contacted'
   );
   await expect(page.locator('#network-routes tr')).toHaveCount(2);
+  await expect(
+    page.getByRole('columnheader', { name: 'Minimum warning', exact: true })
+  ).toBeVisible();
+  const lateOption = page
+    .locator('#mitigation-results tr')
+    .filter({ hasText: 'late-alternate' });
+  await expect(lateOption).toContainText('2 days before disruption');
+  await expect(lateOption).toContainText('Feasible');
   const firstOption = page.locator('#mitigation-results tr').first();
   await expect(firstOption).toContainText('30 units');
   await expect(firstOption).toContainText('Feasible');
@@ -40,7 +48,11 @@ test('sample disruption produces an inspectable response within two minutes', as
     'CURRENT RESPONSE'
   );
   await expect(firstOption).toContainText('20 units');
+  await expect(lateOption).toContainText('Arrives after the plan');
+  await page.getByLabel('Warning lead time').selectOption('1');
+  await expect(lateOption).toContainText('Arrives after the plan');
   await page.getByLabel('Warning lead time').selectOption('2');
+  await expect(lateOption).toContainText('Feasible');
   await expect(firstOption).toContainText('30 units');
 
   const elapsedMs = Date.now() - started;

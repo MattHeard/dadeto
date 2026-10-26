@@ -7,7 +7,7 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - [x] `npm run check` exits with status 0 after each implementation loop.
 - [x] `npm run build` exits with status 0 when the standalone page is integrated.
 - [x] Focused Stryker evidence and review are recorded. The whole-planner run at `4c12c09` produced 486 mutants: 461 killed, 24 survived, 1 timeout. The new shared-allocation and sole-ID-diagnostic ranges then produced 26 mutants, all killed. Remaining earlier behavioral and diagnostic mutants are classified below. Reports: `reports/mutation/supply-chain-nowcasting-before-allocation.json` and `reports/mutation/mutation.json`.
-- [ ] Response options explicitly show the warning-time breakpoint for arrival within the planning horizon, including options that cannot arrive even with the earliest decision. The current warning toggle and arrival column do not yet state that threshold.
+- [x] Response options show `minimumWarningLeadDays`, the minimum advance warning for arrival within the horizon (0 for current response; null when even day zero is too late). The table and exported plan preserve it and explain capacity/shortfall caveats.
 - [ ] Cloud browser acceptance (`test/e2e/supply-chain-nowcasting.spec.ts`) records a sample network and one-click disruption with a useful plan in under two minutes, no signup, clear hypothetical warning labels, and no autonomous action.
 - [x] Export contains baseline, warning signal, ranked alternatives, ranking criterion, and all constraints/assumptions; optional JSON and CSV IDs round-trip without affecting calculations.
 - [x] Null supplier, route, and mitigation entries return explicit validation issues; multiple valid routes can be selected by disruption and mitigation IDs.
@@ -51,3 +51,10 @@ No mutation exclusions or scanner suppressions were introduced. The shared-suppl
 - `npm run build` passed with the fixed planner copied to the standalone page.
 - Source tests prove that exact total allocation is allowed, exceeding a shared supplier allocation is explicitly rejected, and mitigations at or above the remaining shared limit are distinguished correctly.
 - `npm run check` passed all 10 gates for this source loop, including all six serial Jest shards, lint/static gates, manual validation, zero clones, and audit. Cloud browser execution and the explicit warning-time breakpoint remain open.
+
+## Warning-time breakpoint evidence
+
+- Scoped impact passed 2 suites / 116 tests with full line/branch coverage for the planner and presenter, ESLint, core parse, and zero clones. One preexisting table test initially read the old shortfall column index; it was corrected to the new layout and the evaluator rerun successfully.
+- Focused Stryker on the new timing helper and labels killed all 23 mutants (8 planner, 15 presenter), with no survivors or timeouts. The earlier 26/26 allocation report is preserved as `reports/mutation/supply-chain-nowcasting-allocation.json`.
+- `npm run check` passed all 10 gates and `npm run build` passed. The cloud case now checks the two-day threshold immediately below and at feasibility.
+- Full Check `40359925519` for supplier-fix commit `45ef278` succeeded. Cloud run `40358398354` executed the earlier supply-chain journey successfully in 903 ms; all 14 Playwright cases passed in 48.3 s. The job then failed when `gcloud storage cp` tried to read/list destination objects using its write-only `roles/storage.objectCreator` identity. Report upload failed, so no screenshot or interaction record was retained; browser artifact acceptance remains open. Logs are under `/tmp/dadeto-gcp-40358398354` and the workflow's `playwright-job-logs-t-ff1e26db` artifact.

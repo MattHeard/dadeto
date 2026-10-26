@@ -67,7 +67,7 @@
       <section class="panel data-tools" aria-labelledby="data-heading">
         <div>
           <p class="eyebrow">SCENARIO DATA</p>
-          <h2 id="data-heading">Paste or load a JSON network</h2>
+          <h2 id="data-heading">Paste or load a JSON or CSV network</h2>
           <p>Use the documented scenario shape below. A failed import leaves the current plan unchanged.</p>
         </div>
         <label for="scenario-json">Scenario JSON or CSV</label>
@@ -116,9 +116,9 @@
         </article>
         <div class="table-wrap">
           <table>
-            <caption id="mitigation-caption">Options ranked by the selected rule. All costs are incremental estimates in synthetic cents.</caption>
+            <caption id="mitigation-caption">Options ranked by the selected rule. All costs are incremental estimates in synthetic cents. Minimum warning is for arrival within the horizon; capacity limits still apply, and arrival does not guarantee shortfall reduction.</caption>
             <thead>
-              <tr><th scope="col">Rank</th><th scope="col">Option</th><th scope="col">Added supply</th><th scope="col">Arrival</th><th scope="col">Feasibility</th><th scope="col">Shortfall avoided</th><th scope="col">Added cost</th></tr>
+              <tr><th scope="col">Rank</th><th scope="col">Option</th><th scope="col">Added supply</th><th scope="col">Arrival</th><th scope="col">Minimum warning</th><th scope="col">Feasibility</th><th scope="col">Shortfall avoided</th><th scope="col">Added cost</th></tr>
             </thead>
             <tbody id="mitigation-results"></tbody>
           </table>

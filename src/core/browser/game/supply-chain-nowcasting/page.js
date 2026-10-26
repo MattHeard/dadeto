@@ -239,6 +239,10 @@ export function startSupplyChainNowcastingPage(dependencies) {
         cell(documentObj, `Day ${candidate.arrivalDay}`),
         cell(
           documentObj,
+          formatWarningRequirement(candidate.minimumWarningLeadDays)
+        ),
+        cell(
+          documentObj,
           candidate.feasible
             ? 'Feasible'
             : formatInfeasibleReason(candidate.reason)
@@ -762,6 +766,16 @@ function makeSupplyResponseExport(scenario, plan, dataOrigin) {
       noExternalActionsTaken: true,
     },
   };
+}
+
+/**
+ * @param {number|null} days Minimum warning for arrival by the horizon.
+ * @returns {string} Timing requirement independent of capacity and shortfall.
+ */
+function formatWarningRequirement(days) {
+  if (days === null) return 'Too slow for horizon';
+  if (days === 0) return 'No early warning needed';
+  return `${days} ${days === 1 ? 'day' : 'days'} before disruption`;
 }
 
 /**

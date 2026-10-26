@@ -521,7 +521,7 @@ test('compares current response with early warning using identical sample data',
   const { document, Event } = dom.window;
   document.querySelector('#disruption-button').click();
   const earlyAvoided = document.querySelector('#mitigation-results').rows[0]
-    .cells[5].textContent;
+    .cells[6].textContent;
   expect(document.querySelector('#warning-signal').textContent).toContain(
     'EARLY WARNING'
   );
@@ -530,7 +530,7 @@ test('compares current response with early warning using identical sample data',
   warningSelect.value = '0';
   warningSelect.dispatchEvent(new Event('change'));
   const currentAvoided = document.querySelector('#mitigation-results').rows[0]
-    .cells[5].textContent;
+    .cells[6].textContent;
   expect(document.querySelector('#warning-signal').textContent).toContain(
     'CURRENT RESPONSE'
   );
@@ -575,6 +575,7 @@ test('provides fallback text for an infeasible result without a reason', () => {
           kind: 'capacity',
           capacityUnitsPerDay: 0,
           arrivalDay: 9,
+          minimumWarningLeadDays: null,
           feasible: false,
           reason: null,
           shortfallAvoidedUnits: 0,
@@ -608,6 +609,7 @@ test.each([
           kind: 'capacity',
           capacityUnitsPerDay: 0,
           arrivalDay: 9,
+          minimumWarningLeadDays: null,
           feasible: false,
           reason,
           shortfallAvoidedUnits: 0,
@@ -726,3 +728,55 @@ function toCsv(scenario) {
     )
     .join('\n');
 }
+
+test('shows and exports minimum warning thresholds while keeping timing caveats visible', () => {
+  const downloadPlanFn = jest.fn();
+  const dom = createPage({ downloadPlanFn });
+  const { document } = dom.window;
+  const input = document.querySelector('#scenario-json');
+  const scenario = JSON.parse(input.value);
+  scenario.mitigations = [
+    ['current-response', 0],
+    ['one-day', 4],
+    ['two-days', 5],
+    ['too-slow', 6],
+  ].map(([id, leadTimeDays]) => ({
+    id,
+    kind: 'buffer',
+    bufferUnits: 10,
+    leadTimeDays,
+    unitCostCents: 3,
+  }));
+  input.value = JSON.stringify(scenario);
+  document.querySelector('#import-scenario').click();
+  const rows = [...document.querySelectorAll('#mitigation-results tr')];
+  for (const [id, label] of [
+    ['current-response', 'No early warning needed'],
+    ['one-day', '1 day before disruption'],
+    ['two-days', '2 days before disruption'],
+    ['too-slow', 'Too slow for horizon'],
+  ]) {
+    expect(
+      rows.find(row => row.textContent.includes(id)).textContent
+    ).toContain(label);
+  }
+  expect(document.querySelector('#mitigation-caption').textContent).toContain(
+    'capacity limits still apply'
+  );
+  expect(document.querySelector('#mitigation-caption').textContent).toContain(
+    'does not guarantee shortfall reduction'
+  );
+  document.querySelector('#export-plan').click();
+  const exported = downloadPlanFn.mock.calls[0][0];
+  for (const [id, expected] of [
+    ['current-response', 0],
+    ['one-day', 1],
+    ['two-days', 2],
+    ['too-slow', null],
+  ]) {
+    expect(
+      exported.rankedMitigations.find(candidate => candidate.id === id)
+        .minimumWarningLeadDays
+    ).toBe(expected);
+  }
+});

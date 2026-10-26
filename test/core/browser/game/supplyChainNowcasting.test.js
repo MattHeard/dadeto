@@ -994,3 +994,54 @@ test('limits mitigation to supplier capacity remaining across all allocated rout
     incrementalCostCents: null,
   });
 });
+
+test('states the exact warning breakpoint for arrival on the last horizon day', () => {
+  for (const [leadTimeDays, minimumWarningLeadDays] of [
+    [4, 1],
+    [5, 2],
+  ]) {
+    for (const warningLeadDays of [
+      minimumWarningLeadDays - 1,
+      minimumWarningLeadDays,
+    ]) {
+      const result = planSupplyChain(
+        scenario({
+          disruption: { ...scenario().disruption, warningLeadDays },
+          mitigations: [{ ...scenario().mitigations[0], leadTimeDays }],
+        })
+      );
+      expect(result.error).toBeUndefined();
+      expect(result.rankedMitigations[0]).toMatchObject({
+        minimumWarningLeadDays,
+        feasible: warningLeadDays === minimumWarningLeadDays,
+        arrivalDay: warningLeadDays === minimumWarningLeadDays ? 5 : 6,
+      });
+    }
+  }
+});
+
+test('distinguishes no-warning timing from options that cannot fit even at day zero', () => {
+  for (const [
+    startsDay,
+    leadTimeDays,
+    warningLeadDays,
+    expectedWarning,
+    feasible,
+  ] of [
+    [2, 2, 0, 0, true],
+    [0, 5, 0, 0, true],
+    [2, 6, 10, null, false],
+  ]) {
+    const result = planSupplyChain(
+      scenario({
+        disruption: { ...scenario().disruption, startsDay, warningLeadDays },
+        mitigations: [{ ...scenario().mitigations[0], leadTimeDays }],
+      })
+    );
+    expect(result.error).toBeUndefined();
+    expect(result.rankedMitigations[0]).toMatchObject({
+      minimumWarningLeadDays: expectedWarning,
+      feasible,
+    });
+  }
+});

@@ -7,7 +7,7 @@
 /** @typedef {{horizonDays: number, suppliers: SupplySupplier[], destination: SupplyDestination, routes: SupplyRoute[], disruption: SupplyDisruption, rankingCriterion: 'shortfall-then-cost'|'cost-then-shortfall', mitigations: SupplyMitigation[], industryGraphReferences?: IndustryGraphReferences}} SupplyScenario */
 /** @typedef {{day: number, deliveries: number, inventoryUnits: number, unmetDemandUnits: number, costCents: number}} SupplyDailyResult */
 /** @typedef {{daily: SupplyDailyResult[], totalShortfallUnits: number, firstShortfallDay: number|null, totalCostCents: number}} SupplySimulation */
-/** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, shortfallAvoidedUnits: number, incrementalCostCents: number|null, reason: string|null}} RankedMitigation */
+/** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, minimumWarningLeadDays: number|null, shortfallAvoidedUnits: number, incrementalCostCents: number|null, reason: string|null}} RankedMitigation */
 /** @typedef {{error: 'invalid-input', issues: string[]}} InvalidSupplyPlan */
 /** @typedef {{baseline: SupplySimulation, signal: {status: string, decisionDay: number, disruptionDay: number, leadTimeDays: number, hypothetical: true}, rankingCriterion: string, rankedMitigations: RankedMitigation[]}} SupplyPlan */
 
@@ -51,6 +51,11 @@ export function planSupplyChain(input) {
   const rankedMitigations = mitigations
     .map(mitigation => {
       const arrivalDay = decisionDay + mitigation.leadTimeDays;
+      const minimumWarningLeadDays = warningRequiredForArrival(
+        mitigation.leadTimeDays,
+        disruption.startsDay,
+        horizonDays
+      );
       const route = mitigation.routeId
         ? routeById.get(mitigation.routeId)
         : undefined;
@@ -76,6 +81,7 @@ export function planSupplyChain(input) {
           ...mitigation,
           feasible: false,
           arrivalDay,
+          minimumWarningLeadDays,
           shortfallAvoidedUnits: 0,
           incrementalCostCents: null,
           reason: !capacityFeasible
@@ -89,6 +95,7 @@ export function planSupplyChain(input) {
         ...mitigation,
         feasible: true,
         arrivalDay,
+        minimumWarningLeadDays,
         shortfallAvoidedUnits:
           baseline.totalShortfallUnits - candidate.totalShortfallUnits,
         incrementalCostCents:
@@ -104,6 +111,19 @@ export function planSupplyChain(input) {
     rankingCriterion,
     rankedMitigations,
   };
+}
+
+/**
+ * Find the earliest warning that permits arrival by the last simulated day.
+ * Capacity feasibility and avoided shortfall are evaluated separately.
+ * @param {number} leadTimeDays Option's fulfillment lead time.
+ * @param {number} disruptionDay First disrupted day.
+ * @param {number} horizonDays Last day in the planning horizon.
+ * @returns {number|null} Warning days required, or null if day zero is too late.
+ */
+function warningRequiredForArrival(leadTimeDays, disruptionDay, horizonDays) {
+  if (leadTimeDays > horizonDays) return null;
+  return Math.max(0, disruptionDay + leadTimeDays - horizonDays);
 }
 
 /**
