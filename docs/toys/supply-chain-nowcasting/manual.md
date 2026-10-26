@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-This toy compares a hypothetical supply network before and after a disruption. It calculates daily deliveries and unmet demand, shows when a synthetic warning becomes available, and ranks candidate capacity changes by units of shortfall avoided. Every result is a planning scenario, not a real forecast or procurement instruction.
+Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Apply the one-click route disruption and compare a current response with an earlier hypothetical warning. The page calculates daily deliveries and unmet demand, shows when each option could arrive, and ranks candidate capacity changes by units of shortfall avoided. Every result is a planning scenario, not a real forecast or procurement instruction.
 
 ## Input
 
@@ -87,4 +87,4 @@ The planner returns the baseline daily inventory and unmet demand, a clearly hyp
 
 ## Behavior
 
-Run `npx jest --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. The standalone interactive page and portable export will be documented when integrated.
+Run `npx jest --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. The standalone browser presenter contains no network calls or browser storage. Export/import and expanded cost, duration, and identifier inputs remain planned follow-up work.

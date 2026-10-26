@@ -6,12 +6,24 @@
       "publicationDate": "2026-10-26",
       "release": "beta",
       "content": [
-        "Explore a synthetic supply network, disruption warning and capacity-constrained mitigation ranking. This model is hypothetical planning support, not a live forecast or autonomous purchasing system.",
+        "Explore a synthetic supply network, disruption warning and capacity-constrained mitigation ranking at /supply-chain-nowcasting/. This model is hypothetical planning support, not a live forecast or autonomous purchasing system.",
         {
           "type": "manual",
           "id": "SCN1-manual",
           "title": "Field guide",
           "src": "/manuals/supply-chain-nowcasting.md"
+        }
+      ],
+      "relatedLinks": [
+        {
+          "url": "/supply-chain-nowcasting/",
+          "title": "Open the supply disruption planner",
+          "type": "tool"
+        },
+        {
+          "url": "/agricultural-rover/",
+          "title": "Explore agricultural rover feasibility",
+          "type": "tool"
         }
       ],
       "tags": ["toy", "supply-chain", "planning", "nowcasting"]

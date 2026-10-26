@@ -5,13 +5,14 @@ import { generateBlogOuter } from '../../src/build/generator.js';
 const blog = JSON.parse(
   readFileSync(new URL('../../src/build/blog.json', import.meta.url), 'utf8')
 );
-const keys = ['AGRR1', 'HTHP1'];
+const keys = ['AGRR1', 'HTHP1', 'SCN1'];
 const posts = blog.posts.filter(post => keys.includes(post.key));
 const document = new JSDOM(generateBlogOuter({ posts })).window.document;
 
 test.each([
   ['/agricultural-rover/', 'Open the rover feasibility tool'],
   ['/industrial-heat-pump-readiness/', 'Open the heat-pump screening tool'],
+  ['/supply-chain-nowcasting/', 'Open the supply disruption planner'],
 ])(
   'the catalogue renders a clickable decision-tool entry for %s',
   (route, label) => {
@@ -26,14 +27,15 @@ test.each([
   }
 );
 
-test('both decision-tool entries cross-link the related tool', () => {
-  expect(posts).toHaveLength(2);
+test('decision-tool entries cross-link related tools', () => {
+  expect(posts).toHaveLength(3);
   expect(
     [...document.querySelectorAll('a')].map(link => link.textContent)
   ).toEqual(
     expect.arrayContaining([
       'Explore heat-pump retrofit screening',
       'Explore agricultural rover feasibility',
+      'Open the supply disruption planner',
     ])
   );
 });

@@ -21,7 +21,12 @@ Document expected breakpoints and promote observed failures into reusable guidan
 
 ## Promoted from Real Failures
 - Date: 2026-10-26
-- Failure observed: Initial implementation not yet evaluated.
-- Root cause: N/A.
-- Fix implemented: N/A.
-- Guardrail added (test/doc/harness): Explicit offline and synthetic-only boundary recorded here.
+- Failure observed: The first aggregate check failed manual catalog, JSDoc typing, and lint; the scoped core evaluator then found one uncovered malformed-mitigation branch.
+- Root cause: The toy manual must have a manifest entry; the first planner lacked explicit model types and a regression for non-array candidate input.
+- Fix implemented: Added the manual and blog entry, explicit JSDoc types, and an explicit validation error for malformed candidate collections.
+- Guardrail added (test/doc/harness): Focused manual/catalogue tests plus changed-core coverage evaluator.
+- Date: 2026-10-26
+- Failure observed: The first page test run used raw `npx jest` and failed before execution because this ESM project requires its runner wrapper.
+- Root cause: The repository test environment loads Jest through `scripts/run-jest.js`.
+- Fix implemented: Use the repository wrapper for focused Jest commands.
+- Guardrail added (test/doc/harness): Harness now names the exact `node scripts/run-jest.js` command.

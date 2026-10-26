@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explore hypothetical supply disruption responses in a small synthetic network."
+    />
+    <title>Supply Signals — Supply-chain Nowcasting</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header class="masthead">
+        <p class="eyebrow">D A D E T O · SUPPLY SIGNALS</p>
+        <h1>Supply Signals</h1>
+        <p>See how early warning changes a small distributor’s response options.</p>
+      </header>
+
+      <p class="notice"><strong>Hypothetical planning model.</strong> This synthetic scenario is not a live forecast. It never contacts suppliers or changes a route.</p>
+
+      <section class="panel controls" aria-labelledby="controls-heading">
+        <div>
+          <p class="eyebrow">SAMPLE NETWORK · 5 DAY PLAN</p>
+          <h2 id="controls-heading">The north lane is at risk</h2>
+          <p>Market needs 10 units each day. North supplies the current route; South has 10 units/day of spare capacity.</p>
+        </div>
+        <label for="warning-lead">Warning scenario</label>
+        <select id="warning-lead" name="warning-lead">
+          <option value="0">Current response · 0 days warning</option>
+          <option value="2" selected>Early warning · 2 days ahead</option>
+        </select>
+        <button id="disruption-button" type="button">Apply one-click disruption</button>
+        <p id="scenario-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="network-heading">
+        <div class="section-heading">
+          <span class="glyph" aria-hidden="true">↗</span>
+          <div>
+            <p class="eyebrow">NETWORK</p>
+            <h2 id="network-heading">Suppliers → Market</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <caption>Supplier routes, capacity, and lead time</caption>
+            <thead>
+              <tr><th scope="col">From</th><th scope="col">To</th><th scope="col">Capacity / max</th><th scope="col">Lead</th><th scope="col">State</th></tr>
+            </thead>
+            <tbody id="network-routes"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="results" aria-labelledby="results-heading">
+        <div class="section-heading">
+          <span class="glyph warning-glyph" aria-hidden="true">!</span>
+          <div>
+            <p class="eyebrow">RESPONSE PLAN</p>
+            <h2 id="results-heading">What can still arrive in time?</h2>
+          </div>
+        </div>
+        <p id="warning-signal" class="signal"></p>
+        <article class="shortfall-card">
+          <span class="metric-label">BASELINE SHORTFALL</span>
+          <strong id="baseline-result" aria-live="polite"></strong>
+        </article>
+        <div class="table-wrap">
+          <table>
+            <caption>Mitigations ranked by units of shortfall avoided; ties use candidate ID</caption>
+            <thead>
+              <tr><th scope="col">Rank</th><th scope="col">Option</th><th scope="col">Added capacity</th><th scope="col">Arrival</th><th scope="col">Feasibility</th><th scope="col">Shortfall avoided</th></tr>
+            </thead>
+            <tbody id="mitigation-results"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        <p>All quantities are synthetic assumptions. Ranked options are advisory and are never executed.</p>
+      </footer>
+    </main>
+  </body>
+</html>
