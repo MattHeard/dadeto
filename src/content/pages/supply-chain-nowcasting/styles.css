@@ -40,14 +40,16 @@ h2 { margin-bottom: .4rem; font-size: 1.25rem; }
   box-shadow: 0 10px 30px #22453a0c;
 }
 
-.controls { display: grid; grid-template-columns: 1fr minmax(12rem, .7fr) auto; gap: .75rem 1rem; align-items: end; }
+.controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem 1rem; align-items: end; }
 .controls > div:first-child { grid-column: 1 / -1; }
-.controls label { font-weight: 700; }
-select, button { min-height: 2.8rem; border: 1px solid #9db7aa; border-radius: .55rem; padding: .6rem .8rem; font: inherit; }
+.controls .field { display: grid; gap: .35rem; }
+.controls label { font-size: .88rem; font-weight: 700; }
+select, input, button { min-height: 2.8rem; border: 1px solid #9db7aa; border-radius: .55rem; padding: .6rem .8rem; font: inherit; }
 select { background: white; color: inherit; }
+input { width: 100%; background: white; color: inherit; }
 button { border-color: #146c5c; background: #146c5c; color: white; font-weight: 750; cursor: pointer; }
 button:hover { background: #0f5347; }
-button:focus-visible, select:focus-visible { outline: 3px solid #e7b746; outline-offset: 2px; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #e7b746; outline-offset: 2px; }
 #scenario-status { grid-column: 1 / -1; margin: 0; color: #46645b; }
 #scenario-status[data-state="error"] { color: #9b2c29; }
 
@@ -70,8 +72,14 @@ footer { padding: .6rem .25rem; color: #63756e; font-size: .85rem; }
 
 @media (max-width: 42rem) {
   body { padding: .75rem; }
-  .controls { grid-template-columns: 1fr; }
+  .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .controls > div:first-child, #scenario-status { grid-column: 1; }
-  select, button { width: 100%; }
+  .controls > div:first-child { grid-column: 1 / -1; }
+  select, input, button { width: 100%; }
   th, td { padding: .65rem .45rem; }
+}
+
+@media (max-width: 25rem) {
+  .controls { grid-template-columns: 1fr; }
+  #scenario-status { grid-column: 1; }
 }

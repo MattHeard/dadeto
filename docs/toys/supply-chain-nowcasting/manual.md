@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Apply the one-click route disruption and compare a current response with an earlier hypothetical warning. The page calculates daily deliveries and unmet demand, shows when each option could arrive, and ranks candidate capacity changes by units of shortfall avoided. Every result is a planning scenario, not a real forecast or procurement instruction.
+Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, and incremental cost. Every result is a planning scenario, not a real forecast or procurement instruction.
 
 ## Input
 
@@ -92,4 +92,4 @@ The planner returns baseline and candidate costs, daily inventory and unmet dema
 
 ## Behavior
 
-Run `npx jest --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. The standalone browser presenter contains no network calls or browser storage. Export/import and expanded cost, duration, and identifier inputs remain planned follow-up work.
+Run `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. The standalone browser presenter contains no network calls or browser storage. Pasting/uploading a user dataset, auditable plan export/import, and optional future-industry identifiers remain planned follow-up work.

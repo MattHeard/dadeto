@@ -4,10 +4,11 @@ import { planSupplyChain } from './supply-chain-nowcasting.js';
  * @typedef {object} SampleSupplyScenario
  * @property {number} horizonDays Number of simulated days.
  * @property {{id: string, capacityUnitsPerDay: number, unit: string}[]} suppliers Synthetic suppliers.
- * @property {{id: string, dailyDemandUnits: number, startingInventoryUnits: number, unit: string}} destination Demand and inventory.
- * @property {{id: string, fromId: string, toId: string, capacityUnitsPerDay: number, maxCapacityUnitsPerDay: number, leadTimeDays: number}[]} routes Direct routes.
- * @property {{routeId: string, startsDay: number, reductionPercent: number, warningLeadDays: number}} disruption Hypothetical disruption.
- * @property {{id: string, routeId: string, capacityUnitsPerDay: number, leadTimeDays: number}[]} mitigations Candidate options.
+ * @property {{id: string, dailyDemandUnits: number, startingInventoryUnits: number, maxBufferUnits: number, unit: string}} destination Demand and inventory.
+ * @property {{id: string, fromId: string, toId: string, capacityUnitsPerDay: number, maxCapacityUnitsPerDay: number, leadTimeDays: number, unitCostCents: number}[]} routes Direct routes.
+ * @property {{routeId: string, startsDay: number, durationDays: number, reductionPercent: number, warningLeadDays: number}} disruption Hypothetical disruption.
+ * @property {'shortfall-then-cost'|'cost-then-shortfall'} rankingCriterion Candidate sorting preference.
+ * @property {{id: string, kind: 'capacity'|'buffer', routeId?: string, capacityUnitsPerDay?: number, bufferUnits?: number, leadTimeDays: number, unitCostCents: number}[]} mitigations Candidate options.
  */
 
 /** @returns {object} A small synthetic two-supplier network. */
@@ -70,6 +71,13 @@ function createSampleScenario() {
         leadTimeDays: 5,
         unitCostCents: 10,
       },
+      {
+        id: 'emergency-buffer',
+        kind: 'buffer',
+        bufferUnits: 10,
+        leadTimeDays: 1,
+        unitCostCents: 3,
+      },
     ],
   };
 }
@@ -86,6 +94,18 @@ export function startSupplyChainNowcastingPage({
   const warningSelect = /** @type {HTMLSelectElement|null} */ (
     documentObj.querySelector('#warning-lead')
   );
+  const routeSelect = /** @type {HTMLSelectElement|null} */ (
+    documentObj.querySelector('#disruption-route')
+  );
+  const severitySelect = /** @type {HTMLSelectElement|null} */ (
+    documentObj.querySelector('#disruption-severity')
+  );
+  const durationInput = /** @type {HTMLInputElement|null} */ (
+    documentObj.querySelector('#disruption-duration')
+  );
+  const rankingSelect = /** @type {HTMLSelectElement|null} */ (
+    documentObj.querySelector('#ranking-criterion')
+  );
   const disruptionButton = documentObj.querySelector('#disruption-button');
   const status = /** @type {HTMLElement|null} */ (
     documentObj.querySelector('#scenario-status')
@@ -97,8 +117,23 @@ export function startSupplyChainNowcastingPage({
   const scenario = /** @type {SampleSupplyScenario} */ (createSampleScenario());
   let disrupted = false;
 
+  if (routeSelect) {
+    routeSelect.replaceChildren(
+      ...scenario.routes.map(route => {
+        const option = documentObj.createElement('option');
+        option.value = route.id;
+        option.textContent = route.id;
+        return option;
+      })
+    );
+  }
+
   if (
     !warningSelect ||
+    !routeSelect ||
+    !severitySelect ||
+    !durationInput ||
+    !rankingSelect ||
     !disruptionButton ||
     !status ||
     !baseline ||
@@ -123,7 +158,9 @@ export function startSupplyChainNowcastingPage({
     status.textContent = disrupted
       ? 'Hypothetical disruption active. No supplier is contacted and no route is changed.'
       : 'Sample network ready. Apply the disruption to compare response options.';
-    baseline.textContent = `${result.baseline.totalShortfallUnits} units total shortfall`;
+    baseline.textContent =
+      `${result.baseline.totalShortfallUnits} units total shortfall · ` +
+      `${result.baseline.totalCostCents}¢ baseline route cost`;
     signal.textContent =
       `${result.signal.status === 'early-warning' ? 'EARLY WARNING' : 'CURRENT RESPONSE'} · ` +
       `${result.signal.leadTimeDays} days of warning · Day ${result.signal.disruptionDay} disruption · hypothetical only`;
@@ -145,6 +182,7 @@ export function startSupplyChainNowcastingPage({
           `${route.capacityUnitsPerDay} / ${route.maxCapacityUnitsPerDay} units/day`
         ),
         cell(documentObj, `${route.leadTimeDays} days`),
+        cell(documentObj, `${route.unitCostCents}¢/unit`),
         cell(
           documentObj,
           disrupted && route.id === scenario.disruption.routeId
@@ -161,13 +199,26 @@ export function startSupplyChainNowcastingPage({
       row.append(
         cell(documentObj, String(index + 1)),
         cell(documentObj, candidate.id),
-        cell(documentObj, `${candidate.capacityUnitsPerDay} units/day`),
+        cell(
+          documentObj,
+          candidate.kind === 'buffer'
+            ? `${candidate.bufferUnits} units once`
+            : `${candidate.capacityUnitsPerDay} units/day`
+        ),
         cell(documentObj, `Day ${candidate.arrivalDay}`),
         cell(
           documentObj,
-          candidate.feasible ? 'Feasible' : (candidate.reason ?? 'Infeasible')
+          candidate.feasible
+            ? 'Feasible'
+            : formatInfeasibleReason(candidate.reason)
         ),
-        cell(documentObj, `${candidate.shortfallAvoidedUnits} units`)
+        cell(documentObj, `${candidate.shortfallAvoidedUnits} units`),
+        cell(
+          documentObj,
+          candidate.incrementalCostCents === null
+            ? 'Not available'
+            : `${candidate.incrementalCostCents}¢`
+        )
       );
       return row;
     });
@@ -178,18 +229,58 @@ export function startSupplyChainNowcastingPage({
     scenario.disruption.warningLeadDays = Number(warningSelect.value);
     render();
   };
+  const changeDisruptionRoute = () => {
+    scenario.disruption.routeId = routeSelect.value;
+    render();
+  };
+  const changeDisruptionSeverity = () => {
+    scenario.disruption.reductionPercent = Number(severitySelect.value);
+    render();
+  };
+  const changeDisruptionDuration = () => {
+    scenario.disruption.durationDays = Number(durationInput.value);
+    render();
+  };
+  const changeRankingCriterion = () => {
+    scenario.rankingCriterion =
+      /** @type {SampleSupplyScenario['rankingCriterion']} */ (
+        rankingSelect.value
+      );
+    render();
+  };
   const toggleDisruption = () => {
     disrupted = !disrupted;
-    scenario.disruption.reductionPercent = disrupted ? 100 : 0;
+    scenario.disruption.reductionPercent = disrupted
+      ? Number(severitySelect.value)
+      : 0;
     render();
   };
   warningSelect.addEventListener('change', changeWarningLead);
+  routeSelect.addEventListener('change', changeDisruptionRoute);
+  severitySelect.addEventListener('change', changeDisruptionSeverity);
+  durationInput.addEventListener('input', changeDisruptionDuration);
+  rankingSelect.addEventListener('change', changeRankingCriterion);
   disruptionButton.addEventListener('click', toggleDisruption);
   render();
   return () => {
     warningSelect.removeEventListener('change', changeWarningLead);
+    routeSelect.removeEventListener('change', changeDisruptionRoute);
+    severitySelect.removeEventListener('change', changeDisruptionSeverity);
+    durationInput.removeEventListener('input', changeDisruptionDuration);
+    rankingSelect.removeEventListener('change', changeRankingCriterion);
     disruptionButton.removeEventListener('click', toggleDisruption);
   };
+}
+
+/**
+ * @param {string|null} reason Planner reason code.
+ * @returns {string} Human-readable status.
+ */
+function formatInfeasibleReason(reason) {
+  if (reason === 'exceeds-available-capacity') return 'Capacity limit exceeded';
+  if (reason === 'exceeds-buffer-capacity') return 'Buffer limit exceeded';
+  if (reason === 'arrives-after-horizon') return 'Arrives after the plan';
+  return reason ?? 'Infeasible';
 }
 
 /**

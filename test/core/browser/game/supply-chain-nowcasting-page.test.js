@@ -42,6 +42,10 @@ test('publishes an immediately playable standalone planner with a network diagra
   expect(
     document.querySelector('#warning-lead option[value="2"]')
   ).not.toBeNull();
+  expect(document.querySelector('#disruption-route')).not.toBeNull();
+  expect(document.querySelector('#disruption-severity')).not.toBeNull();
+  expect(document.querySelector('#disruption-duration').value).toBe('10');
+  expect(document.querySelector('#ranking-criterion')).not.toBeNull();
   expect(document.querySelector('#disruption-button').textContent).toContain(
     'one-click disruption'
   );
@@ -61,7 +65,7 @@ test('renders the sample, then one-click disruption reveals ranked alternatives 
   const { document } = dom.window;
   expect(document.querySelectorAll('#network-routes tr')).toHaveLength(2);
   expect(document.querySelector('#baseline-result').textContent).toBe(
-    '0 units total shortfall'
+    '0 units total shortfall · 250¢ baseline route cost'
   );
   expect(document.querySelector('#scenario-status').textContent).toContain(
     'Sample network ready'
@@ -69,7 +73,7 @@ test('renders the sample, then one-click disruption reveals ranked alternatives 
 
   document.querySelector('#disruption-button').click();
   expect(document.querySelector('#baseline-result').textContent).toBe(
-    '30 units total shortfall'
+    '30 units total shortfall · 50¢ baseline route cost'
   );
   expect(document.querySelector('#scenario-status').textContent).toContain(
     'No supplier is contacted'
@@ -80,15 +84,61 @@ test('renders the sample, then one-click disruption reveals ranked alternatives 
   expect(document.querySelector('#mitigation-results').textContent).toContain(
     '30 units'
   );
+  expect(document.querySelector('#mitigation-results').textContent).toContain(
+    'units once'
+  );
+  expect(document.querySelector('#mitigation-results').textContent).toContain(
+    '¢'
+  );
   expect(document.querySelector('#disruption-button').textContent).toBe(
     'Reset route'
   );
 
   document.querySelector('#disruption-button').click();
   expect(document.querySelector('#baseline-result').textContent).toBe(
-    '0 units total shortfall'
+    '0 units total shortfall · 250¢ baseline route cost'
   );
   dispose();
+});
+
+test('scenario controls update disruption, warning, and ranking assumptions', () => {
+  const dom = createPage();
+  const { document, Event } = dom.window;
+  const dispatchChange = selector =>
+    document
+      .querySelector(selector)
+      .dispatchEvent(new Event('change', { bubbles: true }));
+
+  document.querySelector('#disruption-button').click();
+  document.querySelector('#disruption-severity').value = '50';
+  dispatchChange('#disruption-severity');
+  expect(document.querySelector('#baseline-result').textContent).toContain(
+    '10 units total shortfall'
+  );
+
+  document.querySelector('#disruption-duration').value = '1';
+  document
+    .querySelector('#disruption-duration')
+    .dispatchEvent(new Event('input', { bubbles: true }));
+  expect(document.querySelector('#baseline-result').textContent).toContain(
+    '0 units total shortfall'
+  );
+
+  document.querySelector('#disruption-duration').value = '10';
+  document
+    .querySelector('#disruption-duration')
+    .dispatchEvent(new Event('input', { bubbles: true }));
+  document.querySelector('#ranking-criterion').value = 'cost-then-shortfall';
+  dispatchChange('#ranking-criterion');
+  expect(
+    document.querySelector('#mitigation-results').rows[0].cells[1].textContent
+  ).toBe('emergency-buffer');
+
+  document.querySelector('#disruption-route').value = 'south-lane';
+  dispatchChange('#disruption-route');
+  expect(document.querySelector('#network-routes').textContent).toContain(
+    'Disrupted'
+  );
 });
 
 test('compares current response with early warning using identical sample data', () => {
@@ -147,11 +197,13 @@ test('provides fallback text for an infeasible result without a reason', () => {
       rankedMitigations: [
         {
           id: 'unavailable',
+          kind: 'capacity',
           capacityUnitsPerDay: 0,
           arrivalDay: 9,
           feasible: false,
           reason: null,
           shortfallAvoidedUnits: 0,
+          incrementalCostCents: null,
         },
       ],
     }),
@@ -162,7 +214,44 @@ test('provides fallback text for an infeasible result without a reason', () => {
 });
 
 test.each([
+  ['exceeds-available-capacity', 'Capacity limit exceeded'],
+  ['exceeds-buffer-capacity', 'Buffer limit exceeded'],
+  ['arrives-after-horizon', 'Arrives after the plan'],
+])('explains the %s infeasibility reason', (reason, expected) => {
+  const dom = createPage({
+    planSupplyChainFn: () => ({
+      baseline: { totalShortfallUnits: 1, totalCostCents: 0 },
+      signal: {
+        status: 'early-warning',
+        leadTimeDays: 1,
+        disruptionDay: 2,
+      },
+      rankingCriterion: 'shortfall-then-cost',
+      rankedMitigations: [
+        {
+          id: 'unavailable',
+          kind: 'capacity',
+          capacityUnitsPerDay: 0,
+          arrivalDay: 9,
+          feasible: false,
+          reason,
+          shortfallAvoidedUnits: 0,
+          incrementalCostCents: null,
+        },
+      ],
+    }),
+  });
+  expect(
+    dom.window.document.querySelector('#mitigation-results').textContent
+  ).toContain(expected);
+});
+
+test.each([
   'warning-lead',
+  'disruption-route',
+  'disruption-severity',
+  'disruption-duration',
+  'ranking-criterion',
   'disruption-button',
   'scenario-status',
   'baseline-result',
