@@ -23,3 +23,17 @@
 - For local page issues, inspect `reports/build/` output and the generated `public/tetracube/` files after `npm run build`.
 - Log location: terminal output and the evaluator's existing `reports/` artifacts.
 - Cleanup: generated `public/` and `reports/` contents follow the repository's existing ignored-artifact policy.
+
+## Cloud report path regression (2026-10-26)
+
+The cloud suite uses the nested `test/e2e/cloud.config.ts` config, but `scripts/run-e2e.js` uploads repository-root `playwright-report/` and `test-results/`. Playwright resolves explicitly relative config output paths against the config directory. Keep both config output locations absolute via `node:path` `resolve`, matching the `/app` working directory selected by the container entrypoint.
+
+Run the browser-free regression with:
+
+```sh
+node scripts/run-jest.js --runInBand --runTestsByPath test/scripts/playwright-cloud-config.test.js test/scripts/gcp-test-workflow.test.js test/scripts/playwright-entrypoint.test.js
+```
+
+Do not remove the uploader's fail-on-missing-report guard. A passing individual Playwright case in Cloud Run logs does not prove that its screenshot and interaction record were retained. Verify the later `gcp-test` E2E artifact before closing the playtest acceptance.
+
+Local artifact-path regression: `node scripts/run-jest.js --runInBand --runTestsByPath test/scripts/playwright-cloud-config.test.js test/scripts/gcp-test-workflow.test.js test/scripts/playwright-entrypoint.test.js test/scripts/get-author-uuid-v2-playwright-workflow.test.js test/scripts/gcp-prod-workflow.test.js` passed 5 suites / 23 tests. `npm run check` passed all 10 gates. This verifies root/config path agreement, not a Cloud Run report upload; a later scheduled run must still retain the Playwright report and interaction attachments.

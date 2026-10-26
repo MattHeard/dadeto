@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { defineConfig } from '@playwright/test';
 
 const chromiumArgs = [
@@ -32,10 +33,10 @@ if (allowedPorts.size > 0) {
 export default defineConfig({
   testDir: '.',
   testIgnore: ['**/local/**'],
-  outputDir: 'test-results',
+  outputDir: resolve('test-results'),
   reporter: [
     ['list'],
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['html', { outputFolder: resolve('playwright-report'), open: 'never' }],
   ],
   workers: 1,
   testMatch: [

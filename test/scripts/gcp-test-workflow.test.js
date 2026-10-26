@@ -24,9 +24,9 @@ describe('gcp-test workflow report handling', () => {
       .split('      - name: Upload e2e artifacts\n')[1]
       ?.split('\n      - name: ')[0];
 
-    expect(config).toContain("outputDir: 'test-results'");
+    expect(config).toContain("outputDir: resolve('test-results')");
     expect(config).toContain(
-      "['html', { outputFolder: 'playwright-report', open: 'never' }]"
+      "['html', { outputFolder: resolve('playwright-report'), open: 'never' }]"
     );
     expect(runner).toContain(
       "for (const reportDirectory of ['playwright-report', 'test-results'])"
