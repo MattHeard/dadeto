@@ -652,6 +652,25 @@ describe('THREEFOLD civic Return Tide aftermath', () => {
 });
 
 describe('THREEFOLD autonomous Assembly seal plan', () => {
+  test('reports when the pending plan becomes unavailable at the action-time rise', () => {
+    const runtime = createThreefoldRuntime({
+      storage: browserStorage(),
+      scene: createThreefoldBelltopsScene(),
+    });
+
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 15 });
+    expect(actualTide(runtime).assemblySealPlanStatus).toBe('pending');
+
+    // The local seal was destroyed during earlier play before the tide rose.
+    runtime.getState().player.destroyedGeometryIds.push('return-tide-seal');
+    runtime.dispatch({ type: 'wait', elapsedGameMinutes: 15 });
+
+    expect(actualTide(runtime).assemblySealPlanStatus).toBe('unavailable');
+    expect(runtime.frame().threefold.returnTide.notice).toContain(
+      'the Assembly could not close the Final Seal'
+    );
+  });
+
   test('commits at the action-time rise and survives export/import', () => {
     const storage = browserStorage();
     const runtime = createThreefoldRuntime({
