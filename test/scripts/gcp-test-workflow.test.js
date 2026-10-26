@@ -84,6 +84,34 @@ describe('gcp-test workflow report handling', () => {
     expect(waitStep).toContain('wait_for_object tetracube/game.js');
   });
 
+  it('stages every supply-chain browser dependency in the temporary test prefix', () => {
+    const workflow = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
+    const stage = workflow
+      .split(
+        '      - name: Seed supply-chain planner assets for Playwright\n'
+      )[1]
+      ?.split('\n      - name: ')[0];
+    const wait = workflow
+      .split('      - name: Wait for seeded pages\n')[1]
+      ?.split('\n      - name: ')[0];
+    const config = readFileSync('test/e2e/cloud.config.ts', 'utf8');
+    for (const asset of [
+      'supply-chain-nowcasting/index.html',
+      'supply-chain-nowcasting/app.js',
+      'supply-chain-nowcasting/styles.css',
+      'core/browser/game/supply-chain-nowcasting/page.js',
+      'core/browser/game/supply-chain-nowcasting/supply-chain-nowcasting.js',
+    ]) {
+      expect(stage).toContain(asset);
+      expect(wait).toContain(`wait_for_object ${asset}`);
+    }
+    expect(stage).toContain('../public/${asset}');
+    expect(stage).toContain(
+      'gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/${asset}'
+    );
+    expect(config).toContain("'**/supply-chain-nowcasting.spec.ts'");
+  });
+
   it('binds the workflow database id to the generated test environment', () => {
     const source = readFileSync('.github/workflows/gcp-test.yml', 'utf8');
 

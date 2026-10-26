@@ -105,6 +105,27 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
   ).toEqual([320, 160]);
 });
 
+test('applies the default shortfall ranking when candidates arrive out of order', () => {
+  const result = planSupplyChain(
+    scenario({
+      mitigations: [
+        { ...scenario().mitigations[1], id: 'alpha-slow' },
+        { ...scenario().mitigations[0], id: 'zeta-fast' },
+      ],
+    })
+  );
+
+  expect(
+    result.rankedMitigations.map(({ id, shortfallAvoidedUnits }) => [
+      id,
+      shortfallAvoidedUnits,
+    ])
+  ).toEqual([
+    ['zeta-fast', 30],
+    ['alpha-slow', 20],
+  ]);
+});
+
 test('optional industry graph IDs do not change a valid plan', () => {
   const baseline = planSupplyChain(scenario());
   const withReferences = planSupplyChain(
@@ -120,6 +141,37 @@ test('optional industry graph IDs do not change a valid plan', () => {
     })
   );
   expect(withReferences).toEqual(baseline);
+});
+
+test('allows sparse optional graph references without adding missing kinds', () => {
+  const result = planSupplyChain(
+    scenario({
+      industryGraphReferences: { organizations: ['org:known'] },
+    })
+  );
+
+  expect(result.error).toBeUndefined();
+  expect(result).toEqual(planSupplyChain(scenario()));
+});
+
+test('validates IDs in every optional graph reference kind', () => {
+  for (const kind of [
+    'organizations',
+    'offerings',
+    'processes',
+    'inputs',
+    'outputs',
+    'relationships',
+  ]) {
+    const result = planSupplyChain(
+      scenario({ industryGraphReferences: { [kind]: [7] } })
+    );
+
+    expect(result).toMatchObject({ error: 'invalid-input' });
+    expect(result.issues.join(' ')).toContain(
+      `Industry graph ${kind}[0] must be a non-empty ID`
+    );
+  }
 });
 
 test('recovers route capacity after the disruption duration ends', () => {
@@ -773,7 +825,10 @@ test('resolves a disruption and mitigation among multiple routes', () => {
     id: 'east-backup',
     feasible: true,
     reason: null,
+    shortfallAvoidedUnits: 0,
+    incrementalCostCents: 320,
   });
+  expect(result.baseline.daily[1].deliveries).toBe(10);
 });
 
 test('a candidate that arrives after the simulation horizon remains infeasible', () => {
@@ -793,4 +848,50 @@ test('a candidate that arrives after the simulation horizon remains infeasible',
     reason: 'arrives-after-horizon',
     shortfallAvoidedUnits: 0,
   });
+});
+
+test('a buffer arriving after a recovered shortage cannot retroactively avoid it', () => {
+  const result = planSupplyChain(
+    scenario({
+      destination: { ...scenario().destination, startingInventoryUnits: 0 },
+      disruption: { ...scenario().disruption, durationDays: 1 },
+      mitigations: [
+        {
+          id: 'late-buffer',
+          kind: 'buffer',
+          bufferUnits: 20,
+          leadTimeDays: 4,
+          unitCostCents: 3,
+        },
+      ],
+    })
+  );
+
+  expect(result.baseline.totalShortfallUnits).toBe(10);
+  expect(result.rankedMitigations[0]).toMatchObject({
+    feasible: true,
+    arrivalDay: 4,
+    shortfallAvoidedUnits: 0,
+    incrementalCostCents: 60,
+  });
+});
+
+test('uses the matching supplier when capacities differ from the first supplier', () => {
+  const result = planSupplyChain(
+    scenario({
+      suppliers: [
+        { id: 'north', capacityUnitsPerDay: 2, unit: 'units/day' },
+        { id: 'south', capacityUnitsPerDay: 20, unit: 'units/day' },
+      ],
+      routes: [{ ...scenario().routes[0], fromId: 'south' }],
+      disruption: { ...scenario().disruption, reductionPercent: 0 },
+      mitigations: [scenario().mitigations[0]],
+    })
+  );
+
+  expect(result.error).toBeUndefined();
+  expect(result.baseline.daily.map(({ deliveries }) => deliveries)).toEqual([
+    10, 10, 10, 10, 10,
+  ]);
+  expect(result.rankedMitigations[0].feasible).toBe(true);
 });

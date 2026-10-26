@@ -47,6 +47,7 @@ export default defineConfig({
     '**/search-function.spec.ts',
     '**/get-author-uuid-v2.spec.ts',
     '**/tetracube.spec.ts',
+    '**/supply-chain-nowcasting.spec.ts',
   ],
   projects: [
     {

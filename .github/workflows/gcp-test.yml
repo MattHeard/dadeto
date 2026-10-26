@@ -354,6 +354,16 @@ jobs:
               "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/tetracube/${asset}"
           done
 
+      - name: Seed supply-chain planner assets for Playwright
+        if: success()
+        run: |
+          set -euo pipefail
+          TEST_STATIC_BUCKET="${TF_VAR_test_static_site_bucket_name:-${GOOGLE_PROJECT}-${REGION}-dendrite-test-static}"
+          for asset in supply-chain-nowcasting/index.html supply-chain-nowcasting/app.js supply-chain-nowcasting/styles.css core/browser/game/supply-chain-nowcasting/page.js core/browser/game/supply-chain-nowcasting/supply-chain-nowcasting.js; do
+            gcloud storage cp "../public/${asset}" \
+              "gs://${TEST_STATIC_BUCKET}/${ENVIRONMENT}/${asset}"
+          done
+
       - name: Wait for seeded pages
         if: success()
         run: |
@@ -380,6 +390,11 @@ jobs:
           wait_for_object p/2a.html
           wait_for_object tetracube/index.html
           wait_for_object tetracube/game.js
+          wait_for_object supply-chain-nowcasting/index.html
+          wait_for_object supply-chain-nowcasting/app.js
+          wait_for_object supply-chain-nowcasting/styles.css
+          wait_for_object core/browser/game/supply-chain-nowcasting/page.js
+          wait_for_object core/browser/game/supply-chain-nowcasting/supply-chain-nowcasting.js
 
       - name: Seed temporary runner availability for search E2E
         if: success()
