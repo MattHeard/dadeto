@@ -143,4 +143,181 @@ describe('createOpenAIChatController', () => {
     expect(deps.postMessage).not.toHaveBeenCalled();
     expect(controller.getState().messages).toEqual([]);
   });
+
+  it('rejects a second send while the first signed request is pending', async () => {
+    let releaseResponse;
+    let signalStarted;
+    const started = new Promise(resolve => {
+      signalStarted = resolve;
+    });
+    const postMessage = jest.fn(
+      () =>
+        new Promise(resolve => {
+          releaseResponse = resolve;
+          signalStarted();
+        })
+    );
+    const deps = createDependencies({ postMessage });
+    const controller = createOpenAIChatController(deps);
+    const firstSend = controller.send('First');
+    await started;
+    expect(controller.getState().pending).toBe(true);
+    await expect(controller.send('Second')).resolves.toBe('rejected');
+    expect(deps.createIdempotencyKey).toHaveBeenCalledTimes(1);
+    expect(postMessage).toHaveBeenCalledTimes(1);
+    releaseResponse({
+      ok: true,
+      status: 200,
+      json: async () => ({ reply: 'Done' }),
+    });
+    await expect(firstSend).resolves.toBe('sent');
+  });
+
+  it('reports missing and non-string service endpoints without calling the effect boundary', async () => {
+    for (const endpoint of ['', null, 17]) {
+      const deps = createDependencies({
+        getEndpoint: jest.fn().mockResolvedValue(endpoint),
+      });
+      const controller = createOpenAIChatController(deps);
+      await expect(controller.send('Hello')).resolves.toBe('failed');
+      expect(controller.getState().error).toBe(
+        'The chat service is not configured.'
+      );
+      expect(deps.bindEffectBoundary).not.toHaveBeenCalled();
+      expect(deps.postMessage).not.toHaveBeenCalled();
+    }
+  });
+
+  it.each([null, [], { reply: '' }, { reply: '   ' }, {}])(
+    'retains an incomplete response for same-message retry when reply is %j',
+    async body => {
+      const postMessage = jest.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => body,
+      });
+      const deps = createDependencies({ postMessage });
+      const controller = createOpenAIChatController(deps);
+      await expect(controller.send('Hello')).resolves.toBe('failed');
+      expect(controller.getState()).toMatchObject({
+        pending: false,
+        error: 'The chat response was incomplete. Retry it.',
+      });
+      await expect(controller.send('Different')).resolves.toBe('rejected');
+      expect(deps.createIdempotencyKey).toHaveBeenCalledTimes(1);
+      expect(postMessage).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('keeps the same key when the response body cannot be read', async () => {
+    const postMessage = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => {
+          throw Error('bad json');
+        },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ reply: 'Recovered' }),
+      });
+    const deps = createDependencies({ postMessage });
+    const controller = createOpenAIChatController(deps);
+    await expect(controller.send('Hello')).resolves.toBe('failed');
+    expect(controller.getState().error).toBe(
+      'The reply could not be confirmed. Retry the same message.'
+    );
+    await expect(controller.send('Hello')).resolves.toBe('sent');
+    expect(postMessage.mock.calls.map(call => call[3])).toEqual([
+      'attempt-1',
+      'attempt-1',
+    ]);
+  });
+
+  it.each([null, 5, {}])(
+    'rejects a non-string message %j before resolving access',
+    async text => {
+      const deps = createDependencies();
+      const controller = createOpenAIChatController(deps);
+      await expect(controller.send(text)).resolves.toBe('rejected');
+      expect(deps.getEndpoint).not.toHaveBeenCalled();
+      expect(deps.postMessage).not.toHaveBeenCalled();
+    }
+  );
+
+  it('shows an unavailable-service error if endpoint or token lookup rejects', async () => {
+    const dependencies = [
+      {
+        getEndpoint: jest
+          .fn()
+          .mockRejectedValue(Error('endpoint lookup failed')),
+      },
+      {
+        getIdToken: jest
+          .fn()
+          .mockRejectedValue(Error('identity lookup failed')),
+      },
+    ];
+    for (const overrides of dependencies) {
+      const deps = createDependencies(overrides);
+      const controller = createOpenAIChatController(deps);
+      await expect(controller.send('Hello')).resolves.toBe('failed');
+      expect(controller.getState().error).toBe(
+        'The chat service is not configured.'
+      );
+      expect(deps.bindEffectBoundary).not.toHaveBeenCalled();
+    }
+  });
+
+  it('maps stable server errors to the stated client messages', async () => {
+    const cases = [
+      [
+        429,
+        'rate_limited',
+        'You have reached the short-term message limit. Try again shortly.',
+      ],
+      [
+        409,
+        'operation_pending',
+        'The previous reply is still being confirmed. Retry this message later.',
+      ],
+      [401, 'unauthorized', 'Sign in again to send a message.'],
+      [503, 'chat_unavailable', 'Chat is temporarily unavailable.'],
+      [
+        502,
+        'provider_unavailable',
+        'The reply could not be confirmed. Retry the same message.',
+      ],
+    ];
+    for (const [status, error, message] of cases) {
+      const deps = createDependencies({
+        postMessage: jest.fn().mockResolvedValue({
+          ok: false,
+          status,
+          json: async () => ({ error }),
+        }),
+      });
+      const controller = createOpenAIChatController(deps);
+      await expect(controller.send('Hello')).resolves.toBe('failed');
+      expect(controller.getState().error).toBe(message);
+    }
+  });
+
+  it('maps non-record error bodies to a stable fallback message', async () => {
+    const deps = createDependencies({
+      postMessage: jest.fn().mockResolvedValue({
+        ok: false,
+        status: 502,
+        json: async () => [],
+      }),
+    });
+    const controller = createOpenAIChatController(deps);
+    await expect(controller.send('Hello')).resolves.toBe('failed');
+    expect(controller.getState().error).toBe(
+      'Chat is temporarily unavailable.'
+    );
+  });
 });

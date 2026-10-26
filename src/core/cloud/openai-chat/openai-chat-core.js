@@ -467,11 +467,10 @@ function readHeader(request, name) {
 
 /**
  * Reject oversized raw HTTP bodies before interpreting JSON fields.
- * @param {unknown} request Incoming request.
+ * @param {Record<string, any>} request Authenticated HTTP request record.
  * @returns {boolean} Whether the encoded body exceeds the cap.
  */
 function requestBytesTooLarge(request) {
-  if (!isRecord(request)) return false;
   const contentLength = readHeader(request, 'content-length');
   if (typeof contentLength === 'string' && Number(contentLength) > 16_384)
     return true;
@@ -491,7 +490,7 @@ function requestBytesTooLarge(request) {
 function byteLength(value) {
   let bytes = 0;
   for (const character of value) {
-    const codePoint = character.codePointAt(0) ?? 0;
+    const codePoint = /** @type {number} */ (character.codePointAt(0));
     bytes +=
       codePoint <= 0x7f
         ? 1

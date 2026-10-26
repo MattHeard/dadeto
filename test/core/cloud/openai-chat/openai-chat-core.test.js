@@ -133,6 +133,43 @@ describe('normalizeOpenAIChatRequest', () => {
   });
 });
 
+test.each([
+  null,
+  'message',
+  [
+    { role: 'user', content: 'hello' },
+    { role: 'assistant', content: 'not final' },
+  ],
+  [42],
+  [
+    { role: 'user', content: 'hello' },
+    { role: 'assistant', content: 'not final' },
+  ],
+])('rejects a non-record or assistant-final conversation %#', messages => {
+  expect(normalizeOpenAIChatRequest({ messages })).toBeNull();
+});
+
+test.each([
+  ['é', 2],
+  ['中', 3],
+  ['💧', 4],
+])(
+  'counts %s as %s UTF-8 bytes within the aggregate limit',
+  (character, bytes) => {
+    const fits = Math.floor(OPENAI_CHAT_MAX_INPUT_BYTES / bytes);
+    expect(
+      normalizeOpenAIChatRequest({
+        messages: [{ role: 'user', content: character.repeat(fits) }],
+      })
+    ).not.toBeNull();
+    expect(
+      normalizeOpenAIChatRequest({
+        messages: [{ role: 'user', content: character.repeat(fits + 1) }],
+      })
+    ).toBeNull();
+  }
+);
+
 describe('createOpenAIChatHandler', () => {
   it('reserves before calling the fixed provider and settles one stable result', async () => {
     const { deps, billing, results } = createDependencies();
@@ -195,6 +232,67 @@ describe('createOpenAIChatHandler', () => {
     expect(invalid.deps.callModel).not.toHaveBeenCalled();
   });
 
+  it('uses the default request safely and rejects verified identities without a UID', async () => {
+    const { deps } = createDependencies();
+    await expect(createOpenAIChatHandler(deps)(allowEffects)).resolves.toEqual({
+      status: 401,
+      body: { error: 'unauthorized' },
+    });
+    for (const identity of [null, {}, { uid: '' }, { uid: 42 }]) {
+      deps.auth.verifyIdToken.mockResolvedValue(identity);
+      await expect(
+        createOpenAIChatHandler(deps)(allowEffects, request())
+      ).resolves.toEqual({ status: 401, body: { error: 'unauthorized' } });
+    }
+    expect(deps.callModel).not.toHaveBeenCalled();
+  });
+
+  it('does not treat array-shaped values as Express requests', async () => {
+    const { deps } = createDependencies();
+    const arrayRequest = [];
+    arrayRequest.get = jest.fn(() => 'Bearer test-token');
+    await expect(
+      createOpenAIChatHandler(deps)(allowEffects, arrayRequest)
+    ).resolves.toEqual({ status: 401, body: { error: 'unauthorized' } });
+    expect(arrayRequest.get).not.toHaveBeenCalled();
+    expect(deps.auth.verifyIdToken).not.toHaveBeenCalled();
+  });
+
+  it('rejects malformed bearer schemes without attempting token verification', async () => {
+    const { deps } = createDependencies();
+    const incoming = request();
+    incoming.headers.authorization = 'Basic test-token';
+    await expect(
+      createOpenAIChatHandler(deps)(allowEffects, incoming)
+    ).resolves.toEqual({ status: 401, body: { error: 'unauthorized' } });
+    expect(deps.auth.verifyIdToken).not.toHaveBeenCalled();
+    expect(deps.billing.reserveOperation).not.toHaveBeenCalled();
+  });
+
+  it('settles an already reserved matching result without another model call', async () => {
+    const { deps, billing, results } = createDependencies();
+    const attempt = `${OPENAI_CHAT_OPERATION}:request-1`;
+    results.set(attempt, {
+      requestHash: JSON.stringify(validBody),
+      reply: 'Already saved',
+    });
+    deps.readResult
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(results.get(attempt));
+    billing.reserveOperation.mockResolvedValue({
+      status: 200,
+      body: { duplicate: true },
+    });
+    await expect(
+      createOpenAIChatHandler(deps)(allowEffects, request())
+    ).resolves.toEqual({ status: 200, body: { reply: 'Already saved' } });
+    expect(deps.callModel).not.toHaveBeenCalled();
+    expect(billing.resolveOperation).toHaveBeenCalledWith(
+      allowEffects,
+      expect.objectContaining({ outcome: 'success' })
+    );
+  });
+
   it('rejects malformed, oversized, and missing-idempotency requests before billing', async () => {
     const { deps, billing } = createDependencies();
     const handle = createOpenAIChatHandler(deps);
@@ -237,6 +335,15 @@ describe('createOpenAIChatHandler', () => {
       body: { error: 'rate_limited', retryAfterSeconds: 13 },
     });
 
+    const priceReadThrows = createDependencies();
+    priceReadThrows.billing.getCurrentPricingSnapshot.mockRejectedValue(
+      Error('private price detail')
+    );
+    await expect(
+      createOpenAIChatHandler(priceReadThrows.deps)(allowEffects, request())
+    ).resolves.toEqual({ status: 503, body: { error: 'pricing_unavailable' } });
+    expect(priceReadThrows.billing.reserveOperation).not.toHaveBeenCalled();
+
     const noPrice = createDependencies();
     noPrice.billing.getCurrentPricingSnapshot.mockResolvedValue({
       snapshotId: 'price-1',
@@ -276,6 +383,149 @@ describe('createOpenAIChatHandler', () => {
 
     for (const entry of [noIdentity, limited, noPrice, underpriced, noCredit])
       expect(entry.deps.callModel).not.toHaveBeenCalled();
+  });
+
+  it('maps identity, rate, reservation and prior-result failures to safe responses', async () => {
+    const identityFailure = createDependencies({
+      resolveBillingIdentity: jest
+        .fn()
+        .mockRejectedValue(Error('private identity detail')),
+    });
+    await expect(
+      createOpenAIChatHandler(identityFailure.deps)(allowEffects, request())
+    ).resolves.toEqual({
+      status: 503,
+      body: { error: 'billing_identity_unavailable' },
+    });
+
+    const rateFailure = createDependencies({
+      limitRequest: jest
+        .fn()
+        .mockRejectedValue(Error('private limiter detail')),
+    });
+    await expect(
+      createOpenAIChatHandler(rateFailure.deps)(allowEffects, request())
+    ).resolves.toEqual({
+      status: 503,
+      body: { error: 'rate_limit_unavailable' },
+    });
+    expect(rateFailure.deps.callModel).not.toHaveBeenCalled();
+
+    const noRetryAfter = createDependencies({
+      limitRequest: jest.fn().mockResolvedValue({ allowed: false }),
+    });
+    await expect(
+      createOpenAIChatHandler(noRetryAfter.deps)(allowEffects, request())
+    ).resolves.toEqual({
+      status: 429,
+      body: { error: 'rate_limited', retryAfterSeconds: 60 },
+    });
+
+    const reservationThrows = createDependencies();
+    reservationThrows.billing.reserveOperation.mockRejectedValue(
+      Error('unknown reservation outcome')
+    );
+    await expect(
+      createOpenAIChatHandler(reservationThrows.deps)(allowEffects, request())
+    ).resolves.toEqual({
+      status: 503,
+      body: { error: 'reservation_outcome_unknown' },
+    });
+    expect(reservationThrows.deps.callModel).not.toHaveBeenCalled();
+
+    const reservationUnconfirmed = createDependencies();
+    reservationUnconfirmed.billing.reserveOperation.mockResolvedValue({
+      status: 200,
+      body: { status: 'pending' },
+    });
+    await expect(
+      createOpenAIChatHandler(reservationUnconfirmed.deps)(
+        allowEffects,
+        request()
+      )
+    ).resolves.toEqual({
+      status: 503,
+      body: { error: 'reservation_outcome_unknown' },
+    });
+    expect(reservationUnconfirmed.deps.callModel).not.toHaveBeenCalled();
+
+    const priorReadFails = createDependencies();
+    priorReadFails.billing.reserveOperation.mockResolvedValue({
+      status: 200,
+      body: { duplicate: true },
+    });
+    priorReadFails.deps.readResult
+      .mockResolvedValueOnce(null)
+      .mockRejectedValueOnce(Error('private storage detail'));
+    await expect(
+      createOpenAIChatHandler(priorReadFails.deps)(allowEffects, request())
+    ).resolves.toEqual({
+      status: 503,
+      body: { error: 'operation_result_unavailable' },
+    });
+    expect(priorReadFails.deps.callModel).not.toHaveBeenCalled();
+  });
+
+  it('keeps provider output validation and route errors bounded', async () => {
+    for (const reply of ['', '   ', null, 3, 'x'.repeat(8193)]) {
+      const { deps, billing } = createDependencies({
+        callModel: jest.fn().mockResolvedValue(reply),
+      });
+      billing.resolveOperation.mockResolvedValue({
+        status: 200,
+        body: { status: 'needs_recovery' },
+      });
+      await expect(
+        createOpenAIChatHandler(deps)(allowEffects, request())
+      ).resolves.toEqual({
+        status: 502,
+        body: { error: 'provider_unavailable' },
+      });
+      expect(billing.resolveOperation).toHaveBeenCalledWith(
+        allowEffects,
+        expect.objectContaining({ outcome: 'ambiguous' })
+      );
+    }
+  });
+
+  it('supports Express headers and raw-body request-size limits', async () => {
+    const { deps, billing } = createDependencies();
+    const handle = createOpenAIChatHandler(deps);
+    const expressRequest = {
+      body: validBody,
+      get: name =>
+        ({
+          authorization: 'Bearer test-token',
+          'idempotency-key': 'express-1',
+        })[name],
+      headers: {},
+    };
+    await expect(handle(allowEffects, expressRequest)).resolves.toMatchObject({
+      status: 200,
+    });
+    expect(billing.reserveOperation).toHaveBeenCalledTimes(1);
+
+    for (const rawBody of [Buffer.alloc(16_385), { byteLength: 16_385 }]) {
+      await expect(
+        handle(allowEffects, { ...request(), rawBody })
+      ).resolves.toEqual({ status: 413, body: { error: 'request_too_large' } });
+    }
+    expect(deps.callModel).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    null,
+    { operations: null },
+    { operations: { [OPENAI_CHAT_OPERATION]: null } },
+    { operations: { [OPENAI_CHAT_OPERATION]: { costEurMicros: null } } },
+  ])('refuses incomplete current pricing records %#', async operations => {
+    const { deps } = createDependencies();
+    deps.billing.getCurrentPricingSnapshot.mockResolvedValue(operations);
+    await expect(
+      createOpenAIChatHandler(deps)(allowEffects, request())
+    ).resolves.toEqual({ status: 503, body: { error: 'pricing_unavailable' } });
+    expect(deps.billing.reserveOperation).not.toHaveBeenCalled();
+    expect(deps.callModel).not.toHaveBeenCalled();
   });
 
   it('returns an existing reservation as pending without repeating the provider call', async () => {
@@ -422,6 +672,20 @@ describe('createOpenAIChatModelClient', () => {
     expect(JSON.stringify(requestBody)).not.toContain('never-log-this');
   });
 
+  it('accepts direct Responses API output_text', async () => {
+    const model = createOpenAIChatModelClient({
+      apiKey: 'test-key',
+      fetchImpl: jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ ['output_text']: 'Direct reply' }),
+      }),
+      timeoutSignal: jest.fn(),
+    });
+    await expect(model(allowEffects, validBody.messages)).resolves.toBe(
+      'Direct reply'
+    );
+  });
+
   it('rejects missing credentials, provider failures, and malformed output', async () => {
     const fetchImpl = jest.fn();
     const missing = createOpenAIChatModelClient({
@@ -436,6 +700,36 @@ describe('createOpenAIChatModelClient', () => {
 
     for (const response of [
       { ok: false, json: jest.fn() },
+      { ok: true, json: jest.fn().mockResolvedValue(null) },
+      {
+        ok: true,
+      },
+      {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          output: [{ type: 'message', role: 'assistant' }],
+        }),
+      },
+      {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          output: [
+            { type: 'message', role: 'assistant', content: 'not an array' },
+          ],
+        }),
+      },
+      {
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          output: [
+            {
+              type: 'message',
+              role: 'assistant',
+              content: [{ type: 'output_text', text: 42 }],
+            },
+          ],
+        }),
+      },
       {
         ok: true,
         json: jest.fn().mockResolvedValue({ ['output_text']: 42 }),
@@ -487,6 +781,28 @@ describe('createOpenAIChatRateLimiter', () => {
       2,
       expect.any(Function)
     );
+  });
+
+  it('uses the server clock when no test clock is injected', async () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(180_000);
+    try {
+      const runTransaction = jest.fn(
+        async (_permission, _uid, _window, update) => update(null)
+      );
+      const limiter = createOpenAIChatRateLimiter({ runTransaction });
+      await expect(limiter(allowEffects, 'user-1')).resolves.toMatchObject({
+        allowed: true,
+        write: { window: 3, count: 1 },
+      });
+      expect(runTransaction).toHaveBeenCalledWith(
+        allowEffects,
+        'user-1',
+        3,
+        expect.any(Function)
+      );
+    } finally {
+      now.mockRestore();
+    }
   });
 
   it('starts a fresh window when the stored window is stale', async () => {
