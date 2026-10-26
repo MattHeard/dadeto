@@ -15,8 +15,10 @@ function scenario(overrides = {}) {
       id: 'market',
       dailyDemandUnits: 10,
       startingInventoryUnits: 10,
+      maxBufferUnits: 20,
       unit: 'units/day',
     },
+    rankingCriterion: 'shortfall-then-cost',
     routes: [
       {
         id: 'north-lane',
@@ -25,32 +27,40 @@ function scenario(overrides = {}) {
         capacityUnitsPerDay: 10,
         maxCapacityUnitsPerDay: 20,
         leadTimeDays: 0,
+        unitCostCents: 5,
       },
     ],
     disruption: {
       routeId: 'north-lane',
       startsDay: 2,
+      durationDays: 10,
       reductionPercent: 100,
       warningLeadDays: 2,
     },
     mitigations: [
       {
         id: 'fast-backup',
+        kind: 'capacity',
         routeId: 'north-lane',
         capacityUnitsPerDay: 10,
         leadTimeDays: 2,
+        unitCostCents: 8,
       },
       {
         id: 'slow-backup',
+        kind: 'capacity',
         routeId: 'north-lane',
         capacityUnitsPerDay: 10,
         leadTimeDays: 4,
+        unitCostCents: 8,
       },
       {
         id: 'oversized-backup',
+        kind: 'capacity',
         routeId: 'north-lane',
         capacityUnitsPerDay: 11,
         leadTimeDays: 1,
+        unitCostCents: 8,
       },
     ],
     ...overrides,
@@ -62,6 +72,7 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
   expect(result.baseline).toMatchObject({
     totalShortfallUnits: 30,
     firstShortfallDay: 3,
+    totalCostCents: 50,
   });
   expect(result.signal).toEqual({
     status: 'early-warning',
@@ -70,7 +81,7 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
     leadTimeDays: 2,
     hypothetical: true,
   });
-  expect(result.rankingCriterion).toBe('shortfall-avoided-units');
+  expect(result.rankingCriterion).toBe('shortfall-then-cost');
   expect(
     result.rankedMitigations.map(({ id, shortfallAvoidedUnits }) => [
       id,
@@ -84,27 +95,151 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
   expect(result.rankedMitigations[2]).toMatchObject({
     feasible: false,
     reason: 'exceeds-available-capacity',
+    incrementalCostCents: null,
   });
+  expect(
+    result.rankedMitigations
+      .slice(0, 2)
+      .map(({ incrementalCostCents }) => incrementalCostCents)
+  ).toEqual([320, 160]);
+});
+
+test('recovers route capacity after the disruption duration ends', () => {
+  const result = planSupplyChain(
+    scenario({
+      disruption: { ...scenario().disruption, durationDays: 2 },
+      mitigations: [],
+    })
+  );
+  expect(result.baseline).toMatchObject({
+    firstShortfallDay: 3,
+    totalShortfallUnits: 10,
+    totalCostCents: 150,
+  });
+});
+
+test('models one-time buffer arrival, cost, capacity, and selectable ranking criteria', () => {
+  const mitigationOptions = [
+    {
+      id: 'alternate-route',
+      kind: 'capacity',
+      routeId: 'north-lane',
+      capacityUnitsPerDay: 10,
+      leadTimeDays: 2,
+      unitCostCents: 8,
+    },
+    {
+      id: 'buffer-stock',
+      kind: 'buffer',
+      bufferUnits: 10,
+      leadTimeDays: 2,
+      unitCostCents: 1,
+    },
+  ];
+  const serviceFirst = planSupplyChain(
+    scenario({ mitigations: mitigationOptions })
+  );
+  expect(serviceFirst.rankedMitigations.map(({ id }) => id)).toEqual([
+    'alternate-route',
+    'buffer-stock',
+  ]);
+  expect(serviceFirst.rankedMitigations[1]).toMatchObject({
+    shortfallAvoidedUnits: 10,
+    incrementalCostCents: 10,
+  });
+
+  const costFirst = planSupplyChain(
+    scenario({
+      mitigations: mitigationOptions,
+      rankingCriterion: 'cost-then-shortfall',
+    })
+  );
+  expect(costFirst.rankingCriterion).toBe('cost-then-shortfall');
+  expect(costFirst.rankedMitigations.map(({ id }) => id)).toEqual([
+    'buffer-stock',
+    'alternate-route',
+  ]);
+});
+
+test('keeps buffers larger than destination capacity visible as infeasible', () => {
+  const result = planSupplyChain(
+    scenario({
+      destination: { ...scenario().destination, maxBufferUnits: 5 },
+      mitigations: [
+        {
+          id: 'oversized-buffer',
+          kind: 'buffer',
+          bufferUnits: 6,
+          leadTimeDays: 1,
+          unitCostCents: 1,
+        },
+      ],
+    })
+  );
+  expect(result.rankedMitigations[0]).toMatchObject({
+    feasible: false,
+    reason: 'exceeds-buffer-capacity',
+    incrementalCostCents: null,
+  });
+});
+
+test('sorts multiple infeasible options deterministically', () => {
+  const result = planSupplyChain(
+    scenario({
+      mitigations: [
+        {
+          id: 'zeta',
+          kind: 'capacity',
+          routeId: 'north-lane',
+          capacityUnitsPerDay: 11,
+          leadTimeDays: 1,
+          unitCostCents: 1,
+        },
+        {
+          id: 'alpha',
+          kind: 'capacity',
+          routeId: 'north-lane',
+          capacityUnitsPerDay: 12,
+          leadTimeDays: 1,
+          unitCostCents: 1,
+        },
+      ],
+    })
+  );
+  expect(result.rankedMitigations.map(({ id }) => id)).toEqual([
+    'alpha',
+    'zeta',
+  ]);
 });
 
 test('is deterministic and uses identifier order to break equal-score ties', () => {
   const input = scenario({
+    rankingCriterion: 'cost-then-shortfall',
     mitigations: [
       {
+        ...scenario().mitigations[0],
         id: 'zeta',
-        routeId: 'north-lane',
-        capacityUnitsPerDay: 10,
-        leadTimeDays: 2,
       },
       {
+        ...scenario().mitigations[0],
         id: 'alpha',
-        routeId: 'north-lane',
-        capacityUnitsPerDay: 10,
-        leadTimeDays: 2,
       },
     ],
   });
   expect(planSupplyChain(input)).toEqual(planSupplyChain(input));
+  expect(planSupplyChain(input).rankedMitigations.map(({ id }) => id)).toEqual([
+    'alpha',
+    'zeta',
+  ]);
+});
+
+test('uses identifier order for equal shortfall and cost scores', () => {
+  const input = scenario({
+    mitigations: [
+      { ...scenario().mitigations[0], id: 'zeta' },
+      { ...scenario().mitigations[0], id: 'alpha' },
+    ],
+  });
   expect(planSupplyChain(input).rankedMitigations.map(({ id }) => id)).toEqual([
     'alpha',
     'zeta',
@@ -116,6 +251,11 @@ test.each([
   ['primitive input', 'invalid', 'Provide a scenario object'],
   ['array input', [], 'Provide a scenario object'],
   ['zero horizon', scenario({ horizonDays: 0 }), 'positive whole number'],
+  [
+    'unknown ranking criterion',
+    scenario({ rankingCriterion: 'random' }),
+    'Ranking criterion',
+  ],
   ['missing suppliers', scenario({ suppliers: null }), 'at least one supplier'],
   ['missing routes', scenario({ routes: null }), 'at least one route'],
   [
@@ -201,6 +341,11 @@ test.each([
     'non-negative whole number',
   ],
   [
+    'invalid route unit cost',
+    scenario({ routes: [{ ...scenario().routes[0], unitCostCents: 1.5 }] }),
+    'unit cost in cents must be a non-negative whole number',
+  ],
+  [
     'unknown disruption route',
     scenario({ disruption: { ...scenario().disruption, routeId: 'missing' } }),
     'known route',
@@ -209,6 +354,11 @@ test.each([
     'invalid disruption day',
     scenario({ disruption: { ...scenario().disruption, startsDay: -1 } }),
     'Disruption start day',
+  ],
+  [
+    'zero disruption duration',
+    scenario({ disruption: { ...scenario().disruption, durationDays: 0 } }),
+    'Disruption duration must be at least one day',
   ],
   [
     'invalid warning lead time',
@@ -242,6 +392,35 @@ test.each([
       mitigations: [{ ...scenario().mitigations[0], capacityUnitsPerDay: -1 }],
     }),
     'Mitigation fast-backup capacity',
+  ],
+  [
+    'invalid mitigation kind',
+    scenario({
+      mitigations: [{ ...scenario().mitigations[0], kind: 'reroute' }],
+    }),
+    'kind must be capacity or buffer',
+  ],
+  [
+    'invalid mitigation unit cost',
+    scenario({
+      mitigations: [{ ...scenario().mitigations[0], unitCostCents: -1 }],
+    }),
+    'unit cost in cents',
+  ],
+  [
+    'invalid buffer quantity',
+    scenario({
+      mitigations: [
+        {
+          id: 'bad-buffer',
+          kind: 'buffer',
+          bufferUnits: -1,
+          leadTimeDays: 0,
+          unitCostCents: 1,
+        },
+      ],
+    }),
+    'buffer units',
   ],
   [
     'invalid mitigation lead time',
@@ -297,9 +476,8 @@ test('a candidate that arrives after the simulation horizon remains infeasible',
     scenario({
       mitigations: [
         {
+          ...scenario().mitigations[0],
           id: 'too-late',
-          routeId: 'north-lane',
-          capacityUnitsPerDay: 10,
           leadTimeDays: 6,
         },
       ],

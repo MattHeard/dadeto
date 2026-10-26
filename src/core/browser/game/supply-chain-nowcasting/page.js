@@ -22,8 +22,10 @@ function createSampleScenario() {
       id: 'market',
       dailyDemandUnits: 10,
       startingInventoryUnits: 10,
+      maxBufferUnits: 10,
       unit: 'units/day',
     },
+    rankingCriterion: 'shortfall-then-cost',
     routes: [
       {
         id: 'north-lane',
@@ -32,6 +34,7 @@ function createSampleScenario() {
         capacityUnitsPerDay: 10,
         maxCapacityUnitsPerDay: 10,
         leadTimeDays: 0,
+        unitCostCents: 5,
       },
       {
         id: 'south-lane',
@@ -40,26 +43,32 @@ function createSampleScenario() {
         capacityUnitsPerDay: 0,
         maxCapacityUnitsPerDay: 10,
         leadTimeDays: 0,
+        unitCostCents: 9,
       },
     ],
     disruption: {
       routeId: 'north-lane',
       startsDay: 2,
+      durationDays: 10,
       reductionPercent: 0,
       warningLeadDays: 2,
     },
     mitigations: [
       {
         id: 'alternate-supplier',
+        kind: 'capacity',
         routeId: 'south-lane',
         capacityUnitsPerDay: 10,
         leadTimeDays: 2,
+        unitCostCents: 10,
       },
       {
         id: 'late-alternate',
+        kind: 'capacity',
         routeId: 'south-lane',
         capacityUnitsPerDay: 10,
         leadTimeDays: 5,
+        unitCostCents: 10,
       },
     ],
   };

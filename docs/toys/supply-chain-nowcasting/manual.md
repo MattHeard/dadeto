@@ -21,19 +21,23 @@ The pure model accepts suppliers, direct supplier-to-destination routes, a desti
     "id": "market",
     "dailyDemandUnits": 10,
     "startingInventoryUnits": 10,
+    "maxBufferUnits": 12,
     "unit": "units/day"
   },
   "routes": [
-    { "id": "north-lane", "fromId": "north", "toId": "market", "capacityUnitsPerDay": 10, "maxCapacityUnitsPerDay": 20, "leadTimeDays": 0 }
+    { "id": "north-lane", "fromId": "north", "toId": "market", "capacityUnitsPerDay": 10, "maxCapacityUnitsPerDay": 20, "leadTimeDays": 0, "unitCostCents": 5 }
   ],
   "disruption": {
     "routeId": "north-lane",
     "startsDay": 2,
+    "durationDays": 2,
     "reductionPercent": 100,
     "warningLeadDays": 2
   },
+  "rankingCriterion": "shortfall-then-cost",
   "mitigations": [
-    { "id": "fast-backup", "routeId": "north-lane", "capacityUnitsPerDay": 10, "leadTimeDays": 2 }
+    { "id": "fast-backup", "kind": "capacity", "routeId": "north-lane", "capacityUnitsPerDay": 10, "leadTimeDays": 2, "unitCostCents": 7 },
+    { "id": "buffer", "kind": "buffer", "bufferUnits": 5, "leadTimeDays": 1, "unitCostCents": 3 }
   ]
 }
 ```
@@ -46,14 +50,15 @@ The initial planner supports direct supplier-to-destination routes. That shape m
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["horizonDays", "suppliers", "destination", "routes", "disruption", "mitigations"],
+  "required": ["horizonDays", "suppliers", "destination", "routes", "disruption", "rankingCriterion", "mitigations"],
   "properties": {
     "horizonDays": { "type": "integer", "minimum": 1 },
     "suppliers": { "type": "array", "items": { "type": "object", "required": ["id", "capacityUnitsPerDay", "unit"] } },
-    "destination": { "type": "object", "required": ["id", "dailyDemandUnits", "startingInventoryUnits", "unit"] },
-    "routes": { "type": "array", "items": { "type": "object", "required": ["id", "fromId", "toId", "capacityUnitsPerDay", "maxCapacityUnitsPerDay", "leadTimeDays"] } },
-    "disruption": { "type": "object", "required": ["routeId", "startsDay", "reductionPercent", "warningLeadDays"] },
-    "mitigations": { "type": "array", "items": { "type": "object", "required": ["id", "routeId", "capacityUnitsPerDay", "leadTimeDays"] } }
+    "destination": { "type": "object", "required": ["id", "dailyDemandUnits", "startingInventoryUnits", "maxBufferUnits", "unit"] },
+    "routes": { "type": "array", "items": { "type": "object", "required": ["id", "fromId", "toId", "capacityUnitsPerDay", "maxCapacityUnitsPerDay", "leadTimeDays", "unitCostCents"] } },
+    "disruption": { "type": "object", "required": ["routeId", "startsDay", "durationDays", "reductionPercent", "warningLeadDays"] },
+    "rankingCriterion": { "enum": ["shortfall-then-cost", "cost-then-shortfall"] },
+    "mitigations": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "leadTimeDays", "unitCostCents"] } }
   },
   "additionalProperties": false
 }
@@ -61,7 +66,7 @@ The initial planner supports direct supplier-to-destination routes. That shape m
 
 ## Output
 
-The planner returns the baseline daily inventory and unmet demand, a clearly hypothetical warning, and candidates sorted by feasibility, shortfall avoided, then ID. Impossible candidates remain visible with a reason.
+The planner returns baseline and candidate costs, daily inventory and unmet demand, a clearly hypothetical warning, and candidates sorted by feasibility followed by the selected ranking criterion. Impossible candidates remain visible with a reason. Disruptions recover after their configured duration. Capacity options add a daily amount to a route; buffer options add a one-time quantity, bounded by the destination's maximum buffer capacity.
 
 ### Example
 
@@ -78,7 +83,7 @@ The planner returns the baseline daily inventory and unmet demand, a clearly hyp
     "leadTimeDays": 2,
     "hypothetical": true
   },
-  "rankingCriterion": "shortfall-avoided-units",
+  "rankingCriterion": "shortfall-then-cost",
   "rankedMitigations": [
     { "id": "fast-backup", "feasible": true, "arrivalDay": 2, "shortfallAvoidedUnits": 30 }
   ]

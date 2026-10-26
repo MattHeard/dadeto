@@ -1,12 +1,12 @@
 /** @typedef {{id: string, capacityUnitsPerDay: number, unit: 'units/day'}} SupplySupplier */
-/** @typedef {{id: string, dailyDemandUnits: number, startingInventoryUnits: number, unit: 'units/day'}} SupplyDestination */
-/** @typedef {{id: string, fromId: string, toId: string, capacityUnitsPerDay: number, maxCapacityUnitsPerDay: number, leadTimeDays: number}} SupplyRoute */
-/** @typedef {{routeId: string, startsDay: number, reductionPercent: number, warningLeadDays: number}} SupplyDisruption */
-/** @typedef {{id: string, routeId: string, capacityUnitsPerDay: number, leadTimeDays: number}} SupplyMitigation */
-/** @typedef {{horizonDays: number, suppliers: SupplySupplier[], destination: SupplyDestination, routes: SupplyRoute[], disruption: SupplyDisruption, mitigations: SupplyMitigation[]}} SupplyScenario */
-/** @typedef {{day: number, deliveries: number, inventoryUnits: number, unmetDemandUnits: number}} SupplyDailyResult */
-/** @typedef {{daily: SupplyDailyResult[], totalShortfallUnits: number, firstShortfallDay: number|null}} SupplySimulation */
-/** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, shortfallAvoidedUnits: number, reason: string|null}} RankedMitigation */
+/** @typedef {{id: string, dailyDemandUnits: number, startingInventoryUnits: number, maxBufferUnits: number, unit: 'units/day'}} SupplyDestination */
+/** @typedef {{id: string, fromId: string, toId: string, capacityUnitsPerDay: number, maxCapacityUnitsPerDay: number, leadTimeDays: number, unitCostCents: number}} SupplyRoute */
+/** @typedef {{routeId: string, startsDay: number, durationDays: number, reductionPercent: number, warningLeadDays: number}} SupplyDisruption */
+/** @typedef {{id: string, kind: 'capacity'|'buffer', routeId?: string, capacityUnitsPerDay?: number, bufferUnits?: number, leadTimeDays: number, unitCostCents: number}} SupplyMitigation */
+/** @typedef {{horizonDays: number, suppliers: SupplySupplier[], destination: SupplyDestination, routes: SupplyRoute[], disruption: SupplyDisruption, rankingCriterion: 'shortfall-then-cost'|'cost-then-shortfall', mitigations: SupplyMitigation[]}} SupplyScenario */
+/** @typedef {{day: number, deliveries: number, inventoryUnits: number, unmetDemandUnits: number, costCents: number}} SupplyDailyResult */
+/** @typedef {{daily: SupplyDailyResult[], totalShortfallUnits: number, firstShortfallDay: number|null, totalCostCents: number}} SupplySimulation */
+/** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, shortfallAvoidedUnits: number, incrementalCostCents: number|null, reason: string|null}} RankedMitigation */
 /** @typedef {{error: 'invalid-input', issues: string[]}} InvalidSupplyPlan */
 /** @typedef {{baseline: SupplySimulation, signal: {status: string, decisionDay: number, disruptionDay: number, leadTimeDays: number, hypothetical: true}, rankingCriterion: string, rankedMitigations: RankedMitigation[]}} SupplyPlan */
 
@@ -22,7 +22,14 @@ export function planSupplyChain(input) {
   if (issues.length) return { error: 'invalid-input', issues };
 
   const scenario = /** @type {SupplyScenario} */ (input);
-  const { horizonDays, routes, suppliers, disruption, mitigations } = scenario;
+  const {
+    horizonDays,
+    routes,
+    suppliers,
+    disruption,
+    mitigations,
+    rankingCriterion,
+  } = scenario;
   const routeById = new Map(routes.map(route => [route.id, route]));
   const baseline = simulate(scenario, null);
   const decisionDay = Math.max(
@@ -42,18 +49,25 @@ export function planSupplyChain(input) {
 
   const rankedMitigations = mitigations
     .map(mitigation => {
-      const route = /** @type {SupplyRoute} */ (
-        routeById.get(mitigation.routeId)
-      );
       const arrivalDay = decisionDay + mitigation.leadTimeDays;
+      const route = mitigation.routeId
+        ? routeById.get(mitigation.routeId)
+        : undefined;
+      const supplier = route
+        ? suppliers.find(({ id }) => id === route.fromId)
+        : undefined;
       const capacityFeasible =
-        mitigation.capacityUnitsPerDay <=
-          route.maxCapacityUnitsPerDay - route.capacityUnitsPerDay &&
-        mitigation.capacityUnitsPerDay <=
-          /** @type {SupplySupplier} */ (
-            suppliers.find(({ id }) => id === route.fromId)
-          ).capacityUnitsPerDay -
-            route.capacityUnitsPerDay;
+        mitigation.kind === 'buffer'
+          ? /** @type {number} */ (mitigation.bufferUnits) <=
+            scenario.destination.maxBufferUnits
+          : Boolean(
+              route &&
+                supplier &&
+                /** @type {number} */ (mitigation.capacityUnitsPerDay) <=
+                  route.maxCapacityUnitsPerDay - route.capacityUnitsPerDay &&
+                /** @type {number} */ (mitigation.capacityUnitsPerDay) <=
+                  supplier.capacityUnitsPerDay - route.capacityUnitsPerDay
+            );
       const feasible = capacityFeasible && arrivalDay <= horizonDays;
       if (!feasible)
         return {
@@ -61,8 +75,11 @@ export function planSupplyChain(input) {
           feasible: false,
           arrivalDay,
           shortfallAvoidedUnits: 0,
+          incrementalCostCents: null,
           reason: !capacityFeasible
-            ? 'exceeds-available-capacity'
+            ? mitigation.kind === 'buffer'
+              ? 'exceeds-buffer-capacity'
+              : 'exceeds-available-capacity'
             : 'arrives-after-horizon',
         };
       const candidate = simulate(scenario, { ...mitigation, arrivalDay });
@@ -72,22 +89,38 @@ export function planSupplyChain(input) {
         arrivalDay,
         shortfallAvoidedUnits:
           baseline.totalShortfallUnits - candidate.totalShortfallUnits,
+        incrementalCostCents:
+          candidate.totalCostCents - baseline.totalCostCents,
         reason: null,
       };
     })
-    .sort(
-      (left, right) =>
-        Number(right.feasible) - Number(left.feasible) ||
-        right.shortfallAvoidedUnits - left.shortfallAvoidedUnits ||
-        left.id.localeCompare(right.id)
-    );
+    .sort((left, right) => compareMitigations(left, right, rankingCriterion));
 
   return {
     baseline,
     signal,
-    rankingCriterion: 'shortfall-avoided-units',
+    rankingCriterion,
     rankedMitigations,
   };
+}
+
+/**
+ * @param {RankedMitigation} left Candidate on the left side of the ordering.
+ * @param {RankedMitigation} right Candidate on the right side of the ordering.
+ * @param {SupplyScenario['rankingCriterion']} criterion Selected ranking rule.
+ * @returns {number} Sort order for the two candidates.
+ */
+function compareMitigations(left, right, criterion) {
+  const feasibilityOrder = Number(right.feasible) - Number(left.feasible);
+  const shortfallOrder =
+    right.shortfallAvoidedUnits - left.shortfallAvoidedUnits;
+  const costOrder =
+    (left.incrementalCostCents ?? Number.POSITIVE_INFINITY) -
+    (right.incrementalCostCents ?? Number.POSITIVE_INFINITY);
+  if (feasibilityOrder !== 0) return feasibilityOrder;
+  if (criterion === 'cost-then-shortfall')
+    return costOrder || shortfallOrder || left.id.localeCompare(right.id);
+  return shortfallOrder || costOrder || left.id.localeCompare(right.id);
 }
 
 /**
@@ -98,7 +131,7 @@ function validateSupplyChainInput(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input))
     return ['Provide a scenario object.'];
   const scenario = /** @type {Record<string, any>} */ (input);
-  const issues = [];
+  const issues = /** @type {string[]} */ ([]);
   if (!Number.isInteger(scenario.horizonDays) || scenario.horizonDays < 1)
     issues.push('Horizon must be a positive whole number of days.');
   const suppliers = Array.isArray(scenario.suppliers) ? scenario.suppliers : [];
@@ -110,86 +143,156 @@ function validateSupplyChainInput(input) {
     issues.push('Mitigations must be an array.');
   if (!suppliers.length) issues.push('Provide at least one supplier.');
   if (!routes.length) issues.push('Provide at least one route.');
-  if (!scenario.destination || !validId(scenario.destination.id))
-    issues.push('Provide a destination with a valid ID.');
-  else {
-    checkQuantity(
-      scenario.destination.dailyDemandUnits,
-      'Destination daily demand',
-      issues
+  if (
+    !['shortfall-then-cost', 'cost-then-shortfall'].includes(
+      scenario.rankingCriterion
+    )
+  )
+    issues.push(
+      'Ranking criterion must be shortfall-then-cost or cost-then-shortfall.'
     );
-    checkQuantity(
-      scenario.destination.startingInventoryUnits,
-      'Starting inventory',
-      issues
-    );
-    if (scenario.destination.unit !== 'units/day')
-      issues.push('Destination demand unit must be units/day.');
-  }
+  checkDestination(scenario.destination, issues);
   uniqueIds(suppliers, 'supplier', issues);
   uniqueIds(routes, 'route', issues);
   uniqueIds(mitigations, 'mitigation', issues);
-  const supplierIds = new Set(suppliers.map(({ id }) => id));
   const destinationId = scenario.destination?.id;
-  for (const supplier of suppliers) {
-    checkQuantity(
-      supplier.capacityUnitsPerDay,
-      `Supplier ${supplier.id} capacity`,
-      issues
-    );
-    if (supplier.unit !== 'units/day')
-      issues.push(`Supplier ${supplier.id} unit must be units/day.`);
+  suppliers.forEach(supplier => checkSupplier(supplier, issues));
+  routes.forEach(route => checkRoute(route, suppliers, destinationId, issues));
+  checkDisruption(scenario.disruption, routes, issues);
+  mitigations.forEach(mitigation =>
+    checkMitigation(mitigation, routes, issues)
+  );
+  return issues;
+}
+
+/**
+ * @param {Record<string, any>} destination Destination data.
+ * @param {string[]} issues Validation issues to append to.
+ * @returns {void} No return value.
+ */
+function checkDestination(destination, issues) {
+  if (!destination || !validId(destination.id)) {
+    issues.push('Provide a destination with a valid ID.');
+    return;
   }
-  for (const route of routes) {
-    if (!supplierIds.has(route.fromId))
-      issues.push(`Route ${route.id} must start at a known supplier.`);
-    if (route.toId !== destinationId)
-      issues.push(
-        `Route ${route.id} must end at the destination; only direct routes are supported.`
-      );
-    if (!supplierIds.has(route.fromId) || route.toId !== destinationId)
-      issues.push(`Route ${route.id} creates an unsupported path or cycle.`);
-    checkQuantity(
-      route.capacityUnitsPerDay,
-      `Route ${route.id} capacity`,
-      issues
+  checkQuantity(
+    destination.dailyDemandUnits,
+    'Destination daily demand',
+    issues
+  );
+  checkQuantity(
+    destination.startingInventoryUnits,
+    'Starting inventory',
+    issues
+  );
+  checkQuantity(destination.maxBufferUnits, 'Maximum buffer capacity', issues);
+  if (destination.unit !== 'units/day')
+    issues.push('Destination demand unit must be units/day.');
+}
+
+/**
+ * @param {Record<string, any>} supplier Supplier data.
+ * @param {string[]} issues Validation issues to append to.
+ * @returns {void} No return value.
+ */
+function checkSupplier(supplier, issues) {
+  checkQuantity(
+    supplier.capacityUnitsPerDay,
+    `Supplier ${supplier.id} capacity`,
+    issues
+  );
+  if (supplier.unit !== 'units/day')
+    issues.push(`Supplier ${supplier.id} unit must be units/day.`);
+}
+
+/**
+ * @param {Record<string, any>} route Route data.
+ * @param {Record<string, any>[]} suppliers Supplier records.
+ * @param {unknown} destinationId Destination ID.
+ * @param {string[]} issues Mutable issues.
+ * @returns {void}
+ */
+function checkRoute(route, suppliers, destinationId, issues) {
+  const supplierIds = new Set(suppliers.map(({ id }) => id));
+  if (!supplierIds.has(route.fromId))
+    issues.push(`Route ${route.id} must start at a known supplier.`);
+  if (route.toId !== destinationId)
+    issues.push(
+      `Route ${route.id} must end at the destination; only direct routes are supported.`
     );
-    checkQuantity(
-      route.maxCapacityUnitsPerDay,
-      `Route ${route.id} maximum capacity`,
-      issues
-    );
-    if (route.capacityUnitsPerDay > route.maxCapacityUnitsPerDay)
-      issues.push(`Route ${route.id} capacity exceeds its maximum.`);
-    checkWholeNonnegative(
-      route.leadTimeDays,
-      `Route ${route.id} lead time`,
-      issues
-    );
-    const supplier = suppliers.find(({ id }) => id === route.fromId);
-    if (supplier && route.capacityUnitsPerDay > supplier.capacityUnitsPerDay)
-      issues.push(`Route ${route.id} capacity exceeds supplier capacity.`);
-  }
-  const disruption = scenario.disruption;
-  if (!disruption || !routes.some(({ id }) => id === disruption.routeId))
+  if (!supplierIds.has(route.fromId) || route.toId !== destinationId)
+    issues.push(`Route ${route.id} creates an unsupported path or cycle.`);
+  checkQuantity(
+    route.capacityUnitsPerDay,
+    `Route ${route.id} capacity`,
+    issues
+  );
+  checkQuantity(
+    route.maxCapacityUnitsPerDay,
+    `Route ${route.id} maximum capacity`,
+    issues
+  );
+  checkNonnegativeInteger(
+    route.unitCostCents,
+    `Route ${route.id} unit cost in cents`,
+    issues
+  );
+  if (route.capacityUnitsPerDay > route.maxCapacityUnitsPerDay)
+    issues.push(`Route ${route.id} capacity exceeds its maximum.`);
+  checkNonnegativeInteger(
+    route.leadTimeDays,
+    `Route ${route.id} lead time`,
+    issues
+  );
+  const supplier = suppliers.find(({ id }) => id === route.fromId);
+  if (supplier && route.capacityUnitsPerDay > supplier.capacityUnitsPerDay)
+    issues.push(`Route ${route.id} capacity exceeds supplier capacity.`);
+}
+
+/**
+ * @param {Record<string, any>} disruption Disruption data.
+ * @param {Record<string, any>[]} routes Routes available to the scenario.
+ * @param {string[]} issues Validation issues to append to.
+ * @returns {void} No return value.
+ */
+function checkDisruption(disruption, routes, issues) {
+  if (!disruption || !routes.some(({ id }) => id === disruption.routeId)) {
     issues.push('Disruption must refer to a known route.');
-  else {
-    checkWholeNonnegative(disruption.startsDay, 'Disruption start day', issues);
-    checkWholeNonnegative(
-      disruption.warningLeadDays,
-      'Warning lead time',
-      issues
-    );
-    if (
-      !Number.isFinite(disruption.reductionPercent) ||
-      disruption.reductionPercent < 0 ||
-      disruption.reductionPercent > 100
-    )
-      issues.push('Disruption reduction must be between 0 and 100 percent.');
+    return;
   }
-  for (const mitigation of mitigations) {
-    if (!validId(mitigation.id))
-      issues.push('Mitigation IDs must be non-empty strings.');
+  checkNonnegativeInteger(disruption.startsDay, 'Disruption start day', issues);
+  checkNonnegativeInteger(
+    disruption.durationDays,
+    'Disruption duration',
+    issues
+  );
+  if (disruption.durationDays < 1)
+    issues.push('Disruption duration must be at least one day.');
+  checkNonnegativeInteger(
+    disruption.warningLeadDays,
+    'Warning lead time',
+    issues
+  );
+  if (
+    !Number.isFinite(disruption.reductionPercent) ||
+    disruption.reductionPercent < 0 ||
+    disruption.reductionPercent > 100
+  )
+    issues.push('Disruption reduction must be between 0 and 100 percent.');
+}
+
+/**
+ * @param {Record<string, any>} mitigation Mitigation data.
+ * @param {Record<string, any>[]} routes Routes available to the scenario.
+ * @param {string[]} issues Validation issues to append to.
+ * @returns {void} No return value.
+ */
+function checkMitigation(mitigation, routes, issues) {
+  if (!validId(mitigation.id))
+    issues.push('Mitigation IDs must be non-empty strings.');
+  if (!['capacity', 'buffer'].includes(mitigation.kind))
+    issues.push(`Mitigation ${mitigation.id} kind must be capacity or buffer.`);
+  if (mitigation.kind === 'capacity') {
     if (!routes.some(({ id }) => id === mitigation.routeId))
       issues.push(`Mitigation ${mitigation.id} must refer to a known route.`);
     checkQuantity(
@@ -197,13 +300,23 @@ function validateSupplyChainInput(input) {
       `Mitigation ${mitigation.id} capacity`,
       issues
     );
-    checkWholeNonnegative(
-      mitigation.leadTimeDays,
-      `Mitigation ${mitigation.id} lead time`,
+  } else if (mitigation.kind === 'buffer') {
+    checkQuantity(
+      mitigation.bufferUnits,
+      `Mitigation ${mitigation.id} buffer units`,
       issues
     );
   }
-  return issues;
+  checkNonnegativeInteger(
+    mitigation.unitCostCents,
+    `Mitigation ${mitigation.id} unit cost in cents`,
+    issues
+  );
+  checkNonnegativeInteger(
+    mitigation.leadTimeDays,
+    `Mitigation ${mitigation.id} lead time`,
+    issues
+  );
 }
 
 /**
@@ -215,9 +328,11 @@ function simulate(input, mitigation) {
   const { destination, horizonDays, disruption } = input;
   let inventory = destination.startingInventoryUnits;
   let totalShortfallUnits = 0;
+  let totalCostCents = 0;
   const daily = [];
   for (let day = 1; day <= horizonDays; day += 1) {
     let deliveries = 0;
+    let costCents = 0;
     for (const route of input.routes) {
       const supplier = /** @type {SupplySupplier} */ (
         input.suppliers.find(({ id }) => id === route.fromId)
@@ -227,13 +342,33 @@ function simulate(input, mitigation) {
         supplier.capacityUnitsPerDay
       );
       const disrupted =
-        route.id === disruption.routeId && day >= disruption.startsDay;
+        route.id === disruption.routeId &&
+        day >= disruption.startsDay &&
+        day < disruption.startsDay + disruption.durationDays;
       const effectiveCapacity = disrupted
         ? baseCapacity * (1 - disruption.reductionPercent / 100)
         : baseCapacity;
-      if (day >= route.leadTimeDays + 1) deliveries += effectiveCapacity;
-      if (mitigation?.routeId === route.id && day >= mitigation.arrivalDay)
-        deliveries += mitigation.capacityUnitsPerDay;
+      if (day >= route.leadTimeDays + 1) {
+        deliveries += effectiveCapacity;
+        costCents += effectiveCapacity * route.unitCostCents;
+      }
+      if (
+        mitigation?.kind === 'capacity' &&
+        mitigation.routeId === route.id &&
+        day >= Math.max(1, mitigation.arrivalDay)
+      ) {
+        const extra = /** @type {number} */ (mitigation.capacityUnitsPerDay);
+        deliveries += extra;
+        costCents += extra * mitigation.unitCostCents;
+      }
+    }
+    if (
+      mitigation?.kind === 'buffer' &&
+      day === Math.max(1, mitigation.arrivalDay)
+    ) {
+      const buffer = /** @type {number} */ (mitigation.bufferUnits);
+      deliveries += buffer;
+      costCents += buffer * mitigation.unitCostCents;
     }
     inventory += deliveries;
     const unmetDemandUnits = Math.max(
@@ -242,16 +377,19 @@ function simulate(input, mitigation) {
     );
     inventory -= destination.dailyDemandUnits - unmetDemandUnits;
     totalShortfallUnits += unmetDemandUnits;
+    totalCostCents += costCents;
     daily.push({
       day,
       deliveries,
       inventoryUnits: inventory,
       unmetDemandUnits,
+      costCents: Math.round(costCents),
     });
   }
   return {
     daily,
     totalShortfallUnits,
+    totalCostCents: Math.round(totalCostCents),
     firstShortfallDay:
       daily.find(({ unmetDemandUnits }) => unmetDemandUnits > 0)?.day ?? null,
   };
@@ -299,7 +437,7 @@ function checkQuantity(value, label, issues) {
  * @param {string[]} issues Mutable issue list.
  * @returns {void} Adds an issue when the day count is invalid.
  */
-function checkWholeNonnegative(value, label, issues) {
+function checkNonnegativeInteger(value, label, issues) {
   if (typeof value !== 'number' || !Number.isInteger(value) || value < 0)
-    issues.push(`${label} must be a non-negative whole number of days.`);
+    issues.push(`${label} must be a non-negative whole number.`);
 }
