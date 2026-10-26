@@ -3,7 +3,8 @@
 /** @typedef {{id: string, fromId: string, toId: string, capacityUnitsPerDay: number, maxCapacityUnitsPerDay: number, leadTimeDays: number, unitCostCents: number}} SupplyRoute */
 /** @typedef {{routeId: string, startsDay: number, durationDays: number, reductionPercent: number, warningLeadDays: number}} SupplyDisruption */
 /** @typedef {{id: string, kind: 'capacity'|'buffer', routeId?: string, capacityUnitsPerDay?: number, bufferUnits?: number, leadTimeDays: number, unitCostCents: number}} SupplyMitigation */
-/** @typedef {{horizonDays: number, suppliers: SupplySupplier[], destination: SupplyDestination, routes: SupplyRoute[], disruption: SupplyDisruption, rankingCriterion: 'shortfall-then-cost'|'cost-then-shortfall', mitigations: SupplyMitigation[]}} SupplyScenario */
+/** @typedef {{organizations?: string[], offerings?: string[], processes?: string[], inputs?: string[], outputs?: string[], relationships?: string[]}} IndustryGraphReferences */
+/** @typedef {{horizonDays: number, suppliers: SupplySupplier[], destination: SupplyDestination, routes: SupplyRoute[], disruption: SupplyDisruption, rankingCriterion: 'shortfall-then-cost'|'cost-then-shortfall', mitigations: SupplyMitigation[], industryGraphReferences?: IndustryGraphReferences}} SupplyScenario */
 /** @typedef {{day: number, deliveries: number, inventoryUnits: number, unmetDemandUnits: number, costCents: number}} SupplyDailyResult */
 /** @typedef {{daily: SupplyDailyResult[], totalShortfallUnits: number, firstShortfallDay: number|null, totalCostCents: number}} SupplySimulation */
 /** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, shortfallAvoidedUnits: number, incrementalCostCents: number|null, reason: string|null}} RankedMitigation */
@@ -152,6 +153,7 @@ function validateSupplyChainInput(input) {
       'Ranking criterion must be shortfall-then-cost or cost-then-shortfall.'
     );
   checkDestination(scenario.destination, issues);
+  checkIndustryGraphReferences(scenario.industryGraphReferences, issues);
   uniqueIds(suppliers, 'supplier', issues);
   uniqueIds(routes, 'route', issues);
   uniqueIds(mitigations, 'mitigation', issues);
@@ -163,6 +165,41 @@ function validateSupplyChainInput(input) {
     checkMitigation(mitigation, routes, issues)
   );
   return issues;
+}
+
+/**
+ * Validate optional opaque graph IDs without resolving them or affecting the plan.
+ * @param {unknown} references Optional graph metadata.
+ * @param {string[]} issues Validation issues to append to.
+ * @returns {void} No return value.
+ */
+function checkIndustryGraphReferences(references, issues) {
+  if (references === undefined) return;
+  if (Object.prototype.toString.call(references) !== '[object Object]') {
+    issues.push('Industry graph references must be an object.');
+    return;
+  }
+  const referenceObject = /** @type {Record<string, any>} */ (references);
+  const kinds = [
+    'organizations',
+    'offerings',
+    'processes',
+    'inputs',
+    'outputs',
+    'relationships',
+  ];
+  for (const kind of kinds) {
+    const ids = referenceObject[kind];
+    if (ids === undefined) continue;
+    if (!Array.isArray(ids)) {
+      issues.push(`Industry graph ${kind} must be an array of opaque IDs.`);
+      continue;
+    }
+    ids.forEach((id, index) => {
+      if (typeof id !== 'string' || !validId(id))
+        issues.push(`Industry graph ${kind}[${index}] must be a non-empty ID.`);
+    });
+  }
 }
 
 /**

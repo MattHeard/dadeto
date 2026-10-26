@@ -58,7 +58,19 @@ The initial planner supports direct supplier-to-destination routes. That shape m
     "routes": { "type": "array", "items": { "type": "object", "required": ["id", "fromId", "toId", "capacityUnitsPerDay", "maxCapacityUnitsPerDay", "leadTimeDays", "unitCostCents"] } },
     "disruption": { "type": "object", "required": ["routeId", "startsDay", "durationDays", "reductionPercent", "warningLeadDays"] },
     "rankingCriterion": { "enum": ["shortfall-then-cost", "cost-then-shortfall"] },
-    "mitigations": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "leadTimeDays", "unitCostCents"] } }
+    "mitigations": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "leadTimeDays", "unitCostCents"] } },
+    "industryGraphReferences": {
+      "type": "object",
+      "properties": {
+        "organizations": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "offerings": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "processes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "inputs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "outputs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "relationships": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }
@@ -108,6 +120,23 @@ mitigation,emergency-buffer,,,,,,,,,,,1,3,,,,,,buffer,10
 ```
 
 CSV numeric fields are plain numbers in the documented units. Rows may be reordered after the header. Duplicate or missing required singleton records, malformed quoting, missing values and planner validation errors are shown inline; an invalid import leaves the current plan active.
+
+## Optional industry graph IDs
+
+JSON may include an optional `industryGraphReferences` object with arrays named `organizations`, `offerings`, `processes`, `inputs`, `outputs`, and `relationships`. Each value is an opaque, non-empty string ID. These IDs are metadata only: the planner does not look them up, infer missing links, or change its results. Omit unknown entities; the synthetic sample deliberately invents no catalog identifiers. CSV can carry the same references as optional `industry-reference` rows. Set `record` to `industry-reference`, place the opaque ID in `id`, and set `kind` to `organization`, `offering`, `process`, `input`, `output`, or `relationship`; leave unrelated columns empty.
+
+```json
+{
+  "industryGraphReferences": {
+    "organizations": ["org:provided-by-your-catalog"],
+    "offerings": ["offering:provided-by-your-catalog"],
+    "processes": ["process:provided-by-your-catalog"],
+    "inputs": ["input:provided-by-your-catalog"],
+    "outputs": ["output:provided-by-your-catalog"],
+    "relationships": ["relationship:provided-by-your-catalog"]
+  }
+}
+```
 
 ## Behavior
 

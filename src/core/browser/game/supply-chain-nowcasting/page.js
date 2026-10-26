@@ -9,6 +9,7 @@ import { planSupplyChain } from './supply-chain-nowcasting.js';
  * @property {{routeId: string, startsDay: number, durationDays: number, reductionPercent: number, warningLeadDays: number}} disruption Hypothetical disruption.
  * @property {'shortfall-then-cost'|'cost-then-shortfall'} rankingCriterion Candidate sorting preference.
  * @property {{id: string, kind: 'capacity'|'buffer', routeId?: string, capacityUnitsPerDay?: number, bufferUnits?: number, leadTimeDays: number, unitCostCents: number}[]} mitigations Candidate options.
+ * @property {{organizations?: string[], offerings?: string[], processes?: string[], inputs?: string[], outputs?: string[], relationships?: string[]}} [industryGraphReferences] Optional opaque graph entity IDs.
  */
 
 /** @typedef {{formatVersion: number, scenario: SampleSupplyScenario, baseline: object, signal: object, rankingCriterion: string, rankedMitigations: object[], assumptions: object}} SupplyResponseExport */
@@ -588,10 +589,28 @@ function scenarioFromCsv(text) {
         'route',
         'disruption',
         'mitigation',
+        'industry-reference',
       ].includes(row.record)
   );
   if (unknownType)
     throw new Error(`CSV has unknown record type ${unknownType.record}.`);
+  const references = /** @type {Record<string, string[]>} */ ({});
+  const referenceCollectionByKind = /** @type {Record<string, string>} */ ({
+    organization: 'organizations',
+    offering: 'offerings',
+    process: 'processes',
+    input: 'inputs',
+    output: 'outputs',
+    relationship: 'relationships',
+  });
+  entityRows('industry-reference').forEach(row => {
+    const kind = textValue(row, 'kind');
+    const collection = referenceCollectionByKind[kind];
+    if (!collection)
+      throw new Error(`CSV industry reference has unknown kind ${kind}.`);
+    references[collection] ??= [];
+    references[collection].push(textValue(row, 'id'));
+  });
   return {
     horizonDays: number(meta, 'horizonDays'),
     rankingCriterion: /** @type {SampleSupplyScenario['rankingCriterion']} */ (
@@ -634,6 +653,9 @@ function scenarioFromCsv(text) {
       leadTimeDays: number(row, 'leadTimeDays'),
       unitCostCents: number(row, 'unitCostCents'),
     })),
+    ...(Object.keys(references).length
+      ? { industryGraphReferences: references }
+      : {}),
   };
 }
 

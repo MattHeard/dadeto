@@ -104,6 +104,23 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
   ).toEqual([320, 160]);
 });
 
+test('optional industry graph IDs do not change a valid plan', () => {
+  const baseline = planSupplyChain(scenario());
+  const withReferences = planSupplyChain(
+    scenario({
+      industryGraphReferences: {
+        organizations: ['org:customer-7'],
+        offerings: ['offering:grain'],
+        processes: ['process:wholesale'],
+        inputs: ['input:grain'],
+        outputs: ['output:flour'],
+        relationships: ['relation:customer-supply'],
+      },
+    })
+  );
+  expect(withReferences).toEqual(baseline);
+});
+
 test('recovers route capacity after the disruption duration ends', () => {
   const result = planSupplyChain(
     scenario({
@@ -255,6 +272,36 @@ test.each([
     'unknown ranking criterion',
     scenario({ rankingCriterion: 'random' }),
     'Ranking criterion',
+  ],
+  [
+    'invalid industry reference object',
+    scenario({ industryGraphReferences: [] }),
+    'Industry graph references must be an object',
+  ],
+  [
+    'null industry reference object',
+    scenario({ industryGraphReferences: null }),
+    'Industry graph references must be an object',
+  ],
+  [
+    'primitive industry reference object',
+    scenario({ industryGraphReferences: 'invalid' }),
+    'Industry graph references must be an object',
+  ],
+  [
+    'invalid industry reference collection',
+    scenario({ industryGraphReferences: { organizations: 'org-1' } }),
+    'organizations must be an array',
+  ],
+  [
+    'blank industry reference ID',
+    scenario({ industryGraphReferences: { inputs: [' '] } }),
+    'inputs[0] must be a non-empty ID',
+  ],
+  [
+    'non-string industry reference ID',
+    scenario({ industryGraphReferences: { outputs: [7] } }),
+    'outputs[0] must be a non-empty ID',
   ],
   ['missing suppliers', scenario({ suppliers: null }), 'at least one supplier'],
   ['missing routes', scenario({ routes: null }), 'at least one route'],

@@ -161,6 +161,14 @@ test('imports valid pasted scenario JSON and round-trips the exported scenario e
   const { document } = dom.window;
   const source = JSON.parse(document.querySelector('#scenario-json').value);
   source.disruption.durationDays = 4;
+  source.industryGraphReferences = {
+    organizations: ['org:planner-customer'],
+    offerings: ['offering:synthetic-grain'],
+    processes: ['process:distribution'],
+    inputs: ['input:grain'],
+    outputs: ['output:flour'],
+    relationships: ['relationship:source-contract'],
+  };
   document.querySelector('#scenario-json').value = JSON.stringify(source);
   document.querySelector('#import-scenario').click();
 
@@ -171,11 +179,18 @@ test('imports valid pasted scenario JSON and round-trips the exported scenario e
   expect(document.querySelector('#scenario-status').textContent).toContain(
     'Imported JSON scenario ready'
   );
+  expect(
+    JSON.parse(document.querySelector('#scenario-json').value)
+      .industryGraphReferences
+  ).toEqual(source.industryGraphReferences);
 
   const exported = jest.fn();
   const exportDom = createPage({ downloadPlanFn: exported });
-  exportDom.window.document.querySelector('#disruption-button').click();
-  exportDom.window.document.querySelector('#export-plan').click();
+  const exportDocument = exportDom.window.document;
+  exportDocument.querySelector('#scenario-json').value = JSON.stringify(source);
+  exportDocument.querySelector('#import-scenario').click();
+  exportDocument.querySelector('#disruption-button').click();
+  exportDocument.querySelector('#export-plan').click();
   const record = exported.mock.calls[0][0];
   expect(record).toMatchObject({
     formatVersion: 1,
@@ -183,13 +198,16 @@ test('imports valid pasted scenario JSON and round-trips the exported scenario e
     signal: { hypothetical: true },
     rankingCriterion: 'shortfall-then-cost',
     assumptions: {
-      dataOrigin: 'Synthetic sample',
+      dataOrigin: 'Imported JSON scenario',
       advisoryOnly: true,
       noExternalActionsTaken: true,
       uncertaintyNotes: expect.any(Array),
       constraints: { horizonDays: 5 },
     },
   });
+  expect(record.scenario.industryGraphReferences).toEqual(
+    source.industryGraphReferences
+  );
   expect(record.rankedMitigations).toHaveLength(3);
 
   const roundTrip = createPage();
@@ -210,6 +228,14 @@ test('imports record-oriented CSV including quoted commas through the planner', 
   const scenario = JSON.parse(document.querySelector('#scenario-json').value);
   scenario.suppliers[0].id = 'north, "primary"';
   scenario.routes[0].fromId = 'north, "primary"';
+  scenario.industryGraphReferences = {
+    organizations: ['org:wholesaler'],
+    offerings: ['offering:grain'],
+    processes: ['process:distribution'],
+    inputs: ['input:grain'],
+    outputs: ['output:flour'],
+    relationships: ['relation:supplier-contract'],
+  };
   document.querySelector('#scenario-json').value = toCsv(scenario);
   document.querySelector('#import-scenario').click();
 
@@ -222,6 +248,10 @@ test('imports record-oriented CSV including quoted commas through the planner', 
   expect(document.querySelector('#network-routes').textContent).toContain(
     'north, "primary"'
   );
+  expect(
+    JSON.parse(document.querySelector('#scenario-json').value)
+      .industryGraphReferences
+  ).toEqual(scenario.industryGraphReferences);
 });
 
 test('the documented CSV example imports as a valid scenario', () => {
@@ -320,6 +350,24 @@ test('rejects CSV with missing required numeric values without changing the plan
   document.querySelector('#import-scenario').click();
   expect(document.querySelector('#data-status').textContent).toContain(
     'missing horizonDays'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(before);
+});
+
+test('rejects invalid optional CSV industry references without replacing state', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  const before = document.querySelector('#baseline-result').textContent;
+  const row = Array(21).fill('');
+  row[0] = 'industry-reference';
+  row[1] = 'org:sample';
+  row[19] = 'unrecognized';
+  document.querySelector('#scenario-json').value =
+    `${toCsv(scenario)}\n${row.join(',')}`;
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'unknown kind unrecognized'
   );
   expect(document.querySelector('#baseline-result').textContent).toBe(before);
 });
@@ -649,6 +697,21 @@ function toCsv(scenario) {
       record: 'mitigation',
       ...mitigation,
     })),
+    ...Object.entries(scenario.industryGraphReferences ?? {}).flatMap(
+      ([collection, ids]) =>
+        ids.map(id => ({
+          record: 'industry-reference',
+          id,
+          kind: {
+            organizations: 'organization',
+            offerings: 'offering',
+            processes: 'process',
+            inputs: 'input',
+            outputs: 'output',
+            relationships: 'relationship',
+          }[collection],
+        }))
+    ),
   ];
   return [columns, ...rows.map(row => columns.map(column => row[column] ?? ''))]
     .map(row =>
