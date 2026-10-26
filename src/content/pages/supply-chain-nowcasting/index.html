@@ -64,6 +64,24 @@
         <p id="scenario-status" role="status" aria-live="polite"></p>
       </section>
 
+      <section class="panel data-tools" aria-labelledby="data-heading">
+        <div>
+          <p class="eyebrow">SCENARIO DATA</p>
+          <h2 id="data-heading">Paste or load a JSON network</h2>
+          <p>Use the documented scenario shape below. A failed import leaves the current plan unchanged.</p>
+        </div>
+        <label for="scenario-json">Scenario JSON</label>
+        <textarea id="scenario-json" name="scenario-json" rows="8" spellcheck="false" aria-describedby="scenario-json-help"></textarea>
+        <p id="scenario-json-help" class="field-help">Import replaces the active synthetic sample after validation.</p>
+        <div class="file-actions">
+          <label for="scenario-file">Load JSON file</label>
+          <input id="scenario-file" name="scenario-file" type="file" accept="application/json,.json" />
+          <button id="import-scenario" type="button">Import JSON</button>
+          <button id="export-plan" type="button" class="secondary-button">Export response plan</button>
+        </div>
+        <p id="data-status" data-state="ready" role="status" aria-live="polite">Synthetic sample loaded; nothing is uploaded.</p>
+      </section>
+
       <section class="panel" aria-labelledby="network-heading">
         <div class="section-heading">
           <span class="glyph" aria-hidden="true">↗</span>

@@ -11,6 +11,21 @@ import { planSupplyChain } from './supply-chain-nowcasting.js';
  * @property {{id: string, kind: 'capacity'|'buffer', routeId?: string, capacityUnitsPerDay?: number, bufferUnits?: number, leadTimeDays: number, unitCostCents: number}[]} mitigations Candidate options.
  */
 
+/** @typedef {{formatVersion: number, scenario: SampleSupplyScenario, baseline: object, signal: object, rankingCriterion: string, rankedMitigations: object[], assumptions: object}} SupplyResponseExport */
+
+/**
+ * @typedef {object} SupplyChainDataAdapters
+ * @property {(file: File) => Promise<string>} [readFileTextFn] Local file reader.
+ * @property {(plan: SupplyResponseExport) => void} [downloadPlanFn] Download adapter.
+ */
+
+/**
+ * @typedef {object} PageDependencies
+ * @property {Document} documentObj Browser document.
+ * @property {typeof planSupplyChain} [planSupplyChainFn] Pure planner seam.
+ * @property {SupplyChainDataAdapters} [dataAdapters] File and download effects.
+ */
+
 /** @returns {object} A small synthetic two-supplier network. */
 function createSampleScenario() {
   return {
@@ -84,13 +99,13 @@ function createSampleScenario() {
 
 /**
  * Start the no-network supply-chain scenario presenter.
- * @param {{documentObj: Document, planSupplyChainFn?: typeof planSupplyChain}} dependencies Browser document and optional planner seam.
+ * @param {PageDependencies} dependencies Browser document and optional effect seams.
  * @returns {() => void} Removes installed listeners.
  */
-export function startSupplyChainNowcastingPage({
-  documentObj,
-  planSupplyChainFn = planSupplyChain,
-}) {
+export function startSupplyChainNowcastingPage(dependencies) {
+  const documentObj = dependencies.documentObj;
+  const planSupplyChainFn = dependencies.planSupplyChainFn ?? planSupplyChain;
+  const dataAdapters = dependencies.dataAdapters ?? {};
   const warningSelect = /** @type {HTMLSelectElement|null} */ (
     documentObj.querySelector('#warning-lead')
   );
@@ -106,6 +121,17 @@ export function startSupplyChainNowcastingPage({
   const rankingSelect = /** @type {HTMLSelectElement|null} */ (
     documentObj.querySelector('#ranking-criterion')
   );
+  const scenarioJson = /** @type {HTMLTextAreaElement|null} */ (
+    documentObj.querySelector('#scenario-json')
+  );
+  const scenarioFile = /** @type {HTMLInputElement|null} */ (
+    documentObj.querySelector('#scenario-file')
+  );
+  const importButton = documentObj.querySelector('#import-scenario');
+  const exportButton = documentObj.querySelector('#export-plan');
+  const dataStatus = /** @type {HTMLElement|null} */ (
+    documentObj.querySelector('#data-status')
+  );
   const disruptionButton = documentObj.querySelector('#disruption-button');
   const status = /** @type {HTMLElement|null} */ (
     documentObj.querySelector('#scenario-status')
@@ -114,19 +140,12 @@ export function startSupplyChainNowcastingPage({
   const signal = documentObj.querySelector('#warning-signal');
   const routeTable = documentObj.querySelector('#network-routes');
   const mitigationBody = documentObj.querySelector('#mitigation-results');
-  const scenario = /** @type {SampleSupplyScenario} */ (createSampleScenario());
+  let scenario = /** @type {SampleSupplyScenario} */ (createSampleScenario());
+  let dataOrigin = 'Synthetic sample';
   let disrupted = false;
 
-  if (routeSelect) {
-    routeSelect.replaceChildren(
-      ...scenario.routes.map(route => {
-        const option = documentObj.createElement('option');
-        option.value = route.id;
-        option.textContent = route.id;
-        return option;
-      })
-    );
-  }
+  syncScenarioControls(documentObj, scenario, false);
+  if (scenarioJson) scenarioJson.value = JSON.stringify(scenario, null, 2);
 
   if (
     !warningSelect ||
@@ -134,6 +153,11 @@ export function startSupplyChainNowcastingPage({
     !severitySelect ||
     !durationInput ||
     !rankingSelect ||
+    !scenarioJson ||
+    !scenarioFile ||
+    !importButton ||
+    !exportButton ||
+    !dataStatus ||
     !disruptionButton ||
     !status ||
     !baseline ||
@@ -143,9 +167,14 @@ export function startSupplyChainNowcastingPage({
   )
     return () => {};
 
+  let latestPlan =
+    /** @type {Exclude<ReturnType<typeof planSupplyChain>, {error: string}>|null} */ (
+      null
+    );
   const render = () => {
     const result = planSupplyChainFn(scenario);
     if ('error' in result) {
+      latestPlan = null;
       status.textContent = result.issues.join(' ');
       status.dataset.state = 'error';
       baseline.textContent = 'No plan available';
@@ -154,10 +183,11 @@ export function startSupplyChainNowcastingPage({
       return;
     }
 
+    latestPlan = result;
     status.dataset.state = 'ready';
     status.textContent = disrupted
       ? 'Hypothetical disruption active. No supplier is contacted and no route is changed.'
-      : 'Sample network ready. Apply the disruption to compare response options.';
+      : `${dataOrigin} ready. Apply the disruption to compare response options.`;
     baseline.textContent =
       `${result.baseline.totalShortfallUnits} units total shortfall · ` +
       `${result.baseline.totalCostCents}¢ baseline route cost`;
@@ -234,8 +264,7 @@ export function startSupplyChainNowcastingPage({
     render();
   };
   const changeDisruptionSeverity = () => {
-    scenario.disruption.reductionPercent = Number(severitySelect.value);
-    render();
+    updateDisruptionSeverity(false);
   };
   const changeDisruptionDuration = () => {
     scenario.disruption.durationDays = Number(durationInput.value);
@@ -248,11 +277,49 @@ export function startSupplyChainNowcastingPage({
       );
     render();
   };
+  /** @param {string} text User-supplied JSON. @returns {void} Updates the active scenario only after validation. */
+  const importScenarioText = text => {
+    try {
+      const parsed = JSON.parse(text);
+      const candidate = scenarioFromParsedJson(parsed);
+      const validation = planSupplyChainFn(candidate);
+      if ('error' in validation) {
+        setDataStatus(dataStatus, validation.issues.join(' '), 'error');
+        return;
+      }
+      scenario = /** @type {SampleSupplyScenario} */ (candidate);
+      dataOrigin = 'Imported JSON scenario';
+      disrupted = scenario.disruption.reductionPercent > 0;
+      syncScenarioControls(documentObj, scenario);
+      scenarioJson.value = JSON.stringify(scenario, null, 2);
+      setDataStatus(dataStatus, 'Scenario imported and validated.', 'ready');
+      render();
+    } catch (error) {
+      setDataStatus(dataStatus, errorMessage(error), 'error');
+    }
+  };
+  const removeDataControlListeners = bindScenarioDataControls({
+    scenarioJson,
+    scenarioFile,
+    importButton,
+    exportButton,
+    dataStatus,
+    dataAdapters,
+    importScenarioText,
+    getScenario: () => scenario,
+    getPlan: () => latestPlan,
+    getDataOrigin: () => dataOrigin,
+  });
   const toggleDisruption = () => {
-    disrupted = !disrupted;
-    scenario.disruption.reductionPercent = disrupted
-      ? Number(severitySelect.value)
-      : 0;
+    updateDisruptionSeverity(true);
+  };
+  /** @param {boolean} shouldToggle Whether to flip the disruption active state. @returns {void} Applies the selected disruption severity. */
+  const updateDisruptionSeverity = shouldToggle => {
+    if (shouldToggle) disrupted = !disrupted;
+    scenario.disruption.reductionPercent = selectedDisruptionReduction(
+      severitySelect,
+      disrupted
+    );
     render();
   };
   warningSelect.addEventListener('change', changeWarningLead);
@@ -268,7 +335,226 @@ export function startSupplyChainNowcastingPage({
     severitySelect.removeEventListener('change', changeDisruptionSeverity);
     durationInput.removeEventListener('input', changeDisruptionDuration);
     rankingSelect.removeEventListener('change', changeRankingCriterion);
+    removeDataControlListeners();
     disruptionButton.removeEventListener('click', toggleDisruption);
+  };
+}
+
+/**
+ * @param {HTMLSelectElement} severitySelect Severity control.
+ * @param {boolean} disrupted Whether disruption is active.
+ * @returns {number} Active capacity reduction.
+ */
+function selectedDisruptionReduction(severitySelect, disrupted) {
+  return disrupted ? Number(severitySelect.value) : 0;
+}
+
+/**
+ * @param {Record<string, any>} controller Elements, adapters, and scenario accessors for data controls.
+ * @returns {() => void} Removes all installed data listeners.
+ */
+function bindScenarioDataControls(controller) {
+  const importPastedScenario = () =>
+    controller.importScenarioText(controller.scenarioJson.value);
+  const importScenarioFile = async () => {
+    const file = controller.scenarioFile.files?.[0];
+    if (!file) return;
+    try {
+      const readFileTextFn =
+        controller.dataAdapters.readFileTextFn ??
+        /** @type {(selectedFile: File) => Promise<string>} */ (
+          selectedFile => selectedFile.text()
+        );
+      controller.importScenarioText(await readFileTextFn(file));
+    } catch (error) {
+      setDataStatus(controller.dataStatus, errorMessage(error), 'error');
+    }
+  };
+  const exportResponsePlan = () => {
+    const plan = controller.getPlan();
+    if (!plan) {
+      setDataStatus(
+        controller.dataStatus,
+        'Correct the scenario before exporting.',
+        'error'
+      );
+      return;
+    }
+    if (!controller.dataAdapters.downloadPlanFn) {
+      setDataStatus(
+        controller.dataStatus,
+        'Plan download is unavailable.',
+        'error'
+      );
+      return;
+    }
+    try {
+      controller.dataAdapters.downloadPlanFn(
+        makeSupplyResponseExport(
+          controller.getScenario(),
+          plan,
+          controller.getDataOrigin()
+        )
+      );
+      setDataStatus(
+        controller.dataStatus,
+        'Auditable response plan exported.',
+        'ready'
+      );
+    } catch (error) {
+      setDataStatus(controller.dataStatus, errorMessage(error), 'error');
+    }
+  };
+  controller.importButton.addEventListener('click', importPastedScenario);
+  controller.scenarioFile.addEventListener('change', importScenarioFile);
+  controller.exportButton.addEventListener('click', exportResponsePlan);
+  return () => {
+    controller.importButton.removeEventListener('click', importPastedScenario);
+    controller.scenarioFile.removeEventListener('change', importScenarioFile);
+    controller.exportButton.removeEventListener('click', exportResponsePlan);
+  };
+}
+
+/**
+ * @param {Document} documentObj Browser document.
+ * @param {SampleSupplyScenario} scenario Scenario to reflect.
+ * @param {boolean} [selectSeverity] Whether to reflect severity in the control.
+ * @returns {void} Updates visible assumption controls.
+ */
+function syncScenarioControls(documentObj, scenario, selectSeverity = true) {
+  const routeSelect = /** @type {HTMLSelectElement|null} */ (
+    documentObj.querySelector('#disruption-route')
+  );
+  if (routeSelect) {
+    routeSelect.replaceChildren(
+      ...scenario.routes.map(route =>
+        makeOption(documentObj, route.id, route.id)
+      )
+    );
+    routeSelect.value = scenario.disruption.routeId;
+  }
+  if (selectSeverity)
+    setSelectValue(
+      documentObj,
+      '#disruption-severity',
+      scenario.disruption.reductionPercent,
+      `${scenario.disruption.reductionPercent}%`
+    );
+  setSelectValue(
+    documentObj,
+    '#warning-lead',
+    scenario.disruption.warningLeadDays,
+    `${scenario.disruption.warningLeadDays} days`
+  );
+  setSelectValue(
+    documentObj,
+    '#ranking-criterion',
+    scenario.rankingCriterion,
+    scenario.rankingCriterion
+  );
+  const durationInput = /** @type {HTMLInputElement|null} */ (
+    documentObj.querySelector('#disruption-duration')
+  );
+  if (durationInput)
+    durationInput.value = String(scenario.disruption.durationDays);
+}
+
+/**
+ * @param {Document} documentObj Browser document.
+ * @param {unknown} value Option value.
+ * @param {string} label Visible option text.
+ * @returns {HTMLOptionElement} New select option.
+ */
+function makeOption(documentObj, value, label) {
+  const option = documentObj.createElement('option');
+  option.value = String(value);
+  option.textContent = label;
+  return option;
+}
+
+/**
+ * @param {Document} documentObj Browser document.
+ * @param {string} selector Select query.
+ * @param {unknown} value Selected value.
+ * @param {string} label Fallback option label.
+ * @returns {void} Selects the requested option.
+ */
+function setSelectValue(documentObj, selector, value, label) {
+  const select = /** @type {HTMLSelectElement|null} */ (
+    documentObj.querySelector(selector)
+  );
+  if (!select) return;
+  const normalized = String(value);
+  if (![...select.options].some(option => option.value === normalized))
+    select.append(makeOption(documentObj, normalized, label));
+  select.value = normalized;
+}
+
+/**
+ * @param {unknown} parsed Parsed user value.
+ * @returns {unknown} Scenario object or envelope payload.
+ */
+function scenarioFromParsedJson(parsed) {
+  if (
+    parsed &&
+    typeof parsed === 'object' &&
+    !Array.isArray(parsed) &&
+    'scenario' in parsed
+  )
+    return parsed.scenario;
+  return parsed;
+}
+
+/**
+ * @param {HTMLElement} element Live status element.
+ * @param {string} message Status text.
+ * @param {'ready'|'error'} state Status category.
+ * @returns {void} Updates accessible feedback.
+ */
+function setDataStatus(element, message, state) {
+  element.textContent = message;
+  element.dataset.state = state;
+}
+
+/**
+ * @param {unknown} error Thrown parser, reader, or download error.
+ * @returns {string} Safe status message.
+ */
+function errorMessage(error) {
+  return error instanceof Error
+    ? error.message
+    : 'Could not read scenario data.';
+}
+
+/**
+ * @param {SampleSupplyScenario} scenario Base assumptions and mitigations.
+ * @param {Exclude<ReturnType<typeof planSupplyChain>, {error: string}>} plan Calculated response.
+ * @param {string} dataOrigin Scenario provenance label.
+ * @returns {SupplyResponseExport} Auditable export record.
+ */
+function makeSupplyResponseExport(scenario, plan, dataOrigin) {
+  return {
+    formatVersion: 1,
+    scenario,
+    baseline: plan.baseline,
+    signal: plan.signal,
+    rankingCriterion: plan.rankingCriterion,
+    rankedMitigations: plan.rankedMitigations,
+    assumptions: {
+      dataOrigin,
+      constraints: {
+        horizonDays: scenario.horizonDays,
+        suppliers: scenario.suppliers,
+        destination: scenario.destination,
+        routes: scenario.routes,
+      },
+      uncertaintyNotes: [
+        'Inputs and unit costs are user-supplied or synthetic assumptions.',
+        'No live disruption data, verified ETAs, or supplier availability is used.',
+      ],
+      advisoryOnly: true,
+      noExternalActionsTaken: true,
+    },
   };
 }
 

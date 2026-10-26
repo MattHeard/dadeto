@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { jest } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import { startSupplyChainNowcastingPage } from '../../../../src/core/browser/game/supply-chain-nowcasting/page.js';
 
@@ -26,6 +27,10 @@ function createPage(options = {}) {
   startSupplyChainNowcastingPage({
     documentObj: dom.window.document,
     ...options,
+    dataAdapters: {
+      readFileTextFn: options.readFileTextFn,
+      downloadPlanFn: options.downloadPlanFn,
+    },
   });
   return dom;
 }
@@ -68,7 +73,7 @@ test('renders the sample, then one-click disruption reveals ranked alternatives 
     '0 units total shortfall · 250¢ baseline route cost'
   );
   expect(document.querySelector('#scenario-status').textContent).toContain(
-    'Sample network ready'
+    'Synthetic sample ready'
   );
 
   document.querySelector('#disruption-button').click();
@@ -109,9 +114,12 @@ test('scenario controls update disruption, warning, and ranking assumptions', ()
       .querySelector(selector)
       .dispatchEvent(new Event('change', { bubbles: true }));
 
-  document.querySelector('#disruption-button').click();
   document.querySelector('#disruption-severity').value = '50';
   dispatchChange('#disruption-severity');
+  expect(document.querySelector('#baseline-result').textContent).toContain(
+    '0 units total shortfall'
+  );
+  document.querySelector('#disruption-button').click();
   expect(document.querySelector('#baseline-result').textContent).toContain(
     '10 units total shortfall'
   );
@@ -139,6 +147,176 @@ test('scenario controls update disruption, warning, and ranking assumptions', ()
   expect(document.querySelector('#network-routes').textContent).toContain(
     'Disrupted'
   );
+});
+
+test('imports valid pasted scenario JSON and round-trips the exported scenario envelope', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const source = JSON.parse(document.querySelector('#scenario-json').value);
+  source.disruption.durationDays = 4;
+  document.querySelector('#scenario-json').value = JSON.stringify(source);
+  document.querySelector('#import-scenario').click();
+
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'Scenario imported and validated'
+  );
+  expect(document.querySelector('#disruption-duration').value).toBe('4');
+  expect(document.querySelector('#scenario-status').textContent).toContain(
+    'Imported JSON scenario ready'
+  );
+
+  const exported = jest.fn();
+  const exportDom = createPage({ downloadPlanFn: exported });
+  exportDom.window.document.querySelector('#disruption-button').click();
+  exportDom.window.document.querySelector('#export-plan').click();
+  const record = exported.mock.calls[0][0];
+  expect(record).toMatchObject({
+    formatVersion: 1,
+    scenario: { disruption: { routeId: 'north-lane' } },
+    signal: { hypothetical: true },
+    rankingCriterion: 'shortfall-then-cost',
+    assumptions: {
+      dataOrigin: 'Synthetic sample',
+      advisoryOnly: true,
+      noExternalActionsTaken: true,
+      uncertaintyNotes: expect.any(Array),
+      constraints: { horizonDays: 5 },
+    },
+  });
+  expect(record.rankedMitigations).toHaveLength(3);
+
+  const roundTrip = createPage();
+  roundTrip.window.document.querySelector('#scenario-json').value =
+    JSON.stringify(record);
+  roundTrip.window.document.querySelector('#import-scenario').click();
+  expect(
+    roundTrip.window.document.querySelector('#data-status').textContent
+  ).toContain('Scenario imported and validated');
+  expect(
+    roundTrip.window.document.querySelector('#disruption-duration').value
+  ).toBe(String(record.scenario.disruption.durationDays));
+});
+
+test('rejects malformed or invalid JSON without replacing the active scenario', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const baselineBeforeImport =
+    document.querySelector('#baseline-result').textContent;
+  const scenarioJson = document.querySelector('#scenario-json');
+  const validScenario = JSON.parse(scenarioJson.value);
+  scenarioJson.value = '{';
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').dataset.state).toBe('error');
+  expect(document.querySelector('#baseline-result').textContent).toBe(
+    baselineBeforeImport
+  );
+
+  validScenario.destination.dailyDemandUnits = -1;
+  scenarioJson.value = JSON.stringify(validScenario);
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'Destination daily demand'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(
+    baselineBeforeImport
+  );
+});
+
+test('imports a JSON file through the injected file reader', async () => {
+  const dom = createPage({ readFileTextFn: file => file.text() });
+  const { document, Event } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  scenario.horizonDays = 2;
+  const source = JSON.stringify(scenario);
+  const input = document.querySelector('#scenario-file');
+  Object.defineProperty(input, 'files', {
+    configurable: true,
+    value: [{ text: async () => source }],
+  });
+  input.dispatchEvent(new Event('change'));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(document.querySelector('#data-status').dataset.state).toBe('ready');
+  expect(document.querySelector('#scenario-status').textContent).toContain(
+    'Imported JSON scenario'
+  );
+});
+
+test('ignores an empty file selection and uses the browser file reader by default', async () => {
+  const dom = createPage();
+  const { document, Event } = dom.window;
+  const input = document.querySelector('#scenario-file');
+  Object.defineProperty(input, 'files', {
+    configurable: true,
+    value: [],
+  });
+  input.dispatchEvent(new Event('change'));
+  expect(document.querySelector('#scenario-status').textContent).toContain(
+    'Synthetic sample ready'
+  );
+
+  const source = document.querySelector('#scenario-json').value;
+  Object.defineProperty(input, 'files', {
+    configurable: true,
+    value: [{ text: async () => source }],
+  });
+  input.dispatchEvent(new Event('change'));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'Scenario imported and validated'
+  );
+});
+
+test('reports file read errors without replacing the current scenario', async () => {
+  const dom = createPage({
+    readFileTextFn: async () => {
+      throw new Error('Local file could not be read.');
+    },
+  });
+  const { document, Event } = dom.window;
+  const baselineBeforeImport =
+    document.querySelector('#baseline-result').textContent;
+  const input = document.querySelector('#scenario-file');
+  Object.defineProperty(input, 'files', {
+    configurable: true,
+    value: [{ text: async () => '' }],
+  });
+  input.dispatchEvent(new Event('change'));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'Local file could not be read'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(
+    baselineBeforeImport
+  );
+});
+
+test('reports export errors and unavailable plans or download adapters', () => {
+  const unavailablePlan = createPage({
+    planSupplyChainFn: () => ({
+      error: 'invalid-input',
+      issues: ['Invalid sample.'],
+    }),
+  });
+  unavailablePlan.window.document.querySelector('#export-plan').click();
+  expect(
+    unavailablePlan.window.document.querySelector('#data-status').textContent
+  ).toContain('Correct the scenario');
+
+  const noAdapter = createPage();
+  noAdapter.window.document.querySelector('#export-plan').click();
+  expect(
+    noAdapter.window.document.querySelector('#data-status').textContent
+  ).toContain('Plan download is unavailable');
+
+  const failedDownload = createPage({
+    downloadPlanFn: () => {
+      throw 'download failed';
+    },
+  });
+  failedDownload.window.document.querySelector('#export-plan').click();
+  expect(
+    failedDownload.window.document.querySelector('#data-status').textContent
+  ).toContain('Could not read scenario data');
 });
 
 test('compares current response with early warning using identical sample data', () => {
@@ -252,6 +430,11 @@ test.each([
   'disruption-severity',
   'disruption-duration',
   'ranking-criterion',
+  'scenario-json',
+  'scenario-file',
+  'import-scenario',
+  'export-plan',
+  'data-status',
   'disruption-button',
   'scenario-status',
   'baseline-result',

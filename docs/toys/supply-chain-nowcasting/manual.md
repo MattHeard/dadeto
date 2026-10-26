@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, and incremental cost. Every result is a planning scenario, not a real forecast or procurement instruction.
+Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, and incremental cost. Paste a scenario JSON object or load a `.json` file to replace the sample; export downloads the full response record, which can be imported again. Every result is a planning scenario, not a real forecast or procurement instruction.
 
 ## Input
 
@@ -92,4 +92,4 @@ The planner returns baseline and candidate costs, daily inventory and unmet dema
 
 ## Behavior
 
-Run `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. The standalone browser presenter contains no network calls or browser storage. Pasting/uploading a user dataset, auditable plan export/import, and optional future-industry identifiers remain planned follow-up work.
+Run `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. Invalid JSON or invalid scenarios leave the current plan unchanged. The export includes the original scenario, baseline, hypothetical signal, every ranked option, ranking rule, constraints, provenance, and uncertainty notes. The standalone browser presenter contains no network calls or browser storage. CSV input and optional future-industry identifiers remain planned follow-up work.
