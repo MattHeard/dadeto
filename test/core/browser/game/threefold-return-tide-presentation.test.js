@@ -179,6 +179,15 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
       { ...tide, assemblySealPlanStatus: 'unavailable' },
       { ...facts(), intactMechanisms: ['seal'], availableFactions: [] }
     );
+    const unavailableDestroyedSeal = presentThreefoldReturnTide(
+      state,
+      {
+        ...tide,
+        assemblySealPlanStatus: 'unavailable',
+        brokenMechanisms: ['seal'],
+      },
+      facts()
+    );
     const legacyTide = normalizeThreefoldReturnTide({
       ...createThreefoldReturnTide(),
       assemblySealPlanStatus: undefined,
@@ -213,6 +222,7 @@ describe('THREEFOLD Return Tide accessible presentation', () => {
     );
     expect(interruptedSeal.text).toContain('Mara interrupted the Assembly');
     expect(unavailableSeal.text).toContain('no representative survived');
+    expect(unavailableDestroyedSeal.text).toContain('mechanism was destroyed');
     expect(legacyTide.assemblySealPlanStatus).toBe('legacy');
     expect(legacySeal.text).toContain(
       'had already risen before the Assembly plan was tracked'
