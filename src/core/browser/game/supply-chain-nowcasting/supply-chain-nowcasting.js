@@ -7,7 +7,7 @@
 /** @typedef {{horizonDays: number, suppliers: SupplySupplier[], destination: SupplyDestination, routes: SupplyRoute[], disruption: SupplyDisruption, rankingCriterion: 'shortfall-then-cost'|'cost-then-shortfall', mitigations: SupplyMitigation[], industryGraphReferences?: IndustryGraphReferences}} SupplyScenario */
 /** @typedef {{day: number, deliveries: number, inventoryUnits: number, unmetDemandUnits: number, costCents: number}} SupplyDailyResult */
 /** @typedef {{daily: SupplyDailyResult[], totalShortfallUnits: number, firstShortfallDay: number|null, totalCostCents: number}} SupplySimulation */
-/** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, minimumWarningLeadDays: number|null, shortfallAvoidedUnits: number, incrementalCostCents: number|null, reason: string|null}} RankedMitigation */
+/** @typedef {SupplyMitigation & {feasible: boolean, arrivalDay: number, minimumWarningLeadDays: number|null, shortfallAvoidedUnits: number, remainingShortfallUnits: number, incrementalCostCents: number|null, reason: string|null}} RankedMitigation */
 /** @typedef {{error: 'invalid-input', issues: string[]}} InvalidSupplyPlan */
 /** @typedef {{baseline: SupplySimulation, signal: {status: string, decisionDay: number, disruptionDay: number, leadTimeDays: number, hypothetical: true}, rankingCriterion: string, rankedMitigations: RankedMitigation[]}} SupplyPlan */
 
@@ -50,15 +50,16 @@ export function planSupplyChain(input) {
 
   const rankedMitigations = mitigations
     .map(mitigation => {
-      const arrivalDay = decisionDay + mitigation.leadTimeDays;
-      const minimumWarningLeadDays = warningRequiredForArrival(
-        mitigation.leadTimeDays,
-        disruption.startsDay,
-        horizonDays
-      );
       const route = mitigation.routeId
         ? routeById.get(mitigation.routeId)
         : undefined;
+      const leadTimeDays = mitigationLeadTime(mitigation, route);
+      const arrivalDay = decisionDay + leadTimeDays;
+      const minimumWarningLeadDays = warningRequiredForArrival(
+        leadTimeDays,
+        disruption.startsDay,
+        horizonDays
+      );
       const supplier = route
         ? suppliers.find(({ id }) => id === route.fromId)
         : undefined;
@@ -83,6 +84,7 @@ export function planSupplyChain(input) {
           arrivalDay,
           minimumWarningLeadDays,
           shortfallAvoidedUnits: 0,
+          remainingShortfallUnits: baseline.totalShortfallUnits,
           incrementalCostCents: null,
           reason: !capacityFeasible
             ? mitigation.kind === 'buffer'
@@ -98,6 +100,7 @@ export function planSupplyChain(input) {
         minimumWarningLeadDays,
         shortfallAvoidedUnits:
           baseline.totalShortfallUnits - candidate.totalShortfallUnits,
+        remainingShortfallUnits: candidate.totalShortfallUnits,
         incrementalCostCents:
           candidate.totalCostCents - baseline.totalCostCents,
         reason: null,
@@ -111,6 +114,18 @@ export function planSupplyChain(input) {
     rankingCriterion,
     rankedMitigations,
   };
+}
+
+/**
+ * Respect the route's fulfillment floor for capacity options.
+ * @param {SupplyMitigation} mitigation Validated response option.
+ * @param {SupplyRoute|undefined} route Selected route, absent for a buffer.
+ * @returns {number} Effective fulfillment lead time in days.
+ */
+function mitigationLeadTime(mitigation, route) {
+  if (mitigation.kind === 'buffer') return mitigation.leadTimeDays;
+  const selectedRoute = /** @type {SupplyRoute} */ (route);
+  return Math.max(mitigation.leadTimeDays, selectedRoute.leadTimeDays);
 }
 
 /**

@@ -1,0 +1,9 @@
+# Supply-chain remaining demand and route fulfillment
+
+A requirement audit found that the response table exposed only avoided shortfall, not the required remainder or an explicit warning when nothing could cover demand. A focused route fixture also demonstrated arrival on day 2 despite the selected route requiring day 5. Three regressions failed before the source change (116 other tests passed).
+
+The planner now uses the longer of route and option fulfillment lead times for capacity responses; a buffer keeps its own lead time even with an incidental route reference. Arrival and minimum-warning calculation use that effective lead. Every ranked result exports `remainingShortfallUnits`; infeasible options keep baseline shortfall. The presenter renders remainders and warns only for positive baseline shortfall with no feasible zero-remainder option. Tests include partial, absent, infeasible, complete, and zero-shortfall cases; current/early comparisons explicitly retain the same baseline.
+
+Evidence: focused 119 tests passed with full planner/presenter lines and branches, ESLint/core parse, and zero clones; focused Stryker killed all 22 new helper mutants; `npm run check` passed 10/10; build and cloud-test discovery passed. Earlier timing mutation evidence is preserved in `reports/mutation/supply-chain-nowcasting-warning.json`. Full Check40362213941 for the threshold commit and40365185613 for the create-only uploader succeeded.
+
+Next-time guidance: audit the actual UI against imported data, not only its sample state. Static five-day/Market labels were found during the same review and are the next bounded correction before the current-code cloud trace. `docs/toys/supply-chain-nowcasting/spec-audit.md` maps every live scope and acceptance item; do not mark browser evidence complete without the retained screenshot and interaction record. Owning Bead: dadeto-fbd1.

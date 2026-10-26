@@ -520,6 +520,7 @@ test('compares current response with early warning using identical sample data',
   const dom = createPage();
   const { document, Event } = dom.window;
   document.querySelector('#disruption-button').click();
+  const earlyBaseline = document.querySelector('#baseline-result').textContent;
   const earlyAvoided = document.querySelector('#mitigation-results').rows[0]
     .cells[6].textContent;
   expect(document.querySelector('#warning-signal').textContent).toContain(
@@ -533,6 +534,9 @@ test('compares current response with early warning using identical sample data',
     .cells[6].textContent;
   expect(document.querySelector('#warning-signal').textContent).toContain(
     'CURRENT RESPONSE'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(
+    earlyBaseline
   );
   expect(earlyAvoided).toBe('30 units');
   expect(currentAvoided).toBe('20 units');
@@ -579,6 +583,7 @@ test('provides fallback text for an infeasible result without a reason', () => {
           feasible: false,
           reason: null,
           shortfallAvoidedUnits: 0,
+          remainingShortfallUnits: 1,
           incrementalCostCents: null,
         },
       ],
@@ -613,6 +618,7 @@ test.each([
           feasible: false,
           reason,
           shortfallAvoidedUnits: 0,
+          remainingShortfallUnits: 1,
           incrementalCostCents: null,
         },
       ],
@@ -779,4 +785,52 @@ test('shows and exports minimum warning thresholds while keeping timing caveats 
         .minimumWarningLeadDays
     ).toBe(expected);
   }
+});
+
+test('shows remaining shortfall and warns when no feasible response covers demand', () => {
+  const downloadPlanFn = jest.fn();
+  const dom = createPage({ downloadPlanFn });
+  const { document } = dom.window;
+  document.querySelector('#disruption-button').click();
+  expect(document.querySelector('#scenario-status').textContent).toBe(
+    'Hypothetical disruption active. No supplier is contacted and no route is changed.'
+  );
+  const input = document.querySelector('#scenario-json');
+  const scenario = JSON.parse(input.value);
+  scenario.disruption.reductionPercent = 100;
+  const partial = {
+    id: 'partial-buffer',
+    kind: 'buffer',
+    bufferUnits: 10,
+    leadTimeDays: 0,
+    unitCostCents: 3,
+  };
+  scenario.mitigations = [partial];
+  input.value = JSON.stringify(scenario);
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#scenario-status').textContent).toContain(
+    'No feasible option covers all demand'
+  );
+  expect(
+    document.querySelector('#mitigation-results').rows[0].cells[7].textContent
+  ).toBe('20 units');
+  document.querySelector('#export-plan').click();
+  expect(
+    downloadPlanFn.mock.calls[0][0].rankedMitigations[0].remainingShortfallUnits
+  ).toBe(20);
+  for (const mitigations of [[], [{ ...partial, leadTimeDays: 99 }]]) {
+    scenario.mitigations = mitigations;
+    input.value = JSON.stringify(scenario);
+    document.querySelector('#import-scenario').click();
+    expect(document.querySelector('#scenario-status').textContent).toContain(
+      'No feasible option covers all demand'
+    );
+  }
+  scenario.disruption.reductionPercent = 0;
+  scenario.mitigations = [];
+  input.value = JSON.stringify(scenario);
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#scenario-status').textContent).toBe(
+    'Imported JSON scenario ready. Apply the disruption to compare response options.'
+  );
 });

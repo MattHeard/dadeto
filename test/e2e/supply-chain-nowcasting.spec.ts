@@ -37,6 +37,7 @@ test('sample disruption produces an inspectable response within two minutes', as
   await expect(lateOption).toContainText('Feasible');
   const firstOption = page.locator('#mitigation-results tr').first();
   await expect(firstOption).toContainText('30 units');
+  await expect(firstOption.getByRole('cell').nth(7)).toHaveText('0 units');
   await expect(firstOption).toContainText('Feasible');
   await expect(firstOption).toContainText('¢');
   await expect(page.locator('#warning-signal')).toContainText(
@@ -48,11 +49,18 @@ test('sample disruption produces an inspectable response within two minutes', as
     'CURRENT RESPONSE'
   );
   await expect(firstOption).toContainText('20 units');
+  await expect(firstOption.getByRole('cell').nth(7)).toHaveText('10 units');
+  await expect(page.locator('#scenario-status')).toContainText(
+    'No feasible option covers all demand'
+  );
   await expect(lateOption).toContainText('Arrives after the plan');
   await page.getByLabel('Warning lead time').selectOption('1');
   await expect(lateOption).toContainText('Arrives after the plan');
   await page.getByLabel('Warning lead time').selectOption('2');
   await expect(lateOption).toContainText('Feasible');
+  await expect(page.locator('#scenario-status')).not.toContainText(
+    'No feasible option covers all demand'
+  );
   await expect(firstOption).toContainText('30 units');
 
   const elapsedMs = Date.now() - started;

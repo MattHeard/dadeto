@@ -189,6 +189,7 @@ export function startSupplyChainNowcastingPage(dependencies) {
     status.textContent = disrupted
       ? 'Hypothetical disruption active. No supplier is contacted and no route is changed.'
       : `${dataOrigin} ready. Apply the disruption to compare response options.`;
+    status.textContent += demandCoverageWarning(result);
     baseline.textContent =
       `${result.baseline.totalShortfallUnits} units total shortfall · ` +
       `${result.baseline.totalCostCents}¢ baseline route cost`;
@@ -248,6 +249,7 @@ export function startSupplyChainNowcastingPage(dependencies) {
             : formatInfeasibleReason(candidate.reason)
         ),
         cell(documentObj, `${candidate.shortfallAvoidedUnits} units`),
+        cell(documentObj, `${candidate.remainingShortfallUnits} units`),
         cell(
           documentObj,
           candidate.incrementalCostCents === null
@@ -766,6 +768,21 @@ function makeSupplyResponseExport(scenario, plan, dataOrigin) {
       noExternalActionsTaken: true,
     },
   };
+}
+
+/**
+ * @param {Exclude<ReturnType<typeof planSupplyChain>, {error: string}>} plan Calculated response options.
+ * @returns {string} Warning when no feasible option covers the entire shortage.
+ */
+function demandCoverageWarning(plan) {
+  if (plan.baseline.totalShortfallUnits === 0) return '';
+  if (
+    plan.rankedMitigations.some(
+      candidate => candidate.feasible && candidate.remainingShortfallUnits === 0
+    )
+  )
+    return '';
+  return ' No feasible option covers all demand. Adjust capacity, timing, or demand assumptions.';
 }
 
 /**

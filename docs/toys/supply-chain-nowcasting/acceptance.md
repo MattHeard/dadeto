@@ -8,8 +8,9 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - [x] `npm run build` exits with status 0 when the standalone page is integrated.
 - [x] Focused Stryker evidence and review are recorded. The whole-planner run at `4c12c09` produced 486 mutants: 461 killed, 24 survived, 1 timeout. The new shared-allocation and sole-ID-diagnostic ranges then produced 26 mutants, all killed. Remaining earlier behavioral and diagnostic mutants are classified below. Reports: `reports/mutation/supply-chain-nowcasting-before-allocation.json` and `reports/mutation/mutation.json`.
 - [x] Response options show `minimumWarningLeadDays`, the minimum advance warning for arrival within the horizon (0 for current response; null when even day zero is too late). The table and exported plan preserve it and explain capacity/shortfall caveats.
-- [ ] Show each option's remaining shortfall and explicitly warn when no feasible option covers demand, as required by scope 4 of the live spec.
-- [ ] Verify and enforce that capacity mitigation arrival respects its route's fulfillment lead time as well as its own lead time.
+- [x] Show each option's remaining shortfall and explicitly warn when no feasible option covers demand, as required by scope 4 of the live spec.
+- [x] Capacity mitigation arrival respects both its route and option fulfillment lead times; buffers retain their independent timing.
+- [ ] Imported scenario provenance, horizon, destination and demand replace the static sample headings/summary; UI limits must agree with the documented import schema.
 - [ ] Cloud browser acceptance (`test/e2e/supply-chain-nowcasting.spec.ts`) records a sample network and one-click disruption with a useful plan in under two minutes, no signup, clear hypothetical warning labels, and no autonomous action.
 - [x] Export contains baseline, warning signal, ranked alternatives, ranking criterion, and all constraints/assumptions; optional JSON and CSV IDs round-trip without affecting calculations.
 - [x] Null supplier, route, and mitigation entries return explicit validation issues; multiple valid routes can be selected by disruption and mitigation IDs.
@@ -64,3 +65,9 @@ No mutation exclusions or scanner suppressions were introduced. The shared-suppl
 ## Shared artifact uploader repair
 
 The report uploader now uses explicit create-only JSON API POSTs under the existing `roles/storage.objectCreator` binding, with unique-prefix and no-overwrite preconditions. Filesystem, credential, and HTTP dependencies require AllowEffects. Focused uploader/workflow checks passed 20 tests and complete new-core line/branch coverage; the aggregate `npm run check` passed all 10 gates, and the build passed. See `notes/agents/2026-10-26-playwright-write-only-upload.md`. Actual report retention is not yet verified; finish the remaining demand/route-timing criteria before dispatching the next current-code cloud run.
+
+## Demand and route-arrival evidence
+
+New regressions first failed for missing remaining-shortfall fields, a missing partial-response warning, and day-2 capacity arrival on a route requiring day 5. The fixes passed 119 focused tests and full planner/presenter line/branch coverage, ESLint/core parse, and zero clones. All 22 new route-floor/demand-warning mutants were killed. The prior 23-mutant timing/label report is preserved as `reports/mutation/supply-chain-nowcasting-warning.json`. `npm run check` passed all 10 gates; the build and cloud-test discovery passed. Full Check `40362213941` (threshold commit) and `40365185613` (uploader commit) succeeded.
+
+The traceability audit is in `spec-audit.md`. It still requires retained current-code browser evidence and correction of static sample context after custom imports; the spec remains Active / Partial.

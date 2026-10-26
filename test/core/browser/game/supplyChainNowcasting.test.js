@@ -99,6 +99,11 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
   });
   expect(result.rankedMitigations[0].feasible).toBe(true);
   expect(
+    result.rankedMitigations.map(
+      ({ remainingShortfallUnits }) => remainingShortfallUnits
+    )
+  ).toEqual([0, 10, 30]);
+  expect(
     result.rankedMitigations
       .slice(0, 2)
       .map(({ incrementalCostCents }) => incrementalCostCents)
@@ -1044,4 +1049,56 @@ test('distinguishes no-warning timing from options that cannot fit even at day z
       feasible,
     });
   }
+});
+
+test('capacity arrival and its warning breakpoint respect the selected route lead time', () => {
+  for (const [
+    routeLead,
+    warningLeadDays,
+    arrivalDay,
+    minimumWarningLeadDays,
+    feasible,
+  ] of [
+    [3, 0, 5, 0, true],
+    [4, 0, 6, 1, false],
+    [4, 1, 5, 1, true],
+  ]) {
+    const result = planSupplyChain(
+      scenario({
+        routes: [{ ...scenario().routes[0], leadTimeDays: routeLead }],
+        disruption: { ...scenario().disruption, warningLeadDays },
+        mitigations: [{ ...scenario().mitigations[0], leadTimeDays: 0 }],
+      })
+    );
+    expect(result.error).toBeUndefined();
+    expect(result.rankedMitigations[0]).toMatchObject({
+      arrivalDay,
+      minimumWarningLeadDays,
+      feasible,
+    });
+  }
+});
+
+test('one-time buffers keep their own lead time even when they carry a route reference', () => {
+  const result = planSupplyChain(
+    scenario({
+      routes: [{ ...scenario().routes[0], leadTimeDays: 4 }],
+      mitigations: [
+        {
+          id: 'stock-on-hand',
+          kind: 'buffer',
+          routeId: 'north-lane',
+          bufferUnits: 10,
+          leadTimeDays: 0,
+          unitCostCents: 3,
+        },
+      ],
+    })
+  );
+  expect(result.error).toBeUndefined();
+  expect(result.rankedMitigations[0]).toMatchObject({
+    arrivalDay: 0,
+    minimumWarningLeadDays: 0,
+    feasible: true,
+  });
 });
