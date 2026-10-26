@@ -74,9 +74,12 @@ describe('Dynamic MUD page adapter', () => {
   });
 
   test('gracefully skips binding when a required page element is missing', () => {
-    expect(
-      startDynamicMudPage({ documentObj: { querySelector: () => null } })
-    ).toEqual(expect.any(Function));
+    const dispose = startDynamicMudPage({
+      documentObj: { querySelector: () => null },
+    });
+
+    expect(dispose).toEqual(expect.any(Function));
+    dispose();
   });
 
   test('shows a progress acknowledgement while an unknown command is proposed', async () => {
