@@ -298,6 +298,12 @@ describe('THREEFOLD page adapter', () => {
       '#witness-ledger',
       '#testimony',
       '#iri-repair-log',
+      '#iri-recorded-confession',
+      '#weftways-relay-record',
+      '#weftways-relay-disclosure',
+      '#weftways-relay-concealment',
+      '#weftways-independent-publication',
+      '#weftways-pell-outcome',
       '#silt-margin-quieting-evidence',
       '#episode-epilogue',
     ];
@@ -334,6 +340,12 @@ describe('THREEFOLD page adapter', () => {
     expect(nodes.get('#witness-ledger').hidden).toBe(true);
     expect(nodes.get('#testimony').hidden).toBe(true);
     expect(nodes.get('#iri-repair-log').hidden).toBe(true);
+    expect(nodes.get('#iri-recorded-confession').hidden).toBe(true);
+    expect(nodes.get('#weftways-relay-record').hidden).toBe(true);
+    expect(nodes.get('#weftways-relay-disclosure').hidden).toBe(true);
+    expect(nodes.get('#weftways-relay-concealment').hidden).toBe(true);
+    expect(nodes.get('#weftways-independent-publication').hidden).toBe(true);
+    expect(nodes.get('#weftways-pell-outcome').hidden).toBe(true);
     expect(nodes.get('#silt-margin-quieting-evidence').hidden).toBe(true);
     expect(nodes.get('#episode-epilogue').hidden).toBe(true);
   });
@@ -1545,6 +1557,24 @@ function collectText(nodes) {
     .map(node => `${node.textContent || ''}${collectText(node.children || [])}`)
     .join(' ');
 }
+
+test('configures alternate scenes when optional page elements are absent', () => {
+  const documentObj = { querySelector: () => null };
+
+  for (const scene of [
+    createThreefoldSiltMarginScene(),
+    createThreefoldLanternWardScene(),
+  ]) {
+    expect(() =>
+      startThreefoldPage({
+        documentObj,
+        scene,
+        windowObj: {},
+        navigatorObj: {},
+      })
+    ).not.toThrow();
+  }
+});
 
 test('names regional and campaign controls and announces unsaved progress', () => {
   mockStartMosslightPage.mockClear();

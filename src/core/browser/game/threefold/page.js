@@ -465,7 +465,8 @@ export function createThreefoldMenuRuntime(runtime, documentObj) {
     if (section === 'travel') {
       const destination = Object.keys(SCENE_LABELS)[action];
       const nextScene = sceneFromTravelDestination(destination);
-      if (nextScene) runtime.travelTo(nextScene);
+      // `action` indexes the menu generated from the same destination keys.
+      runtime.travelTo(nextScene);
       close();
       return;
     }

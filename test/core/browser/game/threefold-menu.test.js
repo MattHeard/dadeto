@@ -119,6 +119,40 @@ test('opens the empty field notes from the main menu using only the controls', (
   expect(text).toContain('> NO FIELD NOTES YET');
 });
 
+test('scrolls the guide menu and returns to the main menu from BACK', () => {
+  const { menu } = createMenuRuntime();
+  press(menu, 'y');
+  press(menu, 'down');
+  press(menu, 'a');
+
+  for (let index = 0; index < 9; index += 1) press(menu, 'down');
+  for (let index = 0; index < 10; index += 1) press(menu, 'up');
+
+  for (
+    let index = 0;
+    index < 30 && !menu.frame().shapes.some(shape => shape.text === '> BACK');
+    index += 1
+  ) {
+    press(menu, 'down');
+  }
+
+  expect(menu.frame().shapes.some(shape => shape.text === '> BACK')).toBe(true);
+  press(menu, 'a');
+  expect(menu.frame().shapes.some(shape => shape.text === '> RESUME')).toBe(
+    true
+  );
+});
+
+test('keeps the guide open when selecting an instructional row', () => {
+  const { menu } = createMenuRuntime();
+  press(menu, 'y');
+  press(menu, 'down');
+  press(menu, 'a');
+  press(menu, 'a');
+
+  expect(menu.frame().shapes.some(shape => shape.text === 'GUIDE')).toBe(true);
+});
+
 test('uses the default guide objective when the frame has no world name', () => {
   const { menu, runtime } = createMenuRuntime();
   runtime.frame.mockReturnValue({ shapes: [] });
@@ -484,6 +518,22 @@ test('the in-game travel menu preserves region navigation without a page selecto
     expect.objectContaining({ id: 'small-world-sluice' })
   );
   expect(menu.isRunning()).toBe(true);
+});
+
+test('every generated travel choice creates an authored region', () => {
+  for (let destination = 0; destination < 10; destination += 1) {
+    const { menu, runtime } = createMenuRuntime();
+    press(menu, 'y');
+    press(menu, 'down');
+    press(menu, 'down');
+    press(menu, 'a');
+    for (let index = 0; index < destination; index += 1) press(menu, 'down');
+    press(menu, 'a');
+
+    expect(runtime.travelTo).toHaveBeenCalledWith(
+      expect.objectContaining({ id: expect.any(String) })
+    );
+  }
 });
 
 test('the in-game saves menu keeps save, transfer, and backup actions available', () => {
