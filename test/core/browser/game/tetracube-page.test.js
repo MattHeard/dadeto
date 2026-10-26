@@ -117,22 +117,24 @@ describe('Tetracube standalone page', () => {
       querySelector: () => null,
       querySelectorAll: () => [],
     };
-    expect(
-      startTetracubePage({
-        documentObj,
-        windowObj: { addEventListener: jest.fn() },
-        requestFrame: jest.fn(),
-        cancelFrame: jest.fn(),
-      })
-    ).toEqual(expect.any(Function));
+    const dispose = startTetracubePage({
+      documentObj,
+      windowObj: { addEventListener: jest.fn() },
+      requestFrame: jest.fn(),
+      cancelFrame: jest.fn(),
+    });
+
+    expect(dispose).toEqual(expect.any(Function));
+    dispose();
   });
 
   test('reports an unavailable 2D canvas context', () => {
     const harness = makePageHarness();
     harness.canvas.getContext.mockReturnValue(null);
-    startTetracubePage(harness.environment);
+    const dispose = startTetracubePage(harness.environment);
     expect(harness.status.textContent).toContain('unavailable');
     expect(harness.requestFrame).not.toHaveBeenCalled();
+    dispose();
   });
 
   test('starts with an offer and renders the world to the responsive canvas', () => {
