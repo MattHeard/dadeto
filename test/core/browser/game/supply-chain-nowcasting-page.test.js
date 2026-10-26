@@ -17,6 +17,13 @@ const APP = readFileSync(
   ),
   'utf8'
 );
+const MANUAL = readFileSync(
+  new URL(
+    '../../../../docs/toys/supply-chain-nowcasting/manual.md',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 /**
  * @param {Record<string, any>} [options] Test dependencies.
@@ -195,6 +202,148 @@ test('imports valid pasted scenario JSON and round-trips the exported scenario e
   expect(
     roundTrip.window.document.querySelector('#disruption-duration').value
   ).toBe(String(record.scenario.disruption.durationDays));
+});
+
+test('imports record-oriented CSV including quoted commas through the planner', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  scenario.suppliers[0].id = 'north, "primary"';
+  scenario.routes[0].fromId = 'north, "primary"';
+  document.querySelector('#scenario-json').value = toCsv(scenario);
+  document.querySelector('#import-scenario').click();
+
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'CSV scenario imported and validated'
+  );
+  expect(document.querySelector('#scenario-status').textContent).toContain(
+    'Imported CSV scenario ready'
+  );
+  expect(document.querySelector('#network-routes').textContent).toContain(
+    'north, "primary"'
+  );
+});
+
+test('the documented CSV example imports as a valid scenario', () => {
+  const dom = createPage();
+  const csv = MANUAL.match(
+    /### CSV format[\s\S]*?```csv\n([\s\S]*?)\n```/
+  )?.[1];
+  expect(csv).toBeDefined();
+  dom.window.document.querySelector('#scenario-json').value = csv;
+  dom.window.document.querySelector('#import-scenario').click();
+  expect(
+    dom.window.document.querySelector('#data-status').textContent
+  ).toContain('CSV scenario imported and validated');
+});
+
+test.each([
+  ['wrong,header\nvalue', 'CSV must start with record,id columns'],
+  ['record,id\nmeta,"unfinished', 'CSV has an unclosed quoted field'],
+])(
+  'rejects invalid CSV (%s) without replacing the active scenario',
+  (csv, message) => {
+    const dom = createPage();
+    const { document } = dom.window;
+    const before = document.querySelector('#baseline-result').textContent;
+    document.querySelector('#scenario-json').value = csv;
+    document.querySelector('#import-scenario').click();
+    expect(document.querySelector('#data-status').textContent).toContain(
+      message
+    );
+    expect(document.querySelector('#data-status').dataset.state).toBe('error');
+    expect(document.querySelector('#baseline-result').textContent).toBe(before);
+  }
+);
+
+test('rejects malformed numeric CSV and unknown records without replacing active state', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  const before = document.querySelector('#baseline-result').textContent;
+  const invalidNumber = toCsv(scenario).replace('meta,,5,', 'meta,,bad,');
+  document.querySelector('#scenario-json').value = invalidNumber;
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'invalid horizonDays'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(before);
+
+  document.querySelector('#scenario-json').value =
+    `${toCsv(scenario)}\nother,unknown`;
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'unknown record type other'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(before);
+});
+
+test('imports a CSV file using the same validation path as pasted CSV', async () => {
+  const dom = createPage({ readFileTextFn: async file => file.contents });
+  const { document, Event } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  const input = document.querySelector('#scenario-file');
+  Object.defineProperty(input, 'files', {
+    configurable: true,
+    value: [{ contents: toCsv(scenario).replaceAll('\n', '\r\n') }],
+  });
+  input.dispatchEvent(new Event('change'));
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'CSV scenario imported and validated'
+  );
+});
+
+test.each([
+  ['', 'CSV must start with record,id columns'],
+  ['record,id\nmeta,,5,extra', 'has more values than its header'],
+  ['record,id\nmeta,"line\nbreak"', 'cannot contain line breaks'],
+])('rejects malformed CSV records (%s)', (csv, expected) => {
+  const dom = createPage();
+  const { document } = dom.window;
+  document.querySelector('#scenario-json').value = csv;
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    expected
+  );
+});
+
+test('rejects CSV with missing required numeric values without changing the plan', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  const before = document.querySelector('#baseline-result').textContent;
+  document.querySelector('#scenario-json').value = toCsv(scenario).replace(
+    'meta,,5,',
+    'meta,,, '
+  );
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'missing horizonDays'
+  );
+  expect(document.querySelector('#baseline-result').textContent).toBe(before);
+});
+
+test('requires unique singleton records and non-empty required text fields', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  const scenario = JSON.parse(document.querySelector('#scenario-json').value);
+  const csv = toCsv(scenario);
+  document.querySelector('#scenario-json').value =
+    `${csv}\nmeta,,5,shortfall-then-cost`;
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'exactly one meta record'
+  );
+
+  document.querySelector('#scenario-json').value = csv.replace(
+    'supplier,north,,,10',
+    'supplier,,,,10'
+  );
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').textContent).toContain(
+    'supplier is missing id'
+  );
 });
 
 test('rejects malformed or invalid JSON without replacing the active scenario', () => {
@@ -453,3 +602,64 @@ test('the presenter has no network or browser-storage effects', () => {
   expect(APP).not.toMatch(/\bfetch\s*\(/);
   expect(APP).not.toMatch(/localStorage|sessionStorage/);
 });
+
+/**
+ * Serialize scenario data to the documented CSV columns.
+ * @param {Record<string, any>} scenario Scenario object.
+ * @returns {string} CSV text.
+ */
+function toCsv(scenario) {
+  const columns = [
+    'record',
+    'id',
+    'horizonDays',
+    'rankingCriterion',
+    'capacityUnitsPerDay',
+    'unit',
+    'dailyDemandUnits',
+    'startingInventoryUnits',
+    'maxBufferUnits',
+    'fromId',
+    'toId',
+    'maxCapacityUnitsPerDay',
+    'leadTimeDays',
+    'unitCostCents',
+    'routeId',
+    'startsDay',
+    'durationDays',
+    'reductionPercent',
+    'warningLeadDays',
+    'kind',
+    'bufferUnits',
+  ];
+  const rows = [
+    {
+      record: 'meta',
+      horizonDays: scenario.horizonDays,
+      rankingCriterion: scenario.rankingCriterion,
+    },
+    ...scenario.suppliers.map(supplier => ({
+      record: 'supplier',
+      ...supplier,
+    })),
+    { record: 'destination', ...scenario.destination },
+    ...scenario.routes.map(route => ({ record: 'route', ...route })),
+    { record: 'disruption', ...scenario.disruption },
+    ...scenario.mitigations.map(mitigation => ({
+      record: 'mitigation',
+      ...mitigation,
+    })),
+  ];
+  return [columns, ...rows.map(row => columns.map(column => row[column] ?? ''))]
+    .map(row =>
+      row
+        .map(value => {
+          const text = String(value);
+          return /[",\r\n]/.test(text)
+            ? `"${text.replaceAll('"', '""')}"`
+            : text;
+        })
+        .join(',')
+    )
+    .join('\n');
+}

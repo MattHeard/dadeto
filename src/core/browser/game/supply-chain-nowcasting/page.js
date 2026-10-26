@@ -280,19 +280,28 @@ export function startSupplyChainNowcastingPage(dependencies) {
   /** @param {string} text User-supplied JSON. @returns {void} Updates the active scenario only after validation. */
   const importScenarioText = text => {
     try {
-      const parsed = JSON.parse(text);
-      const candidate = scenarioFromParsedJson(parsed);
+      const source = text.trimStart();
+      const isCsv = !source.startsWith('{');
+      const candidate = isCsv
+        ? scenarioFromCsv(text)
+        : scenarioFromParsedJson(JSON.parse(text));
       const validation = planSupplyChainFn(candidate);
       if ('error' in validation) {
         setDataStatus(dataStatus, validation.issues.join(' '), 'error');
         return;
       }
       scenario = /** @type {SampleSupplyScenario} */ (candidate);
-      dataOrigin = 'Imported JSON scenario';
+      dataOrigin = isCsv ? 'Imported CSV scenario' : 'Imported JSON scenario';
       disrupted = scenario.disruption.reductionPercent > 0;
       syncScenarioControls(documentObj, scenario);
       scenarioJson.value = JSON.stringify(scenario, null, 2);
-      setDataStatus(dataStatus, 'Scenario imported and validated.', 'ready');
+      setDataStatus(
+        dataStatus,
+        isCsv
+          ? 'CSV scenario imported and validated.'
+          : 'Scenario imported and validated.',
+        'ready'
+      );
       render();
     } catch (error) {
       setDataStatus(dataStatus, errorMessage(error), 'error');
@@ -503,6 +512,181 @@ function scenarioFromParsedJson(parsed) {
   )
     return parsed.scenario;
   return parsed;
+}
+
+/**
+ * Convert the documented record-oriented CSV dialect to planner input.
+ * @param {string} text CSV source.
+ * @returns {SampleSupplyScenario} Parsed scenario.
+ */
+function scenarioFromCsv(text) {
+  const [header, ...records] = parseCsvRows(text);
+  const columns = header?.map(value => value.trim()) ?? [];
+  if (columns[0] !== 'record' || columns[1] !== 'id')
+    throw new Error('CSV must start with record,id columns.');
+  const rows = records.filter(row => row.some(value => value.trim() !== ''));
+  /**
+   * @param {string[]} row CSV cells.
+   * @returns {Record<string, string>} Column values.
+   */
+  const values = row =>
+    Object.fromEntries(
+      columns.map((column, index) => [column, row[index]?.trim() ?? ''])
+    );
+  /** @type {Record<string, string>[]} */
+  const parsedRows = rows.map((row, index) => {
+    if (row.length > columns.length)
+      throw new Error(`CSV row ${index + 2} has more values than its header.`);
+    return values(row);
+  });
+  /**
+   * @param {string} name Record kind.
+   * @returns {Record<string, string>} The single matching record.
+   */
+  const getOne = name => {
+    const matches = parsedRows.filter(row => row.record === name);
+    if (matches.length !== 1)
+      throw new Error(`CSV must contain exactly one ${name} record.`);
+    return matches[0];
+  };
+  /**
+   * @param {Record<string, string>} row CSV record.
+   * @param {string} field Numeric field.
+   * @returns {number} Parsed number.
+   */
+  const number = (row, field) => {
+    if (row[field] === '')
+      throw new Error(`CSV ${row.record} is missing ${field}.`);
+    const value = Number(row[field]);
+    if (!Number.isFinite(value))
+      throw new Error(`CSV ${row.record} has invalid ${field}.`);
+    return value;
+  };
+  /**
+   * @param {Record<string, string>} row CSV record.
+   * @param {string} field Required text field.
+   * @returns {string} Non-empty text.
+   */
+  const textValue = (row, field) => {
+    if (!row[field]) throw new Error(`CSV ${row.record} is missing ${field}.`);
+    return row[field];
+  };
+  const meta = getOne('meta');
+  const destination = getOne('destination');
+  const disruption = getOne('disruption');
+  /**
+   * @param {string} kind Record type.
+   * @returns {Record<string, string>[]} Matching records.
+   */
+  const entityRows = kind => parsedRows.filter(row => row.record === kind);
+  const unknownType = parsedRows.find(
+    row =>
+      ![
+        'meta',
+        'supplier',
+        'destination',
+        'route',
+        'disruption',
+        'mitigation',
+      ].includes(row.record)
+  );
+  if (unknownType)
+    throw new Error(`CSV has unknown record type ${unknownType.record}.`);
+  return {
+    horizonDays: number(meta, 'horizonDays'),
+    rankingCriterion: /** @type {SampleSupplyScenario['rankingCriterion']} */ (
+      textValue(meta, 'rankingCriterion')
+    ),
+    suppliers: entityRows('supplier').map(row => ({
+      id: textValue(row, 'id'),
+      capacityUnitsPerDay: number(row, 'capacityUnitsPerDay'),
+      unit: textValue(row, 'unit'),
+    })),
+    destination: {
+      id: textValue(destination, 'id'),
+      dailyDemandUnits: number(destination, 'dailyDemandUnits'),
+      startingInventoryUnits: number(destination, 'startingInventoryUnits'),
+      maxBufferUnits: number(destination, 'maxBufferUnits'),
+      unit: textValue(destination, 'unit'),
+    },
+    routes: entityRows('route').map(row => ({
+      id: textValue(row, 'id'),
+      fromId: textValue(row, 'fromId'),
+      toId: textValue(row, 'toId'),
+      capacityUnitsPerDay: number(row, 'capacityUnitsPerDay'),
+      maxCapacityUnitsPerDay: number(row, 'maxCapacityUnitsPerDay'),
+      leadTimeDays: number(row, 'leadTimeDays'),
+      unitCostCents: number(row, 'unitCostCents'),
+    })),
+    disruption: {
+      routeId: textValue(disruption, 'routeId'),
+      startsDay: number(disruption, 'startsDay'),
+      durationDays: number(disruption, 'durationDays'),
+      reductionPercent: number(disruption, 'reductionPercent'),
+      warningLeadDays: number(disruption, 'warningLeadDays'),
+    },
+    mitigations: entityRows('mitigation').map(row => ({
+      id: textValue(row, 'id'),
+      kind: /** @type {'capacity'|'buffer'} */ (textValue(row, 'kind')),
+      routeId: row.routeId || undefined,
+      capacityUnitsPerDay: optionalNumber(row, 'capacityUnitsPerDay', number),
+      bufferUnits: optionalNumber(row, 'bufferUnits', number),
+      leadTimeDays: number(row, 'leadTimeDays'),
+      unitCostCents: number(row, 'unitCostCents'),
+    })),
+  };
+}
+
+/**
+ * Parse comma-separated records with quoted commas and escaped quote support.
+ * Newlines inside quoted fields are rejected because this compact dataset has
+ * no multiline text fields.
+ * @param {string} text CSV source.
+ * @returns {string[][]} Parsed rows.
+ */
+function parseCsvRows(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index];
+    if (quoted) {
+      if (character === '"' && text[index + 1] === '"') {
+        field += '"';
+        index += 1;
+      } else if (character === '"') quoted = false;
+      else if (character === '\n' || character === '\r')
+        throw new Error('CSV quoted fields cannot contain line breaks.');
+      else field += character;
+    } else if (character === '"' && field === '') quoted = true;
+    else if (character === ',') {
+      row.push(field);
+      field = '';
+    } else if (character === '\n' || character === '\r') {
+      if (character === '\r' && text[index + 1] === '\n') index += 1;
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+    } else field += character;
+  }
+  if (quoted) throw new Error('CSV has an unclosed quoted field.');
+  if (field !== '' || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+/**
+ * @param {Record<string, string>} row CSV record.
+ * @param {string} field Column name.
+ * @param {(row: Record<string, string>, field: string) => number} parseNumber Numeric parser.
+ * @returns {number|undefined} Optional value.
+ */
+function optionalNumber(row, field, parseNumber) {
+  return row[field] === '' ? undefined : parseNumber(row, field);
 }
 
 /**

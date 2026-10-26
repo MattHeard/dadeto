@@ -70,13 +70,13 @@
           <h2 id="data-heading">Paste or load a JSON network</h2>
           <p>Use the documented scenario shape below. A failed import leaves the current plan unchanged.</p>
         </div>
-        <label for="scenario-json">Scenario JSON</label>
+        <label for="scenario-json">Scenario JSON or CSV</label>
         <textarea id="scenario-json" name="scenario-json" rows="8" spellcheck="false" aria-describedby="scenario-json-help"></textarea>
-        <p id="scenario-json-help" class="field-help">Import replaces the active synthetic sample after validation.</p>
+        <p id="scenario-json-help" class="field-help">Paste a JSON scenario or the documented record-oriented CSV. Import replaces the active sample only after validation.</p>
         <div class="file-actions">
-          <label for="scenario-file">Load JSON file</label>
-          <input id="scenario-file" name="scenario-file" type="file" accept="application/json,.json" />
-          <button id="import-scenario" type="button">Import JSON</button>
+          <label for="scenario-file">Load JSON or CSV file</label>
+          <input id="scenario-file" name="scenario-file" type="file" accept="application/json,.json,text/csv,.csv" />
+          <button id="import-scenario" type="button">Import scenario</button>
           <button id="export-plan" type="button" class="secondary-button">Export response plan</button>
         </div>
         <p id="data-status" data-state="ready" role="status" aria-live="polite">Synthetic sample loaded; nothing is uploaded.</p>

@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, and incremental cost. Paste a scenario JSON object or load a `.json` file to replace the sample; export downloads the full response record, which can be imported again. Every result is a planning scenario, not a real forecast or procurement instruction.
+Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, and incremental cost. Paste a scenario JSON object or the record-oriented CSV below, or load a `.json` or `.csv` file to replace the sample after validation. Export downloads the full JSON response record, which can be imported again. Every result is a planning scenario, not a real forecast or procurement instruction.
 
 ## Input
 
@@ -90,6 +90,25 @@ The planner returns baseline and candidate costs, daily inventory and unmet dema
 }
 ```
 
+### CSV format
+
+CSV uses one record per row and the exact column names below. Leave fields that do not apply empty. Required records are one `meta`, one `destination`, one `disruption`, at least one `supplier`, at least one `route`, and one or more `mitigation` rows. Text fields support commas when quoted and escaped quotes (`""`); quoted fields cannot contain line breaks. The planner validates references, units, ranges and feasibility before the active scenario changes.
+
+```csv
+record,id,horizonDays,rankingCriterion,capacityUnitsPerDay,unit,dailyDemandUnits,startingInventoryUnits,maxBufferUnits,fromId,toId,maxCapacityUnitsPerDay,leadTimeDays,unitCostCents,routeId,startsDay,durationDays,reductionPercent,warningLeadDays,kind,bufferUnits
+meta,,5,shortfall-then-cost
+supplier,north,,,10,units/day
+supplier,south,,,10,units/day
+destination,market,,,,units/day,10,10,10
+route,north-lane,,,10,,,,,north,market,10,0,5
+route,south-lane,,,0,,,,,south,market,10,0,9
+disruption,,,,,,,,,,,,,,north-lane,2,3,100,2
+mitigation,alternate-supplier,,,10,,,,,,,,2,10,south-lane,,,,,capacity
+mitigation,emergency-buffer,,,,,,,,,,,1,3,,,,,,buffer,10
+```
+
+CSV numeric fields are plain numbers in the documented units. Rows may be reordered after the header. Duplicate or missing required singleton records, malformed quoting, missing values and planner validation errors are shown inline; an invalid import leaves the current plan active.
+
 ## Behavior
 
-Run `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. Invalid JSON or invalid scenarios leave the current plan unchanged. The export includes the original scenario, baseline, hypothetical signal, every ranked option, ranking rule, constraints, provenance, and uncertainty notes. The standalone browser presenter contains no network calls or browser storage. CSV input and optional future-industry identifiers remain planned follow-up work.
+Run `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js`. The pure planner performs no network calls and never executes mitigations. Invalid IDs, units, route directions, capacity, and lead times return explicit issues. Invalid JSON, CSV, or planner scenarios leave the current plan unchanged. The export includes the original scenario, baseline, hypothetical signal, every ranked option, ranking rule, constraints, provenance, and uncertainty notes. The standalone browser presenter contains no network calls or browser storage. Optional future-industry identifiers remain follow-up work.
