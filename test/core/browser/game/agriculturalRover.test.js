@@ -260,3 +260,262 @@ test('leaves supplied assumptions unchanged during estimation and sensitivity an
   compareRoverScenarios(input);
   expect(input).toEqual(before);
 });
+
+test.each([
+  ['areaSquareMeters', 'Area in square metres', 'positive'],
+  ['operatingWindowMinutes', 'Operating window in minutes', 'positive'],
+  [
+    'baseline.laborHoursPerHectare',
+    'Baseline labor hours per hectare',
+    'nonnegative',
+  ],
+  [
+    'baseline.hourlyCostCents',
+    'Baseline hourly labor cost in cents',
+    'nonnegative',
+  ],
+  ['rover.machineCount', 'Rover count', 'integer'],
+  [
+    'rover.effectiveCoverageSquareMetersPerHour',
+    'Effective coverage in square metres per rover-hour',
+    'positive',
+  ],
+  ['rover.batteryRuntimeMinutes', 'Battery runtime in minutes', 'positive'],
+  ['rover.chargeMinutes', 'Charge time in minutes', 'nonnegative'],
+  ['rover.downtimePercent', 'Downtime percent', 'percent'],
+  [
+    'rover.supervisionHoursPerMachineHour',
+    'Supervision worker-hours per rover-hour',
+    'nonnegative',
+  ],
+  [
+    'rover.interventionsPerMachineHour',
+    'Interventions per rover-hour',
+    'nonnegative',
+  ],
+  ['rover.interventionMinutes', 'Intervention minutes', 'nonnegative'],
+  [
+    'rover.operatorHourlyCostCents',
+    'Operator hourly cost in cents',
+    'nonnegative',
+  ],
+  [
+    'rover.operatingCostCentsPerMachineHour',
+    'Operating cost in cents per rover-hour',
+    'nonnegative',
+  ],
+  ['rover.upfrontCostCents', 'Upfront cost in cents', 'nonnegative'],
+  ['rover.comparableJobs', 'Comparable jobs', 'integer'],
+])('validation names %s and its unit/range', (path, label, range) => {
+  const input = scenario();
+  const parts = path.split('.');
+  const parent = parts.length === 1 ? input : input[parts[0]];
+  const field = parts.at(-1);
+  const suffix = {
+    positive: 'must be greater than zero.',
+    nonnegative: 'must be zero or greater.',
+    integer: 'must be a positive whole number.',
+    percent: 'must be at least zero and less than 100.',
+  }[range];
+  for (const invalid of [-1, NaN, Infinity]) {
+    parent[field] = invalid;
+    expect(validateRoverInput(input)).toEqual([`${label} ${suffix}`]);
+  }
+  parent[field] = range === 'positive' || range === 'integer' ? 1 : 0;
+  expect(validateRoverInput(input)).toEqual([]);
+});
+
+test('invalid shapes and identifiers retain actionable errors', () => {
+  expect(validateRoverInput('weeding')).toEqual(['Provide a scenario object.']);
+  expect(validateRoverInput(scenario({ baseline: 3 }))).toEqual([
+    'Provide baseline labor assumptions.',
+  ]);
+  expect(validateRoverInput(scenario({ rover: 3 }))).toEqual([
+    'Provide hypothetical rover assumptions.',
+  ]);
+  expect(validateRoverInput(scenario({ jobType: 'harvesting' }))).toEqual([
+    'Job type must be weeding.',
+  ]);
+  expect(
+    validateRoverInput(
+      scenario({ baseline: { ...scenario().baseline, evidence: 'claimed' } })
+    )
+  ).toEqual(['Baseline evidence must be observed or assumed.']);
+  for (const references of [null, 3, []]) {
+    expect(
+      validateRoverInput(scenario({ baselineReferences: references }))
+    ).toEqual(['Baseline references must be a field-to-id object.']);
+  }
+  expect(
+    validateRoverInput(scenario({ baselineReferences: { region: 'west' } }))
+  ).toEqual([
+    'Baseline reference region must be an optional supported identifier.',
+  ]);
+  expect(
+    validateRoverInput(
+      scenario({
+        baselineReferences: {
+          sector: 's',
+          subsector: 'ss',
+          organization: 'o',
+          offering: 'of',
+          process: 'p',
+          input: 'i',
+          output: 'out',
+        },
+      })
+    )
+  ).toEqual([]);
+});
+
+test.each([
+  [
+    'conservative',
+    {
+      effectiveCoverageSquareMetersPerHour: 3750,
+      downtimePercent: 30,
+      interventionsPerMachineHour: 0.625,
+      operatingCostCentsPerMachineHour: 1150,
+      supervisionHoursPerMachineHour: 0.3125,
+    },
+  ],
+  ['base', {}],
+  [
+    'optimistic',
+    {
+      effectiveCoverageSquareMetersPerHour: 6250,
+      downtimePercent: 10,
+      interventionsPerMachineHour: 0.375,
+      operatingCostCentsPerMachineHour: 850,
+      supervisionHoursPerMachineHour: 0.1875,
+    },
+  ],
+])(
+  '%s sensitivity adjusts every cost and capacity assumption',
+  (name, assumptions) => {
+    expect(compareRoverScenarios(scenario())[name]).toEqual(
+      estimateRoverFeasibility(
+        scenario({
+          rover: { ...scenario().rover, ...assumptions },
+        })
+      )
+    );
+  }
+);
+
+test.each([
+  [
+    0,
+    'optimistic',
+    {
+      downtimePercent: 0,
+      effectiveCoverageSquareMetersPerHour: 6250,
+      interventionsPerMachineHour: 0.375,
+      operatingCostCentsPerMachineHour: 850,
+      supervisionHoursPerMachineHour: 0.1875,
+    },
+  ],
+  [
+    99.95,
+    'conservative',
+    {
+      downtimePercent: 99.9,
+      effectiveCoverageSquareMetersPerHour: 3750,
+      interventionsPerMachineHour: 0.625,
+      operatingCostCentsPerMachineHour: 1150,
+      supervisionHoursPerMachineHour: 0.3125,
+    },
+  ],
+])(
+  'sensitivity clamps downtime %s at the valid boundary',
+  (downtime, name, assumptions) => {
+    const input = scenario({
+      rover: { ...scenario().rover, downtimePercent: downtime },
+    });
+    expect(compareRoverScenarios(input)[name]).toEqual(
+      estimateRoverFeasibility(
+        scenario({
+          rover: {
+            ...input.rover,
+            ...assumptions,
+          },
+        })
+      )
+    );
+  }
+);
+
+test('break-even coverage brackets the strict rounded-cent saving boundary', () => {
+  const input = scenario();
+  const threshold = minimumBreakEvenCoverage(input);
+  expect(threshold).toBeGreaterThan(0);
+  const at = coverage =>
+    estimateRoverFeasibility(
+      scenario({
+        rover: {
+          ...input.rover,
+          effectiveCoverageSquareMetersPerHour: coverage,
+        },
+      })
+    );
+  expect(at(threshold).roverVariableCostCents).toBeLessThan(25_000);
+  expect(
+    at(threshold * 0.999999).roverVariableCostCents
+  ).toBeGreaterThanOrEqual(25_000);
+  expect(
+    minimumBreakEvenCoverage(
+      scenario({
+        rover: {
+          ...input.rover,
+          effectiveCoverageSquareMetersPerHour: 0.0000001,
+        },
+      })
+    )
+  ).toBeCloseTo(threshold, 6);
+  expect(
+    minimumBreakEvenCoverage(
+      scenario({
+        baseline: {
+          ...input.baseline,
+          laborHoursPerHectare: 0.3,
+        },
+      })
+    )
+  ).toBeNull();
+});
+
+test('operating-cost parity subtracts supervision and divides by total rover-hours', () => {
+  expect(maximumBreakEvenOperatingCost(scenario())).toBe(11375);
+  expect(
+    maximumBreakEvenOperatingCost(
+      scenario({
+        baseline: {
+          ...scenario().baseline,
+          laborHoursPerHectare: 0.9,
+        },
+      })
+    )
+  ).toBe(0);
+});
+
+test('finite-window coverage accounts for parallel rovers and admits an exact fit', () => {
+  const input = scenario({ operatingWindowMinutes: 60 });
+  expect(estimateRoverFeasibility(input).coveredAreaSquareMeters).toBeCloseTo(
+    5333.333333333333,
+    8
+  );
+  expect(
+    estimateRoverFeasibility(scenario({ operatingWindowMinutes: 112.5 }))
+      .fitsOperatingWindow
+  ).toBe(true);
+  expect(
+    estimateRoverFeasibility(
+      scenario({
+        baseline: {
+          ...input.baseline,
+          hourlyCostCents: 425,
+        },
+      })
+    ).breakEvenJobs
+  ).toBeNull();
+});

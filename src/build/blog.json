@@ -14,6 +14,18 @@
           "src": "/manuals/agricultural-rover.md"
         }
       ],
+      "relatedLinks": [
+        {
+          "url": "/agricultural-rover/",
+          "title": "Open the rover feasibility tool",
+          "type": "tool"
+        },
+        {
+          "url": "/industrial-heat-pump-readiness/",
+          "title": "Explore heat-pump retrofit screening",
+          "type": "tool"
+        }
+      ],
       "tags": ["toy", "agriculture", "robotics", "decision-support"]
     },
     {
@@ -44,6 +56,18 @@
           "id": "HTHP1-manual",
           "title": "Field guide",
           "src": "/manuals/industrial-heat-pump-readiness.md"
+        }
+      ],
+      "relatedLinks": [
+        {
+          "url": "/industrial-heat-pump-readiness/",
+          "title": "Open the heat-pump screening tool",
+          "type": "tool"
+        },
+        {
+          "url": "/agricultural-rover/",
+          "title": "Explore agricultural rover feasibility",
+          "type": "tool"
         }
       ],
       "tags": ["toy", "energy", "industrial-heat", "screening"]

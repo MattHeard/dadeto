@@ -29,3 +29,9 @@
 - Root cause: shared database lock state is external to this worktree and cannot safely be repaired from the passive export.
 - Fix implemented: none; retain the existing Bead as owner and preserve the exact failure as an operational blocker.
 - Guardrail added (test/doc/harness): do not remove the lock or reinitialize from stale JSONL; retry the canonical Bead before closure.
+
+- Date: 2026-10-26
+- Failure observed: the first actual mutation run left 55 survivors despite complete branch coverage; the catalogue also mentioned standalone routes without making them clickable.
+- Diagnosis: directional assertions missed exact component adjustments, validation messages, cent-rounded parity, fleet capacity and equality boundaries. Route strings alone did not prove navigation.
+- Fix implemented: explicit unit/range errors, malformed nested-input cases, complete sensitivity comparison, independently checked cost/capacity arithmetic, strict saving and exact-fit boundaries, plus actual-generator anchor regressions and accessible adjacent-tool navigation.
+- Guardrail: use the retained scoped mutation config and inspect individual outcomes. Current residual: one extra-bisection-iteration survivor, one nonterminating-loop timeout, five unchanged static ignores. Do not report zero survivors or infer human usability from automated evidence.

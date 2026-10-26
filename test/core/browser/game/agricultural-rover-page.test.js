@@ -47,6 +47,17 @@ test('publishes the rover comparison as an immediately editable standalone page'
   expect(MODEL).toContain('optimistic:');
 });
 
+test('offers an accessible link to the adjacent heat-pump decision tool', () => {
+  const document = new JSDOM(PAGE).window.document;
+  const related = document.querySelector(
+    'nav[aria-label="Related decision tools"]'
+  );
+  const link = related.querySelector(
+    'a[href="/industrial-heat-pump-readiness/"]'
+  );
+  expect(link.textContent).toContain('Screen a process heat-pump retrofit');
+});
+
 test('keeps the local calculation free of remote APIs and browser storage', () => {
   expect(PAGE_CONTROLLER).not.toMatch(/\bfetch\s*\(/);
   expect(PAGE_CONTROLLER).not.toMatch(/localStorage|sessionStorage/);

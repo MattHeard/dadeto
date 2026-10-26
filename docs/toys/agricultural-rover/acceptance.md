@@ -35,3 +35,17 @@
 - The current loop passes only when the deterministic model slice, tests, and required toy docs are complete and required local checks succeed.
 - The overall spec remains open until the interactive toy and user-facing acceptance items above are delivered.
 - Fail when an evaluator exits non-zero, a required behavior is untested, or the implementation presents a scenario assumption as observed evidence.
+
+## 2026-10-26 discoverability and mutation follow-up
+
+- Owning loop: `dadeto-on0j`; real novice trial remains separately owned by `dadeto-61cr`.
+- The catalogue now emits readable anchor links to both `/agricultural-rover/` and `/industrial-heat-pump-readiness/`, with cross-links between the two entries. The rover standalone page adds accessible adjacent-tool navigation. Both beta release settings are preserved.
+- Focused model, presenter and actual catalogue-generator tests passed 3 suites / 69 tests. Both rover core files have 100% statements, branches, functions and lines in `/tmp/rover-2026-10-26-coverage/coverage-final.json`.
+- Full-model scoped Stryker improved from 185 killed / 55 survived / 1 timeout to **239 killed / 1 survived / 1 timeout**, plus 5 static mutants ignored by the unchanged shared `ignoreStatic` setting. Reports: `reports/mutation/agricultural-rover.json`; initial report retained at `/tmp/rover-mutation-initial.json` for this loop.
+- The remaining survivor changes `step < 64` to `step <= 64` in coverage-threshold bisection. Four inspected threshold scenarios (initial coverage `1e-7`, `1`, `5000`, `100000`) returned exactly the same bound after the extra iteration. This is recorded as a remaining precision-related survivor, not a proof of universal equivalence or zero surviving mutants. The `step--` mutant timed out because it makes the loop nonterminating; it is not counted as killed.
+- `npm run lint`, `npm run build`, `npm run manuals:check` (85 manuals), generated anchor inspection and `git diff --check` passed. The scoped configuration is retained in this toy's harness.
+- A real novice-under-two-minute trial is still missing. Automated input tests and mutation results do not establish that acceptance item.
+
+The remaining bisection precision question is tracked separately in `dadeto-ggr0`; it is not silently treated as resolved by this mutation-evidence loop.
+
+Final local gate: `npm run check` passed all 10 gates (six serial impact-test shards, no coverage instrumentation), with zero reported clones. Log: `/tmp/dadeto-rover-2026-10-26-check.log`. This does not replace asynchronous Full Check coverage/E2E evidence.

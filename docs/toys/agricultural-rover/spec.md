@@ -3,13 +3,13 @@
 ## Summary
 - Toy name: Agricultural Rover
 - Owner: Dadeto product engineering
-- Last updated: 2026-10-23
+- Last updated: 2026-10-26
 
 ## Problem Statement
 Help a reader explore when a hypothetical autonomous weeding rover could fit a field job and compare its time and cost with an existing manual process. The model makes assumptions visible and does not present synthetic inputs as field evidence.
 
 ## Boundary
-The calculation is a pure deterministic browser-core model. A future browser presenter may collect inputs and display results, but this first slice has no network, persistence, provider, or hardware integration.
+The calculation is a pure deterministic browser-core model. The client-only presenter collects explicit assumptions, displays the comparison and thresholds, and exports or imports a recalculated readiness brief. It has no network, account, provider, or hardware integration.
 
 ## Scope
 - In scope: explicit SI area and time units; manual labor baseline marked observed or assumed; fleet size, effective throughput, battery and charging, downtime, supervision, interventions, operating and hypothetical capital costs; operating-window capacity; labeled conservative/base/optimistic sensitivity; break-even thresholds; optional baseline entity identifiers.
