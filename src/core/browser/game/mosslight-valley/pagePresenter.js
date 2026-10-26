@@ -241,7 +241,7 @@ export function startMosslightPage(options) {
     keys.held = next.held;
     keys.pressed = next.pressed;
     if (keys.held.size && !runtime.isRunning()) runtime.resume();
-    if (keys.held.size) event.preventDefault();
+    event.preventDefault();
     if (options.audio) options.audio.unlock();
     else if (!audioContext) playCue('wake');
   }
