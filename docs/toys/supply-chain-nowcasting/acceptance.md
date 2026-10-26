@@ -6,7 +6,7 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - [x] `node scripts/run-jest.js --runInBand --runTestsByPath test/core/browser/game/supplyChainNowcasting.test.js test/core/browser/game/supply-chain-nowcasting-page.test.js test/generator/decisionToolCatalogueLinks.test.js` exits with status 0 and proves the hand-computed sample and browser flow.
 - [x] `npm run check` exits with status 0 after each implementation loop.
 - [x] `npm run build` exits with status 0 when the standalone page is integrated.
-- [ ] Focused Stryker run is recorded and every surviving or timed-out behavioral mutant is classified as killed by a new assertion, equivalent, or intentionally excluded with rationale. Latest run: 486 mutants; 445 killed, 40 survived, 1 timed out. Report: `reports/mutation/mutation.json`; the timeout is an assignment mutation in the daily simulation loop. Capacity, buffer-cost, horizon, route-selection and feasibility boundaries now have explicit regression cases; remaining survivors still need review.
+- [ ] Focused Stryker run is recorded and every surviving or timed-out behavioral mutant is classified as killed by a new assertion, equivalent, or intentionally excluded with rationale. Latest run: 486 mutants; 450 killed, 35 survived, 1 timed out. Report: `reports/mutation/mutation.json`; the timeout is an assignment mutation in the daily simulation loop. Capacity, buffer-cost, horizon, route-selection, malformed-record, and scalar validation boundaries now have explicit regression cases; remaining survivors still need review.
 - [ ] Browser acceptance shows a sample network and one-click disruption with a useful plan in under two minutes, no signup, clear hypothetical warning labels, and no autonomous action.
 - [x] Export contains baseline, warning signal, ranked alternatives, ranking criterion, and all constraints/assumptions; optional JSON and CSV IDs round-trip without affecting calculations.
 - [x] Null supplier, route, and mitigation entries return explicit validation issues; multiple valid routes can be selected by disruption and mitigation IDs.
@@ -15,7 +15,8 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - Command log path: `artifacts/toys/supply-chain-nowcasting/commands.log`
 - Generated artifacts:
   - Jest and Stryker reports under configured report paths.
-- Latest full local check after input validation hardening: `npm run check` passed all 10 gates; change-selected Jest passed 104 tests, lint and static gates passed, duplication reported 0 clones, and manuals validated successfully. `npm run build` also passed.
+- Latest full local check after the named malformed-input test: `npm run check` passed all 10 gates; all six serial Jest shards passed (7,935 tests total), lint and static gates passed, duplication reported 0 clones, and manuals validated successfully. `npm run build` also passed.
+- Named malformed-record boundary test ensures Stryker's per-test run exercises null supplier, route, and mitigation records and invalid scalar boundaries.
 - Test report path (if applicable): `reports/mutation/supply-chain-nowcasting.json`
 
 ## Pass/Fail Rules

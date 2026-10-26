@@ -649,6 +649,55 @@ test.each([
   expect(planSupplyChain(input).issues.join(' ')).toContain(expectedIssue);
 });
 
+test('reports malformed records and scalar boundaries without throwing', () => {
+  const invalidInputs = [
+    [scenario({ suppliers: [null] }), 'Supplier records must be objects'],
+    [scenario({ routes: [null] }), 'Route records must be objects'],
+    [scenario({ mitigations: [null] }), 'Mitigation records must be objects'],
+    [
+      scenario({ destination: { ...scenario().destination, id: 7 } }),
+      'destination with a valid ID',
+    ],
+    [
+      scenario({
+        destination: { ...scenario().destination, dailyDemandUnits: -1 },
+      }),
+      'Destination daily demand',
+    ],
+    [
+      scenario({
+        destination: {
+          ...scenario().destination,
+          dailyDemandUnits: Number.POSITIVE_INFINITY,
+        },
+      }),
+      'Destination daily demand',
+    ],
+    [
+      scenario({
+        disruption: { ...scenario().disruption, reductionPercent: -1 },
+      }),
+      'between 0 and 100 percent',
+    ],
+    [
+      scenario({
+        disruption: {
+          ...scenario().disruption,
+          reductionPercent: Number.POSITIVE_INFINITY,
+        },
+      }),
+      'between 0 and 100 percent',
+    ],
+  ];
+
+  for (const [input, expectedIssue] of invalidInputs) {
+    expect(() => planSupplyChain(input)).not.toThrow();
+    const result = planSupplyChain(input);
+    expect(result).toMatchObject({ error: 'invalid-input' });
+    expect(result.issues.join(' ')).toContain(expectedIssue);
+  }
+});
+
 test('labels an already-current disruption and reports no shortage when supply is adequate', () => {
   const result = planSupplyChain(
     scenario({
