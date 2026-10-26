@@ -1,8 +1,14 @@
 #!/usr/bin/env node
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { runLocalPlaywright } from '../src/core/local/gcp-simulator/playwright-runner.js';
+import { createPlaywrightArtifactUploader } from '../src/core/local/playwright-artifacts/playwright-artifacts.js';
+import { requireAllowEffects } from '../src/adapters/allow-effects.js';
+import {
+  bindEffectBoundary,
+  createEffectFetchFn,
+} from '../src/local/allow-effects.js';
 
 const args = process.argv.slice(2);
 const { suite, environment, playwrightArgs } = parseArgs(args);
@@ -58,18 +64,14 @@ async function runCloudPlaywright(environment, playwrightArgs) {
     'test/e2e/cloud.config.ts',
     ...playwrightArgs,
   ];
-  const child = spawn(
-    'npx',
-    cloudArgs,
-    {
-      stdio: 'inherit',
-      shell: process.platform === 'win32',
-      env: {
-        ...process.env,
-        E2E_ENVIRONMENT: resolvedEnvironment,
-      },
-    }
-  );
+  const child = spawn('npx', cloudArgs, {
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+    env: {
+      ...process.env,
+      E2E_ENVIRONMENT: resolvedEnvironment,
+    },
+  });
 
   return new Promise((resolve, reject) => {
     child.on('error', reject);
@@ -85,7 +87,11 @@ async function runCloudPlaywright(environment, playwrightArgs) {
 }
 
 function clearPlaywrightOutputs() {
-  for (const target of ['playwright-report', 'test-results', '/tmp/playwright.log']) {
+  for (const target of [
+    'playwright-report',
+    'test-results',
+    '/tmp/playwright.log',
+  ]) {
     fs.rmSync(target, { recursive: true, force: true });
   }
 }
@@ -102,51 +108,46 @@ async function uploadCloudArtifacts(environment) {
     }
   }
 
-  const reportPrefix = process.env.REPORT_PREFIX ?? '';
-  const dest = reportPrefix
-    ? `gs://${reportBucket}/${reportPrefix}`
-    : `gs://${reportBucket}`;
-
-  await run('gcloud', ['storage', 'rm', '--recursive', dest], true);
-  await uploadPath('playwright-report', dest);
-  await uploadPath('test-results', dest);
-  await uploadPath('/tmp/playwright.log', dest);
-}
-
-async function uploadPath(src, dest) {
-  if (!fs.existsSync(src)) {
-    return;
-  }
-
-  const args = ['storage', 'cp'];
-  if (fs.statSync(src).isDirectory()) {
-    args.push('-r');
-  }
-  args.push(src, `${dest}/`);
-  await run('gcloud', args);
-}
-
-async function run(command, commandArgs, allowFailure = false) {
-  const child = spawn(command, commandArgs, {
-    stdio: 'inherit',
-    shell: process.platform === 'win32',
+  const handle = createPlaywrightArtifactUploader({
+    fileSystem: {
+      statFn: requireAllowEffects(file => fs.statSync(file)),
+      readDirFn: requireAllowEffects(dir => fs.readdirSync(dir)),
+      readFileFn: requireAllowEffects(
+        file => new Uint8Array(fs.readFileSync(file))
+      ),
+    },
+    pathModule: path,
+    getAccessTokenFn: requireAllowEffects(() =>
+      execFileSync('gcloud', ['auth', 'print-access-token'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+    ),
+    fetchFn: createEffectFetchFn(async (input, init) => {
+      const response = await fetch(input, init);
+      await response.arrayBuffer();
+      return response;
+    }),
   });
-
-  return new Promise((resolve, reject) => {
-    child.on('error', reject);
-    child.on('exit', code => {
-      if (code === 0 || allowFailure) {
-        resolve(code ?? 1);
-        return;
-      }
-
-      reject(new Error(`${command} ${commandArgs.join(' ')} exited with code ${code}`));
-    });
-  });
+  const paths = ['playwright-report', 'test-results'];
+  if (fs.existsSync('/tmp/playwright.log')) paths.push('/tmp/playwright.log');
+  console.log('Uploading cloud Playwright artifacts using object creation.');
+  const count = await bindEffectBoundary(permission =>
+    handle(permission, {
+      bucketName: reportBucket,
+      prefix: process.env.REPORT_PREFIX ?? '',
+      paths,
+    })
+  );
+  console.log(`Uploaded ${count} cloud Playwright artifact files.`);
 }
 
 function parseArgs(argv) {
-  const parsed = { suite: undefined, environment: undefined, playwrightArgs: [] };
+  const parsed = {
+    suite: undefined,
+    environment: undefined,
+    playwrightArgs: [],
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--suite' && i + 1 < argv.length) {

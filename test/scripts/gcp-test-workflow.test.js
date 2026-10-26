@@ -34,7 +34,10 @@ describe('gcp-test workflow report handling', () => {
     expect(runner).toContain(
       'throw new Error(`Cloud Playwright did not create ${reportDirectory}`)'
     );
-    expect(runner).toContain("await run('gcloud', args);");
+    expect(runner).toContain('createPlaywrightArtifactUploader');
+    expect(runner).toContain('bindEffectBoundary(permission =>');
+    expect(runner).not.toContain("run('gcloud', ['storage', 'rm'");
+    expect(runner).not.toContain("const args = ['storage', 'cp']");
     expect(uploadStep).toContain(
       "if: always() && steps.run_playwright_job.outcome != 'skipped'"
     );
