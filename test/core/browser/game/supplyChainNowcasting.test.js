@@ -97,6 +97,7 @@ test('computes hand-checked daily shortfall and ranks mitigation by units saved'
     reason: 'exceeds-available-capacity',
     incrementalCostCents: null,
   });
+  expect(result.rankedMitigations[0].feasible).toBe(true);
   expect(
     result.rankedMitigations
       .slice(0, 2)
@@ -198,6 +199,158 @@ test('keeps buffers larger than destination capacity visible as infeasible', () 
     reason: 'exceeds-buffer-capacity',
     incrementalCostCents: null,
   });
+});
+
+test('accepts mitigation capacity and arrival exactly on their inclusive limits', () => {
+  const result = planSupplyChain(
+    scenario({
+      horizonDays: 1,
+      destination: {
+        ...scenario().destination,
+        startingInventoryUnits: 0,
+      },
+      suppliers: [{ id: 'north', capacityUnitsPerDay: 20, unit: 'units/day' }],
+      routes: [
+        {
+          ...scenario().routes[0],
+          capacityUnitsPerDay: 10,
+          maxCapacityUnitsPerDay: 20,
+        },
+      ],
+      disruption: {
+        ...scenario().disruption,
+        startsDay: 1,
+        durationDays: 1,
+        warningLeadDays: 0,
+      },
+      mitigations: [
+        {
+          ...scenario().mitigations[0],
+          id: 'exact-capacity',
+          capacityUnitsPerDay: 10,
+          leadTimeDays: 0,
+        },
+      ],
+    })
+  );
+
+  expect(result.rankedMitigations[0]).toMatchObject({
+    id: 'exact-capacity',
+    feasible: true,
+    arrivalDay: 1,
+    shortfallAvoidedUnits: 10,
+  });
+});
+
+test('accepts a buffer exactly at the destination limit and horizon', () => {
+  const result = planSupplyChain(
+    scenario({
+      horizonDays: 1,
+      destination: {
+        ...scenario().destination,
+        startingInventoryUnits: 0,
+        maxBufferUnits: 10,
+      },
+      disruption: {
+        ...scenario().disruption,
+        startsDay: 1,
+        durationDays: 1,
+        warningLeadDays: 0,
+      },
+      mitigations: [
+        {
+          id: 'exact-buffer',
+          kind: 'buffer',
+          bufferUnits: 10,
+          leadTimeDays: 0,
+          unitCostCents: 3,
+        },
+      ],
+    })
+  );
+
+  expect(result.rankedMitigations[0]).toMatchObject({
+    id: 'exact-buffer',
+    feasible: true,
+    arrivalDay: 1,
+    shortfallAvoidedUnits: 10,
+    incrementalCostCents: 30,
+  });
+});
+
+test.each([
+  [
+    'route capacity',
+    {
+      suppliers: [{ id: 'north', capacityUnitsPerDay: 40, unit: 'units/day' }],
+      routes: [
+        {
+          ...scenario().routes[0],
+          capacityUnitsPerDay: 10,
+          maxCapacityUnitsPerDay: 20,
+        },
+      ],
+    },
+  ],
+  [
+    'supplier capacity',
+    {
+      suppliers: [{ id: 'north', capacityUnitsPerDay: 20, unit: 'units/day' }],
+      routes: [
+        {
+          ...scenario().routes[0],
+          capacityUnitsPerDay: 10,
+          maxCapacityUnitsPerDay: 30,
+        },
+      ],
+    },
+  ],
+])('rejects mitigation above the remaining %s capacity', (_label, limits) => {
+  const result = planSupplyChain(
+    scenario({
+      ...limits,
+      mitigations: [
+        {
+          ...scenario().mitigations[0],
+          id: 'over-limit',
+          capacityUnitsPerDay: 11,
+        },
+      ],
+    })
+  );
+
+  expect(result.rankedMitigations[0]).toMatchObject({
+    feasible: false,
+    reason: 'exceeds-available-capacity',
+    incrementalCostCents: null,
+  });
+});
+
+test('allows a valid one-day horizon and route capacity at supplier and route limits', () => {
+  const result = planSupplyChain(
+    scenario({
+      horizonDays: 1,
+      suppliers: [{ id: 'north', capacityUnitsPerDay: 20, unit: 'units/day' }],
+      routes: [
+        {
+          ...scenario().routes[0],
+          capacityUnitsPerDay: 20,
+          maxCapacityUnitsPerDay: 20,
+        },
+      ],
+      disruption: {
+        ...scenario().disruption,
+        startsDay: 1,
+        durationDays: 1,
+        reductionPercent: 0,
+        warningLeadDays: 0,
+      },
+      mitigations: [],
+    })
+  );
+
+  expect(result.error).toBeUndefined();
+  expect(result.baseline.daily).toHaveLength(1);
 });
 
 test('sorts multiple infeasible options deterministically', () => {
@@ -304,11 +457,26 @@ test.each([
     'outputs[0] must be a non-empty ID',
   ],
   ['missing suppliers', scenario({ suppliers: null }), 'at least one supplier'],
+  [
+    'null supplier record',
+    scenario({ suppliers: [null] }),
+    'Supplier records must be objects',
+  ],
   ['missing routes', scenario({ routes: null }), 'at least one route'],
+  [
+    'null route record',
+    scenario({ routes: [null] }),
+    'Route records must be objects',
+  ],
   [
     'invalid mitigations collection',
     scenario({ mitigations: null }),
     'Mitigations must be an array',
+  ],
+  [
+    'null mitigation record',
+    scenario({ mitigations: [null] }),
+    'Mitigation records must be objects',
   ],
   [
     'missing destination',
@@ -516,6 +684,47 @@ test('route lead time delays deliveries until its arrival day', () => {
     result.baseline.daily.slice(0, 2).map(({ deliveries }) => deliveries)
   ).toEqual([0, 0]);
   expect(result.baseline.daily[2].deliveries).toBe(10);
+});
+
+test('resolves a disruption and mitigation among multiple routes', () => {
+  const input = scenario({
+    suppliers: [
+      ...scenario().suppliers,
+      { id: 'east', capacityUnitsPerDay: 10, unit: 'units/day' },
+    ],
+    routes: [
+      ...scenario().routes,
+      {
+        id: 'east-lane',
+        fromId: 'east',
+        toId: 'market',
+        capacityUnitsPerDay: 0,
+        maxCapacityUnitsPerDay: 10,
+        leadTimeDays: 0,
+        unitCostCents: 7,
+      },
+    ],
+    disruption: {
+      ...scenario().disruption,
+      routeId: 'east-lane',
+    },
+    mitigations: [
+      {
+        ...scenario().mitigations[0],
+        id: 'east-backup',
+        routeId: 'east-lane',
+        capacityUnitsPerDay: 10,
+      },
+    ],
+  });
+  const result = planSupplyChain(input);
+
+  expect(result.error).toBeUndefined();
+  expect(result.rankedMitigations[0]).toMatchObject({
+    id: 'east-backup',
+    feasible: true,
+    reason: null,
+  });
 });
 
 test('a candidate that arrives after the simulation horizon remains infeasible', () => {

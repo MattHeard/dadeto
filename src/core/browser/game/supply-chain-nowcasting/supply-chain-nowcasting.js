@@ -233,6 +233,10 @@ function checkDestination(destination, issues) {
  * @returns {void} No return value.
  */
 function checkSupplier(supplier, issues) {
+  if (!supplier || typeof supplier !== 'object' || Array.isArray(supplier)) {
+    issues.push('Supplier records must be objects.');
+    return;
+  }
   checkQuantity(
     supplier.capacityUnitsPerDay,
     `Supplier ${supplier.id} capacity`,
@@ -250,7 +254,11 @@ function checkSupplier(supplier, issues) {
  * @returns {void}
  */
 function checkRoute(route, suppliers, destinationId, issues) {
-  const supplierIds = new Set(suppliers.map(({ id }) => id));
+  if (!route || typeof route !== 'object' || Array.isArray(route)) {
+    issues.push('Route records must be objects.');
+    return;
+  }
+  const supplierIds = new Set(suppliers.map(supplier => supplier?.id));
   if (!supplierIds.has(route.fromId))
     issues.push(`Route ${route.id} must start at a known supplier.`);
   if (route.toId !== destinationId)
@@ -281,7 +289,7 @@ function checkRoute(route, suppliers, destinationId, issues) {
     `Route ${route.id} lead time`,
     issues
   );
-  const supplier = suppliers.find(({ id }) => id === route.fromId);
+  const supplier = suppliers.find(supplier => supplier?.id === route.fromId);
   if (supplier && route.capacityUnitsPerDay > supplier.capacityUnitsPerDay)
     issues.push(`Route ${route.id} capacity exceeds supplier capacity.`);
 }
@@ -293,7 +301,7 @@ function checkRoute(route, suppliers, destinationId, issues) {
  * @returns {void} No return value.
  */
 function checkDisruption(disruption, routes, issues) {
-  if (!disruption || !routes.some(({ id }) => id === disruption.routeId)) {
+  if (!disruption || !routes.some(route => route?.id === disruption.routeId)) {
     issues.push('Disruption must refer to a known route.');
     return;
   }
@@ -325,12 +333,20 @@ function checkDisruption(disruption, routes, issues) {
  * @returns {void} No return value.
  */
 function checkMitigation(mitigation, routes, issues) {
+  if (
+    !mitigation ||
+    typeof mitigation !== 'object' ||
+    Array.isArray(mitigation)
+  ) {
+    issues.push('Mitigation records must be objects.');
+    return;
+  }
   if (!validId(mitigation.id))
     issues.push('Mitigation IDs must be non-empty strings.');
   if (!['capacity', 'buffer'].includes(mitigation.kind))
     issues.push(`Mitigation ${mitigation.id} kind must be capacity or buffer.`);
   if (mitigation.kind === 'capacity') {
-    if (!routes.some(({ id }) => id === mitigation.routeId))
+    if (!routes.some(route => route?.id === mitigation.routeId))
       issues.push(`Mitigation ${mitigation.id} must refer to a known route.`);
     checkQuantity(
       mitigation.capacityUnitsPerDay,
