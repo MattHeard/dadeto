@@ -1,7 +1,6 @@
 // Stryker disable all: this AST analysis module is a tooling boundary; parser,
 // traversal, and dependency-classification details are observable through the
 // complete graph-analysis contract rather than independently per helper.
-import path from 'node:path';
 import { isNonNullObject } from '../commonCore.js';
 import { isFunctionNodeType } from './function-node-types.js';
 
@@ -146,9 +145,14 @@ function importTarget(imports, name) {
  * @param {object} options Graph inputs.
  * @param {Array<{ path: string, source: string }>} options.files Source files.
  * @param {(source: string, options: object) => AstNode} options.parse AST parser.
+ * @param {(file: string, source: string) => string} options.resolveImportPath Platform-relative import resolver.
  * @returns {{ nodes: Array<object>, edges: Array<object>, ignoredCalls: Array<object> }} Dependency graph.
  */
-export function buildFunctionDependencyGraph({ files, parse }) {
+export function buildFunctionDependencyGraph({
+  files,
+  parse,
+  resolveImportPath,
+}) {
   const parsed = new Map();
   const functions = new Map();
   /** @type {Map<string, Map<string, ImportBinding>>} */
@@ -211,9 +215,7 @@ export function buildFunctionDependencyGraph({ files, parse }) {
       String(name)
     );
     if (!imported || !imported.source.startsWith('.')) return null;
-    const resolved = path.normalize(
-      path.join(path.dirname(file), imported.source)
-    );
+    const resolved = resolveImportPath(file, imported.source);
     const candidates = [resolved, `${resolved}.js`, `${resolved}/index.js`];
     return (
       candidates

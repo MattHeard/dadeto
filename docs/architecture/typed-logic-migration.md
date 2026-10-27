@@ -185,3 +185,19 @@ an AST audit identified 15 files / 28 static built-in imports. `dadeto-e1oz` own
 remediation and observable enforcement before moves, without exclusions. The
 current fixture proves local/package/domain/direction rules only. Parse and thin
 classification also remain pending; no source file has moved.
+
+
+## First built-in remediation slice — 27 October 2026
+
+Bead `dadeto-kjbj` removes node:path from the function graph analyser; its local
+runner now injects the same native relative-import resolution. Controlled unit
+fixtures require resolver delegation, including nonphysical aliases, and assert
+errors propagate. Nine focused tests, scoped source coverage without uncovered
+lines/branches, all 10 local static gates, actual graph generation and build
+pass. The generated graph has 10,058 nodes / 10,215 edges, with no unknown edge
+endpoints. This removes one audited built-in import; 14 modules / 27 remain.
+
+No source moved and no exclusion was added. The analyser's pre-existing blanket
+mutation directive remains a limitation, not successful mutation evidence; the
+final architecture acceptance requires auditing/removing existing skips. The
+manual graph runner's legacy scan root also needs updating with the source moves.

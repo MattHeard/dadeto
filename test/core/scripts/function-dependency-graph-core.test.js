@@ -1,9 +1,27 @@
 import { parse } from '@babel/parser';
+import { jest } from '@jest/globals';
 import { buildFunctionDependencyGraph } from '../../../src/core/scripts/function-dependency-graph-core.js';
+
+/**
+ * Resolve only the known import fixtures without a platform path dependency.
+ * @param {string} file Fixture caller path.
+ * @param {string} source Fixture import string.
+ * @returns {string} Controlled resolved path.
+ */
+function resolveFixtureImport(file, source) {
+  const targets = new Map([
+    ['src/core/consumer.js:./shared.js', 'src/core/shared.js'],
+    ['src/main.js:./helper', 'src/helper'],
+  ]);
+  const target = targets.get(`${file}:${source}`);
+  if (target === undefined) throw new Error('Unexpected fixture import');
+  return target;
+}
 
 describe('buildFunctionDependencyGraph', () => {
   test('retains identifier and default parameter bindings without guessing destructured names', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [
         {
           path: 'bindings.js',
@@ -37,6 +55,7 @@ describe('buildFunctionDependencyGraph', () => {
 
   test('resolves a local call when the file has no import bindings', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [
         { path: 'local.js', source: 'export function local() { missing(); }' },
       ],
@@ -51,6 +70,7 @@ describe('buildFunctionDependencyGraph', () => {
 
   test('handles a call from an AST file without an import-binding entry', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [{ path: 'no-imports.js', source: 'ignored' }],
       parse: () => ({
         type: 'Program',
@@ -83,6 +103,7 @@ describe('buildFunctionDependencyGraph', () => {
 describe('buildFunctionDependencyGraph imports and exports', () => {
   test('links calls to functions imported from another file', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [
         {
           path: 'src/core/shared.js',
@@ -106,6 +127,7 @@ describe('buildFunctionDependencyGraph imports and exports', () => {
 
   test('records exports, anonymous functions, and injected calls', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [
         {
           path: 'src/helper.js',
@@ -168,6 +190,7 @@ const computed = { ['ignored']() {} };`,
 
   test('walks sparse AST nodes and preserves anonymous fallback names', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [{ path: 'sparse.js', source: 'ignored' }],
       parse: () => ({
         type: 'Program',
@@ -234,6 +257,7 @@ const computed = { ['ignored']() {} };`,
 
   test('handles incomplete import and call AST nodes conservatively', () => {
     const graph = buildFunctionDependencyGraph({
+      resolveImportPath: resolveFixtureImport,
       files: [{ path: 'incomplete.js', source: 'ignored' }],
       parse: () => ({
         type: 'Program',
@@ -293,4 +317,48 @@ const computed = { ['ignored']() {} };`,
       }),
     ]);
   });
+});
+
+test('delegates relative imports to the injected resolver', () => {
+  const resolveImportPath = jest.fn(() => 'virtual/target.js');
+  const graph = buildFunctionDependencyGraph({
+    files: [
+      { path: 'virtual/target.js', source: 'export function target() {}' },
+      {
+        path: 'consumer/main.js',
+        source:
+          "import { target } from './logical-alias'; export function caller() { target(); }",
+      },
+    ],
+    parse,
+    resolveImportPath,
+  });
+  expect(resolveImportPath).toHaveBeenCalledWith(
+    'consumer/main.js',
+    './logical-alias'
+  );
+  expect(graph.edges).toContainEqual({
+    source: 'consumer/main.js#caller',
+    target: 'virtual/target.js#target',
+    kind: 'direct-call',
+  });
+});
+
+test('propagates resolver failures without inventing a fallback graph', () => {
+  const failure = new Error('resolver failed');
+  expect(() =>
+    buildFunctionDependencyGraph({
+      files: [
+        {
+          path: 'caller.js',
+          source:
+            "import { target } from './target'; function caller() { target(); }",
+        },
+      ],
+      parse,
+      resolveImportPath() {
+        throw failure;
+      },
+    })
+  ).toThrow(failure);
 });

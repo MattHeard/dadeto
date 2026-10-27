@@ -13,7 +13,12 @@ function collect(dir) {
   }
 }
 collect(root);
-const graph = buildFunctionDependencyGraph({ files, parse });
+const graph = buildFunctionDependencyGraph({
+  files,
+  parse,
+  resolveImportPath: (file, source) =>
+    path.normalize(path.join(path.dirname(file), source)),
+});
 const output = path.resolve('reports/function-dependency-graph.json');
 fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.writeFileSync(output, `${JSON.stringify(graph, null, 2)}\n`);
