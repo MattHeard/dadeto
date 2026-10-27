@@ -13,7 +13,9 @@ describe('gcp-test workflow report handling', () => {
     expect(source).toContain('Download Playwright report from GCS');
     expect(source).toContain('download_tree playwright-report');
     expect(source).toContain('download_tree test-results');
-    expect(source).toContain('gcloud storage cp -r "${REPORT_ROOT}/${tree}" .');
+    expect(source).toContain(
+      'gcloud storage cp -r "${REPORT_ROOT}/${tree}" "${GITHUB_WORKSPACE}"'
+    );
   });
 
   it('persists Playwright attachments and requires a non-empty E2E artifact', () => {

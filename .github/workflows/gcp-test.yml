@@ -510,15 +510,16 @@ jobs:
 
           REPORT_ROOT="gs://${BUCKET}/${TF_VAR_environment}/${GITHUB_RUN_ID}"
 
-          rm -rf playwright-report test-results
+          rm -rf "${GITHUB_WORKSPACE:?}/playwright-report" "${GITHUB_WORKSPACE:?}/test-results"
 
           download_tree() {
             local tree="$1"
             if gcloud storage ls "${REPORT_ROOT}/${tree}/" >/dev/null 2>&1; then
-              gcloud storage cp -r "${REPORT_ROOT}/${tree}" .
+              gcloud storage cp -r "${REPORT_ROOT}/${tree}" "${GITHUB_WORKSPACE}"
               echo "Downloaded ${tree} from ${REPORT_ROOT}"
             else
               echo "Missing ${tree} in ${REPORT_ROOT}"
+              return 1
             fi
           }
 
