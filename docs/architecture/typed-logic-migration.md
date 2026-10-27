@@ -439,3 +439,31 @@ Remove only redundant internal cleanup allowFailure:true covered by the outer
 catch; the exported error policy and external filesystem options stay intact.
 Final whole-module mutation and exact hardening CI remain separate acceptance
 requirements. Initial injection FullCheck40595672238 is monitored asynchronously.
+
+## Final acceptance evidence — 27 October 2026
+
+The full-module mutation gate passes at100%: **153/153 detected**, comprising
+149 Killed and4 Timeout classifications, no survivors/ignored/uncovered mutants.
+Static evaluation is enabled; no static mutants are generated in this module.
+The four timeout replacements remove the Promise executor, exit handler, exit
+event name or error settlement. They leave operations pending; per-operation
+checks fail, and several such failures can accumulate before the mutation
+engine finishes a run. These are recorded as detected non-settlement, not as
+149+4 failed assertions or an all-Killed result. No timeout budget was increased.
+
+Report `reports/mutation/worktree-runner.json` and summary
+`reports/mutation/worktree-runner-summary.json` match the exact runtime source;
+SHA-256 `016e21230505a9b2894bde8d1a27eebf355ee22bf66714c871f9b1fb47663a85`.
+The final engine exited0, with no mutation/source exclusion or threshold change.
+Log: `/tmp/dadeto-1bl2-hardening-mutation.log`.
+
+Exact hardening [FullCheck40596717662](https://github.com/MattHeard/dadeto/actions/runs/40596717662)
+succeeded at8dd3fba3d9b3b968f1a620e0c736e0d927010372. Downloaded artifact
+`full-check-40596717662` (12777556488), report
+`/tmp/dadeto-full-check-40596717662/coverage/check-full-report.md`, confirms
+1,068 suites / 8,253 tests passed; all four global coverage metrics and the
+changed runner's four metrics are100%. Injection FullCheck40595672238 also
+succeeded. Focused36tests, scoped source coverage without gaps, all10split
+local static gates and build pass. Runtime source/test blobs remain unchanged
+for this receipt. Remaining direct built-ins:9modules/20imports; fs/spawn/env/time
+portability and the broader migration remain open. Rank11 staysActive/Partial.
