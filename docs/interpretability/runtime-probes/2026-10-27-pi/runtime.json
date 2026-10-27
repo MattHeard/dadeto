@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "scope": "inert-rootless-rehearsal",
+  "observedAt": "2026-10-27T10:32:19.799308+00:00",
+  "image": "docker.io/library/python@sha256:4dec53ac220d1cca3d31d40d346e4c2cd3540c1d7eb058ed70a3f94934728cf2",
+  "podmanVersion": "podman version 5.4.2",
+  "architecture": "aarch64",
+  "rootless": true,
+  "cgroupControllers": [
+    "cpu",
+    "pids"
+  ],
+  "resourcePreflightPassed": false,
+  "scientificLaunchReady": false
+}

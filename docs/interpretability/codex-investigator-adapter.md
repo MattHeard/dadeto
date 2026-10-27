@@ -16,3 +16,12 @@ This module is process and output plumbing only. It has not invoked Codex or use
 - Complete the spec's blinded scoring, independent review, rehearsal, and experiment-wide budget gates.
 
 Synthetic unit tests only prove argument construction, data filtering, JSONL accounting, cancellation, and cleanup; they do not satisfy any of these live prelaunch checks.
+
+## Inert Pi runtime preparation
+
+See [Pi rootless rehearsal](pi-rootless-rehearsal.md) for the reproducible
+credential-free probe and retained 27 October host evidence. Hardware is now
+verified and rootless Podman is installed, but the running kernel disables the
+memory controller, so resource-limited containers fail closed before any probe.
+This updates the earlier unavailable-host condition without satisfying the live
+Codex, authentication, access-control, audit or scientific launch gates above.
