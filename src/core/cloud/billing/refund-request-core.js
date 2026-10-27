@@ -112,7 +112,7 @@ function createRefundIntentId(uid, purchaseId, idempotencyKey, sha256Utf8) {
 function readBearerToken(authorization) {
   if (typeof authorization !== 'string') return '';
   const match = /^Bearer\s+(.+)$/i.exec(authorization.trim());
-  return match?.[1]?.trim() ?? '';
+  return match?.[1] ?? '';
 }
 
 /**
@@ -123,6 +123,9 @@ function readRefundIntent(body) {
   if (!body || typeof body !== 'object' || !('refundIntent' in body))
     return null;
   const intent = body.refundIntent;
-  if (!intent || typeof intent !== 'object') return null;
+  if (typeof intent !== 'object') return null;
   return intent;
 }
+
+/** Focused access to persisted-result parsing. */
+export const refundRequestTestOnly = { readRefundIntent };

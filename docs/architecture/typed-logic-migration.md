@@ -265,3 +265,20 @@ full branch coverage; keep mutation acceptance and exact pushed Full Check
 separate, and do not close the quality Bead from local tests alone. The previous
 lineage parser task is complete: Full Check40544211532 succeeded for fa26bb4,
 matching its 279/279 killed mutation report. Rank 11 remains Active / Partial.
+
+
+## Refund handler hardening — 27 October 2026
+
+The `dadeto-pu2z` mutation baseline killed 115/145; 30 survivors prompted exact
+error-body, request limit/type, empty UID, bearer format and persisted-result
+cases. The 62 focused tests now pass. Removed only the redundant capture trim
+and intent null check, preserving headers, object-shaped payload compatibility,
+financial domain decisions and permission forwarding. All 10 local static gates,
+scoped source coverage, builds and 27-package import closure pass.
+
+The full-handler mutation gate now kills 141/141, including one static mutant,
+with no survivors/timeouts/ignored/uncovered mutants at the same 100% threshold.
+Its embedded source exactly equals the current runtime module. The injection
+Full Check40547579414 succeeded; record hardening CI separately before closing
+the quality Bead. The refreshed static import audit confirms 12 modules /
+25 imports remain. No source/mutation exclusion or lowered threshold was added.

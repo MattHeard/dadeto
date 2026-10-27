@@ -29,7 +29,7 @@ node node_modules/@stryker-mutator/core/bin/stryker.js run docs/quality/refund-r
 ```
 
 Two initial failing regressions demonstrated ignored injected hashing and missing
-failure propagation. Final focused set passes four suites / 21 tests. Scoped
+failure propagation. The injection-focused set passes four suites / 21 tests. Scoped
 source coverage has no uncovered lines/branches; lint/core parse/zero clones pass.
 All 10 split local static gates and static/cloud builds pass. Package closure
 verifies 27 Terraform packages / 702 reachable modules / 1,228 imports. Build
@@ -55,3 +55,8 @@ Tighten the next loop against exact survivor locations, preserving outward refun
 behavior. Maintain the typed hash boundary and inspect exact asynchronous Full
 Check before closure. This removes one more audited Node import: 12 modules /
 25 static imports remain under the parent portability task.
+
+
+Follow-up hardening passes 62 focused tests and kills all 141 full-module
+mutants. See [the hardening evidence](2026-10-27-refund-parser-hardening.md).
+The injection Full Check40547579414 succeeded; hardening CI is separate.

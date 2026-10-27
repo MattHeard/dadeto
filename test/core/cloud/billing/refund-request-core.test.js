@@ -1,5 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createBillingRefundRequestHandler } from '../../../../src/core/cloud/billing/refund-request-core.js';
+import {
+  createBillingRefundRequestHandler,
+  refundRequestTestOnly,
+} from '../../../../src/core/cloud/billing/refund-request-core.js';
 
 const allowEffects = Object.freeze({ testPermission: true });
 const request = {
@@ -251,14 +254,15 @@ describe('createBillingRefundRequestHandler', () => {
   });
 
   it('does not call Stripe when billing is disabled or not configured', async () => {
-    for (const config of [
-      { billingEnabled: false },
-      { stripeConfigured: false },
+    for (const [config, error] of [
+      [{ billingEnabled: false }, 'billing_disabled'],
+      [{ stripeConfigured: false }, 'payment_provider_unavailable'],
     ]) {
       const deps = createDeps(config);
       const handle = createBillingRefundRequestHandler(deps);
-      await expect(handle(allowEffects, request)).resolves.toMatchObject({
+      await expect(handle(allowEffects, request)).resolves.toEqual({
         status: 503,
+        body: { error },
       });
       expect(deps.createStripeRefund).not.toHaveBeenCalled();
       expect(deps.sha256Utf8).not.toHaveBeenCalled();
@@ -297,4 +301,138 @@ it('propagates hashing failures before creating a refund intent', async () => {
   expect(deps.createRefundIntent).not.toHaveBeenCalled();
   expect(deps.createStripeRefund).not.toHaveBeenCalled();
   expect(deps.markRefundIntentAmbiguous).not.toHaveBeenCalled();
+});
+
+describe('refund boundary inputs', () => {
+  it.each([undefined, null, 0, false, {}, ['purchase'], '', 'p'.repeat(151)])(
+    'rejects invalid purchase identifiers: %s',
+    async purchaseId => {
+      const deps = createDeps();
+      const handle = createBillingRefundRequestHandler(deps);
+      await expect(
+        handle(allowEffects, { ...request, purchaseId })
+      ).resolves.toEqual({
+        status: 400,
+        body: { error: 'invalid_purchase_id' },
+      });
+      expect(deps.verifyIdToken).not.toHaveBeenCalled();
+      expect(deps.sha256Utf8).not.toHaveBeenCalled();
+      expect(deps.createRefundIntent).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([undefined, null, 0, false, {}, [], '', ' \t\n ', 'k'.repeat(256)])(
+    'rejects invalid retry keys: %s',
+    async idempotencyKey => {
+      const deps = createDeps();
+      const handle = createBillingRefundRequestHandler(deps);
+      await expect(
+        handle(allowEffects, { ...request, idempotencyKey })
+      ).resolves.toEqual({
+        status: 400,
+        body: { error: 'idempotency_key_required' },
+      });
+      expect(deps.verifyIdToken).not.toHaveBeenCalled();
+      expect(deps.sha256Utf8).not.toHaveBeenCalled();
+      expect(deps.createRefundIntent).not.toHaveBeenCalled();
+    }
+  );
+
+  it('accepts the exact purchase and retry-key length boundaries', async () => {
+    const deps = createDeps();
+    const handle = createBillingRefundRequestHandler(deps);
+    const purchaseId = 'p'.repeat(150);
+    const idempotencyKey = 'k'.repeat(255);
+    await expect(
+      handle(allowEffects, { ...request, purchaseId, idempotencyKey })
+    ).resolves.toMatchObject({ status: 200 });
+    expect(deps.sha256Utf8).toHaveBeenCalledWith(
+      `user-1\u0000${purchaseId}\u0000${idempotencyKey}`
+    );
+  });
+
+  it('rejects empty authenticated user identifiers before hashing', async () => {
+    const deps = createDeps({
+      verifyIdToken: jest.fn(async () => ({ uid: '' })),
+      getPurchase: jest.fn(async () => ({ uid: '' })),
+    });
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(handle(allowEffects, request)).resolves.toEqual({
+      status: 401,
+      body: { error: 'authentication_required' },
+    });
+    expect(deps.sha256Utf8).not.toHaveBeenCalled();
+    expect(deps.createRefundIntent).not.toHaveBeenCalled();
+  });
+
+  it.each(['Bearer valid\ntrailing', 'prefix Bearer valid'])(
+    'rejects partial bearer header matches: %s',
+    async authorization => {
+      const deps = createDeps();
+      const handle = createBillingRefundRequestHandler(deps);
+      await expect(
+        handle(allowEffects, { ...request, authorization })
+      ).resolves.toEqual({
+        status: 401,
+        body: { error: 'authentication_required' },
+      });
+      expect(deps.verifyIdToken).not.toHaveBeenCalled();
+      expect(deps.sha256Utf8).not.toHaveBeenCalled();
+    }
+  );
+
+  it('normalizes outer whitespace and multiple bearer separator characters', async () => {
+    const deps = createDeps();
+    const handle = createBillingRefundRequestHandler(deps);
+    await expect(
+      handle(allowEffects, {
+        ...request,
+        authorization: ' \t bEaReR \t valid-token \n',
+      })
+    ).resolves.toMatchObject({ status: 200 });
+    expect(deps.verifyIdToken).toHaveBeenCalledWith('valid-token');
+  });
+
+  it.each(['not an object', { refundIntent: 'not an object' }])(
+    'rejects malformed persisted refund results: %s',
+    async body => {
+      const deps = createDeps({
+        createRefundIntent: jest.fn(async () => ({ status: 201, body })),
+      });
+      const handle = createBillingRefundRequestHandler(deps);
+      await expect(handle(allowEffects, request)).resolves.toEqual({
+        status: 500,
+        body: { error: 'invalid_refund_intent_result' },
+      });
+      expect(deps.createStripeRefund).not.toHaveBeenCalled();
+    }
+  );
+});
+
+describe('persisted refund result parser', () => {
+  const { readRefundIntent } = refundRequestTestOnly;
+  it.each([
+    undefined,
+    null,
+    false,
+    0,
+    '',
+    'text',
+    Symbol('invalid'),
+    [],
+    {},
+    { refundIntent: null },
+    { refundIntent: undefined },
+    { refundIntent: false },
+    { refundIntent: 0 },
+    { refundIntent: 'text' },
+  ])('returns the invalid-result outcome for %s', input => {
+    expect(readRefundIntent(input)).toBeNull();
+  });
+  it.each([{}, { status: 'requested' }, []])(
+    'retains the object-shaped intent: %s',
+    intent => {
+      expect(readRefundIntent({ refundIntent: intent })).toBe(intent);
+    }
+  );
 });
