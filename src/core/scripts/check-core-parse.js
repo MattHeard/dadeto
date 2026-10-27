@@ -1,11 +1,9 @@
-// Stryker disable all: this script is a subprocess-driven validation gate;
-// parser, exemption, and report plumbing are observable through the complete
-// gate invocation contract rather than independently at each helper branch.
-import { execFileSync } from 'node:child_process';
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue, walkJavaScriptFiles } from './gate-utils.js';
 import { readExemptions } from './read-exemptions.js';
-import { pathToFileURL } from 'node:url';
+
+/** @typedef {{ name: string, labels: string[] }} ClassifiedFunction */
+/** @typedef {(source: string) => ClassifiedFunction[]} ClassifySource */
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
@@ -37,6 +35,14 @@ const BOUNDARY_FILE_PATTERN =
   /(?:^|\/)(?:index|main)\.js$|(?:^|\/)(?:browser|cloud|local|scripts|build)\//;
 
 /**
+ * Fail when the inert legacy defaults are used for actual classification.
+ * @returns {never} Missing required classifier programming error.
+ */
+function missingClassifier() {
+  throw new TypeError('classifySource must be provided');
+}
+
+/**
  * @param {...string} segments Path segments.
  * @returns {string} Joined path.
  */
@@ -46,6 +52,7 @@ function joinPath(...segments) {
 
 /**
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule?: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule?: {
  *     join: (...segments: string[]) => string,
@@ -59,6 +66,7 @@ function joinPath(...segments) {
  *   configPath?: string,
  * }} [options] Gate dependencies.
  * @returns {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule: { join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string },
  *   stdout: { log: (line: string) => void, error: (line: string) => void },
@@ -67,8 +75,9 @@ function joinPath(...segments) {
  *   configPath: string,
  * }} Normalized options.
  */
-function normalizeOptions(options = {}) {
+function normalizeOptions(options = { classifySource: missingClassifier }) {
   return {
+    classifySource: options.classifySource,
     fsModule: useDefaultValue(options.fsModule, DEFAULT_FS_MODULE),
     pathModule: useDefaultValue(options.pathModule, DEFAULT_PATH_MODULE),
     stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
@@ -95,6 +104,7 @@ function readExemptionsFromFsModule(deps) {
  * @param {string} rootDir Repository root path.
  * @param {string} sourceRoot Source tree path relative to the root.
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule: { join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string },
  *   rootDir: string,
@@ -111,6 +121,7 @@ function listJsFiles(rootDir, sourceRoot, deps) {
 /**
  * @param {string} dirPath Directory path to scan.
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule: { join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string },
  *   rootDir: string,
@@ -151,6 +162,7 @@ function formatRawInputFailures(violations) {
 /**
  * @template T
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, readFileSync: (filePath: string, encoding: 'utf8') => string },
  *   pathModule: {
  *     join: (...segments: string[]) => string,
@@ -185,6 +197,7 @@ function findViolationsInCore(deps, extractViolationsFromSource) {
 
 /**
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, readFileSync: (filePath: string, encoding: 'utf8') => string },
  *   pathModule: {
  *     join: (...segments: string[]) => string,
@@ -204,6 +217,7 @@ function findValidationViolations(deps) {
 
 /**
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, readFileSync: (filePath: string, encoding: 'utf8') => string },
  *   pathModule: {
  *     join: (...segments: string[]) => string,
@@ -223,6 +237,7 @@ function findRawInputViolations(deps) {
 
 /**
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, readFileSync: (filePath: string, encoding: 'utf8') => string },
  *   pathModule: {
  *     join: (...segments: string[]) => string,
@@ -239,7 +254,7 @@ function findRawInputViolations(deps) {
  */
 function findClassifierViolations(deps, predicate) {
   return findViolationsInCore(deps, source => {
-    const functions = classifyCoreFunctions(deps, source);
+    const functions = deps.classifySource(source);
     return functions.filter(predicate).map(fn => ({ name: fn.name }));
   });
 }
@@ -261,34 +276,6 @@ function isParserFunction(fn) {
 }
 
 /**
- * @param {{
- *   pathModule: { resolve: (...segments: string[]) => string },
- * }} deps Classifier dependencies.
- * @param {string} _source File source.
- * @returns {Array<{ name: string, labels: string[] }>} Classified functions.
- */
-function classifyCoreFunctions(deps, _source) {
-  const classifierPath = deps.pathModule.resolve(
-    process.cwd(),
-    'classify-functions.js'
-  );
-  const classifierUrl = pathToFileURL(classifierPath).href;
-  const output = execFileSync(
-    process.execPath,
-    [
-      '--input-type=module',
-      '-e',
-      `import { classifyFunctionsFromSource } from ${JSON.stringify(classifierUrl)};\nlet source = '';\nprocess.stdin.setEncoding('utf8');\nprocess.stdin.on('data', chunk => { source += chunk; });\nprocess.stdin.on('end', () => {\n  process.stdout.write(JSON.stringify({ functions: classifyFunctionsFromSource(source) }));\n});`,
-    ],
-    {
-      encoding: 'utf8',
-      input: _source,
-    }
-  );
-  return JSON.parse(output).functions;
-}
-
-/**
  * @template {Record<string, unknown>} T
  * @param {{
  *   successMessage: string,
@@ -298,7 +285,11 @@ function classifyCoreFunctions(deps, _source) {
  * @returns {(options?: Parameters<typeof normalizeOptions>[0]) => () => { exitCode: number, violations: Array<T> }} Gate builder.
  */
 function createGateRunner({ successMessage, findViolations, formatFailures }) {
-  return function createHandle(options = {}) {
+  /**
+   * @param {Parameters<typeof normalizeOptions>[0]} [options] Gate dependencies.
+   * @returns {() => {exitCode: number, violations: Array<T>}} Bound gate.
+   */
+  return function createHandle(options) {
     const deps = normalizeOptions(options);
     return function handle() {
       const violations = findViolations(deps);
@@ -330,6 +321,7 @@ const createParseBoundaryHandle = createGateRunner({
 /**
  * Backward-compatible aggregate gate for the existing `core-parse` script.
  * @param {{
+ *   classifySource: ClassifySource,
  *   fsModule?: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule?: {
  *     join: (...segments: string[]) => string,
@@ -341,10 +333,10 @@ const createParseBoundaryHandle = createGateRunner({
  *   rootDir?: string,
  *   sourceRoot?: string,
  *   configPath?: string,
- * }} options Gate dependencies.
+ * }} [options] Gate dependencies.
  * @returns {() => { exitCode: number, violations: Array<{ filePath: string, name?: string, label?: string }> }} Aggregate gate handler.
  */
-export function createCheckCoreParseHandle(options = {}) {
+export function createCheckCoreParseHandle(options) {
   const validationHandle = createParseNotValidateHandle(options);
   const boundaryHandle = createParseBoundaryHandle(options);
   return function handleCoreParseGate() {
@@ -372,4 +364,3 @@ export const checkCoreParseTestUtils = {
 
 export const createCheckParseNotValidateHandle = createParseNotValidateHandle;
 export const createCheckParseBoundaryHandle = createParseBoundaryHandle;
-// Stryker restore all

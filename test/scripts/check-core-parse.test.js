@@ -1,3 +1,4 @@
+import { classifyFunctionsFromSource } from '../../classify-functions.js';
 import { jest } from '@jest/globals';
 import {
   createCheckCoreParseHandle,
@@ -52,6 +53,7 @@ function createFs(files) {
  *   configPath?: string,
  * }} options Shared gate options.
  * @returns {{
+ *   classifySource: (source: string) => Array<{name: string, labels: string[]}>,
  *   fsModule: { readFileSync: (filePath: string, encoding: 'utf8') => string, readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
  *   pathModule: { join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (_from: string, to: string) => string, sep: string },
  *   stdout: { chunks: string[], log: (text: string) => void, error: (text: string) => void },
@@ -66,6 +68,7 @@ function createOptions({
   configPath = 'core-parse-exemptions.json',
 }) {
   return {
+    classifySource: classifyFunctionsFromSource,
     fsModule,
     pathModule: {
       join: (...segments) => segments.join('/'),

@@ -357,3 +357,49 @@ Injection Full Check40587766084 succeeded for35cf8d4. Exact hardening
 [Full Check40588740109](https://github.com/MattHeard/dadeto/actions/runs/40588740109)
 at67765d9 remains tracked separately before closure. The source blob and
 1,119-file output parity remain unchanged. Parent Rank 11 remains Partial.
+
+## Parse classifier injection — 27 October 2026
+
+The source-verified original classifier wiring task dadeto-8f5t is complete;
+14 focused classifier/gate cases pass and the terminal full check receipts are
+recorded. Follow-up `dadeto-qoi0` removes child_process/URL/process dependence
+from the core gate: the existing three local wrappers inject the same classifier.
+Configured scans require the precise callback; fake-result tests do not require
+Babel. Missing/failing callbacks propagate, and legacy inert defaults remain.
+
+Real CLI stdout is byte-identical; the aggregate wrapper preserves both expected
+diagnostic lines. One informal local timing sample is 8.952s before / 1.168s after,
+not a benchmark guarantee. Scoped coverage and all ten split local static gates
+pass; the first unskipped whole-module mutation experiment exposed 11 survivors.
+Hardening adds independent skip/anchor/encoding/message cases and removes two
+redundant forwarding defaults. Final focused tests pass 37 cases and checkJs.
+The final mutation run must be inspected separately before acceptance.
+
+The refreshed AST inventory now leaves 9 modules / 21 direct built-in imports.
+The blanket mutation directive is removed only from the touched module; no new
+source exclusions or weaker thresholds. Namespace parse/thin preparation,
+remaining built-in remediation/enforcement and actual source moves remain open.
+See `notes/agents/2026-10-27-parse-classifier-injection.md` for evidence and limits.
+
+Static-copy hardening FullCheck40588740109 succeeded at67765d9: 1,066 suites /
+8,206 tests and all four global coverage metrics at100%; dadeto-w5p7 is closed.
+Receipt-only FullCheck40589752440 atbb40cc5 also succeeded. These receipts do not
+establish the new classifier-injection slice's future CI result.
+
+## Final mutation and build receipt
+
+The full-module rerun passes: 78/78 Killed, including
+17 static mutants, zero survivors/timeouts/ignored/uncovered mutants
+at the unchanged 100% threshold. The report embeds the exact runtime source;
+SHA-256 `3a0745a5ef4b3206a65490a91a0e9fefbdfe99660cdfc847b914ffdebd2988b5`. Reports:
+`reports/mutation/parse-gate.json`, `reports/mutation/parse-gate-summary.json`.
+The 11 original survivors prompted stronger independent fixtures; only the two
+proven redundant forwarding defaults were removed, leaving one normalization
+owner. No policy/exemption/source/mutation exclusion or threshold changed.
+
+Final scoped run: 2 suites / 33 tests, collected source, no uncovered lines or
+branches; all ten split local static gates and the actual build pass. A final
+3-suite / 37-case rerun after fixture JSDoc cleanup and a fresh exact CLI stdout
+comparison pass. Logs `/tmp/dadeto-qoi0-{impact-final,static-final,build,mutation-final,final-focused}.log`.
+The remaining direct built-in census is 9 modules / 21 imports. Exact pushed
+Full Check remains a separate acceptance requirement; parent Rank 11 is Partial.
