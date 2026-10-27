@@ -7,7 +7,11 @@ test('the lineage boundary requires a string-returning hash dependency', () => {
     'src/core/build/function-endpoint-lineage.js'
   );
   const source = `import { parseFunctionEndpointLineage } from ${JSON.stringify(parserPath)};
-parseFunctionEndpointLineage('{}', {}, () => 'digest');
+const parsed = parseFunctionEndpointLineage('{}', {}, () => 'digest');
+const digest: string = parsed.registry.sha256;
+const completedAt: string = parsed.gcpProd.completedAt;
+const startedAt: string = parsed.netlify.startedAt;
+const optionalEtag: string | undefined = parsed.registry.etag;
 parseFunctionEndpointLineage('{}', {});
 parseFunctionEndpointLineage('{}', {}, () => 42);
 `;
@@ -37,7 +41,7 @@ parseFunctionEndpointLineage('{}', {}, () => 42);
         1,
     }))
   ).toEqual([
-    { code: 2554, line: 3 },
-    { code: 2322, line: 4 },
+    { code: 2554, line: 7 },
+    { code: 2322, line: 8 },
   ]);
 });

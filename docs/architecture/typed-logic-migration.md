@@ -217,3 +217,24 @@ The complete parser-module mutation run failed its 100% gate: 243/282 killed,
 39 survived, no timeouts. The retained harness and initial report provide the
 next hardening loop; this is not mutation acceptance. Keep the Bead and overall
 architecture open. No mutation/source exclusions or lower threshold were added.
+
+
+## Lineage parser hardening — 27 October 2026
+
+The next `dadeto-r5hj` loop expands to 89 passing focused tests. The whole-module
+mutation baseline's 39 survivors drove exact error/type/whitespace, anchored
+identifier/digest/generation, optional pin, credential, timestamp and normalized
+output cases. A pure total timestamp format stage now returns a native match
+retaining original text, or null; the calendar check preserves outward errors.
+Both URL dictionaries contain strings: cardinality and per-key value equality
+preserve the map contract without sorted key-index comparison. Legitimate domain
+checks remain. Concrete output JSDoc and a virtual compiler fixture verify the
+normalized evidence fields and required hash dependency.
+
+Changed-source scoped coverage has no uncovered lines/branches; all 10 split
+local static gates and build pass on the final code. The first hardening mutation
+attempt reached 99.65% (280 killed / one survivor / one timeout); its remaining
+primitive-outcome guard was masked by Date.parse coercion. The latest full-module
+rerun follows the native-match change and must be inspected before acceptance.
+No mutation exclusions or threshold reductions were introduced. Keep this Bead
+and Rank 11 open pending mutation and exact pushed Full Check results.

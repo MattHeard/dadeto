@@ -1,6 +1,9 @@
 import { jest } from '@jest/globals';
 
-import { parseFunctionEndpointLineage } from '../../src/core/build/function-endpoint-lineage.js';
+import {
+  parseFunctionEndpointLineage,
+  functionEndpointLineageTestOnly,
+} from '../../src/core/build/function-endpoint-lineage.js';
 
 const registryUrl =
   'https://storage.googleapis.com/example-function-endpoints/function-endpoints.json';
@@ -376,4 +379,233 @@ test('propagates hasher failures without returning fallback evidence', () => {
       }
     )
   ).toThrow(failure);
+});
+
+describe('lineage parser discriminating inputs', () => {
+  test.each([
+    [
+      { registryObject: { url: '' } },
+      'Registry object URL must be a non-empty string.',
+    ],
+    [
+      { registryObject: { gcpProdRunId: '0' } },
+      'Registry GCP run ID must be a positive decimal string.',
+    ],
+    [
+      { registryObject: { sourceCommitSha: 'bad' } },
+      'Registry source commit SHA must be a 40-character hex SHA.',
+    ],
+    [
+      { registryObject: { body: '' } },
+      'Registry object body must be a non-empty string.',
+    ],
+    [
+      { netlify: { deploymentUrl: '' } },
+      'Netlify deployment URL must be a non-empty string.',
+    ],
+    [
+      { netlify: { startedAt: 'yesterday' } },
+      'Netlify start time must be a valid timestamp.',
+    ],
+    [
+      { netlify: { registryUrl: '' } },
+      'Netlify registry URL must be a non-empty string.',
+    ],
+    [
+      { netlify: { deploymentId: ' \n\t ' } },
+      'Netlify deployment ID must be a non-empty string.',
+    ],
+    [
+      { gcpProd: { runId: 123 } },
+      'GCP production run ID must be a positive decimal string.',
+    ],
+    [
+      { gcpProd: { completedAt: { toString: 'invalid' } } },
+      'GCP completion time must be a valid timestamp.',
+    ],
+    [
+      { gcpProd: { functionUrls: { broken: '' } } },
+      'GCP function URL for broken must be a non-empty string.',
+    ],
+  ])('retains the diagnostic for %j', (patch, message) => {
+    expect(() => parse(patch)).toThrow(message);
+  });
+
+  test.each(['null', '[]', '1', '"text"'])(
+    'rejects non-record roots: %s',
+    input => {
+      expect(() =>
+        parseFunctionEndpointLineage(input, {}, hashRegistryBody)
+      ).toThrow('Lineage JSON must be an object.');
+    }
+  );
+
+  test.each([
+    ['gcpProd', 'GCP production evidence'],
+    ['registryObject', 'Registry object evidence'],
+    ['netlify', 'Netlify deployment evidence'],
+  ])('rejects array-valued %s evidence', (field, label) => {
+    const record = validLineage();
+    record[field] = [];
+    expect(() =>
+      parseFunctionEndpointLineage(
+        JSON.stringify(record),
+        { expectedRegistryUrl: registryUrl },
+        hashRegistryBody
+      )
+    ).toThrow(`${label} must be an object.`);
+  });
+
+  test('distinguishes JSON syntax failures from non-record values', () => {
+    expect(() =>
+      parseFunctionEndpointLineage('{', {}, hashRegistryBody)
+    ).toThrow('Lineage record must be valid JSON.');
+  });
+
+  test.each(['not-a-url', 'http://storage.googleapis.com/registry.json'])(
+    'retains the expected URL diagnostic for %s',
+    value => {
+      expect(() => parseWithRegistryUrl(value)).toThrow(
+        'Expected registry URL must be a valid HTTPS URL.'
+      );
+    }
+  );
+
+  test.each(['https://user@example.test', 'https://:password@example.test'])(
+    'rejects a URL with only one credential component: %s',
+    deploymentUrl => {
+      expect(() => parse({ netlify: { deploymentUrl } })).toThrow(
+        'Netlify deployment URL must be a valid HTTPS URL.'
+      );
+    }
+  );
+
+  test.each(['x1', '1x'])(
+    'rejects non-digit generation edges: %s',
+    generation => {
+      expect(() => parse({ registryObject: { generation } })).toThrow(
+        'Registry generation must be a decimal string.'
+      );
+    }
+  );
+
+  test.each(['x123', '123x'])('rejects non-digit run ID edges: %s', runId => {
+    expect(() => parse({ gcpProd: { runId } })).toThrow(
+      'GCP production run ID must be a positive decimal string.'
+    );
+  });
+
+  test.each([`x${'a'.repeat(40)}`, `${'a'.repeat(40)}x`])(
+    'anchors commit identity: %s',
+    sourceCommitSha => {
+      expect(() => parse({ gcpProd: { sourceCommitSha } })).toThrow(
+        'GCP source commit SHA must be a 40-character hex SHA.'
+      );
+    }
+  );
+
+  test.each([`x${'a'.repeat(64)}`, `${'a'.repeat(64)}x`])(
+    'anchors registry digests: %s',
+    registrySha256 => {
+      expect(() => parse({ netlify: { registrySha256 } })).toThrow(
+        'Registry SHA-256 must be a 64-character hex digest.'
+      );
+    }
+  );
+
+  test('permits independently absent consumer pins while published pins are present', () => {
+    expect(
+      parse({
+        netlify: { registryGeneration: undefined, registryEtag: undefined },
+      }).netlify
+    ).toMatchObject({ registryGeneration: undefined, registryEtag: undefined });
+  });
+
+  test.each(['2026-10-18T17:26:01.125+02:00', '2026-10-18T14:26:01.125-01:00'])(
+    'accepts fractional seconds and signed offsets: %s',
+    completedAt => {
+      expect(parse({ gcpProd: { completedAt } }).gcpProd.completedAt).toBe(
+        completedAt
+      );
+    }
+  );
+
+  test('preserves the original trailing-text calendar rejection', () => {
+    expect(() =>
+      parse({ gcpProd: { completedAt: '2026-10-18T15:26:01Z\n' } })
+    ).toThrow('GCP completion time must be a valid timestamp.');
+  });
+
+  test('normalizes uppercase identities and digest text', () => {
+    const sourceCommitSha = 'ABCDEF0123456789ABCDEF0123456789ABCDEF01';
+    const result = parse({
+      gcpProd: { sourceCommitSha },
+      registryObject: { sourceCommitSha },
+      netlify: {
+        sourceCommitSha,
+        registrySha256: registrySha256.toUpperCase(),
+      },
+    });
+    expect(result.gcpProd.sourceCommitSha).toBe(sourceCommitSha.toLowerCase());
+    expect(result.netlify.sourceCommitSha).toBe(sourceCommitSha.toLowerCase());
+    expect(result.netlify.registrySha256).toBe(registrySha256);
+  });
+
+  test('map comparison preserves order independence and cardinality', () => {
+    const fields = JSON.parse(registryBody).functions;
+    expect(
+      parse({
+        gcpProd: {
+          functionUrls: Object.fromEntries(Object.entries(fields).reverse()),
+        },
+      }).gcpProd.functionUrls
+    ).toEqual(fields);
+    expect(() =>
+      parse({
+        gcpProd: {
+          functionUrls: { ...fields, zzExtra: 'https://extra.example.run.app' },
+        },
+      })
+    ).toThrow('Registry function URLs do not match the GCP deployment.');
+    expect(() =>
+      parse({
+        gcpProd: {
+          functionUrls: {
+            objectMinuteRentalSearch: fields.objectMinuteRentalSearch,
+            zzOther: fields.getAuthorUuidV2,
+          },
+        },
+      })
+    ).toThrow('Registry function URLs do not match the GCP deployment.');
+  });
+});
+
+describe('pure timestamp text stage', () => {
+  const { parseTimestampText } = functionEndpointLineageTestOnly;
+  test.each([
+    '2026-10-18T15:26:01Z',
+    '2026-10-18T15:26:01.123Z',
+    '2026-10-18T15:26:01+02:30',
+    '2026-10-18T15:26:01-02:30',
+  ])('returns accepted text unchanged: %s', input => {
+    expect(parseTimestampText(input).input).toBe(input);
+  });
+  test('rejects trailing newline text at the format stage', () => {
+    expect(parseTimestampText('2026-10-18T15:26:01Z\n')).toBeNull();
+  });
+  test.each([
+    undefined,
+    null,
+    0,
+    [],
+    {},
+    Symbol('timestamp'),
+    { toString: () => '2026-10-18T15:26:01Z' },
+    'x2026-10-18T15:26:01Z',
+    '2026-10-18T15:26:01Zx',
+    '2026-10-18T15:26:01.12aZ',
+    '2026-10-18T15:26:01z',
+  ])('returns the invalid-format outcome: %s', input => {
+    expect(parseTimestampText(input)).toBeNull();
+  });
 });

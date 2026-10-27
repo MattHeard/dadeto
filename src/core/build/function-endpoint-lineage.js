@@ -9,13 +9,16 @@ const TIMESTAMP_PATTERN =
 /** @typedef {{ runId: string, sourceCommitSha: string, completedAt: string, functionUrls: Record<string, string> }} GcpProductionEvidence */
 /** @typedef {{ url: string, gcpProdRunId: string, sourceCommitSha: string, generation: string | undefined, etag: string | undefined, sha256: string, schemaVersion: number, environment: string, functions: Record<string, string> }} RegistryObjectEvidence */
 
+/** @typedef {{ buildRunId: string, deploymentId: string, deploymentUrl: string, sourceCommitSha: string, startedAt: string, registryUrl: string, registryGeneration: string | undefined, registryEtag: string | undefined, registrySha256: string }} NetlifyDeploymentEvidence */
+/** @typedef {{ schemaVersion: 1, gcpProd: GcpProductionEvidence, registry: RegistryObjectEvidence, netlify: NetlifyDeploymentEvidence }} FunctionEndpointLineage */
+
 /**
  * Parse and validate the evidence connecting a GCP apply, registry object, and
  * later Netlify deployment.
  * @param {string} lineageJson Serialized lineage record.
  * @param {{ expectedRegistryUrl?: string }} options Expected stable registry URL.
  * @param {(body: string) => string} sha256Utf8 Injected SHA-256 UTF-8 digest operation.
- * @returns {Record<string, unknown>} Validated, normalized lineage evidence.
+ * @returns {FunctionEndpointLineage} Validated, normalized lineage evidence.
  */
 export function parseFunctionEndpointLineage(
   lineageJson,
@@ -167,7 +170,7 @@ function parseRegistryObject(value, gcpProd, expectedRegistryUrl, sha256Utf8) {
  * @param {unknown} value Candidate Netlify evidence.
  * @param {GcpProductionEvidence} gcpProd Validated GCP evidence.
  * @param {RegistryObjectEvidence} registry Validated registry evidence.
- * @returns {{ buildRunId: string, deploymentId: string, deploymentUrl: string, sourceCommitSha: string, startedAt: string, registryUrl: string, registryGeneration: string | undefined, registryEtag: string | undefined, registrySha256: string }} Validated Netlify evidence.
+ * @returns {NetlifyDeploymentEvidence} Validated Netlify evidence.
  */
 function parseNetlifyEvidence(value, gcpProd, registry) {
   requireRecord(value, 'Netlify deployment evidence must be an object.');
@@ -324,14 +327,23 @@ function requireRunId(value, label) {
  * @returns {string} Validated timestamp.
  */
 function requireTimestamp(value, label) {
-  if (
-    typeof value !== 'string' ||
-    !TIMESTAMP_PATTERN.test(value) ||
-    !Number.isFinite(Date.parse(value))
-  ) {
+  const timestamp = parseTimestampText(value);
+  if (timestamp === null || !Number.isFinite(Date.parse(timestamp.input))) {
     throw new Error(`${label} must be a valid timestamp.`);
   }
-  return value;
+  return timestamp.input;
+}
+
+/**
+ * Parse the accepted timestamp text format before calendar interpretation.
+ * @param {unknown} value Untrusted timestamp candidate.
+ * @returns {{ input: string } | null} Native format match retaining original text, or an invalid-format outcome.
+ */
+function parseTimestampText(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  return TIMESTAMP_PATTERN.exec(value);
 }
 
 /**
@@ -389,13 +401,11 @@ function requireRecord(value, message) {
  * @returns {boolean} Whether the maps have the same keys and values.
  */
 function sameStringMap(left, right) {
-  const leftKeys = Object.keys(left).sort();
-  const rightKeys = Object.keys(right).sort();
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
   return (
     leftKeys.length === rightKeys.length &&
-    leftKeys.every(
-      (key, index) => key === rightKeys[index] && left[key] === right[key]
-    )
+    leftKeys.every(key => left[key] === right[key])
   );
 }
 
@@ -412,3 +422,6 @@ function requirePattern(value, pattern, message) {
   }
   return value;
 }
+
+/** Focused access to the pure format stage used by lineage parsing. */
+export const functionEndpointLineageTestOnly = { parseTimestampText };
