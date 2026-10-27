@@ -4,7 +4,6 @@ import {
   forEachMappedEntries,
   runMappedEntries,
 } from '../commonCore.js';
-import path from 'node:path';
 export {
   selectReadablePath,
   formatPathRelativeToProject,
@@ -235,221 +234,6 @@ function isCorrectJsFileEnding(entryName) {
 }
 
 /**
- * Create copy plans mapping source JS files to their destinations.
- * @param {string[]} files Source file paths.
- * @param {string} sourceRoot Root of the source directory.
- * @param {string} destinationRoot Root of the destination directory.
- * @param {{ join: (from: string, to: string) => string, relative: (from: string, to: string) => string }} [pathHelpers]
- *   Path helper bundle.
- * @returns {Array<{ source: string, destination: string }>} Copy instructions.
- */
-function createCopyPairs(
-  files,
-  sourceRoot,
-  destinationRoot,
-  pathHelpers = path
-) {
-  return files.map(filePath => ({
-    source: filePath,
-    destination: pathHelpers.join(
-      destinationRoot,
-      pathHelpers.relative(sourceRoot, filePath)
-    ),
-  }));
-}
-
-/**
- * Ensure the destination directory exists before copying files.
- * @param {{ directoryExists: (target: string) => boolean, createDirectory: (target: string) => void }} io Directory management helpers.
- * @param {string} targetDir Directory that must be present.
- * @returns {void}
- */
-function ensureDirectoryExists(io, targetDir) {
-  if (!io.directoryExists(targetDir)) {
-    io.createDirectory(targetDir);
-  }
-}
-
-/**
- * Check whether a directory entry is a JS file that can be copied.
- * @param {import('fs').Dirent} entry Directory entry to inspect.
- * @returns {boolean} True when the entry is a JS file.
- */
-function isJsFile(entry) {
-  return entry.isFile() && isCorrectJsFileEnding(entry.name);
-}
-
-/**
- * Determine if the entry warrants a recursive or file-level check.
- * @param {import('fs').Dirent} entry Directory entry to test.
- * @returns {boolean} True when the entry should be processed further.
- */
-function shouldCheckEntry(entry) {
-  return entry.isDirectory() || isJsFile(entry);
-}
-
-/**
- * Resolve new files discovered from a directory entry.
- * @param {import('fs').Dirent} entry Directory entry encountered.
- * @param {string} fullPath Absolute path to the entry.
- * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
- * @returns {string[]} JS file paths sourced from the entry.
- */
-function getActualNewFiles(entry, fullPath, listEntries) {
-  if (entry.isDirectory()) {
-    return findJsFiles(fullPath, listEntries);
-  }
-  return [fullPath];
-}
-
-/**
- * Filter entries that should yield candidate JS files.
- * @param {import('fs').Dirent} entry Directory entry to evaluate.
- * @param {string} fullPath Absolute path to the entry.
- * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
- * @returns {string[]} Candidate JS file paths.
- */
-function getPossibleNewFiles(entry, fullPath, listEntries) {
-  if (shouldCheckEntry(entry)) {
-    return getActualNewFiles(entry, fullPath, listEntries);
-  }
-  return [];
-}
-
-/**
- * Append JS files discovered from a directory entry.
- * @param {string[]} jsFiles Accumulated JS files.
- * @param {import('fs').Dirent} entry Directory entry to inspect.
- * @param {{ dir: string, listEntries: (dir: string) => import('fs').Dirent[] }} context Directory context.
- * @returns {string[]} Updated list of JS files.
- */
-function accumulateJsFiles(jsFiles, entry, context) {
-  const { dir, listEntries } = context;
-  const fullPath = path.join(dir, entry.name);
-  const newFiles = getPossibleNewFiles(entry, fullPath, listEntries);
-  return jsFiles.concat(newFiles);
-}
-
-/**
- * Recursively find JS files beneath the provided directory.
- * @param {string} dir Root directory to inspect.
- * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
- * @returns {string[]} JS file paths discovered within the directory tree.
- */
-function findJsFiles(dir, listEntries) {
-  const entries = listEntries(dir);
-  return entries.reduce(
-    (jsFiles, entry) => accumulateJsFiles(jsFiles, entry, { dir, listEntries }),
-    /** @type {string[]} */ ([])
-  );
-}
-
-/**
- * Copy entries using a resolver and bound copy function.
- * @param {Array<{ source: string, destination: string }>} entries Entries to copy.
- * @param {{
- *   directoryExists: (target: string) => boolean,
- *   createDirectory: (target: string) => void,
- *   copyFile: (source: string, destination: string) => void,
- *   readDirEntries: (dir: string) => import('fs').Dirent[],
- * }} io FS adapters.
- * @param {{
- *   resolveMessage: (entry: { source: string, destination: string }) => string,
- *   copyFile: (source: string, destination: string, message?: string) => void,
- * }} options Logger and message builder.
- * @returns {Promise<void>} Copy operation promise.
- */
-async function copyEntries(entries, io, { resolveMessage, copyFile }) {
-  await runMappedEntries(
-    entries,
-    ({ source, destination }) => ({
-      source,
-      destination,
-      message: resolveMessage({ source, destination }),
-    }),
-    async ({ source, destination, message }) => {
-      copyFile(source, destination, message);
-    }
-  );
-}
-
-/**
- * Copy a directory entry, recursing into subdirectories as needed.
- * @param {import('fs').Dirent} entry Directory entry to copy.
- * @param {{ src: string, dest: string }} directories Source and destination directory paths.
- * @param {{
- *   io: {
- *     directoryExists: (target: string) => boolean,
- *     createDirectory: (target: string) => void,
- *     removeDirectory: (target: string) => void,
- *     copyFile: (source: string, destination: string) => void,
- *     readDirEntries: (dir: string) => import('fs').Dirent[],
- *   },
- *   messageLogger: { info: (message: string) => void },
- *   copyFile: (source: string, destination: string, message?: string) => void,
- * }} context File system adapters and logger for status updates.
- * @returns {void}
- */
-function handleDirectoryEntry(entry, directories, context) {
-  const { src, dest } = directories;
-  const srcPath = path.join(src, entry.name);
-  const destPath = path.join(dest, entry.name);
-  // Stryker disable next-line all -- recursive directory dispatch is guarded by the filesystem entry contract.
-  if (entry.isDirectory()) {
-    copyDirRecursive({ src: srcPath, dest: destPath }, context);
-    return;
-  }
-  context.copyFile(srcPath, destPath);
-}
-
-/**
- * Iterate through directory entries and copy each one.
- * @param {import('fs').Dirent[]} entries Directory entries to copy.
- * @param {{ src: string, dest: string }} directories Source and destination directory paths.
- * @param {{
- *   io: {
- *     directoryExists: (target: string) => boolean,
- *     createDirectory: (target: string) => void,
- *     removeDirectory: (target: string) => void,
- *     copyFile: (source: string, destination: string) => void,
- *     readDirEntries: (dir: string) => import('fs').Dirent[],
- *   },
- *   messageLogger: { info: (message: string) => void },
- *   copyFile: (source: string, destination: string, message?: string) => void,
- * }} context File system adapters and logger for status updates.
- * @returns {void}
- */
-function processDirectoryEntries(entries, directories, context) {
-  entries.forEach(entry => {
-    handleDirectoryEntry(entry, directories, context);
-  });
-}
-
-/**
- * Recursively copy the contents of a directory.
- * @param {{ src: string, dest: string }} directories Source and destination directory paths.
- * @param {{
- *   io: {
- *     directoryExists: (target: string) => boolean,
- *     createDirectory: (target: string) => void,
- *     removeDirectory: (target: string) => void,
- *     copyFile: (source: string, destination: string) => void,
- *     readDirEntries: (dir: string) => import('fs').Dirent[],
- *   },
- *   messageLogger: { info: (message: string) => void },
- *   copyFile: (source: string, destination: string, message?: string) => void,
- * }} context File system adapters and logger for status updates.
- * @returns {void}
- */
-function copyDirRecursive(directories, context) {
-  const { src, dest } = directories;
-  const { io } = context;
-  ensureDirectoryExists(io, dest);
-  const entries = io.readDirEntries(src);
-  processDirectoryEntries(entries, directories, context);
-}
-
-/**
  * Create helpers that orchestrate copying source assets into the public tree.
  * @param {object} options - File system dependencies.
  * @param {() => {
@@ -477,6 +261,221 @@ export function createCopyCore(options) {
     srcDir: options.srcDir,
     publicDir: options.publicDir,
   });
+
+  /**
+   * Create copy plans mapping source JS files to their destinations.
+   * @param {string[]} files Source file paths.
+   * @param {string} sourceRoot Root of the source directory.
+   * @param {string} destinationRoot Root of the destination directory.
+   * @param {{ join: (from: string, to: string) => string, relative: (from: string, to: string) => string }} [pathHelpers]
+   *   Path helper bundle.
+   * @returns {Array<{ source: string, destination: string }>} Copy instructions.
+   */
+  function createCopyPairs(
+    files,
+    sourceRoot,
+    destinationRoot,
+    pathHelpers = pathDeps
+  ) {
+    return files.map(filePath => ({
+      source: filePath,
+      destination: pathHelpers.join(
+        destinationRoot,
+        pathHelpers.relative(sourceRoot, filePath)
+      ),
+    }));
+  }
+
+  /**
+   * Ensure the destination directory exists before copying files.
+   * @param {{ directoryExists: (target: string) => boolean, createDirectory: (target: string) => void }} io Directory management helpers.
+   * @param {string} targetDir Directory that must be present.
+   * @returns {void}
+   */
+  function ensureDirectoryExists(io, targetDir) {
+    if (!io.directoryExists(targetDir)) {
+      io.createDirectory(targetDir);
+    }
+  }
+
+  /**
+   * Check whether a directory entry is a JS file that can be copied.
+   * @param {import('fs').Dirent} entry Directory entry to inspect.
+   * @returns {boolean} True when the entry is a JS file.
+   */
+  function isJsFile(entry) {
+    return entry.isFile() && isCorrectJsFileEnding(entry.name);
+  }
+
+  /**
+   * Determine if the entry warrants a recursive or file-level check.
+   * @param {import('fs').Dirent} entry Directory entry to test.
+   * @returns {boolean} True when the entry should be processed further.
+   */
+  function shouldCheckEntry(entry) {
+    return entry.isDirectory() || isJsFile(entry);
+  }
+
+  /**
+   * Resolve new files discovered from a directory entry.
+   * @param {import('fs').Dirent} entry Directory entry encountered.
+   * @param {string} fullPath Absolute path to the entry.
+   * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
+   * @returns {string[]} JS file paths sourced from the entry.
+   */
+  function getActualNewFiles(entry, fullPath, listEntries) {
+    if (entry.isDirectory()) {
+      return findJsFiles(fullPath, listEntries);
+    }
+    return [fullPath];
+  }
+
+  /**
+   * Filter entries that should yield candidate JS files.
+   * @param {import('fs').Dirent} entry Directory entry to evaluate.
+   * @param {string} fullPath Absolute path to the entry.
+   * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
+   * @returns {string[]} Candidate JS file paths.
+   */
+  function getPossibleNewFiles(entry, fullPath, listEntries) {
+    if (shouldCheckEntry(entry)) {
+      return getActualNewFiles(entry, fullPath, listEntries);
+    }
+    return [];
+  }
+
+  /**
+   * Append JS files discovered from a directory entry.
+   * @param {string[]} jsFiles Accumulated JS files.
+   * @param {import('fs').Dirent} entry Directory entry to inspect.
+   * @param {{ dir: string, listEntries: (dir: string) => import('fs').Dirent[] }} context Directory context.
+   * @returns {string[]} Updated list of JS files.
+   */
+  function accumulateJsFiles(jsFiles, entry, context) {
+    const { dir, listEntries } = context;
+    const fullPath = join(dir, entry.name);
+    const newFiles = getPossibleNewFiles(entry, fullPath, listEntries);
+    return jsFiles.concat(newFiles);
+  }
+
+  /**
+   * Recursively find JS files beneath the provided directory.
+   * @param {string} dir Root directory to inspect.
+   * @param {(dir: string) => import('fs').Dirent[]} listEntries Directory reader.
+   * @returns {string[]} JS file paths discovered within the directory tree.
+   */
+  function findJsFiles(dir, listEntries) {
+    const entries = listEntries(dir);
+    return entries.reduce(
+      (jsFiles, entry) =>
+        accumulateJsFiles(jsFiles, entry, { dir, listEntries }),
+      /** @type {string[]} */ ([])
+    );
+  }
+
+  /**
+   * Copy entries using a resolver and bound copy function.
+   * @param {Array<{ source: string, destination: string }>} entries Entries to copy.
+   * @param {{
+   *   directoryExists: (target: string) => boolean,
+   *   createDirectory: (target: string) => void,
+   *   copyFile: (source: string, destination: string) => void,
+   *   readDirEntries: (dir: string) => import('fs').Dirent[],
+   * }} io FS adapters.
+   * @param {{
+   *   resolveMessage: (entry: { source: string, destination: string }) => string,
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} options Logger and message builder.
+   * @returns {Promise<void>} Copy operation promise.
+   */
+  async function copyEntries(entries, io, { resolveMessage, copyFile }) {
+    await runMappedEntries(
+      entries,
+      ({ source, destination }) => ({
+        source,
+        destination,
+        message: resolveMessage({ source, destination }),
+      }),
+      async ({ source, destination, message }) => {
+        copyFile(source, destination, message);
+      }
+    );
+  }
+
+  /**
+   * Copy a directory entry, recursing into subdirectories as needed.
+   * @param {import('fs').Dirent} entry Directory entry to copy.
+   * @param {{ src: string, dest: string }} directories Source and destination directory paths.
+   * @param {{
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     removeDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters and logger for status updates.
+   * @returns {void}
+   */
+  function handleDirectoryEntry(entry, directories, context) {
+    const { src, dest } = directories;
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive({ src: srcPath, dest: destPath }, context);
+      return;
+    }
+    context.copyFile(srcPath, destPath);
+  }
+
+  /**
+   * Iterate through directory entries and copy each one.
+   * @param {import('fs').Dirent[]} entries Directory entries to copy.
+   * @param {{ src: string, dest: string }} directories Source and destination directory paths.
+   * @param {{
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     removeDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters and logger for status updates.
+   * @returns {void}
+   */
+  function processDirectoryEntries(entries, directories, context) {
+    entries.forEach(entry => {
+      handleDirectoryEntry(entry, directories, context);
+    });
+  }
+
+  /**
+   * Recursively copy the contents of a directory.
+   * @param {{ src: string, dest: string }} directories Source and destination directory paths.
+   * @param {{
+   *   io: {
+   *     directoryExists: (target: string) => boolean,
+   *     createDirectory: (target: string) => void,
+   *     removeDirectory: (target: string) => void,
+   *     copyFile: (source: string, destination: string) => void,
+   *     readDirEntries: (dir: string) => import('fs').Dirent[],
+   *   },
+   *   messageLogger: { info: (message: string) => void },
+   *   copyFile: (source: string, destination: string, message?: string) => void,
+   * }} context File system adapters and logger for status updates.
+   * @returns {void}
+   */
+  function copyDirRecursive(directories, context) {
+    const { src, dest } = directories;
+    const { io } = context;
+    ensureDirectoryExists(io, dest);
+    const entries = io.readDirEntries(src);
+    processDirectoryEntries(entries, directories, context);
+  }
 
   // Path formatting is scoped to blog generation.
   /**

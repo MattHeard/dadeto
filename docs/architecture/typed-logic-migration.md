@@ -307,3 +307,22 @@ Bead `dadeto-u0xq` repairs the existing qs override/lock pin to6.16.1; all resol
 paths, supported serialization compatibility and npm audit now pass locally.
 Keep exact descendant CI separate from local evidence; the library probe caveat
 is recorded in `notes/agents/2026-10-27-qs-audit-pin.md`.
+
+## Static copy path injection — 27 October 2026
+
+Bead `dadeto-w5p7` binds recursive discovery, directory copying and default
+copy-pair construction to the copy factory's existing injected path bundle,
+removing its direct node:path import. Four red non-native-path tests reproduced
+the bypass; independent-instance coverage also prevents ambient shared state.
+Helper signatures and explicit pair overrides remain intact. The coherent helper
+group now lives within its owning factory; no compatibility module was added.
+
+Scoped coverage passes with no uncovered lines/branches; all ten split static
+gates and the actual static build pass. All 1,119 generated files remain
+byte-identical, with no allowed output exception. A whole-module mutation
+experiment with static mutants and a 100% threshold is running; its final report
+must be recorded separately before claiming mutation completion. The touched
+module's sole prior mutation skip has been removed. See
+`notes/agents/2026-10-27-static-copy-path-injection.md` for commands and limits.
+The refreshed AST census leaves 10 legacy modules / 23 built-in imports; broader
+portability enforcement, parse/thin preparation and namespace moves remain open.
