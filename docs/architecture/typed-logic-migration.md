@@ -161,3 +161,27 @@ Parse/dependency/global and thin-wrapper checks still require explicit extension
 before a JavaScript move. Refresh module dependencies before selecting the first
 move; the report module now depends on the shared root classifier. Static output
 mapping and cloud package contracts remain mandatory for moves affecting them.
+
+
+## Dependency/global preflight — 27 October 2026
+
+Bead `dadeto-141e` adds both destinations to observable integration/dependency
+rules and default implicit-global/random scans. Trusted core cannot depend on
+boundary; boundary may depend on core. An explicit sourceRoot remains a single
+scan and the external graph command launches once. Real filesystem and cruiser
+fixtures pass with actual scope analysis; final focused result is 54 tests.
+Scoped source coverage has no uncovered lines/branches and all 10 static gates
+pass. The changed-line mutation harness kills 21/21 mutants at a 100% threshold:
+`docs/quality/logic-dependency-roots.stryker.config.mjs`.
+
+Bead `dadeto-lqbv` fixes a pre-existing quoted-state false positive exposed by
+that positive fixture. Its first mutation run exposed a template-transition
+survivor; the added real-call-after-template test kills it on the same rerun.
+
+**Remaining portability gap:** the active dependency config's includeOnly filter
+omits built-in endpoints, so the nominal built-in prohibition is not evidence
+that legacy code is free of Node imports. Actual graph inspection found this;
+an AST audit identified 15 files / 28 static built-in imports. `dadeto-e1oz` owns
+remediation and observable enforcement before moves, without exclusions. The
+current fixture proves local/package/domain/direction rules only. Parse and thin
+classification also remain pending; no source file has moved.

@@ -2,8 +2,19 @@
  * Baseline dependency-cruiser config for Dadeto.
  * Focus on a narrow acyclic rule while giving future learners a place to grow the policy.
  */
+const logicDirectory = 'src/(?:core|logic/(?:core|boundary))';
+const logicRoot = `^${logicDirectory}(?:/|$)`;
+
 module.exports = {
   forbidden: [
+    {
+      name: 'trusted-core-no-boundary-deps',
+      comment:
+        'Trusted logic consumes parsed values; boundary parsers may depend on core, never the reverse.',
+      severity: 'error',
+      from: { path: '^src/logic/core(?:/|$)' },
+      to: { path: '^src/logic/boundary(?:/|$)' },
+    },
     {
       name: 'local-writer-no-cycles',
       comment:
@@ -19,10 +30,10 @@ module.exports = {
     {
       name: 'core-no-local-deps',
       comment:
-        'Keep shared core modules independent from local runner plumbing so the core layer stays reusable.',
+        'Keep all logic modules independent from local runner plumbing so the core layer stays reusable.',
       severity: 'error',
       from: {
-        path: '^src/core',
+        path: logicRoot,
       },
       to: {
         path: '^src/local',
@@ -37,7 +48,7 @@ module.exports = {
         path: '^src/browser',
       },
       to: {
-        pathNot: '^src/(browser|core|adapters)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(browser|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -49,7 +60,7 @@ module.exports = {
         path: '^src/build',
       },
       to: {
-        pathNot: '^src/(build|core|adapters)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(build|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -61,7 +72,7 @@ module.exports = {
         path: '^src/cloud',
       },
       to: {
-        pathNot: '^src/(cloud|core|adapters)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(cloud|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
@@ -73,28 +84,28 @@ module.exports = {
         path: '^src/local',
       },
       to: {
-        pathNot: '^src/(local|core|adapters)(?:/|$)|^node_modules(?:/|$)',
+        pathNot: '^src/(local|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
     {
       name: 'src-core-within-core',
       comment:
-        'Avoid core modules reaching outside src/core so the shared layer stays portable.',
+        'Avoid logic modules reaching outside the supported logic roots so the shared layer stays portable.',
       severity: 'error',
       from: {
-        path: '^src/core',
+        path: logicRoot,
       },
       to: {
-        pathNot: '^src/core(?:/|$)',
+        pathNot: logicRoot,
       },
     },
     {
       name: 'src-core-scripts-no-node-builtins',
       comment:
-        'Keep src/core free of direct Node built-in imports so executable wiring stays at the outer wrapper layer.',
+        'Keep all logic free of direct Node built-in imports so executable wiring stays at the outer wrapper layer.',
       severity: 'error',
       from: {
-        path: '^src/core/',
+        path: logicRoot,
       },
       to: {
         dependencyTypes: ['core'],
@@ -106,10 +117,10 @@ module.exports = {
         'Keep src/core/browser isolated from the other src/core subdirectories; shared code belongs at src/core root.',
       severity: 'error',
       from: {
-        path: '^src/core/browser/',
+        path: `^${logicDirectory}/browser/`,
       },
       to: {
-        path: '^src/core/(build|cloud|local)/',
+        path: `^${logicDirectory}/(build|cloud|local)/`,
       },
     },
     {
@@ -118,10 +129,10 @@ module.exports = {
         'Keep src/core/build isolated from the other src/core subdirectories; shared code belongs at src/core root.',
       severity: 'error',
       from: {
-        path: '^src/core/build/',
+        path: `^${logicDirectory}/build/`,
       },
       to: {
-        path: '^src/core/(browser|cloud|local)/',
+        path: `^${logicDirectory}/(browser|cloud|local)/`,
       },
     },
     {
@@ -130,10 +141,10 @@ module.exports = {
         'Keep src/core/cloud isolated from the other src/core subdirectories; shared code belongs at src/core root.',
       severity: 'error',
       from: {
-        path: '^src/core/cloud/',
+        path: `^${logicDirectory}/cloud/`,
       },
       to: {
-        path: '^src/core/(browser|build|local)/',
+        path: `^${logicDirectory}/(browser|build|local)/`,
       },
     },
     {
@@ -142,10 +153,10 @@ module.exports = {
         'Keep src/core/local isolated from the other src/core subdirectories; shared code belongs at src/core root.',
       severity: 'error',
       from: {
-        path: '^src/core/local/',
+        path: `^${logicDirectory}/local/`,
       },
       to: {
-        path: '^src/core/(browser|build|cloud)/',
+        path: `^${logicDirectory}/(browser|build|cloud)/`,
       },
     },
     {
@@ -163,10 +174,10 @@ module.exports = {
     {
       name: 'core-no-node-modules',
       comment:
-        'Prevent src/core from depending on node_modules until we stabilize it.',
+        'Prevent logic from depending on node_modules until we stabilize it.',
       severity: 'error',
       from: {
-        path: '^src/core',
+        path: logicRoot,
       },
       to: {
         path: 'node_modules',

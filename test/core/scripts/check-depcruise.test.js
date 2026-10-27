@@ -483,6 +483,7 @@ describe('createCheckDepcruiseHandle', () => {
       stdout,
       stderr,
       rootDir: '/repo',
+      sourceRoot: 'src/core',
       pathModule: path,
       scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
@@ -764,6 +765,7 @@ describe('createCheckDepcruiseHandle browser-global gate', () => {
       stdout,
       stderr,
       rootDir: '/repo',
+      sourceRoot: 'src/core',
       pathModule: path,
       scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
@@ -793,6 +795,7 @@ describe('createCheckDepcruiseHandle browser-global gate', () => {
       readdirSync,
       stdout,
       rootDir: '/repo',
+      sourceRoot: 'src/core',
       pathModule: path,
       scopeAnalysisDeps: createScopeAnalysisDeps(),
     });
@@ -917,3 +920,25 @@ describe('createBrowserGlobalReferenceFinder', () => {
     expect(findBrowserGlobalReferences('anything')).toEqual([]);
   });
 });
+
+test.each([
+  ["const label = 'prefix Math.random()';", 0],
+  ['const label = "prefix Math.random()";', 0],
+  ['const label = `prefix Math.random()`; Math.random();', 1],
+  ["const label = 'prefix \\' Math.random()'; Math.random();", 1],
+  ['const label = "prefix \\" Math.random()"; Math.random();', 1],
+])(
+  'quoted text stays outside the random-source policy: %s',
+  (source, count) => {
+    const violations = findCoreMathRandomViolations({
+      readFileSync: () => source,
+      readdirSync: () => [createDirentFile('quoted.js')],
+      rootDir: '/repo',
+      sourceRoot: 'src/core',
+      pathModule: path,
+    });
+    expect(
+      violations.reduce((total, violation) => total + violation.occurrences, 0)
+    ).toBe(count);
+  }
+);

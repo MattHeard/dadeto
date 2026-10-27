@@ -2,6 +2,7 @@ import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
 import { CORE_GLOBALS } from '../local/check-depcruise-scope.js';
 import { DEFAULT_STDOUT, DEFAULT_STDERR } from './gate-script-defaults.js';
+import { LOGIC_SOURCE_ROOTS } from '../local/logic-source-paths.js';
 import {
   createBrowserMainGlobalFinder,
   createBrowserMainSourceReader,
@@ -76,7 +77,11 @@ const CODE_BOUNDARIES = {
  */
 export function createCheckDepcruiseHandle(options = {}) {
   const dependencies = normalizeCheckDepcruiseOptions(options);
-  return executeDepcruiseGate.bind(null, dependencies);
+  const sourceRoots =
+    options.sourceRoot === undefined
+      ? LOGIC_SOURCE_ROOTS
+      : [dependencies.sourceRoot];
+  return executeDepcruiseGate.bind(null, dependencies, sourceRoots);
 }
 
 /**
@@ -184,9 +189,10 @@ function normalizeCheckDepcruiseOptions(options = {}) {
 /**
  * Execute dependency-cruiser and the core random policy scan.
  * @param {DepcruiseGateDeps} deps Gate dependencies.
+ * @param {readonly string[]} sourceRoots Logic roots to scan.
  * @returns {{exitCode: number, violations: number}} Gate result.
  */
-function executeDepcruiseGate(deps) {
+function executeDepcruiseGate(deps, sourceRoots) {
   const { launchFailure } = gateUtils.runGateCommand({
     spawnImpl: deps.spawnImpl,
     command: 'depcruise',
@@ -201,17 +207,9 @@ function executeDepcruiseGate(deps) {
     return { exitCode: launchFailure.exitCode, violations: 0 };
   }
 
-  /** @type {CoreFileScanDeps} */
-  const sharedScanDeps = deps;
-  /** @type {CoreBrowserMainDeps & { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }>, scopeAnalysisDeps: { parseSourceForScopeAnalysis: (source: string) => unknown, analyzeScope: (ast: unknown) => { scopes: Array<{ through: Array<{ identifier?: { name?: string } }> }> } } }} */
-  const browserScanDeps = {
-    ...sharedScanDeps,
-    scopeAnalysisDeps: deps.scopeAnalysisDeps,
-  };
-
-  const violations = findCoreMathRandomViolations(sharedScanDeps);
-  const browserGlobalViolations =
-    collectCoreBrowserGlobalViolations(browserScanDeps);
+  const scans = sourceRoots.map(sourceRoot => ({ ...deps, sourceRoot }));
+  const violations = scans.flatMap(findCoreMathRandomViolations);
+  const browserGlobalViolations = scans.flatMap(findCoreGlobalViolations);
 
   if (browserGlobalViolations.length > 0) {
     reportViolations({
@@ -524,11 +522,11 @@ function getMathRandomScanStep(source, index, state) {
   }
 
   if (state === 'single-quote') {
-    return scanDelimitedString(source, index, "'", 'code');
+    return scanDelimitedString(source, index, "'", 'single-quote');
   }
 
   if (state === 'double-quote') {
-    return scanDelimitedString(source, index, '"', 'code');
+    return scanDelimitedString(source, index, '"', 'double-quote');
   }
 
   return scanDelimitedString(source, index, '`', 'template');
