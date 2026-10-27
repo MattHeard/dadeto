@@ -74,3 +74,20 @@ Focused hardening passes 2 suites / 51 tests and targeted ESLint. Runtime blob
 the exact 1,119-file output parity evidence remains valid. The same full-module
 mutation gate is being rerun; keep the quality Bead open until its terminal
 report and exact pushed CI result. No mutation suppression or threshold change.
+
+## Complete mutation evidence — 27 October 2026
+
+The final whole-module rerun passes: **306/306 Killed**, including **84 static**
+mutants, zero survivors/timeouts/ignored/uncovered mutants at the unchanged
+100% threshold. Report `reports/mutation/static-copy.json` and summary
+`reports/mutation/static-copy-summary.json` embed the exact runtime source; SHA-256
+`94ea4c790607293341643c32cf5b772ec7b84611c66490dadd7df15163be4a10`.
+Log: `/tmp/dadeto-w5p7-mutation-final.log`; wrapper exit zero. The initial five
+static survivors and recursive fixture timeout are all resolved by stronger
+tests; no production body, source/mutation exclusion or timeout setting changed.
+
+Focused hardening passes 51 tests; all ten split local static gates pass.
+Injection Full Check40587766084 succeeded for35cf8d4. Exact hardening
+[Full Check40588740109](https://github.com/MattHeard/dadeto/actions/runs/40588740109)
+at67765d9 remains tracked separately before closure. The source blob and
+1,119-file output parity remain unchanged. Parent Rank 11 remains Partial.
