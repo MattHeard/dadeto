@@ -10,7 +10,7 @@ Define explicit, machine-checkable acceptance criteria and where evidence is sto
 - [x] Response options show `minimumWarningLeadDays`, the minimum advance warning for arrival within the horizon (0 for current response; null when even day zero is too late). The table and exported plan preserve it and explain capacity/shortfall caveats.
 - [x] Show each option's remaining shortfall and explicitly warn when no feasible option covers demand, as required by scope 4 of the live spec.
 - [x] Capacity mitigation arrival respects both its route and option fulfillment lead times; buffers retain their independent timing.
-- [ ] Imported scenario provenance, horizon, destination and demand replace the static sample headings/summary; UI limits must agree with the documented import schema.
+- [x] Imported provenance, horizon, destination, demand and starting stock replace sample context; custom durations agree with the documented positive-integer schema.
 - [ ] Cloud browser acceptance (`test/e2e/supply-chain-nowcasting.spec.ts`) records a sample network and one-click disruption with a useful plan in under two minutes, no signup, clear hypothetical warning labels, and no autonomous action.
 - [x] Export contains baseline, warning signal, ranked alternatives, ranking criterion, and all constraints/assumptions; optional JSON and CSV IDs round-trip without affecting calculations.
 - [x] Null supplier, route, and mitigation entries return explicit validation issues; multiple valid routes can be selected by disruption and mitigation IDs.
@@ -71,3 +71,9 @@ The report uploader now uses explicit create-only JSON API POSTs under the exist
 New regressions first failed for missing remaining-shortfall fields, a missing partial-response warning, and day-2 capacity arrival on a route requiring day 5. The fixes passed 119 focused tests and full planner/presenter line/branch coverage, ESLint/core parse, and zero clones. All 22 new route-floor/demand-warning mutants were killed. The prior 23-mutant timing/label report is preserved as `reports/mutation/supply-chain-nowcasting-warning.json`. `npm run check` passed all 10 gates; the build and cloud-test discovery passed. Full Check `40362213941` (threshold commit) and `40365185613` (uploader commit) succeeded.
 
 The traceability audit is in `spec-audit.md`. It still requires retained current-code browser evidence and correction of static sample context after custom imports; the spec remains Active / Partial.
+
+## Imported context evidence — 2026-10-27
+
+The custom-import fixture changes destination to harbor, horizon to3 days, demand to14 units/day, starting stock to3, duration to20 and warning to6; context labels and controls reflect those values without invalid HTML limits. Missing optional context labels still permit planning. All48 presenter tests passed with full presenter lines/branches, ESLint/core parse and0 clones; `npm run check` passed10/10 and build passed. The context formatter was extracted after the constructor hit the44-statement limit; no limit or suppression changed.
+
+Full Check40368983213 for168291f succeeded. Scheduled GCP run40449922217 at that SHA passed its Cloud Run job and uploaded reports through the create-only transport. Both report trees then downloaded successfully into the workflow's infra working directory, but the GitHub artifact action searched the workspace root and failed. Cleanup succeeded. The next shared-harness slice makes the destination explicit; current-code browser artifact inspection is still pending.

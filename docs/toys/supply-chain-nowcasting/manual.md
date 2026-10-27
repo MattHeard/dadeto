@@ -2,7 +2,7 @@
 
 ## What this toy does
 
-Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, minimum warning for arrival within the horizon, remaining shortfall, and incremental cost. Paste a scenario JSON object or the record-oriented CSV below, or load a `.json` or `.csv` file to replace the sample after validation. Export downloads the full JSON response record, which can be imported again. Every result is a planning scenario, not a real forecast or procurement instruction.
+Open the standalone [Supply Signals planner](/supply-chain-nowcasting/). Choose the disrupted route, capacity reduction, duration, warning lead time, and ranking rule. Apply or reset the one-click disruption to compare current response with an earlier hypothetical warning. The page shows route costs, daily shortfall, capacity and one-time buffer options, feasibility, arrival day, minimum warning for arrival within the horizon, remaining shortfall, and incremental cost. Paste a scenario JSON object or the record-oriented CSV below, or load a `.json` or `.csv` file to replace the sample after validation. Export downloads the full JSON response record, which can be imported again. The page context follows the active dataset’s destination, horizon, demand, starting stock and provenance after import; custom positive whole-day durations are supported. Every result is a planning scenario, not a real forecast or procurement instruction.
 
 ## Input
 

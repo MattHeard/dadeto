@@ -19,13 +19,13 @@
         <p>See how early warning changes a small distributor’s response options.</p>
       </header>
 
-      <p class="notice"><strong>Hypothetical planning model.</strong> This synthetic scenario is not a live forecast. It never contacts suppliers or changes a route.</p>
+      <p class="notice"><strong>Hypothetical planning model.</strong> This model is not a live forecast. It never contacts suppliers or changes a route.</p>
 
       <section class="panel controls" aria-labelledby="controls-heading">
         <div>
-          <p class="eyebrow">SYNTHETIC NETWORK · 5 DAY PLAN</p>
+          <p id="plan-context" class="eyebrow">SYNTHETIC SAMPLE · 5-DAY PLAN</p>
           <h2 id="controls-heading">Shape the disruption</h2>
-          <p>Market needs 10 units/day. Change assumptions and compare response options. Every result is hypothetical.</p>
+          <p id="scenario-summary">market needs 10 units/day, with 10 units in starting stock. Plan horizon: 5 days. Change assumptions to compare hypothetical options.</p>
         </div>
         <div class="field">
           <label for="disruption-route">Disrupted route</label>
@@ -42,7 +42,7 @@
         </div>
         <div class="field">
           <label for="disruption-duration">Duration in days</label>
-          <input id="disruption-duration" name="disruption-duration" type="number" min="1" max="10" step="1" value="10" />
+          <input id="disruption-duration" name="disruption-duration" type="number" min="1" step="1" value="10" />
         </div>
         <div class="field">
           <label for="warning-lead">Warning lead time</label>
@@ -116,7 +116,7 @@
         </article>
         <div class="table-wrap">
           <table>
-            <caption id="mitigation-caption">Options ranked by the selected rule. All costs are incremental estimates in synthetic cents. Minimum warning is for arrival within the horizon; capacity limits still apply, and arrival does not guarantee shortfall reduction.</caption>
+            <caption id="mitigation-caption">Options ranked by the selected rule. All costs are incremental estimates in cents from the scenario inputs. Minimum warning is for arrival within the horizon; capacity limits still apply, and arrival does not guarantee shortfall reduction.</caption>
             <thead>
               <tr><th scope="col">Rank</th><th scope="col">Option</th><th scope="col">Added supply</th><th scope="col">Arrival</th><th scope="col">Minimum warning</th><th scope="col">Feasibility</th><th scope="col">Shortfall avoided</th><th scope="col">Remaining shortfall</th><th scope="col">Added cost</th></tr>
             </thead>
@@ -126,7 +126,7 @@
       </section>
 
       <footer>
-        <p>All quantities are synthetic assumptions. Ranked options are advisory and are never executed.</p>
+        <p>Quantities and costs come from the sample or your imported inputs. Ranked options are advisory and are never executed.</p>
       </footer>
     </main>
   </body>

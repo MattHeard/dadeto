@@ -834,3 +834,59 @@ test('shows remaining shortfall and warns when no feasible response covers deman
     'Imported JSON scenario ready. Apply the disruption to compare response options.'
   );
 });
+
+test('reflects imported horizon, destination, demand, stock and provenance in the page context', () => {
+  const dom = createPage();
+  const { document } = dom.window;
+  expect(document.querySelector('#plan-context').textContent).toBe(
+    'SYNTHETIC SAMPLE · 5-DAY PLAN'
+  );
+  const input = document.querySelector('#scenario-json');
+  const scenario = JSON.parse(input.value);
+  scenario.horizonDays = 3;
+  scenario.destination = {
+    ...scenario.destination,
+    id: 'harbor',
+    dailyDemandUnits: 14,
+    startingInventoryUnits: 3,
+  };
+  scenario.routes = scenario.routes.map(route => ({
+    ...route,
+    toId: 'harbor',
+  }));
+  scenario.disruption.durationDays = 20;
+  scenario.disruption.warningLeadDays = 6;
+  input.value = JSON.stringify(scenario);
+  document.querySelector('#import-scenario').click();
+  expect(document.querySelector('#data-status').dataset.state).toBe('ready');
+  expect(document.querySelector('#plan-context').textContent).toBe(
+    'IMPORTED JSON SCENARIO · 3-DAY PLAN'
+  );
+  expect(document.querySelector('#scenario-summary').textContent).toContain(
+    'harbor needs 14 units/day, with 3 units in starting stock. Plan horizon: 3 days.'
+  );
+  expect(document.querySelector('#network-heading').textContent).toBe(
+    'Suppliers → harbor'
+  );
+  expect(document.querySelector('#warning-lead').value).toBe('6');
+  expect(document.querySelector('#disruption-duration').value).toBe('20');
+  expect(document.querySelector('#disruption-duration').checkValidity()).toBe(
+    true
+  );
+});
+
+test('plans normally when optional scenario context labels are absent', () => {
+  const dom = new JSDOM(PAGE);
+  const { document } = dom.window;
+  for (const selector of [
+    '#plan-context',
+    '#scenario-summary',
+    '#network-heading',
+  ])
+    document.querySelector(selector).remove();
+  const dispose = startSupplyChainNowcastingPage({ documentObj: document });
+  expect(document.querySelector('#baseline-result').textContent).toContain(
+    '0 units total shortfall'
+  );
+  dispose();
+});

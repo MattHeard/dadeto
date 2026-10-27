@@ -185,6 +185,7 @@ export function startSupplyChainNowcastingPage(dependencies) {
     }
 
     latestPlan = result;
+    syncScenarioContext(documentObj, scenario, dataOrigin);
     status.dataset.state = 'ready';
     status.textContent = disrupted
       ? 'Hypothetical disruption active. No supplier is contacted and no route is changed.'
@@ -768,6 +769,41 @@ function makeSupplyResponseExport(scenario, plan, dataOrigin) {
       noExternalActionsTaken: true,
     },
   };
+}
+
+/**
+ * @param {Document} documentObj Browser document.
+ * @param {SampleSupplyScenario} scenario Active validated assumptions.
+ * @param {string} dataOrigin Active source label.
+ * @returns {void} Reflects imported assumptions without retaining sample copy.
+ */
+function syncScenarioContext(documentObj, scenario, dataOrigin) {
+  setContextText(
+    documentObj,
+    '#plan-context',
+    `${dataOrigin.toUpperCase()} · ${scenario.horizonDays}-DAY PLAN`
+  );
+  setContextText(
+    documentObj,
+    '#scenario-summary',
+    `${scenario.destination.id} needs ${scenario.destination.dailyDemandUnits} units/day, with ${scenario.destination.startingInventoryUnits} units in starting stock. Plan horizon: ${scenario.horizonDays} days. Change assumptions to compare hypothetical options.`
+  );
+  setContextText(
+    documentObj,
+    '#network-heading',
+    `Suppliers → ${scenario.destination.id}`
+  );
+}
+
+/**
+ * @param {Document} documentObj Browser document.
+ * @param {string} selector Optional context label.
+ * @param {string} text Active scenario description.
+ * @returns {void} Replaces sample copy when its label is present.
+ */
+function setContextText(documentObj, selector, text) {
+  const element = documentObj.querySelector(selector);
+  if (element) element.textContent = text;
 }
 
 /**
