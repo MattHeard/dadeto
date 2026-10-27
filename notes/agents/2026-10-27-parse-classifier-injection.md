@@ -100,3 +100,13 @@ branches; all ten split local static gates and the actual build pass. A final
 comparison pass. Logs `/tmp/dadeto-qoi0-{impact-final,static-final,build,mutation-final,final-focused}.log`.
 The remaining direct built-in census is 9 modules / 21 imports. Exact pushed
 Full Check remains a separate acceptance requirement; parent Rank 11 is Partial.
+
+## Classifier CI closure — 27 October 2026
+
+Exact FullCheck [40592067750](https://github.com/MattHeard/dadeto/actions/runs/40592067750)
+succeeded at dbdae378866bad7123ea8d5ed5923cbc88be3e45. Downloaded artifact
+`full-check-40592067750` (12775760073), report
+`/tmp/dadeto-full-check-40592067750/coverage/check-full-report.md`, confirms
+1,067 suites / 8,229 tests passed; all four global coverage metrics and the
+changed parse module's four metrics are100%. Bead dadeto-qoi0 is closed.
+Rank11 remains Active / Partial for the remaining migration scope.

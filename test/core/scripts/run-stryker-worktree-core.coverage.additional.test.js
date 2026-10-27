@@ -3,10 +3,15 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { jest } from '@jest/globals';
-import {
-  createRunStrykerWorktreeHandle,
-  runCommand,
-} from '../../../src/core/scripts/run-stryker-worktree-core.js';
+await jest.unstable_mockModule('node:child_process', () => ({
+  spawn() {
+    throw new Error('Native spawn disabled in runner unit tests');
+  },
+}));
+
+const { createRunStrykerWorktreeHandle, runCommand } = await import(
+  '../../../src/core/scripts/run-stryker-worktree-core.js'
+);
 
 /**
  * Create a child-process mock that exits with the supplied code.
@@ -37,6 +42,7 @@ test('runs a reused worktree without setup or teardown commands', async () => {
   );
   const spawnImpl = spawnWithExit(0);
   const handle = createRunStrykerWorktreeHandle({
+    pathModule: path,
     rootDir,
     mutateTargetDir: '.',
     spawnImpl,
@@ -53,14 +59,17 @@ test('runs a reused worktree without setup or teardown commands', async () => {
   await fs.rm(reused, { recursive: true, force: true });
 });
 
-test('uses default filesystem and path dependencies', async () => {
-  expect(createRunStrykerWorktreeHandle()).toEqual(expect.any(Function));
+test('uses the default filesystem with an injected path bundle', async () => {
+  expect(createRunStrykerWorktreeHandle({ pathModule: path })).toEqual(
+    expect.any(Function)
+  );
   const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dadeto-stryker-'));
   const reused = await fs.mkdtemp(
     path.join(os.tmpdir(), 'dadeto-stryker-reuse-')
   );
   await fs.mkdir(path.join(reused, 'reports', 'mutation'), { recursive: true });
   const handle = createRunStrykerWorktreeHandle({
+    pathModule: path,
     rootDir,
     mutateTargetDir: 'src/../src/core',
     spawnImpl: spawnWithExit(0),

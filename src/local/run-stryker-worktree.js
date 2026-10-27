@@ -5,6 +5,7 @@ import { createRunStrykerWorktreeHandle } from '../core/scripts/run-stryker-work
 const ROOT_DIR = path.resolve('.');
 const mutateTargetDir = process.argv[2];
 const handle = createRunStrykerWorktreeHandle({
+  pathModule: path,
   rootDir: ROOT_DIR,
   mutateTargetDir,
   log: message => console.log(message),

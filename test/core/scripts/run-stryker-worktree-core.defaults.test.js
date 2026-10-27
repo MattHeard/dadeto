@@ -1,3 +1,4 @@
+import path from 'node:path';
 import {
   jest,
   describe,
@@ -50,8 +51,9 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
     spawnMock.mockClear();
   });
 
-  test('uses default dependencies when options are omitted', async () => {
+  test('uses default filesystem and spawn with an injected path bundle', async () => {
     const handle = createRunStrykerWorktreeHandle({
+      pathModule: path,
       processModule: { env: {} },
     });
 
@@ -94,6 +96,7 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
 
     try {
       const handle = createRunStrykerWorktreeHandle({
+        pathModule: path,
         processModule: { env: {} },
       });
       await handle();

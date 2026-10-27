@@ -403,3 +403,29 @@ branches; all ten split local static gates and the actual build pass. A final
 comparison pass. Logs `/tmp/dadeto-qoi0-{impact-final,static-final,build,mutation-final,final-focused}.log`.
 The remaining direct built-in census is 9 modules / 21 imports. Exact pushed
 Full Check remains a separate acceptance requirement; parent Rank 11 is Partial.
+
+## Classifier CI closure — 27 October 2026
+
+Exact FullCheck [40592067750](https://github.com/MattHeard/dadeto/actions/runs/40592067750)
+succeeded at dbdae378866bad7123ea8d5ed5923cbc88be3e45. Downloaded artifact
+`full-check-40592067750` (12775760073), report
+`/tmp/dadeto-full-check-40592067750/coverage/check-full-report.md`, confirms
+1,067 suites / 8,229 tests passed; all four global coverage metrics and the
+changed parse module's four metrics are100%. Bead dadeto-qoi0 is closed.
+Rank11 remains Active / Partial for the remaining migration scope.
+
+## Worktree runner path boundary — 27 October 2026
+
+Bead `dadeto-1bl2` binds machine/command logging to the existing injected path
+bundle and removes node:path from the runner. The local wrapper provides it;
+fake aliases prove delegation, path-error propagation and instance isolation.
+The original runner/target tasks d6ab/jxv5 are source-verified complete and closed.
+Four focused suites / 16 tests, scoped coverage without uncovered lines/branches,
+lint/checkJs and initial split static gates pass. The touched module's blanket
+mutation skip is removed. All native process fallbacks are mocked in tests.
+
+A complete isolated mutation baseline exposes40survivors/4timeouts among154;
+keep the 100% threshold and strengthen lifecycle/config/completion tests before
+claiming mutation acceptance. Remaining direct fs/spawn imports and env/time
+coupling remain explicit parent work. No source namespace move occurred.
+See `notes/agents/2026-10-27-worktree-path-injection.md` for commands and limits.

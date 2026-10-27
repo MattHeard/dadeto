@@ -3,7 +3,15 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { jest } from '@jest/globals';
-import { createRunStrykerWorktreeHandle } from '../../../src/core/scripts/run-stryker-worktree-core.js';
+await jest.unstable_mockModule('node:child_process', () => ({
+  spawn() {
+    throw new Error('Native spawn disabled in runner unit tests');
+  },
+}));
+
+const { createRunStrykerWorktreeHandle } = await import(
+  '../../../src/core/scripts/run-stryker-worktree-core.js'
+);
 
 /**
  * Create a spawn stub that reports success on exit.
