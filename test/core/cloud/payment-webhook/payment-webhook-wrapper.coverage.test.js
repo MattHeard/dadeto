@@ -37,8 +37,6 @@ await jest.unstable_mockModule(
     },
     createResolveApiKeyUuid: options => options.findApiKeyUuidByCustomerId,
     extractHeader: (request, name) => request?.headers?.[name] ?? '',
-    extractRawPayload: request => request?.rawBody ?? request?.body ?? '',
-    parseJsonEvent: payload => JSON.parse(payload),
     readMetadata: jest.fn(event => event.metadata ?? {}),
   })
 );

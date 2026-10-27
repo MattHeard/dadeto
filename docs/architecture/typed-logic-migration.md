@@ -282,3 +282,28 @@ Its embedded source exactly equals the current runtime module. The injection
 Full Check40547579414 succeeded; record hardening CI separately before closing
 the quality Bead. The refreshed static import audit confirms 12 modules /
 25 imports remain. No source/mutation exclusion or lowered threshold was added.
+
+## Obsolete webhook platform helpers — 27 October 2026
+
+Bead `dadeto-an58` removes source-proven unused raw-payload, JSON-event and
+constant-time comparison fallbacks, their stale helper tests/mocks/reexports,
+and the parser's direct crypto/Buffer dependency. The actual Stripe raw-byte
+verification path is unchanged. Eight remaining helper exports are locked by
+focused tests; the facade's export-star avoids a real duplicate import/export
+list without changing scanner policy.
+
+Scoped impact passes 12 suites / 148 tests with no uncovered lines/branches in
+the two touched source modules. All ten split local static gates pass. Whole
+parser mutation kills 90/90 mutants with static evaluation enabled (none
+generated), no survivors/timeouts/ignored/uncovered mutants and a 100% threshold.
+All eight blanket mutation-disable regions in this module are removed. Report
+source matches exactly; see `notes/agents/2026-10-27-webhook-parser-cleanup.md`.
+The remaining static built-in audit is 11 modules / 24 imports. No JavaScript
+module has moved to the target namespaces yet; broader enforcement, precise
+typed boundary extraction and migration remain unfinished.
+
+Refund hardening Full Check40549912022 failed only the dependency audit.
+Bead `dadeto-u0xq` repairs the existing qs override/lock pin to6.16.1; all resolved
+paths, supported serialization compatibility and npm audit now pass locally.
+Keep exact descendant CI separate from local evidence; the library probe caveat
+is recorded in `notes/agents/2026-10-27-qs-audit-pin.md`.
