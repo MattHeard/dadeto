@@ -1,3 +1,5 @@
+import { LOGIC_SOURCE_ROOTS } from './src/core/local/logic-source-paths.js';
+
 const config = {
   transform: {
     '^.+\\.js$': 'babel-jest',
@@ -22,7 +24,9 @@ const config = {
     testEnvironment: '@stryker-mutator/jest-runner/jest-env/node',
     maxWorkers: 1,
   }),
-  collectCoverageFrom: process.env.DADETO_COVERAGE_SHARD ? [] : ['src/core/**/*.js'],
+  collectCoverageFrom: process.env.DADETO_COVERAGE_SHARD
+    ? []
+    : LOGIC_SOURCE_ROOTS.map(root => `${root}/**/*.js`),
   coverageDirectory: 'reports/coverage',
   coverageThreshold: {
     global: {

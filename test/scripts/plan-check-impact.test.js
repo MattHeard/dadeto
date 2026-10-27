@@ -1170,3 +1170,29 @@ describe('test impact runner fallback execution', () => {
     }
   });
 });
+
+describe('logic migration scoped enforcement', () => {
+  it.each(['src/logic/core/example.js', 'src/logic/boundary/example.js'])(
+    'fails closed when %s is not collected',
+    file => {
+      const { result, output, runCoverage } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        argv: ['--files', file],
+        coverageImpl: () => ({ status: 0, coverage: {} }),
+        runImpl: (_command, args) =>
+          args.includes('--findRelatedTests')
+            ? { status: 0, stdout: 'test/core/related.test.js\n' }
+            : { status: 0, stdout: '' },
+      });
+      expect(runCoverage).toHaveBeenCalledWith(
+        expect.anything(),
+        ['test/core/related.test.js'],
+        [file]
+      );
+      expect(result.exitCode).toBe(1);
+      expect(output.report().scopedCoverage.files).toEqual([
+        { file, collected: false, uncoveredLines: [], uncoveredBranches: [] },
+      ]);
+    }
+  );
+});

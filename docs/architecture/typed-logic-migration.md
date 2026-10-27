@@ -102,3 +102,36 @@ buckets = collections.Counter(p.split('/')[2] if p.count('/')>2 else '(root)' fo
 data = {'schemaVersion':1,'baselineCommit':base,'literalPattern':pattern,'includedPathspecs':suffixes,'excludedPathspecs':excludes,'core':{'trackedFiles':len(core),'javascriptFiles':sum(p.endswith('.js') for p in core),'filesBySubtree':dict(sorted(buckets.items()))},'literalConsumerCount':len(consumers),'literalConsumerPaths':consumers}
 print(json.dumps(data,indent=2))
 ```
+
+## Coverage/reporting preflight — 27 October 2026
+
+Bead `dadeto-hhlj` adds one shared typed root list/path predicate, used by Jest,
+the serial coverage runner, impact planning and changed-file reports. Both
+`src/logic/core` and `src/logic/boundary` now participate alongside legacy core.
+The runner still requires legacy core, tolerates absent future roots, propagates
+metadata/read failures for present roots, and assigns zero coverage to untested
+modules in either destination. This is coverage preparation, not permission to
+move modules before the remaining gates are extended.
+
+Nine pre-fix cases demonstrated omitted roots and a false successful scoped
+run with missing coverage. The final focused set passes85 tests; the changed-core
+evaluator passes80 tests and reports no uncovered lines/branches in all three
+changed core modules. The shared classifier's reproducible mutation gate kills
+all14 mutants, including static mutants, with a100% break threshold:
+
+```sh
+node node_modules/@stryker-mutator/core/bin/stryker.js run docs/quality/logic-source-paths.stryker.config.mjs
+```
+
+Its small sandbox manifest scopes this one classifier check; it does not alter
+the global mutation configuration or exclude logic from repository coverage.
+The report is `reports/mutation/logic-source-paths.json`. No mutation result for
+unrelated modules is implied. `npm run check -- --skip-tests` passed all10 static
+gates after the explicit focused tests/coverage run; build, cloud assembly and
+package verification passed. Full Check for the pushed change is separate
+asynchronous evidence. No source module moved or coverage threshold decreased.
+
+Next: extend lint/checkJs, mutation, duplication, parse/dependency/global and
+thin-wrapper enforcement to the new roots, proving each with fixtures, before
+moving the first local-only report module. The pinned census above remains an
+historical baseline and is not silently refreshed by new helper files.

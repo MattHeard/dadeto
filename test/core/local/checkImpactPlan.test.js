@@ -153,3 +153,31 @@ describe('createCheckImpactPlan', () => {
     });
   });
 });
+
+describe('logic migration coverage planning', () => {
+  it.each(['src/core/', 'src/logic/core/', 'src/logic/boundary/'])(
+    'retains measured logic gates for %s',
+    root => {
+      const plan = createCheckImpactPlan({
+        changedPaths: [`${root}example.js`],
+        relatedTestsResolved: true,
+        relatedTestPaths: ['test/core/related.test.js'],
+      });
+      expect(plan.staticGates).toEqual(['eslint', 'core-parse', 'duplication']);
+    }
+  );
+  it.each([
+    'src/coreish/',
+    'src/logic/coreish/',
+    'src/logic/boundaryish/',
+    'src/logic/other/',
+  ])('does not misclassify the integration path %s', root => {
+    expect(
+      createCheckImpactPlan({
+        changedPaths: [`${root}example.js`],
+        relatedTestsResolved: true,
+        relatedTestPaths: ['test/core/related.test.js'],
+      }).staticGates
+    ).toEqual(['eslint']);
+  });
+});

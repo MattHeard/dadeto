@@ -1,3 +1,5 @@
+import { isLogicJavaScriptPath } from './logic-source-paths.js';
+
 const COVERAGE_METRICS = /** @type {const} */ ([
   'statements',
   'branches',
@@ -67,7 +69,7 @@ export function createCheckFullReport({
     : [];
   const changedFileCoverage = coverageData
     ? [...new Set(changedPaths)]
-        .filter(file => file.startsWith('src/core/') && file.endsWith('.js'))
+        .filter(isLogicJavaScriptPath)
         .filter(file => isSummary(coverageData[file]))
         .sort()
         .map(file => ({
@@ -183,7 +185,7 @@ export function renderCheckFullReportMarkdown(report) {
   } else {
     lines.push(
       report.changedFileCoverageNote ??
-        'No changed core JavaScript files were available for a reliable coverage comparison.'
+        'No changed logic JavaScript files were available for a reliable coverage comparison.'
     );
   }
 
@@ -324,22 +326,20 @@ function explainCoverageUnavailable({
  * Explain changed files omitted from Istanbul coverage.
  * @param {string[]} changedPaths Changed repository paths.
  * @param {ChangedFileCoverageEntry[]} fileCoverage Reliable file coverage entries.
- * @returns {string | null} Note or null when at least one changed core file was measured.
+ * @returns {string | null} Note or null when at least one changed logic file was measured.
  */
 function changedCoverageNote(changedPaths, fileCoverage) {
-  const changedCoreFiles = changedPaths.filter(
-    file => file.startsWith('src/core/') && file.endsWith('.js')
-  );
+  const changedCoreFiles = changedPaths.filter(isLogicJavaScriptPath);
   const measuredFiles = new Set(fileCoverage.map(file => file.file));
   const missingFiles = changedCoreFiles.filter(
     file => !measuredFiles.has(file)
   );
   if (missingFiles.length > 0)
-    return `Changed core files are absent from the coverage summary: ${missingFiles.map(file => `\`${file}\``).join(', ')}.`;
+    return `Changed logic files are absent from the coverage summary: ${missingFiles.map(file => `\`${file}\``).join(', ')}.`;
   if (fileCoverage.length > 0) return null;
   if (
     changedPaths.some(file => file.startsWith('src/') && file.endsWith('.js'))
   )
-    return 'Changed JavaScript files are outside the src/core coverage collection, so changed-file coverage is unavailable.';
-  return 'No changed core JavaScript files were available for a reliable coverage comparison.';
+    return 'Changed JavaScript files are outside the logic coverage collection (src/core, src/logic/core, src/logic/boundary), so changed-file coverage is unavailable.';
+  return 'No changed logic JavaScript files were available for a reliable coverage comparison.';
 }

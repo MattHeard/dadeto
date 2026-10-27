@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import { LOGIC_SOURCE_ROOTS } from '../src/core/local/logic-source-paths.js';
 import path from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
 import { acquireJestSlot } from './jest-pool.js';
@@ -241,7 +242,12 @@ function requestedTestFiles() {
 
 function listSourceFiles() {
   const files = [];
-  walk(path.join(ROOT, 'src/core'), files);
+  for (const sourceRoot of LOGIC_SOURCE_ROOTS) {
+    const directory = path.join(ROOT, sourceRoot);
+    if (sourceRoot === 'src/core' || fs.statSync(directory, { throwIfNoEntry: false })) {
+      walk(directory, files);
+    }
+  }
   return files
     .filter(file => file.endsWith('.js'))
     .filter(file => !isIgnoredCoverageFile(file))

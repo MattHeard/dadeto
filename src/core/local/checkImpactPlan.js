@@ -1,3 +1,5 @@
+import { isLogicJavaScriptPath } from './logic-source-paths.js';
+
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('../../../types/allow-effects').StartupAllowEffectsBoundary} StartupAllowEffectsBoundary */
 /** @typedef {{start?: {line?: number}}} IstanbulCoverageLocation */
@@ -121,7 +123,7 @@ export function createCheckImpactPlan({
     `node ${JEST_RUNNER} --runInBand --runTestsByPath ${tests.map(quotePath).join(' ')}`,
   ];
   const staticGates = ['eslint'];
-  if (sourceChanges.some(path => path.startsWith('src/core/'))) {
+  if (sourceChanges.some(isLogicJavaScriptPath)) {
     staticGates.push('core-parse');
     commands.push('npm run core-parse');
     staticGates.push('duplication');
@@ -254,9 +256,7 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
   let fallbackFailure = '';
   const scopedSourceFiles =
     includeStaticGates && plan.mode === 'selected'
-      ? plan.changedPaths.filter(
-          path => path.startsWith('src/core/') && path.endsWith('.js')
-        )
+      ? plan.changedPaths.filter(isLogicJavaScriptPath)
       : [];
   /** @type {ScopedCoverageRun[]} */
   const coverageRuns = [];

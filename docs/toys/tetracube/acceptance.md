@@ -125,3 +125,8 @@ cleanup must be recorded separately. The interaction explicitly leaves enjoyment
 unassessed. A nonblocking request for actual tower/overhang human feedback is
 pending; do not infer anticipation, creative compromise or satisfaction from
 this automated session. Keep the broader playtest spec Partial.
+
+Run40492013314 subsequently completed successfully, including both Terraform/
+static-prefix cleanup jobs. The viewport fix's browser report and matching
+Full Check40491777485 are terminal successes. Subjective playtest evidence
+remains pending; keep the broader spec Partial for that acceptance.

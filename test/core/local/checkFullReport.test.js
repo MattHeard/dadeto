@@ -30,7 +30,7 @@ describe('createCheckFullReport', () => {
       coverage: null,
       changedFileCoverage: [],
       changedFileCoverageNote:
-        'No changed core JavaScript files were available for a reliable coverage comparison.',
+        'No changed logic JavaScript files were available for a reliable coverage comparison.',
       coverageUnavailableReason:
         'The full check failed before the coverage summary was produced; see the full check log for the failure details.',
       artifacts: {
@@ -137,7 +137,7 @@ describe('createCheckFullReport', () => {
     expect(report.coverageAvailable).toBe(true);
     expect(report.changedFileCoverage).toEqual([]);
     expect(report.changedFileCoverageNote).toMatch(
-      /outside the src\/core coverage/
+      /outside the logic coverage/
     );
   });
 
@@ -210,7 +210,7 @@ describe('createCheckFullReport', () => {
         },
       ],
       changedFileCoverageNote:
-        'Changed core files are absent from the coverage summary: `src/core/missing.js`.',
+        'Changed logic files are absent from the coverage summary: `src/core/missing.js`.',
     });
 
     const markdown = renderCheckFullReportMarkdown(report);
@@ -221,7 +221,7 @@ describe('createCheckFullReport', () => {
     expect(markdown).toContain('Partial counts (1/2 shards completed)');
     expect(markdown).toContain('unknown passed');
     expect(markdown).toContain('unknown failed');
-    expect(markdown).toContain('Changed core files are absent');
+    expect(markdown).toContain('Changed logic files are absent');
   });
 
   it('renders completed test counts and all coverage-unavailable explanations', () => {
@@ -287,7 +287,42 @@ describe('createCheckFullReport', () => {
     report.changedFileCoverageNote = null;
 
     expect(renderCheckFullReportMarkdown(report)).toContain(
-      'No changed core JavaScript files were available for a reliable coverage comparison.'
+      'No changed logic JavaScript files were available for a reliable coverage comparison.'
     );
   });
+});
+
+describe('logic migration changed-file coverage', () => {
+  it.each(['src/core/', 'src/logic/core/', 'src/logic/boundary/'])(
+    'reports measured and missing JavaScript under %s',
+    root => {
+      const measured = `${root}measured.js`,
+        missing = `${root}missing.js`;
+      const report = createCheckFullReport({
+        coverageSummary: {
+          total: completeMetrics,
+          [measured]: completeMetrics,
+        },
+        changedPaths: [measured, missing, measured],
+      });
+      expect(report.changedFileCoverage.map(entry => entry.file)).toEqual([
+        measured,
+      ]);
+      expect(report.changedFileCoverageNote).toContain(
+        `absent from the coverage summary: \`${missing}\``
+      );
+    }
+  );
+  it.each(['src/coreish/', 'src/logic/coreish/', 'src/logic/boundaryish/'])(
+    'does not claim coverage for lookalike %s',
+    root => {
+      const file = `${root}example.js`;
+      const report = createCheckFullReport({
+        coverageSummary: { total: completeMetrics, [file]: completeMetrics },
+        changedPaths: [file],
+      });
+      expect(report.changedFileCoverage).toEqual([]);
+      expect(report.changedFileCoverageNote).toContain('outside the');
+    }
+  );
 });
