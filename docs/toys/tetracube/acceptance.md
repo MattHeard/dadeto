@@ -105,3 +105,23 @@ production handoff40491417626 was skipped. The responsive-fix local loop passed
 aggregate followed explicit focused tests; it is not full-suite/coverage or
 real-browser evidence for the width fix. Exact current-code cloud bounds and
 subjective playtest acceptance remain open.
+
+## New-code mobile bounds verified in Cloud Run — 27 October 2026
+
+Run [40492013314](https://github.com/MattHeard/dadeto/actions/runs/40492013314)
+uses exact fix commit `81e9e845d1db560fa044e8671562ea5daf88b9e2`. Its retained
+[artifact12730391693](https://github.com/MattHeard/dadeto/actions/runs/40492013314/artifacts/12730391693)
+reports14/14 cases passed, no flakiness/skips. Tetracube passed in1,775ms,
+including both actual320/390-pixel canvas/card bounds assertions. Matching
+[Full Check40491777485](https://github.com/MattHeard/dadeto/actions/runs/40491777485)
+succeeded. The screenshot and embedded JSON were inspected: five placements,
+clear preview, centered crosshair and complete right canvas border within the
+card. The earlier right-edge clipping is fixed in this browser evidence.
+
+PNG `data/c3149c12bb6bda9ca1f15057d31a0d65cf807376.png` SHA-256:
+`ff9117aa571155483970c0472b3c59c7bcbde3991ddcd927e1f306d02b28ab67`.
+The workflow was still performing Terraform Destroy when inspected; terminal
+cleanup must be recorded separately. The interaction explicitly leaves enjoyment
+unassessed. A nonblocking request for actual tower/overhang human feedback is
+pending; do not infer anticipation, creative compromise or satisfaction from
+this automated session. Keep the broader playtest spec Partial.

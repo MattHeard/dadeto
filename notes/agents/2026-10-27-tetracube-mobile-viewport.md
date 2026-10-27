@@ -19,3 +19,9 @@
 
 - Final local gate:50 focused tests plus layout rerun pass; `npm run check -- --skip-tests` passes10/10 after fixing an invalid JSDoc-tag warning by using Jest's supported ordinary docblock. Build,86 manuals and browser-free discovery of14 cloud tests pass. No lint suppression was added.
 - Shared cloud run40487647737 and both cleanup jobs succeeded; its manual production handoff40491417626 was skipped. This proves the old-code report retention/interaction, not the new viewport bounds. New code awaits asynchronous CI/cloud evidence.
+
+- Later real browser proof: run40492013314 at81e9e84 retained artifact12730391693,
+  all14 cases passed; both320/390 width assertions passed and the inspected PNG
+  shows the complete right border/centered crosshair. Tetracube1775ms; Full Check
+  40491777485 succeeded. Teardown still live at inspection; human feedback remains
+  pending. The bounds fix is now observed, not merely source-asserted.
