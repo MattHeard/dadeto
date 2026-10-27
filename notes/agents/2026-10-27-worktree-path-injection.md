@@ -59,3 +59,32 @@ fixtures conceal bypasses. Guard native process fallbacks before mutation runs.
 A full-coverage pass alone does not establish mutation confidence. Record exact
 pushed FullCheck separately before closure. Remaining fs/spawn/env/timestamp
 coupling and the broader namespace migration remain open under the parent.
+
+## Mutation-driven test hardening
+
+The isolated 154-mutant baseline identifies missing exact fresh/reused lifecycle
+traces, temp/report roots, filesystem option mappings, configuration validity and
+error strings. Add complete fake-process call/argument/environment assertions;
+configuration cases cover absent/minimum/valid/zero/negative/fractional/invalid/
+empty/infinite/exponent inputs and exact generated text. Fixture mocks are cleared
+per test so prior calls cannot satisfy later assertions.
+
+The four hanging mutants delete a Promise executor, exit callback, exit event or
+error settlement. A shared test-only completion helper races controlled runner
+operations against a2s failure and always clears its timer; runtime and Stryker
+budgets stay unchanged. All native process fallbacks remain blocked in tests.
+This turns missing settlement into an explicit test failure before the mutation
+engine timeout, without suppressing any mutant.
+
+Remove only the internal cleanup call's allowFailure:true: its outer catch already
+consumes the command rejection. Synchronous spawn errors, emitted errors and
+nonzero cleanup exits still finish cleanup. Keep all externally supplied
+filesystem options and lifecycle mappings intact. The exported runCommand
+allowFailure contract remains covered independently.
+
+Four focused suites / 36 tests, scoped source coverage without uncovered lines
+or branches, all ten split static gates and build pass. Logs:
+`/tmp/dadeto-1bl2-hardening-{focused,impact,static,build,mutation}.log`.
+The unchanged100% whole-module mutation rerun is still live; inspect its terminal
+report before claiming acceptance. Initial path slice ae033c7 is pushed, with
+exact FullCheck40595672238 tracked separately from the final hardening commit.

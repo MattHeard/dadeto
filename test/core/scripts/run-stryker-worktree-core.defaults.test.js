@@ -1,10 +1,14 @@
+import {
+  boundedWorktreeFactory,
+  completeWorktreeOperation,
+} from '../../helpers/worktree-completion.js';
 import path from 'node:path';
 import {
   jest,
   describe,
   expect,
   test,
-  beforeAll,
+  beforeEach,
   afterAll,
 } from '@jest/globals';
 
@@ -35,16 +39,19 @@ await jest.unstable_mockModule('node:child_process', () => ({
 
 await jest.unstable_mockModule('node:fs/promises', () => fsModule);
 
-const { createRunStrykerWorktreeHandle } = await import(
+const runnerModule = await import(
   '../../../src/core/scripts/run-stryker-worktree-core.js'
 );
-const { runCommand } = await import(
-  '../../../src/core/scripts/run-stryker-worktree-core.js'
+const createRunStrykerWorktreeHandle = boundedWorktreeFactory(
+  runnerModule.createRunStrykerWorktreeHandle
 );
+const runCommand = options =>
+  completeWorktreeOperation(runnerModule.runCommand(options));
 
 describe('createRunStrykerWorktreeHandle defaults', () => {
-  beforeAll(() => {
+  beforeEach(() => {
     spawnMock.mockClear();
+    for (const mock of Object.values(fsModule)) mock.mockClear();
   });
 
   afterAll(() => {

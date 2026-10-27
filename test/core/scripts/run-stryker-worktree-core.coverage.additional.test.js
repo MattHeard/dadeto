@@ -1,3 +1,7 @@
+import {
+  boundedWorktreeFactory,
+  completeWorktreeOperation,
+} from '../../helpers/worktree-completion.js';
 import { EventEmitter } from 'node:events';
 import fs from 'node:fs/promises';
 import os from 'node:os';
@@ -9,9 +13,14 @@ await jest.unstable_mockModule('node:child_process', () => ({
   },
 }));
 
-const { createRunStrykerWorktreeHandle, runCommand } = await import(
+const runnerModule = await import(
   '../../../src/core/scripts/run-stryker-worktree-core.js'
 );
+const createRunStrykerWorktreeHandle = boundedWorktreeFactory(
+  runnerModule.createRunStrykerWorktreeHandle
+);
+const runCommand = options =>
+  completeWorktreeOperation(runnerModule.runCommand(options));
 
 /**
  * Create a child-process mock that exits with the supplied code.

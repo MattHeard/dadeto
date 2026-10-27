@@ -10,6 +10,7 @@ export default {
     '**',
     '!src/core/**',
     '!test/core/scripts/run-stryker-worktree-core*.test.js',
+    '!test/helpers/worktree-completion.js',
     '!jest.config.mjs',
     '!jest.mutation.config.mjs',
     '!package.json',

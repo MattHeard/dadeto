@@ -1,3 +1,7 @@
+import {
+  boundedWorktreeFactory,
+  completeWorktreeOperation,
+} from '../../helpers/worktree-completion.js';
 import { jest } from '@jest/globals';
 await jest.unstable_mockModule('node:child_process', () => ({
   spawn() {
@@ -5,9 +9,14 @@ await jest.unstable_mockModule('node:child_process', () => ({
   },
 }));
 
-const { createRunStrykerWorktreeHandle } = await import(
+const runnerModule = await import(
   '../../../src/core/scripts/run-stryker-worktree-core.js'
 );
+const createRunStrykerWorktreeHandle = boundedWorktreeFactory(
+  runnerModule.createRunStrykerWorktreeHandle
+);
+const runCommand = options =>
+  completeWorktreeOperation(runnerModule.runCommand(options));
 
 /**
  * Create a fully controlled runner with deliberately non-native path results.
@@ -49,7 +58,7 @@ function fixture(name = 'case') {
     processModule: { env: { STRYKER_REUSE_WORKTREE_PATH: `${name}-worktree` } },
     log: jest.fn(),
   };
-  return { options, logPath, parent, root };
+  return { options, logPath, parent, root, join };
 }
 
 test('machine logging uses the injected dirname for every entry', async () => {
@@ -114,3 +123,259 @@ test('a configured runner requires its path bundle', () => {
   delete options.pathModule;
   expect(() => createRunStrykerWorktreeHandle(options)).toThrow(TypeError);
 });
+
+/**
+ * Create a controlled synchronous completion event.
+ * @param {number|null|Error} status Exit status or error.
+ * @returns {object} Child process fixture.
+ */
+function childWithStatus(status) {
+  const child = {
+    once(event, listener) {
+      if (event === 'error' && status instanceof Error) listener(status);
+      if (event === 'exit' && !(status instanceof Error)) listener(status);
+      return child;
+    },
+  };
+  return child;
+}
+
+test('fresh lifecycle preserves all commands, paths and environment overrides', async () => {
+  const { options, root, join } = fixture('fresh');
+  options.processModule.env = { BASE: 'kept', BEADS_NO_DAEMON: '0' };
+  await createRunStrykerWorktreeHandle(options)();
+  const worktree = 'fresh-generated';
+  const env = { BASE: 'kept', BEADS_NO_DAEMON: '1' };
+  const commandOptions = cwd => ({ cwd, env, stdio: 'inherit' });
+  expect(options.fsModule.mkdir).toHaveBeenCalledWith(
+    join(root, '.worktrees'),
+    { recursive: true }
+  );
+  expect(options.fsModule.mkdtemp.mock.calls).toEqual([
+    [join(join(root, '.worktrees'), 'stryker-')],
+  ]);
+  expect(options.fsModule.cp.mock.calls).toEqual([
+    [
+      join(worktree, 'reports/mutation'),
+      join(root, 'reports/mutation'),
+      { recursive: true },
+    ],
+  ]);
+  expect(options.fsModule.rm.mock.calls).toEqual([
+    [worktree, { recursive: true, force: true }],
+  ]);
+  expect(options.spawnImpl.mock.calls).toEqual([
+    ['git', ['worktree', 'add', '--detach', worktree], commandOptions(root)],
+    ['npm', ['install'], commandOptions(worktree)],
+    [
+      'node',
+      [
+        '--experimental-vm-modules',
+        './node_modules/.bin/stryker',
+        'run',
+        'stryker.worktree.config.mjs',
+      ],
+      { ...commandOptions(worktree), env: { ...env, STRYKER_TEST_ENV: '1' } },
+    ],
+    ['git', ['worktree', 'remove', '--force', worktree], commandOptions(root)],
+  ]);
+  expect(options.log.mock.calls).toEqual([
+    [
+      `Synced mutation reports to fresh-relative(${join(root, 'reports/mutation')})`,
+    ],
+  ]);
+});
+
+test('a reused lifecycle does not create or remove a worktree', async () => {
+  const { options, root, join } = fixture();
+  await createRunStrykerWorktreeHandle(options)();
+  expect(options.fsModule.mkdir).not.toHaveBeenCalledWith(
+    join(root, '.worktrees'),
+    expect.anything()
+  );
+  expect(options.fsModule.mkdtemp).not.toHaveBeenCalled();
+  expect(options.fsModule.rm).not.toHaveBeenCalled();
+});
+
+test.each(['nonzero', 'sync-error', 'event-error'])(
+  'cleanup remains best effort for %s',
+  async kind => {
+    const { options } = fixture('cleanup');
+    options.processModule.env = {};
+    options.spawnImpl.mockImplementation((command, args) => {
+      if (command !== 'git' || args[1] !== 'remove') return childWithStatus(0);
+      if (kind === 'sync-error') throw new Error('cleanup failed');
+      return childWithStatus(
+        kind === 'event-error' ? new Error('cleanup failed') : 7
+      );
+    });
+    await expect(
+      createRunStrykerWorktreeHandle(options)()
+    ).resolves.toBeUndefined();
+    expect(options.fsModule.rm).toHaveBeenCalledWith('cleanup-generated', {
+      recursive: true,
+      force: true,
+    });
+    const calls = options.fsModule.appendFile.mock.calls;
+    expect(JSON.parse(calls[calls.length - 1][1]).type).toBe(
+      'cleanup-complete'
+    );
+  }
+);
+
+test.each([0, 7, null])(
+  'command settlement and exact diagnostics for exit %s',
+  async code => {
+    const { options } = fixture();
+    options.spawnImpl.mockReturnValue(childWithStatus(code));
+    const result = runCommand({
+      spawnImpl: options.spawnImpl,
+      command: 'tool',
+      args: ['--one', '--two'],
+      cwd: '/controlled',
+    });
+    if (code === 0) await expect(result).resolves.toBeUndefined();
+    else
+      await expect(result).rejects.toThrow(
+        new Error(`tool --one --two exited with code ${code}`)
+      );
+  }
+);
+
+test.each([false, true])(
+  'command error settlement respects allowFailure=%s',
+  async allowFailure => {
+    const { options } = fixture();
+    const error = new Error('spawn failed');
+    options.spawnImpl.mockReturnValue(childWithStatus(error));
+    const result = runCommand({
+      spawnImpl: options.spawnImpl,
+      command: 'tool',
+      args: [],
+      cwd: '/controlled',
+      allowFailure,
+    });
+    if (allowFailure) await expect(result).resolves.toBeUndefined();
+    else await expect(result).rejects.toBe(error);
+  }
+);
+
+/**
+ * Isolate the legacy host configuration inputs for one fixture operation.
+ * @param {Record<string, string|undefined>} values Test configuration.
+ * @param {() => Promise<void>} operation Test operation.
+ * @returns {Promise<void>} Fixture completion.
+ */
+async function withConfigValues(values, operation) {
+  const keys = [
+    'STRYKER_CONCURRENCY',
+    'STRYKER_TIMEOUT_MS',
+    'STRYKER_TEST_FILES',
+  ];
+  const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  try {
+    for (const key of keys) {
+      if (values[key] === undefined) delete process.env[key];
+      else process.env[key] = values[key];
+    }
+    await operation();
+  } finally {
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  }
+}
+
+test.each([
+  { label: 'defaults', values: {}, concurrency: 1, timeout: 10000 },
+  {
+    label: 'positive minimum',
+    values: { STRYKER_CONCURRENCY: '1', STRYKER_TIMEOUT_MS: '1' },
+    concurrency: 1,
+    timeout: 1,
+  },
+  {
+    label: 'configured',
+    values: {
+      STRYKER_CONCURRENCY: '2',
+      STRYKER_TIMEOUT_MS: '5000',
+      STRYKER_TEST_FILES: "['test/example.test.js']",
+    },
+    concurrency: 2,
+    timeout: 5000,
+    target: 'src/core/cloud',
+  },
+  {
+    label: 'zero',
+    values: { STRYKER_CONCURRENCY: '0', STRYKER_TIMEOUT_MS: '0' },
+    concurrency: 1,
+    timeout: 10000,
+  },
+  {
+    label: 'negative',
+    values: { STRYKER_CONCURRENCY: '-1', STRYKER_TIMEOUT_MS: '-3' },
+    concurrency: 1,
+    timeout: 10000,
+  },
+  {
+    label: 'fraction',
+    values: { STRYKER_CONCURRENCY: '1.5', STRYKER_TIMEOUT_MS: '2.5' },
+    concurrency: 1,
+    timeout: 10000,
+  },
+  {
+    label: 'invalid',
+    values: { STRYKER_CONCURRENCY: 'invalid', STRYKER_TIMEOUT_MS: 'invalid' },
+    concurrency: 1,
+    timeout: 10000,
+  },
+  {
+    label: 'empty',
+    values: {
+      STRYKER_CONCURRENCY: '',
+      STRYKER_TIMEOUT_MS: '',
+      STRYKER_TEST_FILES: '',
+    },
+    concurrency: 1,
+    timeout: 10000,
+  },
+  {
+    label: 'infinite',
+    values: { STRYKER_CONCURRENCY: 'Infinity', STRYKER_TIMEOUT_MS: 'Infinity' },
+    concurrency: 1,
+    timeout: 10000,
+  },
+  {
+    label: 'exponent',
+    values: { STRYKER_CONCURRENCY: '2e0', STRYKER_TIMEOUT_MS: '5e3' },
+    concurrency: 2,
+    timeout: 5000,
+  },
+])(
+  'generated config is exact for $label',
+  async ({ values, concurrency, timeout, target }) => {
+    await withConfigValues(values, async () => {
+      const { options } = fixture();
+      if (target) options.mutateTargetDir = target;
+      await createRunStrykerWorktreeHandle(options)();
+      const mutate = target
+        ? `  mutate: ["case-normalized(${target})"],\n`
+        : '';
+      const files = values.STRYKER_TEST_FILES
+        ? `  testFiles: ${values.STRYKER_TEST_FILES},\n`
+        : '';
+      expect(options.fsModule.writeFile.mock.calls[0][1])
+        .toBe(`import baseConfig from './stryker.config.mjs';
+
+export default {
+  ...baseConfig,
+${mutate}  // Keep mutation runs resource-bounded in the worktree.
+${files}${'  '}
+  timeoutMS: ${timeout},
+  concurrency: ${concurrency},
+};
+`);
+    });
+  }
+);

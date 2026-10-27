@@ -429,3 +429,13 @@ keep the 100% threshold and strengthen lifecycle/config/completion tests before
 claiming mutation acceptance. Remaining direct fs/spawn imports and env/time
 coupling remain explicit parent work. No source namespace move occurred.
 See `notes/agents/2026-10-27-worktree-path-injection.md` for commands and limits.
+
+Worktree path slice ae033c7 is pushed; its static build and fast gates pass.
+The isolated baseline's40survivors/4timeouts drive exact lifecycle/configuration
+and error assertions, plus test-only bounded completion for pending promises.
+All native process fallbacks are blocked before import. Hardening passes36focused
+tests, scoped source coverage without gaps, all10split static gates and build.
+Remove only redundant internal cleanup allowFailure:true covered by the outer
+catch; the exported error policy and external filesystem options stay intact.
+Final whole-module mutation and exact hardening CI remain separate acceptance
+requirements. Initial injection FullCheck40595672238 is monitored asynchronously.

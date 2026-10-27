@@ -207,7 +207,6 @@ export function createRunStrykerWorktreeHandle(options) {
           command: 'git',
           args: ['worktree', 'remove', '--force', worktreePath],
           cwd: mainRoot,
-          allowFailure: true,
           env: buildChildEnv(processModule.env, noDaemonEnv),
         }).catch(() => {});
         await fsModule
