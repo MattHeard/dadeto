@@ -63,3 +63,17 @@ Bead open until the hardening commit's exact asynchronous Full Check also has a
 terminal result; local/static/mutation evidence does not prove the global suite.
 The refreshed AST audit reports 12 legacy modules / 25 static built-in imports:
 reports/mutation/logic-builtins-remaining.json. Continue parent remediation.
+
+## Terminal CI receipt — 27 October 2026
+
+Full Check [40586472929](https://github.com/MattHeard/dadeto/actions/runs/40586472929)
+succeeded at bb906c0b6b1d2e1186e2773f3f4825a6c5ac0784. Artifact
+`full-check-40586472929` (12771203724), downloaded to
+`/tmp/dadeto-full-check-40586472929/coverage/check-full-report.md`, confirms
+1,065 suites / 8,193 tests pass and statements, branches, functions and lines
+are all 100%; all ten aggregate gates pass. This closes the webhook cleanup,
+audit-policy repair and unchanged refund hardening slices. Their source/tests
+and dependency records are unchanged in the following static-copy commit35cf8d4.
+Beads dadeto-an58, dadeto-u0xq and dadeto-pu2z are closed; the Rank 11 parent
+remains Active / Partial. The prior refund hardening run40549912022 failed only
+audit and is not retroactively described as passing.

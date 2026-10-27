@@ -1,5 +1,8 @@
 import { jest } from '@jest/globals';
-import { createCopyCore } from '../../src/core/build/blog.js';
+import {
+  createCopyCore,
+  createSharedDirectoryEntries,
+} from '../../src/core/build/blog.js';
 
 /**
  * Build path helpers whose outputs cannot come from native node:path.
@@ -115,5 +118,67 @@ test('independent copy factories retain their own injected paths', () => {
   ]);
   expect(left.findJsFiles('root', () => [entry('file.js')])).toEqual([
     'root::file.js',
+  ]);
+});
+
+const browserPairs = [
+  ['srcAdaptersDir', 'publicAdaptersDir'],
+  ['srcBrowserDir', 'publicBrowserDir'],
+  ['srcCoreBrowserDir', 'publicCoreBrowserDir'],
+  ['srcCoreInterpretabilityDir', 'publicCoreInterpretabilityDir'],
+  ['srcCoreCapabilitiesDir', 'publicCoreCapabilitiesDir'],
+  [
+    'srcCoreObjectMinuteRentalSearchDir',
+    'publicCoreObjectMinuteRentalSearchDir',
+  ],
+  ['srcNodeModulesZodV4Dir', 'publicVendorZodV4Dir'],
+];
+
+test.each(browserPairs)(
+  'copies %s into its declared %s',
+  (sourceKey, destinationKey) => {
+    const { core } = fixture();
+    const directories = Object.fromEntries(
+      browserPairs.flatMap(([source, destination]) => [
+        [source, `input-${source}`],
+        [destination, `output-${destination}`],
+      ])
+    );
+    const source = directories[sourceKey];
+    const destination = directories[destinationKey];
+    const copyFile = jest.fn();
+    const io = {
+      directoryExists: target => target === source,
+      createDirectory: jest.fn(),
+      copyFile,
+      readDirEntries: directory => {
+        expect(directory).toBe(source);
+        return [entry('widget.js')];
+      },
+    };
+    core.copyBrowserTrees(directories, {
+      io,
+      copyFile,
+      messageLogger: { info: jest.fn(), warn: jest.fn() },
+    });
+    expect(copyFile.mock.calls).toEqual([
+      [`${source}::widget.js`, `${destination}::widget.js`],
+    ]);
+  }
+);
+
+test('retains the default content-data source and destination mapping', () => {
+  const pairs = createSharedDirectoryEntries({
+    path: { join: (...parts) => parts.join('::') },
+    srcDir: 'source',
+    publicDir: 'public',
+  });
+  expect(pairs).toContainEqual([
+    'srcContentBlogDataDir',
+    'source::content/blog-data',
+  ]);
+  expect(pairs).toContainEqual([
+    'publicContentBlogDataDir',
+    'public::content/blog-data',
   ]);
 });

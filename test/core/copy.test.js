@@ -950,11 +950,12 @@ describe('createCopyCore copy workflows', () => {
         directoryExists: jest.fn(target => target === source),
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest.fn(target =>
-          target === source
-            ? [createDirectoryEntry('nested')]
-            : [createFileEntry('palette.js')]
-        ),
+        readDirEntries: jest.fn(target => {
+          if (target === source) return [createDirectoryEntry('nested')];
+          if (target === posix.join(source, 'nested'))
+            return [createFileEntry('palette.js')];
+          throw new Error(`Unexpected directory read: ${target}`);
+        }),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
       const copyFile = jest.fn();
@@ -987,9 +988,11 @@ describe('createCopyCore copy workflows', () => {
           .mockImplementation(target => target === directories.srcBrowserDir),
         createDirectory: jest.fn(),
         copyFile: jest.fn(),
-        readDirEntries: jest
-          .fn()
-          .mockReturnValue([createFileEntry('widget.js')]),
+        readDirEntries: jest.fn(target => {
+          if (target === directories.srcBrowserDir)
+            return [createFileEntry('widget.js')];
+          throw new Error(`Unexpected directory read: ${target}`);
+        }),
       };
       const logger = { info: jest.fn(), warn: jest.fn() };
 

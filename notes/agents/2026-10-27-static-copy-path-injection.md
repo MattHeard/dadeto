@@ -53,3 +53,24 @@ Next time: use non-native path results and two independent instances to detect
 ambient dependencies; native path spies alone can miss a bypass. Derive build
 parity expectations from actual shipped paths before allowing any exception.
 Broader typed-boundary and built-in policy work remains under the parent Bead.
+
+## Mutation failure and test hardening
+
+The first whole-module experiment failed at 98.37%: 300 Killed, five Survived
+(all static) and one Timeout, out of 306 mutants including 84 static mutants.
+Retained baseline: `reports/mutation/static-copy.initial.json`. The five gaps
+were the default ContentBlogData source/destination mapping and browser, core
+browser and rental-search destinations. Add exact mapping assertions for every
+browser route and both default content-data paths.
+
+The always-directory mutant exposed unbounded fake directory trees: two test
+readers returned a file at every nonexistent descendant. Make them return only
+their declared valid directory entries and throw on an unexpected directory.
+This asserts the filesystem contract and lets an invalid file traversal fail
+immediately; it does not change production recursion or a timeout setting.
+
+Focused hardening passes 2 suites / 51 tests and targeted ESLint. Runtime blob
+`a1b7065577f96f76c9ed51539c3f12a62f9a3e4e` still equals pushed35cf8d4, so
+the exact 1,119-file output parity evidence remains valid. The same full-module
+mutation gate is being rerun; keep the quality Bead open until its terminal
+report and exact pushed CI result. No mutation suppression or threshold change.
