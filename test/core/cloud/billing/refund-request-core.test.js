@@ -1,8 +1,7 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
 import { createBillingRefundRequestHandler } from '../../../../src/core/cloud/billing/refund-request-core.js';
 
-const allowEffects = createAllowEffects();
+const allowEffects = Object.freeze({ testPermission: true });
 const request = {
   authorization: 'Bearer valid-token',
   purchaseId: 'purchase-1',
@@ -17,6 +16,7 @@ function createDeps(overrides = {}) {
   return {
     billingEnabled: true,
     stripeConfigured: true,
+    sha256Utf8: jest.fn(() => 'a'.repeat(64)),
     verifyIdToken: jest.fn(async () => ({ uid: 'user-1' })),
     getPurchase: jest.fn(async () => ({ uid: 'user-1' })),
     createRefundIntent: jest.fn(async (_permission, input) => ({
@@ -91,6 +91,7 @@ describe('createBillingRefundRequestHandler', () => {
       body: { error: 'purchase_not_found' },
     });
     expect(deps.createRefundIntent).not.toHaveBeenCalled();
+    expect(deps.sha256Utf8).not.toHaveBeenCalled();
     expect(deps.createStripeRefund).not.toHaveBeenCalled();
   });
 
@@ -260,6 +261,40 @@ describe('createBillingRefundRequestHandler', () => {
         status: 503,
       });
       expect(deps.createStripeRefund).not.toHaveBeenCalled();
+      expect(deps.sha256Utf8).not.toHaveBeenCalled();
     }
   });
+});
+
+it('hashes the authenticated tuple and forwards the derived identity with permission', async () => {
+  const digest = 'b'.repeat(64);
+  const sha256Utf8 = jest.fn(() => digest);
+  const deps = createDeps({ sha256Utf8 });
+  const handle = createBillingRefundRequestHandler(deps);
+  await handle(allowEffects, {
+    ...request,
+    idempotencyKey: ' \t customer-key \n',
+  });
+  expect(sha256Utf8).toHaveBeenCalledTimes(1);
+  expect(sha256Utf8).toHaveBeenCalledWith(
+    'user-1\u0000purchase-1\u0000customer-key'
+  );
+  expect(deps.createRefundIntent).toHaveBeenCalledWith(allowEffects, {
+    refundIntentId: `refund-${digest}`,
+    purchaseId: 'purchase-1',
+  });
+});
+
+it('propagates hashing failures before creating a refund intent', async () => {
+  const failure = new Error('hash unavailable');
+  const deps = createDeps({
+    sha256Utf8: () => {
+      throw failure;
+    },
+  });
+  const handle = createBillingRefundRequestHandler(deps);
+  await expect(handle(allowEffects, request)).rejects.toBe(failure);
+  expect(deps.createRefundIntent).not.toHaveBeenCalled();
+  expect(deps.createStripeRefund).not.toHaveBeenCalled();
+  expect(deps.markRefundIntentAmbiguous).not.toHaveBeenCalled();
 });

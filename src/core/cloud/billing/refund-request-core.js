@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { authenticatePurchaseRequest } from './authentication-core.js';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
@@ -6,7 +5,7 @@ import { authenticatePurchaseRequest } from './authentication-core.js';
 
 /**
  * Build an authenticated handler for DADETO-originated unused-credit refunds.
- * @param {{ billingEnabled: boolean, stripeConfigured: boolean, verifyIdToken: (token: string) => Promise<{uid?: string}>, getPurchase: (purchaseId: string) => Promise<Record<string, any>|null>, createRefundIntent: (allowEffects: AllowEffects, input: {refundIntentId: string, purchaseId: string}) => Promise<RefundResponse>, createStripeRefund: (allowEffects: AllowEffects, input: {payment_intent: string, amount: number, reason: string, metadata: {purchase_id: string, refund_intent_id: string}}, options: {idempotencyKey: string}) => Promise<{id: string, status?: string}>, recordRefundSubmission: (allowEffects: AllowEffects, input: {refundIntentId: string, stripeRefundId: string, stripeStatus: string}) => Promise<RefundResponse>, markRefundIntentAmbiguous: (allowEffects: AllowEffects, refundIntentId: string) => Promise<RefundResponse> }} deps Handler dependencies.
+ * @param {{ billingEnabled: boolean, stripeConfigured: boolean, sha256Utf8: (identity: string) => string, verifyIdToken: (token: string) => Promise<{uid?: string}>, getPurchase: (purchaseId: string) => Promise<Record<string, any>|null>, createRefundIntent: (allowEffects: AllowEffects, input: {refundIntentId: string, purchaseId: string}) => Promise<RefundResponse>, createStripeRefund: (allowEffects: AllowEffects, input: {payment_intent: string, amount: number, reason: string, metadata: {purchase_id: string, refund_intent_id: string}}, options: {idempotencyKey: string}) => Promise<{id: string, status?: string}>, recordRefundSubmission: (allowEffects: AllowEffects, input: {refundIntentId: string, stripeRefundId: string, stripeStatus: string}) => Promise<RefundResponse>, markRefundIntentAmbiguous: (allowEffects: AllowEffects, refundIntentId: string) => Promise<RefundResponse> }} deps Handler dependencies.
  * @returns {(allowEffects: AllowEffects, request: {authorization?: unknown, purchaseId?: unknown, idempotencyKey?: unknown}) => Promise<RefundResponse>} Refund request handler.
  */
 export function createBillingRefundRequestHandler(deps) {
@@ -44,7 +43,8 @@ export function createBillingRefundRequestHandler(deps) {
     const refundIntentId = createRefundIntentId(
       claims.uid,
       request.purchaseId,
-      request.idempotencyKey.trim()
+      request.idempotencyKey.trim(),
+      deps.sha256Utf8
     );
     const intentResult = await deps.createRefundIntent(allowEffects, {
       refundIntentId,
@@ -97,11 +97,12 @@ export function createBillingRefundRequestHandler(deps) {
  * @param {string} uid Authenticated user identifier.
  * @param {string} purchaseId Purchase identifier.
  * @param {string} idempotencyKey Caller retry key.
+ * @param {(identity: string) => string} sha256Utf8 Injected SHA-256 UTF-8 operation.
  * @returns {string} Stable intent identifier.
  */
-function createRefundIntentId(uid, purchaseId, idempotencyKey) {
+function createRefundIntentId(uid, purchaseId, idempotencyKey, sha256Utf8) {
   const identity = [uid, purchaseId, idempotencyKey].join('\u0000');
-  return `refund-${createHash('sha256').update(identity).digest('hex')}`;
+  return `refund-${sha256Utf8(identity)}`;
 }
 
 /**

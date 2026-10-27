@@ -8,6 +8,7 @@ import { createPublicBillingOffersHandler } from '../../core/cloud/billing/publi
 import { sendPublicBillingOffersResponse } from './effect-adapters.js';
 import { createBillingHttpHandler } from './http-handler.js';
 import { createStripeRefundAdapter } from './refund-stripe-adapter.js';
+import { sha256Utf8 } from './refund-identity-adapter.js';
 
 const db = new Firestore({ databaseId: process.env.DATABASE_ID });
 const billingEnabled = process.env.BILLING_ENABLED === 'true';
@@ -26,6 +27,7 @@ const handleOffers = createPublicBillingOffersHandler({
   billingEnabled,
 });
 const handleRefund = createBillingRefundRequestHandler({
+  sha256Utf8,
   billingEnabled,
   stripeConfigured: Boolean(stripe),
   verifyIdToken: token => getAuth().verifyIdToken(token),

@@ -247,3 +247,21 @@ The earlier injection Full Check40540924102 succeeded; exact hardening Full
 Check40544211532 is still running. Parent architecture and dadeto-r5hj remain
 open pending that full result and the broader migration requirements. Proceed
 with the next built-in dependency slice while monitoring that same live handle.
+
+
+## Refund identity dependency injection — 27 October 2026
+
+Bead `dadeto-pu2z` removes direct crypto from refund identity construction. The
+cloud integration supplies the same SHA-256 UTF-8 operation through a thin
+adapter; tuple separators, retry-key trimming, prefix, auth/ownership, billing
+gates and effect permissions remain intact. Core tests use fake hashing and an
+opaque permission fixture; separate adapter tests check ASCII/NUL/Unicode fixed
+vectors. Four focused suites / 21 tests, scoped source coverage, all 10 local
+static gates, builds and 27-package cloud closure verification pass. The audit
+now has 12 modules / 25 direct built-in imports remaining.
+
+A complete 145-mutant handler experiment exposes additional test gaps despite
+full branch coverage; keep mutation acceptance and exact pushed Full Check
+separate, and do not close the quality Bead from local tests alone. The previous
+lineage parser task is complete: Full Check40544211532 succeeded for fa26bb4,
+matching its 279/279 killed mutation report. Rank 11 remains Active / Partial.
