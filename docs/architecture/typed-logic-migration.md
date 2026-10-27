@@ -201,3 +201,19 @@ No source moved and no exclusion was added. The analyser's pre-existing blanket
 mutation directive remains a limitation, not successful mutation evidence; the
 final architecture acceptance requires auditing/removing existing skips. The
 manual graph runner's legacy scan root also needs updating with the source moves.
+
+
+## Lineage hash injection; hardening in progress — 27 October 2026
+
+Bead `dadeto-r5hj` removes node:crypto from lineage parsing and injects the same
+UTF-8 SHA-256 operation from its existing CI composer. Controlled core tests
+verify delegation and failure propagation; composer integration retains real
+hash verification. A virtual compiler fixture rejects omitted/wrong-returning
+hash dependencies. All 36 focused tests, scoped changed-source coverage, 10
+static gates and build pass. This reduces the built-in audit to 13 modules /
+26 imports, without moving files or changing deployment behavior.
+
+The complete parser-module mutation run failed its 100% gate: 243/282 killed,
+39 survived, no timeouts. The retained harness and initial report provide the
+next hardening loop; this is not mutation acceptance. Keep the Bead and overall
+architecture open. No mutation/source exclusions or lower threshold were added.

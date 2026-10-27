@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import { parseFunctionEndpointRegistry } from './function-endpoint-registry.js';
 
 const COMMIT_SHA_PATTERN = /^[a-f0-9]{40}$/i;
@@ -16,11 +14,13 @@ const TIMESTAMP_PATTERN =
  * later Netlify deployment.
  * @param {string} lineageJson Serialized lineage record.
  * @param {{ expectedRegistryUrl?: string }} options Expected stable registry URL.
+ * @param {(body: string) => string} sha256Utf8 Injected SHA-256 UTF-8 digest operation.
  * @returns {Record<string, unknown>} Validated, normalized lineage evidence.
  */
 export function parseFunctionEndpointLineage(
   lineageJson,
-  { expectedRegistryUrl } = {}
+  { expectedRegistryUrl } = {},
+  sha256Utf8
 ) {
   const lineage = parseLineageJson(lineageJson);
   requireRecord(lineage, 'Lineage JSON must be an object.');
@@ -31,7 +31,8 @@ export function parseFunctionEndpointLineage(
   const registry = parseRegistryObject(
     lineage.registryObject,
     gcpProd,
-    stableRegistryUrl
+    stableRegistryUrl,
+    sha256Utf8
   );
   const netlify = parseNetlifyEvidence(lineage.netlify, gcpProd, registry);
 
@@ -113,9 +114,10 @@ function parseGcpProductionEvidence(value) {
  * @param {unknown} value Candidate registry evidence.
  * @param {GcpProductionEvidence} gcpProd Validated GCP evidence.
  * @param {string} expectedRegistryUrl Configured stable URL.
+ * @param {(body: string) => string} sha256Utf8 Injected digest operation.
  * @returns {RegistryObjectEvidence} Validated registry evidence.
  */
-function parseRegistryObject(value, gcpProd, expectedRegistryUrl) {
+function parseRegistryObject(value, gcpProd, expectedRegistryUrl, sha256Utf8) {
   requireRecord(value, 'Registry object evidence must be an object.');
   const url = requireNonEmptyString(value.url, 'Registry object URL');
   if (url !== expectedRegistryUrl) {
@@ -141,7 +143,7 @@ function parseRegistryObject(value, gcpProd, expectedRegistryUrl) {
   const generation = parseOptionalGeneration(value.generation);
   const etag = parseOptionalEtag(value.etag);
   const body = requireNonEmptyString(value.body, 'Registry object body');
-  const contentSha256 = createHash('sha256').update(body, 'utf8').digest('hex');
+  const contentSha256 = sha256Utf8(body);
   const document = parseFunctionEndpointRegistry(body);
   if (!sameStringMap(document.functions, gcpProd.functionUrls)) {
     throw new Error('Registry function URLs do not match the GCP deployment.');

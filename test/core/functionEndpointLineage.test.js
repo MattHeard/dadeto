@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { jest } from '@jest/globals';
 
 import { parseFunctionEndpointLineage } from '../../src/core/build/function-endpoint-lineage.js';
 
@@ -12,9 +12,8 @@ const registryBody = JSON.stringify({
     getAuthorUuidV2: 'https://get-author-uuid.example.run.app',
   },
 });
-const registrySha256 = createHash('sha256')
-  .update(registryBody, 'utf8')
-  .digest('hex');
+const registrySha256 = 'a'.repeat(64);
+const hashRegistryBody = () => registrySha256;
 
 /**
  * Build a valid deployment lineage with optional test overrides.
@@ -80,9 +79,11 @@ function validLineage(overrides = {}) {
  * @returns {Record<string, unknown>} Validated lineage record.
  */
 function parse(overrides = {}) {
-  return parseFunctionEndpointLineage(JSON.stringify(validLineage(overrides)), {
-    expectedRegistryUrl: registryUrl,
-  });
+  return parseFunctionEndpointLineage(
+    JSON.stringify(validLineage(overrides)),
+    { expectedRegistryUrl: registryUrl },
+    hashRegistryBody
+  );
 }
 
 /**
@@ -91,9 +92,11 @@ function parse(overrides = {}) {
  * @returns {Record<string, unknown>} Validated lineage record.
  */
 function parseWithRegistryUrl(expectedRegistryUrl) {
-  return parseFunctionEndpointLineage(JSON.stringify(validLineage()), {
-    expectedRegistryUrl,
-  });
+  return parseFunctionEndpointLineage(
+    JSON.stringify(validLineage()),
+    { expectedRegistryUrl },
+    hashRegistryBody
+  );
 }
 
 describe('parseFunctionEndpointLineage', () => {
@@ -121,13 +124,21 @@ describe('parseFunctionEndpointLineage', () => {
 
   it.each(['{', 'null', '[]'])('rejects malformed lineage JSON: %s', json => {
     expect(() =>
-      parseFunctionEndpointLineage(json, { expectedRegistryUrl: registryUrl })
+      parseFunctionEndpointLineage(
+        json,
+        { expectedRegistryUrl: registryUrl },
+        hashRegistryBody
+      )
     ).toThrow();
   });
 
   it('requires a stable public registry URL', () => {
     expect(() =>
-      parseFunctionEndpointLineage(JSON.stringify(validLineage()))
+      parseFunctionEndpointLineage(
+        JSON.stringify(validLineage()),
+        undefined,
+        hashRegistryBody
+      )
     ).toThrow('Expected registry URL is required');
     expect(() =>
       parseWithRegistryUrl('https://example.com/registry.json')
@@ -143,10 +154,14 @@ describe('parseFunctionEndpointLineage', () => {
       )
     ).toThrow('stable public GCS URL');
     expect(() =>
-      parseFunctionEndpointLineage(JSON.stringify(validLineage()), {
-        expectedRegistryUrl:
-          'https://storage.googleapis.com/registry.json?version=1',
-      })
+      parseFunctionEndpointLineage(
+        JSON.stringify(validLineage()),
+        {
+          expectedRegistryUrl:
+            'https://storage.googleapis.com/registry.json?version=1',
+        },
+        hashRegistryBody
+      )
     ).toThrow('stable public GCS URL');
     expect(() =>
       parse({
@@ -335,4 +350,30 @@ describe('parseFunctionEndpointLineage', () => {
       'GCP function URL evidence must be an object'
     );
   });
+});
+
+test('delegates the exact registry body to the injected UTF-8 hasher', () => {
+  const digest = 'b'.repeat(64);
+  const sha256Utf8 = jest.fn(() => digest);
+  const result = parseFunctionEndpointLineage(
+    JSON.stringify(validLineage({ netlify: { registrySha256: digest } })),
+    { expectedRegistryUrl: registryUrl },
+    sha256Utf8
+  );
+  expect(sha256Utf8).toHaveBeenCalledTimes(1);
+  expect(sha256Utf8).toHaveBeenCalledWith(registryBody);
+  expect(result.registry.sha256).toBe(digest);
+});
+
+test('propagates hasher failures without returning fallback evidence', () => {
+  const failure = new Error('hasher failed');
+  expect(() =>
+    parseFunctionEndpointLineage(
+      JSON.stringify(validLineage()),
+      { expectedRegistryUrl: registryUrl },
+      () => {
+        throw failure;
+      }
+    )
+  ).toThrow(failure);
 });

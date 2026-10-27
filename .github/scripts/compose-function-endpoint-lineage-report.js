@@ -93,7 +93,8 @@ export function composeFunctionEndpointLineageReport({
 
   const validatedLineage = parseFunctionEndpointLineage(
     JSON.stringify(lineage),
-    { expectedRegistryUrl }
+    { expectedRegistryUrl },
+    sha256Utf8
   );
   return {
     schemaVersion: 1,
@@ -290,6 +291,15 @@ function requireEnvironmentValue(value, name) {
 }
 
 /**
+ * Hash exact UTF-8 registry bytes at the CI integration boundary.
+ * @param {string} body Captured registry content.
+ * @returns {string} Lowercase hexadecimal SHA-256 digest.
+ */
+function sha256Utf8(body) {
+  return createHash('sha256').update(body, 'utf8').digest('hex');
+}
+
+/**
  * Verify that a captured registry digest identifies its exact body.
  * @param {Record<string, unknown>} registry Registry artifact section.
  * @param {string} label Artifact label for static diagnostics.
@@ -304,7 +314,7 @@ function requireRegistryDigest(registry, label) {
   if (typeof digest !== 'string' || !/^[a-f0-9]{64}$/i.test(digest)) {
     throw new Error(`${label} registry digest must be 64 hex characters.`);
   }
-  const actualDigest = createHash('sha256').update(body, 'utf8').digest('hex');
+  const actualDigest = sha256Utf8(body);
   if (digest.toLowerCase() !== actualDigest) {
     throw new Error(
       `${label} registry digest does not match its captured body.`
