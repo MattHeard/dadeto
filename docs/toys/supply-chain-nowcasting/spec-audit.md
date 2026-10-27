@@ -1,6 +1,6 @@
 # Supply-chain live-spec implementation audit
 
-Source: [Rank 10 Notion spec](https://app.notion.com/p/3fa700afc3018109a2a4c42549feef2e), audited 2026-10-26. Owning Bead: `dadeto-fbd1`; shared artifact retention: `dadeto-en6p`. This is an evidence map, not a claim that pending current-code CI or browser acceptance has finished.
+Source: [Rank 10 Notion spec](https://app.notion.com/p/3fa700afc3018109a2a4c42549feef2e), audited 2026-10-27. Owning Bead: `dadeto-fbd1`; shared artifact retention: `dadeto-en6p`. The requirement map below includes inspected current-code browser artifacts and terminal Full Check/cleanup evidence.
 
 ## Scope coverage
 
@@ -26,7 +26,7 @@ Each feasible candidate reports its actual simulated remaining shortfall; each i
 
 | Acceptance item | Evidence / remaining proof |
 | --- | --- |
-| Useful sample response under two minutes without signup | Earlier cloud run `40358398354` passed the supply-chain journey in 903 ms, but its report upload failed after all 14 browser cases passed. Final-code screenshot and interaction-record retention must still be observed after the create-only uploader repair. Do not use that earlier run to certify later domain changes. |
+| Useful sample response under two minutes without signup | Current-code cloud run `40487647737` at `5b97143` retained artifact `e2e-t-239cf0a8` (12728936135). The case passed in846ms; its timed one-click task took544ms. The PNG and inline JSON were inspected: baseline30 units/50¢, first feasible alternate avoids30 with0 remaining/400¢, and the2-day signal is explicitly hypothetical. Capacity/arrival/minimum-warning/shortfall/cost columns and advisory notice are readable. This establishes rendered content and automated completion; no human comprehension study is claimed. |
 | Explainable deterministic ranking and hand-computed costs/shortfall | Pure planner fixtures and presenter labels above; the current focused planner/presenter evaluator passes 119 tests with full changed-core lines/branches. |
 | Capacity/lead/warning constraints | Model invariants above plus isolated equality/over-limit, shared-allocation, last-day, route-floor and warning-boundary regressions. |
 | Explicit errors for invalid IDs, directions, units and impossible input | Validator tests cover null records, duplicate/unknown/blank IDs, unsupported paths/cycles, bad units, invalid quantities/costs/days/reduction, and a nonblank sole missing-ID issue. The model intentionally supports direct supplier-to-destination routes. |
@@ -36,4 +36,26 @@ Each feasible candidate reports its actual simulated remaining shortfall; each i
 
 Mutation reports are preserved under `reports/mutation/` as `supply-chain-nowcasting-before-allocation.json`, `supply-chain-nowcasting-allocation.json`, `supply-chain-nowcasting-warning.json`, and the latest `mutation.json`. Reviewed earlier survivor rationale is in `acceptance.md`. No mutation exclusions, clone suppressions, IAM expansions or production-chain guard changes were introduced.
 
-The demand/route-arrival loop's aggregate check passed all 10 gates and the build passed. Imported context now follows provenance, horizon, destination, demand and starting stock;48 presenter tests and full scoped coverage passed, along with the local aggregate gate and build. After it passes, push this slice, run current main through the isolated cloud test workflow, inspect retained screenshot and elapsed-time JSON, record current-SHA Full Check separately, then reconcile the live Notion acceptance and refresh the ranked queue. Human enjoyment or customer validation is not inferred from an automated trace.
+The demand/route-arrival loop's aggregate check passed all 10 gates and the build passed. Imported context now follows provenance, horizon, destination, demand and starting stock;48 presenter tests and full scoped coverage passed, along with the local aggregate gate and build. All implementation slices are pushed; the matching Full Check and cloud run succeeded, with screenshot/interaction inspection recorded below. Human enjoyment or customer validation is not inferred from an automated trace.
+
+## Retained current-code browser evidence — 27 October 2026
+
+- Run: [40487647737](https://github.com/MattHeard/dadeto/actions/runs/40487647737),
+  exact code `5b97143617eab1c918675f3c1d1f4d16b89d56d0`.
+- Retained [artifact12728936135](https://github.com/MattHeard/dadeto/actions/runs/40487647737/artifacts/12728936135):
+  `supply-chain-response-plan` PNG `data/dc985079db8907b226bfc5784f82eca7bbd5e8ba.png`,
+  SHA-256 `d823735cd61d7fde09ea050d97d545a8da99d047a2cf3798dfb7e087d044ea31`.
+- The interaction JSON is embedded inside the HTML report's base64 ZIP file
+  `b64ba81f5444190f4560.json`, attachment `supply-chain-interaction-record`.
+  Its task elapsed544ms; case duration846ms. All14 browser cases passed with no
+  unexpected/flaky/skipped results. Local extracted records are ignored under
+  `reports/playtests/gcp-40487647737/`.
+- Visual inspection confirms synthetic provenance, assumptions, editable inputs,
+  JSON/CSV import/export controls, route capacity/lead/cost/state, ranked response
+  feasibility/timing/remaining-demand/cost and advisory-only copy. The comparison
+  case checks warning0/1/2 timing, partial-demand warning and reset.
+- Exact-code [Full Check40487573780](https://github.com/MattHeard/dadeto/actions/runs/40487573780)
+  succeeded. Cloud run40487647737 subsequently completed successfully: the Terraform
+  job and final cleanup job both passed their destroy/static-prefix cleanup steps.
+  The manual-run production handoff40491417626 was skipped. No production apply
+  or paid provider request was needed.

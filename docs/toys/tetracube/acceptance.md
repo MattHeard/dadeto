@@ -51,3 +51,57 @@ The manually authorized `gcp-test` run [40154304810](https://github.com/MattHear
 ## Retain Cloud Run Playwright evidence — 2026-10-25
 
 Manual run [40163147750](https://github.com/MattHeard/dadeto/actions/runs/40163147750) passed and cleaned up its temporary environment, but its artifact listing had no E2E report. The report-download step tolerated missing folders and the GitHub upload step used `if-no-files-found: warn`, so the green test job did not prove the attached screenshot or interaction record was retained. The Cloud Playwright config now explicitly writes an HTML report and test-results directory; the runner fails if these directories are missing or GCS upload fails; GitHub requires the E2E files when the Playwright job ran. A regression covers the reporter, upload path, and artifact requirement. The source change still needs a separately authorized current-head `gcp-test` run; the human playtest and enjoyment/friction report remain outstanding.
+
+## Retained cloud session and observed mobile friction — 27 October 2026
+
+Current-code manual [gcp-test 40487647737](https://github.com/MattHeard/dadeto/actions/runs/40487647737)
+at `5b97143617eab1c918675f3c1d1f4d16b89d56d0` retained
+[e2e-t-239cf0a8, artifact 12728936135](https://github.com/MattHeard/dadeto/actions/runs/40487647737/artifacts/12728936135).
+The HTML report embeds the interaction JSON in its base64 ZIP; it is not a
+missing standalone attachment. The report records all 14 cases passed without
+flakiness/skips. The Tetracube case took 1,863 ms and records five placements,
+`5 placed · preview clear`, and touch ghost adjustments/placements plus keyboard
+rotation. It also checks mining/settling, undo, reset, keyboard place/undo,
+movement and flight. Its JSON explicitly says enjoyment was not assessed.
+
+Inspected screenshot `playwright-report/data/061419e0ed84867bbecef7db2c0c5fcdbc511947.png`
+has SHA-256 `cb94e5a2e3d4bad1029095ee2818850a48a3953c3b786db527e71d044d5609cf`.
+It confirms rendered pieces, a crosshair, next-piece identity, placement/preview
+feedback and reachable touch controls. It also exposes a real defect: on the
+390-pixel page the canvas extends past the card's visible right edge, clipping
+the world. The nearby five-piece structure fills much of the view. That is
+observed visual friction, not proof of a satisfying full-tower overview.
+
+### Experience record and next design direction
+
+- Anticipation: the next-piece/colour label and ghost are visible; whether this
+  creates anticipation for a player remains unassessed.
+- Creative compromise: the scripted session offsets/rotates offered pieces and
+  builds five placements, but does not measure a player's choices or compromises.
+- Fits and imperfect growth: placement/readout changes work; subjective
+  satisfaction and longer-term structure growth remain unassessed.
+- Negative finding: the mobile world viewport is clipped, and this close camera
+  view does not give a legible overview of the complete tower/overhang.
+- First design response: constrain the existing viewport before adding mechanics.
+  Then collect a short human tower/overhang session with stepping back/flying up
+  and explicit fit/compromise/friction observations. Consider camera-distance or
+  overview tuning only from that evidence; retain free construction without a
+  new objective or larger progression system.
+
+The follow-up in `dadeto-7qbo` adds `width: 100%` and `min-width: 0` to the wrapper,
+preventing its 16:9 preference and minimum height from expanding its auto width.
+A source-style regression failed before this change and passes afterward; four
+mechanics/presenter suites plus that regression pass 50 tests. Cloud assertions
+now check actual canvas/card bounds at 320 and 390 pixels. Those assertions are
+not yet executed in a real browser on the fix, and a human enjoyment report is
+still absent. Do not mark the whole playtest complete from static tests. Local
+extracted records/hashes are in ignored `reports/playtests/gcp-40487647737/`.
+
+The observed run40487647737 subsequently completed successfully, including
+Terraform Destroy and temporary-prefix cleanup in both jobs. Its manual-run
+production handoff40491417626 was skipped. The responsive-fix local loop passed
+50 focused tests, a final focused layout rerun, all10 static gates via
+`npm run check -- --skip-tests`, build and86-manual validation. The static-only
+aggregate followed explicit focused tests; it is not full-suite/coverage or
+real-browser evidence for the width fix. Exact current-code cloud bounds and
+subjective playtest acceptance remain open.

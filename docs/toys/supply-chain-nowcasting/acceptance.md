@@ -81,3 +81,22 @@ Full Check40368983213 for168291f succeeded. Scheduled GCP run40449922217 at that
 ## Cloud-to-GitHub transfer correction — 2026-10-27
 
 Scheduled run40449922217 passed all14 cases (44.3s), including this planner in934ms and Tetracube in2.3s, and uploaded four report files. Both report trees downloaded successfully. The artifact action failed because downloads were under infra, not workspace root. The actual-workflow shell regression reproduced wrong destinations and a false success on a missing tree before the correction; the fixed paths/strictness passed four focused suites/24 tests and the final local check10/10. See `notes/agents/2026-10-27-playwright-workspace-transfer.md`. Current-code retained screenshot/interaction inspection remains open until a fresh cloud run completes.
+
+## Terminal acceptance evidence — 27 October 2026
+
+All seven live acceptance items are mapped in `spec-audit.md` and now have
+implementation/evaluator evidence. Manual cloud run40487647737 at5b97143 succeeded
+with14/14 browser cases, retained artifact12728936135 and both cleanup stages.
+Matching Full Check40487573780 succeeded. The screenshot and embedded JSON were
+inspected: one-click response task544ms (case846ms), baseline30 shortfall/50¢,
+first feasible alternate avoids30 with0 remaining/400¢, explicit hypothetical
+2-day warning, labelled capacities/timing/remaining-shortfall/costs and advisory
+limitations. This is automated timing and direct visual-content inspection,
+not a claim about a human comprehension study or commercial validation.
+The corresponding production handoff40491417626 was skipped for the manual run.
+No production request, supplier contact, rerouting or paid provider was used.
+
+Current run artifact IDs, screenshot SHA-256 and requirement-by-requirement
+coverage are recorded in `spec-audit.md`; extracted nonsecret JSON is ignored at
+`reports/playtests/gcp-40487647737/`. The shared uploader/transfer loop is owned
+by `dadeto-en6p`; the toy completion is owned by `dadeto-fbd1`.

@@ -54,6 +54,8 @@ h1 {
 .piece-readout { margin: .25rem 0 0; color: #f1d28a; font-weight: 700; }
 .structure-readout { color: #b9cfb9; font-size: .78rem; }
 .canvas-wrap {
+  width: 100%;
+  min-width: 0;
   position: relative;
   overflow: hidden;
   min-height: 340px;

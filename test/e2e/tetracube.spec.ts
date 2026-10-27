@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test';
 
 test.use({ isMobile: true, hasTouch: true });
 
-test('records a touch and keyboard tower-building session', async ({ page }) => {
+test('records a touch and keyboard tower-building session', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/tetracube/');
 
@@ -15,7 +17,9 @@ test('records a touch and keyboard tower-building session', async ({ page }) => 
   const structure = page.locator('#structure-readout');
   const status = page.locator('#tetracube-status');
   await expect(canvas).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Move forward' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Move forward' })
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Fly up' })).toBeVisible();
   await expect(page.locator('#piece-readout')).toHaveText(
     /tetracube-\d+ · #[0-9a-f]{6}/i
@@ -24,8 +28,20 @@ test('records a touch and keyboard tower-building session', async ({ page }) => 
 
   const renderedFrame = () =>
     canvas.evaluate(element => (element as HTMLCanvasElement).toDataURL());
-  const initialFrame = await renderedFrame();
+  const card = page.locator('.world-card');
+  for (const viewportWidth of [320, 390]) {
+    await page.setViewportSize({ width: viewportWidth, height: 844 });
+    const cardBounds = await card.boundingBox();
+    const canvasBounds = await canvas.boundingBox();
+    expect(cardBounds).not.toBeNull();
+    expect(canvasBounds).not.toBeNull();
+    expect(canvasBounds!.x).toBeGreaterThanOrEqual(cardBounds!.x);
+    expect(canvasBounds!.x + canvasBounds!.width).toBeLessThanOrEqual(
+      cardBounds!.x + cardBounds!.width
+    );
+  }
 
+  const initialFrame = await renderedFrame();
   await page.getByRole('button', { name: 'Adjust ghost left' }).tap();
   expect(await renderedFrame()).not.toBe(initialFrame);
   await page.getByRole('button', { name: 'Adjust ghost right' }).tap();
@@ -70,9 +86,13 @@ test('records a touch and keyboard tower-building session', async ({ page }) => 
     contentType: 'application/json',
   });
 
-  await page.getByRole('button', { name: 'Mine the piece under the crosshair' }).tap();
+  await page
+    .getByRole('button', { name: 'Mine the piece under the crosshair' })
+    .tap();
   await expect(structure).toContainText('4 placed');
-  await expect(status).toContainText('Piece mined. Unsupported pieces settled.');
+  await expect(status).toContainText(
+    'Piece mined. Unsupported pieces settled.'
+  );
 
   await page.getByRole('button', { name: 'Undo' }).tap();
   await expect(structure).toContainText('5 placed');
