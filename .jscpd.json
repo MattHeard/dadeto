@@ -1,5 +1,5 @@
 {
-  "path": ["src/core"],
+  "path": ["src/core", "src/logic/core", "src/logic/boundary"],
   "mode": "mild",
   "minTokens": 11,
   "reporters": ["html", "json"],

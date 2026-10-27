@@ -1,4 +1,5 @@
 import jestConfig from './jest.config.mjs';
+import { LOGIC_SOURCE_ROOTS } from './src/core/local/logic-source-paths.js';
 
 const configuredHeapMb = Number(process.env.DADETO_STRYKER_HEAP_MB ?? 1024);
 const strykerHeapMb =
@@ -27,7 +28,7 @@ export default {
   concurrency: 1,
   maxTestRunnerReuse,
   mutate: [
-    'src/core/**/*.js',
+    ...LOGIC_SOURCE_ROOTS.map(root => `${root}/**/*.js`),
     '!**/*.html',
     '!src/build/styles.js',
     '!src/browser/contentsMenuToggle.js',

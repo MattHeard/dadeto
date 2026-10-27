@@ -23,7 +23,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/core/**/*.js", "src/adapters/**/*.js", "types/allow-effects-adapters.contract.ts"],
+  "include": ["src/core/**/*.js", "src/logic/core/**/*.js", "src/logic/boundary/**/*.js", "src/adapters/**/*.js", "types/allow-effects-adapters.contract.ts"],
   "exclude": [
     "node_modules",
     "public",

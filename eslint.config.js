@@ -7,6 +7,7 @@ import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
 import createNoParameterBagAritySmugglingRule from './src/core/lint/no-parameter-bag-arity-smuggling.js';
 import ts from 'typescript';
 import { createAllowEffectsRule } from './src/core/scripts/allow-effects.js';
+import { LOGIC_SOURCE_ROOTS } from './src/core/local/logic-source-paths.js';
 
 let capabilityProgramCache;
 
@@ -32,7 +33,18 @@ export function capabilityProgramFor(filename, text) {
   return program;
 }
 
-const lintFiles = ['src/core/**/*.js', 'test/**/*.js'];
+/**
+ * Carry existing module-specific policies to their corresponding logic paths.
+ * @param {string[]} patterns Legacy source patterns.
+ * @returns {string[]} Patterns across every supported logic root.
+ */
+function includeLogicRoots(patterns) {
+  return patterns.flatMap(pattern =>
+    LOGIC_SOURCE_ROOTS.map(root => pattern.replace('src/core', root))
+  );
+}
+
+const lintFiles = [...includeLogicRoots(['src/core/**/*.js']), 'test/**/*.js'];
 const tautologicalWrapperFiles = ['src/**/*.js'];
 const repoLintPlugin = {
   rules: {
@@ -45,7 +57,7 @@ const repoLintPlugin = {
 
 export default [
   {
-    files: [
+    files: includeLogicRoots([
       'src/core/cloud/submit-new-story/**/*.js',
       'src/core/cloud/submit-new-page/**/*.js',
       'src/core/cloud/effectFetch.js',
@@ -85,12 +97,12 @@ export default [
       'src/core/build/buildCore.js',
       'src/core/scripts/write-coverage-summary.js',
       'src/core/local/clone-scanner.js',
-    ],
+    ]),
     plugins: { capability: repoLintPlugin },
     rules: { 'capability/allow-effects': 'error' },
   },
   {
-    files: ['src/core/**/*.js'],
+    files: includeLogicRoots(['src/core/**/*.js']),
     rules: {
       'no-restricted-imports': [
         'error',
@@ -232,15 +244,15 @@ export default [
     },
   },
   {
-    files: ['src/core/**/*.js'],
+    files: includeLogicRoots(['src/core/**/*.js']),
     plugins: { repo: repoLintPlugin },
     rules: { 'repo/no-parameter-bag-arity-smuggling': 'error' },
   },
   {
-    files: [
+    files: includeLogicRoots([
       'src/core/browser/presenters/battleshipSolitaireClues.js',
       'src/core/browser/toys/2025-03-29/get.js',
-    ],
+    ]),
     rules: { complexity: ['warn', 4] },
   },
   {
@@ -253,7 +265,9 @@ export default [
     },
   },
   {
-    files: ['src/core/browser/inputHandlers/browserInputHandlersCore.js'],
+    files: includeLogicRoots([
+      'src/core/browser/inputHandlers/browserInputHandlersCore.js',
+    ]),
     rules: {
       'no-magic-numbers': [
         'error',
@@ -276,7 +290,7 @@ export default [
   },
   {
     // Keep core browser and Node boundaries enforced after shared lint defaults.
-    files: ['src/core/**/*'],
+    files: includeLogicRoots(['src/core/**/*']),
     rules: {
       'no-console': 'error',
       'no-restricted-globals': [

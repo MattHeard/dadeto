@@ -131,7 +131,33 @@ gates after the explicit focused tests/coverage run; build, cloud assembly and
 package verification passed. Full Check for the pushed change is separate
 asynchronous evidence. No source module moved or coverage threshold decreased.
 
-Next: extend lint/checkJs, mutation, duplication, parse/dependency/global and
+Next: extend parse/dependency/global and
 thin-wrapper enforcement to the new roots, proving each with fixtures, before
 moving the first local-only report module. The pinned census above remains an
 historical baseline and is not silently refreshed by new helper files.
+
+
+## Static selection preflight — 27 October 2026
+
+Bead `dadeto-ws2w` extends the lint command and every legacy core-specific
+ESLint policy to both target logic roots, including capability selection,
+factory-import restrictions, no-console/restricted globals, arity, and existing
+per-module limits. TypeScript now discovers both roots without copying any of
+the legacy file exclusions. Global Stryker positive selection includes all three
+roots; its existing other settings are unchanged. The active clone configuration
+scans all three roots with the same mild mode, minTokens 11 and zero-clone gate.
+No source module moved. The new namespace READMEs describe their intended roles.
+
+The new fixtures initially exposed eight missing selections. Final regressions
+execute real ESLint/compiler-backed capability checks, TypeScript file discovery,
+and the actual clone scanner against duplicate files across the two destination
+roots. The duplicate fixture must exceed the existing five-line detector minimum;
+that minimum was not changed to make a short fixture pass. Four focused suites
+pass 61 tests. The split local aggregate (`npm run check -- --skip-tests` after
+those focused tests) passes all 10 static gates, including real checkJs and zero
+repository clones. Complete-suite evidence belongs to the pushed Full Check.
+
+Parse/dependency/global and thin-wrapper checks still require explicit extensions
+before a JavaScript move. Refresh module dependencies before selecting the first
+move; the report module now depends on the shared root classifier. Static output
+mapping and cloud package contracts remain mandatory for moves affecting them.
