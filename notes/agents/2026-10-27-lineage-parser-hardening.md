@@ -70,3 +70,21 @@ all 10 split static gates and generation pass. Logs:
 /tmp/dadeto-r5hj-hardening-impact.log, /tmp/dadeto-r5hj-hardening-check.log,
 /tmp/dadeto-r5hj-hardening-build.log. The final mutation handle is separate and
 its terminal outcome remains required; the run starts after static gates finish.
+
+
+## Final mutation acceptance
+
+The final native-match run completed with exit zero: **279/279 killed**, including
+36 static mutants, zero survivors/timeouts/ignored/uncovered mutants, 100% score
+against the unchanged 100% break threshold. Its embedded source exactly equals
+pushed fa26bb4's current module; SHA-256:
+343e28b5581b1f6ee1fcec74182a09e3fc9ff19b1ef9ec41d1797572eb4f457a.
+Report: reports/mutation/function-endpoint-lineage.json; checked summary:
+reports/mutation/function-endpoint-lineage-summary.json. The prior success-literal
+timeout is killed in this complete rerun after static workloads finished.
+
+Exact hardening Full Check40544211532 remains live at last inspection:
+https://github.com/MattHeard/dadeto/actions/runs/40544211532 . Keep dadeto-r5hj
+open until its terminal result is recorded. The earlier injection Full Check
+40540924102 succeeded. Mutation evidence is for this entire parser module,
+not every repository module or the remaining Rank 11 acceptance.

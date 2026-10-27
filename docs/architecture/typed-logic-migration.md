@@ -238,3 +238,12 @@ primitive-outcome guard was masked by Date.parse coercion. The latest full-modul
 rerun follows the native-match change and must be inspected before acceptance.
 No mutation exclusions or threshold reductions were introduced. Keep this Bead
 and Rank 11 open pending mutation and exact pushed Full Check results.
+
+
+Final lineage module mutation evidence: 279/279 killed, including 36 static
+mutants, with no survivors/timeouts/ignored/uncovered mutants and the same 100%
+break threshold. The report's embedded source exactly matches pushed fa26bb4.
+The earlier injection Full Check40540924102 succeeded; exact hardening Full
+Check40544211532 is still running. Parent architecture and dadeto-r5hj remain
+open pending that full result and the broader migration requirements. Proceed
+with the next built-in dependency slice while monitoring that same live handle.
