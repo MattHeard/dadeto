@@ -1,11 +1,22 @@
+import { builtinModules } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { parse } from 'acorn';
 import {
-  createCloudFunctionPackageVerifier,
+  createCloudFunctionPackageVerifier as createVerifier,
   getCloudFunctionArchiveDirectories,
 } from '../../../src/core/local/cloud-function-package-closure.js';
+
+const permission = Object.freeze({});
+const createCloudFunctionPackageVerifier = parseModule => {
+  const verifier = createVerifier(parseModule, path, builtinModules);
+  return {
+    inspectCloudFunctionPackage: root =>
+      verifier.inspectCloudFunctionPackage(root, fs),
+    main: options => verifier.main(permission, { fileSystem: fs, ...options }),
+  };
+};
 
 const temporaryRoots = [];
 const { inspectCloudFunctionPackage } =

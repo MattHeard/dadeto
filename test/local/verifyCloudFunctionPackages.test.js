@@ -13,7 +13,11 @@ afterEach(() => {
 });
 
 describe('verify Cloud Function packages command', () => {
-  test('uses command defaults when called without options', async () => {
+  test.each([
+    undefined,
+    {},
+    { rootDirectory: undefined, fileSystem: undefined, writeLine: undefined },
+  ])('uses command defaults for %p', async options => {
     const root = createWorkspace({
       'infra/function.tf':
         'source_dir = "${path.module}/cloud-functions/probe"',
@@ -25,7 +29,7 @@ describe('verify Cloud Function packages command', () => {
 
     try {
       process.chdir(root);
-      await expect(main()).resolves.toBe(0);
+      await expect(main(options)).resolves.toBe(0);
       expect(log).toHaveBeenCalledWith(
         expect.stringMatching(/Verified 1 Terraform Cloud Function packages/)
       );

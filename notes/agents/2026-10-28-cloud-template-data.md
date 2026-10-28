@@ -95,3 +95,12 @@ The previous runner/security children are closed using actual successful
 FullCheck40651137720 at7f07f1b (artifact12799811655:1072suites8277tests/all4global
 coverage100%). Those results do not validate this newer template change. Keep
 this child open for its own terminal CI receipt; broader Rank11 remains partial.
+
+## Successful full CI receipt
+
+Exact Full Check40653689602 succeeded atabfd8d5. Artifact12801216077 confirms
+1,074suites /8,292tests all passed, all four global coverage metrics100% and all
+eight changed logic files100% for every metric. Report:
+`/tmp/dadeto-full-check-40653689602/coverage/check-full-report.md`.
+Together with the recorded local/drift/mutation/build/closure evidence, this closes
+dadeto-48hf. Rank11 remains Active / Partial; subsequent verifier work is separate.

@@ -103,3 +103,23 @@ childWorktree.once(permission, 'exit', code => {
 childWorktree.once('exit', () => {});
 // @ts-expect-error Launching a child requires the capability as the first argument.
 launchWorktree('node', [], { cwd: '.', env: {}, stdio: 'inherit' });
+
+// Package verification queries and diagnostics have explicit platform contracts.
+declare const packageVerifier: ReturnType<
+  typeof import('../src/core/local/cloud-function-package-closure.js').createCloudFunctionPackageVerifier
+>;
+declare const packageFilesystem: import('../src/core/local/cloud-function-package-closure.js').VerifierFilesystem;
+packageVerifier.inspectCloudFunctionPackage('/package', packageFilesystem);
+packageVerifier.main(permission, {
+  rootDirectory: '/workspace',
+  fileSystem: packageFilesystem,
+});
+// @ts-expect-error Inspection cannot fall back to an ambient filesystem.
+packageVerifier.inspectCloudFunctionPackage('/package');
+// @ts-expect-error Diagnostic-producing invocation requires its permission.
+packageVerifier.main({
+  rootDirectory: '/workspace',
+  fileSystem: packageFilesystem,
+});
+// @ts-expect-error Runtime invocation cannot omit the explicit root and filesystem.
+packageVerifier.main(permission);

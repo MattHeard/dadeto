@@ -499,3 +499,17 @@ and deployment closure are required; exact mutation/CI receipts live in
 seven modules /17imports; enforcement, namespace preparation and migration remain.
 Previous runner/effects and security-backport children tx59/sxun closed after
 FullCheck40651137720 succeeded at7f07f1b (1072suites8277tests/all4coverage100).
+
+### Cloud package verifier injection — 28 October 2026
+
+Child `dadeto-6nik` removes module/fs/path imports and cwd defaults from the package
+verifier. Factory inputs now include pure path operations and builtin metadata;
+per-call filesystem/root inputs are required. Diagnostic writers require the
+invocation AllowEffects token. The existing local public command supplies native
+defaults and adapts its original callback/options interface. Fake ports/custom
+builtin/parser tests, native fixture tests and actual27package output parity pass.
+Precise acceptance receipts and pending full mutation/CI live in
+`notes/agents/2026-10-28-package-verifier-injection.md`. The broader observable
+builtin prohibition, boundary parsing and actual source migration remain pending.
+Previous template child48hf closed after exact FullCheck40653689602 succeeded
+atabfd8d5:1074suites8292tests/global+all8changedfilesall4metrics100%.

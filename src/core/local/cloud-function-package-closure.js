@@ -1,6 +1,20 @@
-import { builtinModules } from 'node:module';
-import fs from 'node:fs';
-import path from 'node:path';
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+/**
+ * @typedef {{
+ *   readFileSync: (path: string, encoding: 'utf8') => string,
+ *   existsSync: (path: string) => boolean,
+ *   readdirSync: (path: string) => string[],
+ *   statSync: (path: string) => {isFile: () => boolean},
+ * }} VerifierFilesystem
+ * @typedef {{
+ *   resolve: (...parts: string[]) => string,
+ *   join: (...parts: string[]) => string,
+ *   basename: (path: string) => string,
+ *   dirname: (path: string) => string,
+ *   relative: (from: string, to: string) => string,
+ *   sep: string,
+ * }} VerifierPaths
+ */
 
 /**
  * @typedef {{type?: string, source?: {value?: unknown}, callee?: {type?: string, name?: string}, arguments?: Array<{value?: unknown}>, [key: string]: unknown}} AstNode
@@ -8,10 +22,6 @@ import path from 'node:path';
  * @typedef {{packageName: string, moduleCount: number, importCount: number, issues: PackageIssue[]}} PackageReport
  */
 
-const NODE_BUILTINS = new Set([
-  ...builtinModules,
-  ...builtinModules.map(moduleName => `node:${moduleName}`),
-]);
 const MODULE_DECLARATION_TYPES = new Set([
   'ImportDeclaration',
   'ExportAllDeclaration',
@@ -36,20 +46,28 @@ export function getCloudFunctionArchiveDirectories(terraformSources) {
 /**
  * Create the package verifier with its JavaScript parser supplied by the local layer.
  * @param {(source: string, options: {allowHashBang: boolean, ecmaVersion: 'latest', sourceType: 'module'}) => AstNode} parseModule JavaScript parser implementation.
- * @param {(line: string) => void} [defaultWriteLine] Default diagnostic writer.
- * @returns {{main: (options?: {rootDirectory?: string, fileSystem?: typeof fs, writeLine?: (line: string) => void}) => Promise<number>, inspectCloudFunctionPackage: (packageRoot: string, fileSystem?: typeof fs) => PackageReport}} Verifier entrypoints.
+ * @param {VerifierPaths} path Pure path operations.
+ * @param {readonly string[]} builtinModuleNames Platform builtin names.
+ * @param {(permission: AllowEffects, line: string) => void} [defaultWriteLine] Permission-first diagnostic writer.
+ * @returns {{main: (permission: AllowEffects, options: {rootDirectory: string, fileSystem: VerifierFilesystem, writeLine?: (permission: AllowEffects, line: string) => void}) => Promise<number>, inspectCloudFunctionPackage: (packageRoot: string, fileSystem: VerifierFilesystem) => PackageReport}} Verifier entrypoints.
  */
 export function createCloudFunctionPackageVerifier(
   parseModule,
+  path,
+  builtinModuleNames,
   defaultWriteLine = () => {}
 ) {
+  const NODE_BUILTINS = new Set([
+    ...builtinModuleNames,
+    ...builtinModuleNames.map(moduleName => `node:${moduleName}`),
+  ]);
   /**
    * Verify imports reachable from a generated Cloud Function entrypoint.
    * @param {string} packageRoot Generated package directory used by Terraform.
-   * @param {typeof fs} [fileSystem] Synchronous filesystem adapter.
+   * @param {VerifierFilesystem} fileSystem Synchronous filesystem adapter.
    * @returns {PackageReport} Package closure result.
    */
-  function inspectCloudFunctionPackage(packageRoot, fileSystem = fs) {
+  function inspectCloudFunctionPackage(packageRoot, fileSystem) {
     const root = path.resolve(packageRoot);
     const packageName = path.basename(root);
     /** @type {PackageIssue[]} */
@@ -70,7 +88,7 @@ export function createCloudFunctionPackageVerifier(
    * Walk the static runtime imports reachable from a generated package entrypoint.
    * @param {string} root Generated package directory.
    * @param {Record<string, unknown>} manifest Parsed package manifest.
-   * @param {typeof fs} fileSystem Synchronous filesystem adapter.
+   * @param {VerifierFilesystem} fileSystem Synchronous filesystem adapter.
    * @param {PackageIssue[]} issues Issue list to append to.
    * @returns {{moduleCount: number, importCount: number}} Traversal counts.
    */
@@ -146,7 +164,7 @@ export function createCloudFunctionPackageVerifier(
    * Parse a generated module and collect its statically named runtime imports.
    * @param {string} root Generated package directory.
    * @param {string} filePath Module path being parsed.
-   * @param {typeof fs} fileSystem Synchronous filesystem adapter.
+   * @param {VerifierFilesystem} fileSystem Synchronous filesystem adapter.
    * @param {PackageIssue[]} issues Issue list to append to.
    * @returns {string[] | null} Module specifiers, or null when parsing fails.
    */
@@ -172,14 +190,14 @@ export function createCloudFunctionPackageVerifier(
 
   /**
    * Check generated package trees referenced by Terraform archive_file blocks.
-   * @param {{rootDirectory?: string, fileSystem?: typeof fs, writeLine?: (line: string) => void}} options Command adapters.
+   * @param {AllowEffects} permission Invocation permission.
+   * @param {{rootDirectory: string, fileSystem: VerifierFilesystem, writeLine?: (permission: AllowEffects, line: string) => void}} options Command adapters.
    * @returns {Promise<number>} Process exit status.
    */
-  async function main({
-    rootDirectory = process.cwd(),
-    fileSystem = fs,
-    writeLine = defaultWriteLine,
-  } = {}) {
+  async function main(
+    permission,
+    { rootDirectory, fileSystem, writeLine = defaultWriteLine }
+  ) {
     const infraDirectory = path.join(rootDirectory, 'infra');
     const terraformSources = fileSystem
       .readdirSync(infraDirectory)
@@ -190,7 +208,10 @@ export function createCloudFunctionPackageVerifier(
     const packageDirectories =
       getCloudFunctionArchiveDirectories(terraformSources);
     if (packageDirectories.length === 0) {
-      writeLine('No Terraform Cloud Function archive directories were found.');
+      writeLine(
+        permission,
+        'No Terraform Cloud Function archive directories were found.'
+      );
       return 1;
     }
 
@@ -206,10 +227,12 @@ export function createCloudFunctionPackageVerifier(
     if (failures.length > 0) {
       failures.forEach(({ packageName, issue }) =>
         writeLine(
+          permission,
           `${packageName}/${issue.file} ${issue.specifier ?? ''}: ${issue.reason}`
         )
       );
       writeLine(
+        permission,
         `Cloud package verification found ${failures.length} issue(s).`
       );
       return 1;
@@ -224,59 +247,63 @@ export function createCloudFunctionPackageVerifier(
       0
     );
     writeLine(
+      permission,
       `Verified ${packageReports.length} Terraform Cloud Function packages, ${moduleCount} reachable modules, and ${importCount} imports.`
     );
     return 0;
   }
 
-  return { main, inspectCloudFunctionPackage };
-}
-
-/**
- * Read a generated package manifest and report unreadable or missing inputs.
- * @param {string} root Generated package directory.
- * @param {typeof fs} fileSystem Synchronous filesystem adapter.
- * @param {PackageIssue[]} issues Issue list to append to.
- * @returns {Record<string, unknown> | null} Parsed package manifest.
- */
-function readPackageManifest(root, fileSystem, issues) {
-  const manifestPath = path.join(root, 'package.json');
-  /** @type {Record<string, unknown> | null} */
-  let manifest = null;
-  /** @type {string | null} */
-  let issueReason = null;
-  if (fileSystem.existsSync(manifestPath)) {
-    try {
-      manifest = JSON.parse(fileSystem.readFileSync(manifestPath, 'utf8'));
-    } catch (error) {
-      issueReason = `invalid package manifest: ${error.message}`;
+  /**
+   * Read a generated package manifest and report unreadable or missing inputs.
+   * @param {string} root Generated package directory.
+   * @param {VerifierFilesystem} fileSystem Synchronous filesystem adapter.
+   * @param {PackageIssue[]} issues Issue list to append to.
+   * @returns {Record<string, unknown> | null} Parsed package manifest.
+   */
+  function readPackageManifest(root, fileSystem, issues) {
+    const manifestPath = path.join(root, 'package.json');
+    /** @type {Record<string, unknown> | null} */
+    let manifest = null;
+    /** @type {string | null} */
+    let issueReason = null;
+    if (fileSystem.existsSync(manifestPath)) {
+      try {
+        manifest = JSON.parse(fileSystem.readFileSync(manifestPath, 'utf8'));
+      } catch (error) {
+        issueReason = `invalid package manifest: ${error.message}`;
+      }
+    } else {
+      issueReason = 'missing package manifest';
     }
-  } else {
-    issueReason = 'missing package manifest';
+    if (issueReason)
+      recordPackageIssue(issues, 'package.json', null, issueReason);
+    return issueReason ? null : manifest;
   }
-  if (issueReason)
-    recordPackageIssue(issues, 'package.json', null, issueReason);
-  return issueReason ? null : manifest;
-}
 
-/**
- * Return why a resolved relative module cannot be part of the archive.
- * @param {string} root Generated package directory.
- * @param {string} importedPath Resolved local import path.
- * @param {typeof fs} fileSystem Synchronous filesystem adapter.
- * @returns {string | null} Failure reason, or null when the file is valid.
- */
-function getLocalImportIssue(root, importedPath, fileSystem) {
-  if (!importedPath.startsWith(`${root}${path.sep}`) && importedPath !== root) {
-    return 'relative import escapes package directory';
+  /**
+   * Return why a resolved relative module cannot be part of the archive.
+   * @param {string} root Generated package directory.
+   * @param {string} importedPath Resolved local import path.
+   * @param {VerifierFilesystem} fileSystem Synchronous filesystem adapter.
+   * @returns {string | null} Failure reason, or null when the file is valid.
+   */
+  function getLocalImportIssue(root, importedPath, fileSystem) {
+    if (
+      !importedPath.startsWith(`${root}${path.sep}`) &&
+      importedPath !== root
+    ) {
+      return 'relative import escapes package directory';
+    }
+    if (!fileSystem.existsSync(importedPath)) {
+      return 'relative import is missing from package';
+    }
+    if (!fileSystem.statSync(importedPath).isFile()) {
+      return 'relative import does not resolve to a file';
+    }
+    return null;
   }
-  if (!fileSystem.existsSync(importedPath)) {
-    return 'relative import is missing from package';
-  }
-  if (!fileSystem.statSync(importedPath).isFile()) {
-    return 'relative import does not resolve to a file';
-  }
-  return null;
+
+  return { main, inspectCloudFunctionPackage };
 }
 
 /**
