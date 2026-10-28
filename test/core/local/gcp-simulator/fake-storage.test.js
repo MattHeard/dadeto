@@ -2,7 +2,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { describe, expect, it, afterEach } from '@jest/globals';
-import { FakeStorage } from '../../../../src/core/local/gcp-simulator/fake-storage.js';
+import { FakeStorage } from '../../../../src/local/gcp-simulator/fake-storage.js';
 
 describe('fake storage', () => {
   /** @type {string | null} */
@@ -33,6 +33,17 @@ describe('fake storage', () => {
     await bytesFile.save(new Uint8Array([4, 5]));
     expect((await bytesFile.download())[0]).toEqual(Buffer.from([4, 5]));
 
+    const unicodeFile = bucket.file('unicode.txt');
+    await unicodeFile.save('Grüße 🌊', {
+      metadata: { contentType: 'text/plain' },
+    });
+    const [unicode] = await unicodeFile.download();
+    expect(Buffer.isBuffer(unicode)).toBe(true);
+    expect(unicode.toString('utf8')).toBe('Grüße 🌊');
+    const view = new Uint8Array([0, 6, 7, 0]).subarray(1, 3);
+    const viewFile = bucket.file('view.bin');
+    await viewFile.save(view);
+    expect((await viewFile.download())[0]).toEqual(Buffer.from([6, 7]));
     expect(await bucket.file('missing.txt').exists()).toEqual([false]);
   });
 });

@@ -18,6 +18,18 @@ describe('gcp simulator coverage paths', () => {
     );
   });
 
+  it('requires the storage constructor before allocating simulator resources', async () => {
+    await expect(
+      createCoreSimulator({
+        bindEffectBoundary: async handler => handler(Object.freeze({})),
+        createCreditEventEffectAdapters: () => ({}),
+        setFirestoreDocument: jest.fn(),
+        updateFirestoreDocument: jest.fn(),
+        createSubmissionBatch: jest.fn(),
+      })
+    ).rejects.toThrow('createStorage must be provided');
+  });
+
   it('requires injected transaction and document effect adapters', async () => {
     const bindEffectBoundary = () => Object.freeze({});
     await expect(createCoreSimulator({ bindEffectBoundary })).rejects.toThrow(

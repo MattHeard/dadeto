@@ -1,8 +1,9 @@
+import { FakeStorage } from './fake-storage.js';
 export * from '../../core/local/gcp-simulator/simulator.js';
+import { createSimulatorHandle } from '../../core/local/gcp-simulator/simulator-entrypoint.js';
 import { createLocalGcpSimulator as createSimulator } from '../../core/local/gcp-simulator/simulator.js';
 import { bindEffectBoundary, bindEffectResponder } from '../allow-effects.js';
 import { createSubmissionBatch } from './process-new-page-effect-adapter.js';
-
 /** @param {import('../../../types/allow-effects').AllowEffects} permission @param {object} file @param {string} contents @param {object} options @returns {Promise<unknown>} */
 const saveStorageFile = (permission, file, contents, options) => {
   void permission;
@@ -25,24 +26,15 @@ const createCreditEventEffectAdapters = db => ({
   setTransactionDocument: (permission, transaction, reference, data) => { void permission; return transaction.set(reference, data); },
 });
 
-/**
- * Keep local public routes compatible while minting at the environment boundary.
- * @param {Parameters<typeof createSimulator>[0]} [options] Simulator configuration.
- * @returns {Promise<any>} Externally bound simulator.
- */
+const handle = createSimulatorHandle((_permission, options) => createSimulator(options), {
+  createStorage: rootDir => new FakeStorage({ rootDir }),
+  bindEffectBoundary, saveStorageFile, setFirestoreDocument,
+  createCreditEventEffectAdapters, updateFirestoreDocument, createSubmissionBatch,
+  consoleObj: console,
+}, bindEffectBoundary);
+/** @param {Parameters<typeof handle>[0]} [options] Simulator configuration. @returns {Promise<any>} Externally bound simulator. */
 export async function createLocalGcpSimulator(options) {
-  const simulator = /** @type {any} */ (
-    await createSimulator({
-      ...options,
-      bindEffectBoundary,
-      saveStorageFile,
-      setFirestoreDocument,
-      createCreditEventEffectAdapters,
-      updateFirestoreDocument,
-      createSubmissionBatch,
-      consoleObj: console,
-    })
-  );
+  const simulator = /** @type {any} */ (await handle(options));
   simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);
   simulator.routes.submitNewPage = bindEffectResponder(simulator.routes.submitNewPage);
   return simulator;

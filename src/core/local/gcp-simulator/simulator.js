@@ -6,7 +6,6 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../../commonCore.js';
 import { createFakeFieldValue, createFakeFirestore } from './fake-firestore.js';
-import { FakeStorage } from './fake-storage.js';
 import { createProcessNewStoryHandler } from '../../process-new-story-core.js';
 import { createProcessNewPageHandler } from '../../process-new-page-core.js';
 import {
@@ -63,13 +62,14 @@ const FIRST_VARIANT_NAME = 'a';
 const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
+/** @typedef {import('./fake-storage.js').StorageClient<Uint8Array>} SimulatorStorage */
 /** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
 /** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
 /** @typedef {(db: Parameters<typeof createFetchCredit>[0]) => CreditEventEffects} CreditEventEffectAdapterFactory */
 /** @typedef {{baseUrl: string, bucketName: string, projectId: string, publicDir: string, consoleObj: {error?: (...args: unknown[]) => void}}} SimulatorRuntimeConfig */
 /** @typedef {(db: import('firebase-admin/firestore').Firestore) => {set: (permission: import('../../../../types/allow-effects').AllowEffects, reference: object, data: object) => unknown, update: (permission: import('../../../../types/allow-effects').AllowEffects, reference: object, data: object) => unknown, commit: (permission: import('../../../../types/allow-effects').AllowEffects) => Promise<unknown>}} CreateSubmissionBatch */
-/** @typedef {{bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary, saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>, updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, createSubmissionBatch?: CreateSubmissionBatch, createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory}} SimulatorEffects */
-/** @typedef {{bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: NonNullable<SimulatorEffects['updateFirestoreDocument']>, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createSubmissionBatch: CreateSubmissionBatch, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
+/** @typedef {{createStorage?: (rootDir: string) => SimulatorStorage, bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary, saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>, updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, setFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { set: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>, createSubmissionBatch?: CreateSubmissionBatch, createCreditEventEffectAdapters?: CreditEventEffectAdapterFactory}} SimulatorEffects */
+/** @typedef {{createStorage: NonNullable<SimulatorEffects['createStorage']>, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, updateFirestoreDocument: NonNullable<SimulatorEffects['updateFirestoreDocument']>, setFirestoreDocument: NonNullable<SimulatorEffects['setFirestoreDocument']>, createSubmissionBatch: CreateSubmissionBatch, createCreditEventEffectAdapters: CreditEventEffectAdapterFactory}} RequiredSimulatorEffects */
 /** @typedef {{ body?: unknown, headers?: unknown, get?: (name: string) => string | null | undefined }} SimulatorRequest */
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
@@ -95,6 +95,7 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  *   bucketName?: string,
  *   projectId?: string,
  *   publicDir?: string,
+ *   createStorage?: (rootDir: string) => SimulatorStorage,
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
@@ -112,6 +113,7 @@ export async function createLocalGcpSimulator(options = {}) {
     projectId = 'local-project',
     publicDir = path.resolve('public'),
     bindEffectBoundary,
+    createStorage,
     saveStorageFile,
     updateFirestoreDocument,
     setFirestoreDocument,
@@ -126,6 +128,7 @@ export async function createLocalGcpSimulator(options = {}) {
     projectId,
     publicDir,
     bindEffectBoundary,
+    createStorage,
     saveStorageFile,
     updateFirestoreDocument,
     setFirestoreDocument,
@@ -142,6 +145,7 @@ export async function createLocalGcpSimulator(options = {}) {
  *   bucketName: string,
  *   projectId: string,
  *   publicDir: string,
+ *   createStorage?: (rootDir: string) => SimulatorStorage,
  *   bindEffectBoundary?: import('../../../../types/allow-effects').AllowEffectsBoundary,
  *   saveStorageFile?: (permission: import('../../../../types/allow-effects').AllowEffects, file: object, contents: string, options: object) => Promise<unknown>,
  *   updateFirestoreDocument?: (permission: import('../../../../types/allow-effects').AllowEffects, reference: { update: (data: Record<string, unknown>) => Promise<unknown> }, data: Record<string, unknown>) => Promise<unknown>,
@@ -164,6 +168,7 @@ async function createLocalGcpSimulatorRuntime(config) {
       },
       {
         bindEffectBoundary: config.bindEffectBoundary,
+        createStorage: config.createStorage,
         saveStorageFile: config.saveStorageFile,
         updateFirestoreDocument: config.updateFirestoreDocument,
         setFirestoreDocument: config.setFirestoreDocument,
@@ -275,15 +280,6 @@ function createClear(storageRoot) {
  */
 async function createStorageRoot() {
   return mkdtemp(path.join(os.tmpdir(), 'dadeto-gcp-sim-'));
-}
-
-/**
- * Create the simulator storage wrapper.
- * @param {string} storageRoot Storage root path.
- * @returns {FakeStorage} Fake storage instance.
- */
-function createStorage(storageRoot) {
-  return new FakeStorage({ rootDir: storageRoot });
 }
 
 /**
@@ -404,7 +400,11 @@ function validateSimulatorEffects(effects) {
   if (typeof effects.createSubmissionBatch !== 'function') {
     throw new TypeError('createSubmissionBatch must be provided');
   }
+  if (typeof effects.createStorage !== 'function') {
+    throw new TypeError('createStorage must be provided');
+  }
   return /** @type {RequiredSimulatorEffects} */ ({
+    createStorage: effects.createStorage,
     bindEffectBoundary: effects.bindEffectBoundary,
     updateFirestoreDocument: effects.updateFirestoreDocument,
     createCreditEventEffectAdapters: effects.createCreditEventEffectAdapters,
@@ -423,6 +423,7 @@ async function buildSimulatorState(runtime, effects) {
   const requiredEffects = validateSimulatorEffects(effects);
   const {
     bindEffectBoundary,
+    createStorage,
     updateFirestoreDocument,
     createCreditEventEffectAdapters,
     setFirestoreDocument,
@@ -769,7 +770,7 @@ function createSnapshots(dbContext, pathValue, before, after) {
 
 /**
  * Seed the static contents page without invoking Firestore render triggers.
- * @param {FakeStorage} storage Simulator storage.
+ * @param {SimulatorStorage} storage Simulator storage.
  * @param {string} bucketName Static bucket name.
  * @returns {Promise<void>} Nothing.
  */

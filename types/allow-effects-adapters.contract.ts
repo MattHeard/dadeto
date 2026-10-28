@@ -123,3 +123,48 @@ packageVerifier.main({
 });
 // @ts-expect-error Runtime invocation cannot omit the explicit root and filesystem.
 packageVerifier.main(permission);
+
+// Storage keeps caller-supplied byte types without requiring the Node Buffer API.
+import { createFakeStorageClass } from '../src/core/local/gcp-simulator/fake-storage.js';
+class ContractStorageBytes extends Uint8Array {
+  decode(): string {
+    return 'decoded';
+  }
+}
+const ContractStorage = createFakeStorageClass({
+  fileSystem: {
+    mkdir: async () => undefined,
+    writeFile: async () => undefined,
+    stat: async () => ({}),
+    readFile: async () => new ContractStorageBytes([1]),
+  },
+  paths: { join: (...parts) => parts.join('/'), dirname: value => value },
+  toBytes: () => new ContractStorageBytes([1]),
+  bindEffectBoundary: async handler => handler(permission),
+});
+const contractStorageFile = new ContractStorage({ rootDir: '/storage' })
+  .bucket('bucket')
+  .file('file');
+contractStorageFile.download().then(values => {
+  const decoded: string = values[0].decode();
+  void decoded;
+});
+// @ts-expect-error Storage class composition cannot omit platform/effects dependencies.
+createFakeStorageClass({});
+// @ts-expect-error Storage clients require an explicit root.
+new ContractStorage({});
+declare const storagePorts: Parameters<typeof createFakeStorageClass>[0];
+storagePorts.fileSystem.writeFile(permission, '/file', new Uint8Array([1]));
+// @ts-expect-error Native write capabilities require the invocation permission.
+storagePorts.fileSystem.writeFile('/file', new Uint8Array([1]));
+
+// The lazy simulator entrypoint also requires permission for its startup adapter.
+import { createSimulatorHandle } from '../src/core/local/gcp-simulator/simulator-entrypoint.js';
+declare const simulatorConstructor: Parameters<typeof createSimulatorHandle>[0];
+simulatorConstructor(permission, {});
+// @ts-expect-error Startup construction cannot omit its permission.
+simulatorConstructor({});
+// @ts-expect-error Ordinary objects are not startup effect capabilities.
+simulatorConstructor({}, {});
+// @ts-expect-error A scoped runtime boundary is required when composing startup.
+createSimulatorHandle(simulatorConstructor, {});

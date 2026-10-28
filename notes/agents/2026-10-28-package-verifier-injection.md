@@ -134,3 +134,14 @@ redundant logic; no mutation/source exclusion was added. All38focused cases,
 recovered scoped coverage without gaps,11split local static gates, static/cloud
 builds and actual unchanged archive verification pass. Await the hardened commit's
 exact Full Check before closing the child; initial injection CI is separate.
+
+## Exact hardened CI receipt
+
+Full Check [40659043496](https://github.com/MattHeard/dadeto/actions/runs/40659043496)
+succeeded at `0be1e2ee39fc6785d17a9e611e800283fce9d9b0`. Downloaded artifact
+`12803068503` / `full-check-40659043496` confirms 1,075 suites / 8,314 tests
+all passed; all four global and verifier coverage metrics are 100%, with no
+files below thresholds. Report:
+`/tmp/dadeto-full-check-40659043496/coverage/check-full-report.md`.
+Combined with the final mutation, local and packaging evidence above, this closes
+`dadeto-6nik`. Rank 11 and parent `dadeto-e1oz` remain unfinished.
