@@ -275,7 +275,7 @@ export function createSimulatorServer(platform) {
    * @returns {boolean} True when the request should be redirected.
    */
   function shouldRedirectSubmitStory(req, result) {
-    const accept = String(req.get('accept') ?? '');
+    const accept = String(req.get('accept'));
     return result.status === 201 && accept.includes('text/html');
   }
 

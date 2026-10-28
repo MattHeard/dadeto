@@ -70,3 +70,39 @@ exact-source report before claiming mutation success.
 Use task scratch outside the checkout on normal storage, as shown above. Retain
 reports and do not delete shared caches. Existing generated Cloud Function Haste
 manifest warnings remain tracked separately in `dadeto-5wxt`.
+
+## Initial landing and final survivor hardening
+
+Factory `957cfe06ad02af74e84ebee35f4e4050316de026` is pushed; exact Full Check
+[40709091846](https://github.com/MattHeard/dadeto/actions/runs/40709091846) was
+confirmed live. Keep this injection result separate from the later header change.
+
+The strengthened 148-mutant run completed at 97.97%, still FAIL: **141 Killed,
+three Survived, four Timeouts**, zero runtime errors/ignored/uncovered; static
+evaluation enabled, none generated. Report
+`reports/mutation/simulator-server.contracts.json`, log
+`/tmp/dadeto-fyyl-mutation-final.log`. The corrected listener harness eliminated
+all six runner crashes, and exact HTTP assertions killed 79 prior survivors.
+
+The remaining cases specifically require a non-story HTML request that must not
+redirect, a getter sensitive to the exact Accept header name, and removal of an
+equivalent empty-string fallback before String conversion. String(undefined)
+and String(null) cannot contain text/html; actual string headers retain the same
+behavior. Do not suppress those mutants or restore the removed blanket directive.
+
+Final hardening three focused suites / **17 tests PASS**, and scoped evaluation
+passes the same 17 with no source line/branch gaps, lint/parse/zero clones pass.
+All **11 split local static gates PASS**. Logs
+`/tmp/dadeto-fyyl-hardening-{focused,impact,static}.log`.
+
+The final entire-module gate has 146 mutants (two removed with the redundant
+fallback) and is independently running in
+`/tmp/dadeto-fyyl-hardening-mutation.log`. Four baseline timeout replacements
+delete the Promise executor, listener setup/ready callback or resolver progress;
+classify final results explicitly rather than calling them all Killed. No timeout
+budget changed. Final source matching and exact hardening Full Check remain
+required before child closure.
+
+The final-source site/cloud builds and import-closure rerun also pass unchanged
+27 packages / 713 reachable modules / 1,234 imports; logs
+`/tmp/dadeto-fyyl-hardening-{build,cloud-build,closure}.log`.

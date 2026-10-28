@@ -313,6 +313,10 @@ test('redirects only successful HTML story submissions', async () => {
     status: 201,
     body: { saved: true },
   }));
+  f.simulator.routes.submitNewPage = jest.fn(async () => ({
+    status: 201,
+    body: { saved: 'page' },
+  }));
   await f.server.handle(f.deps);
   const callback = f.app.post.mock.calls.find(
     ([path]) => path === '/__sim/submit-new-story'
@@ -321,11 +325,19 @@ test('redirects only successful HTML story submissions', async () => {
     method: 'POST',
     path: '/incoming',
     headers: {},
-    get: () => 'text/html',
+    get: jest.fn(name => (name === 'accept' ? 'text/html' : undefined)),
   };
   const res = response();
   await callback(request, res);
   expect(res.redirect.mock.calls).toEqual([[303, '/index.html']]);
+  expect(request.get).toHaveBeenCalledWith('accept');
+  const pageResponse = response();
+  const pageCallback = f.app.post.mock.calls.find(
+    ([path]) => path === '/__sim/submit-new-page'
+  )[1];
+  await pageCallback(request, pageResponse);
+  expect(pageResponse.redirect).not.toHaveBeenCalled();
+  expect(pageResponse.json).toHaveBeenCalledWith({ saved: 'page' });
   expect(res.json).not.toHaveBeenCalled();
   f.simulator.routes.submitNewStory.mockResolvedValue({
     status: 200,
