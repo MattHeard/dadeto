@@ -49,6 +49,60 @@ describe('Cloud Function package closure', () => {
     expect(getCloudFunctionArchiveDirectories([])).toEqual([]);
   });
 
+  test('accepts zero and repeated Terraform assignment whitespace', () => {
+    expect(
+      getCloudFunctionArchiveDirectories([
+        'source_dir="${path.module}/cloud-functions/zero"',
+        'source_dir  = \t "${path.module}/cloud-functions/many"',
+      ])
+    ).toEqual(['many', 'zero']);
+  });
+
+  test('traverses a named reexport', () => {
+    const root = createPackage({
+      'index.js': "export { value } from './named.js';",
+      'named.js': 'export const value = 1;',
+    });
+    expect(inspectCloudFunctionPackage(root)).toEqual({
+      packageName: path.basename(root),
+      moduleCount: 2,
+      importCount: 1,
+      issues: [],
+    });
+  });
+
+  test('a missing entrypoint reports no ghost module or parse issue', () => {
+    const root = createPackage({});
+    expect(inspectCloudFunctionPackage(root)).toEqual({
+      packageName: path.basename(root),
+      moduleCount: 0,
+      importCount: 0,
+      issues: [
+        {
+          file: 'index.js',
+          specifier: null,
+          reason: 'missing package entrypoint',
+        },
+      ],
+    });
+  });
+
+  test('an import of the archive root is a directory rather than an escape', () => {
+    const root = createPackage({ 'index.js': "import '.';" });
+    expect(inspectCloudFunctionPackage(root)).toEqual({
+      packageName: path.basename(root),
+      moduleCount: 1,
+      importCount: 1,
+      issues: [
+        {
+          file: 'index.js',
+          specifier: '.',
+          reason: 'relative import does not resolve to a file',
+        },
+      ],
+    });
+  });
+
   test('handles manifests without dependency sections', () => {
     const packageRoot = createPackage({
       'package.json': '{}',

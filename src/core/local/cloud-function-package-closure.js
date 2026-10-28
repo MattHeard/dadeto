@@ -22,6 +22,7 @@
  * @typedef {{packageName: string, moduleCount: number, importCount: number, issues: PackageIssue[]}} PackageReport
  */
 
+/** @type {Set<unknown>} */
 const MODULE_DECLARATION_TYPES = new Set([
   'ImportDeclaration',
   'ExportAllDeclaration',
@@ -323,7 +324,7 @@ function collectModuleSpecifiers(rootNode) {
     if (!node || typeof node !== 'object') continue;
     const astNode = /** @type {AstNode} */ (node);
     if (
-      MODULE_DECLARATION_TYPES.has(astNode.type ?? '') &&
+      MODULE_DECLARATION_TYPES.has(astNode.type) &&
       typeof astNode.source?.value === 'string'
     ) {
       specifiers.push(astNode.source.value);
@@ -338,7 +339,7 @@ function collectModuleSpecifiers(rootNode) {
     }
     Object.entries(astNode).forEach(([key, value]) => {
       if (['start', 'end', 'loc', 'source'].includes(key)) return;
-      if (value && typeof value === 'object') pending.push(value);
+      pending.push(value);
     });
   }
   return specifiers;

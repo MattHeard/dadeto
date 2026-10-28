@@ -210,3 +210,110 @@ test('a per-call writer overrides the default and preserves writer errors', asyn
   });
   await expect(verify.main(permission, options)).rejects.toBe(error);
 });
+
+/**
+ * Inspect one controlled AST without requiring the real parser or filesystem.
+ * @param {object} ast Parsed syntax tree.
+ * @returns {object} Package report.
+ */
+function inspectAst(ast) {
+  const f = fixture();
+  f.parseModule.mockReturnValue(ast);
+  return createCloudFunctionPackageVerifier(
+    f.parseModule,
+    f.paths,
+    []
+  ).inspectCloudFunctionPackage(f.input, f.fileSystem);
+}
+
+test('successful command summaries add nonzero imports across visited modules', async () => {
+  const f = fixture(['./child.js', 'node:fixture-runtime']);
+  const writeLine = jest.fn();
+  const permission = Object.freeze({});
+  const verify = createCloudFunctionPackageVerifier(
+    f.parseModule,
+    f.paths,
+    ['fixture-runtime'],
+    writeLine
+  );
+  await expect(
+    verify.main(permission, { rootDirectory: 'WORK', fileSystem: f.fileSystem })
+  ).resolves.toBe(0);
+  expect(writeLine.mock.calls).toEqual([
+    [
+      permission,
+      'Verified 1 Terraform Cloud Function packages, 2 reachable modules, and 2 imports.',
+    ],
+  ]);
+});
+
+test('arrays contain syntax children rather than their own metadata properties', () => {
+  const body = Object.assign(
+    [{ type: 'ImportDeclaration', source: { value: 'real-child' } }],
+    {
+      metadata: {
+        type: 'ImportDeclaration',
+        source: { value: 'array-metadata' },
+      },
+    }
+  );
+  const result = inspectAst({ type: 'Program', body });
+  expect(result.importCount).toBe(1);
+  expect(result.issues.map(issue => issue.specifier)).toEqual(['real-child']);
+});
+
+test('position/source metadata is excluded from syntax traversal', () => {
+  const ignored = Object.fromEntries(
+    ['start', 'end', 'loc', 'source'].map(key => [
+      key,
+      { type: 'ImportDeclaration', source: { value: `hidden-${key}` } },
+    ])
+  );
+  const result = inspectAst({
+    type: 'Program',
+    ...ignored,
+    body: [{ type: 'ImportDeclaration', source: { value: 'real-child' } }],
+  });
+  expect(result.importCount).toBe(1);
+  expect(result.issues.map(issue => issue.specifier)).toEqual(['real-child']);
+});
+
+test.each([
+  {
+    type: 'NewExpression',
+    callee: { type: 'Identifier', name: 'require' },
+    arguments: [{ value: 'ghost' }],
+  },
+  {
+    type: 'CallExpression',
+    callee: { type: 'MemberExpression', name: 'require' },
+    arguments: [{ value: 'ghost' }],
+  },
+  {
+    type: 'CallExpression',
+    callee: { type: 'Identifier', name: 'other' },
+    arguments: [{ value: 'ghost' }],
+  },
+  { type: 'CallExpression', arguments: [{ value: 'ghost' }] },
+  {
+    type: 'CallExpression',
+    callee: { type: 'Identifier', name: 'require' },
+    arguments: [],
+  },
+  { type: 'CallExpression', callee: { type: 'Identifier', name: 'require' } },
+])('ignores non-runtime or unnamed require syntax %#', node => {
+  const result = inspectAst({ type: 'Program', body: [node] });
+  expect(result).toMatchObject({ moduleCount: 1, importCount: 0, issues: [] });
+});
+
+test('primitive AST children and ordinary property values are safely ignored', () => {
+  const result = inspectAst({
+    type: 'Program',
+    body: [null, undefined, false, true, 1, 'primitive', { type: null }],
+    ordinary: 'string',
+    number: 3,
+    boolean: true,
+    empty: null,
+  });
+  expect(result).toMatchObject({ moduleCount: 1, importCount: 0, issues: [] });
+});
