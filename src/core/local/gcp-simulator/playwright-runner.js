@@ -20,7 +20,9 @@
 /** @typedef {{baseUrl: string, exitCode: number, signal: string | null}} RunnerResult */
 /** @typedef {{waitForWriterReady: (permission: AllowEffects, child: RunnerChild) => Promise<number>, waitForSimulatorReady: (permission: AllowEffects, child: RunnerChild) => Promise<number>, waitForExit: (permission: AllowEffects, child: RunnerChild) => Promise<{code: number | null, signal: string | null}>, terminateProcess: (permission: AllowEffects, child: RunnerChild | null | undefined) => void, spawnPlaywright: (permission: AllowEffects, input: PlaywrightSpawnInput) => RunnerChild}} RunnerTestUtils */
 
-const READY_PATTERN = /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)/;
+// A newline completes the announced port; stdout chunks may split its digits.
+const READY_PATTERN =
+  /gcp simulator listening on http:\/\/127\.0\.0\.1:(\d+)\r?\n/;
 const WRITER_READY_PATTERN =
   /writer server listening on http:\/\/localhost:(\d+)\/writer\//;
 

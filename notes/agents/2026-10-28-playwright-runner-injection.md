@@ -105,3 +105,14 @@ framing correction; extraction preserves the old protocol in this slice.
 Use task scratch outside the checkout on normal storage. Preserve logs/reports;
 do not remove shared caches. Existing generated-cloud package-name warnings remain
 separately owned by `dadeto-5wxt`.
+
+## Final CI receipt
+
+Exact final hardening fcf3ddc8fc32203f09ae839debb0829b610ff6cb passed
+Full Check40723133944, artifact12831582742, downloaded report
+`/tmp/dadeto-full-check-40723133944/full-check-40723133944/coverage/check-full-report.md`.
+1,086 suites /8,396 tests all passed; all four global and runner coverage
+metrics100%, no files below thresholds. Bead `dadeto-aaxq` closes on this
+revision plus the matching110-mutant acceptance. Its report is also retained as
+`reports/mutation/playwright-runner.pre-framing{,-summary}.json` while the
+separate `dadeto-y3se` complete-line fix advances the same source file.

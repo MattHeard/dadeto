@@ -512,3 +512,79 @@ test.each([
     await rejected;
   }
 });
+
+const simulatorPortSplits = ['\n', '\r\n'].flatMap(ending =>
+  [0, 1, 2, 3, 4].map(split => ({ ending, split }))
+);
+
+test.each(simulatorPortSplits)(
+  'waits for the complete simulator port at digit split $split with ending $ending',
+  async ({ ending, split }) => {
+    const f = fixture();
+    const permission = createAllowEffects();
+    const outcome = invoke(f, permission);
+    const digits = '4321';
+    f.children[0].output(
+      `earlier log\ngcp simulator listening on http://127.0.0.1:${digits.slice(0, split)}`
+    );
+    await flush();
+    expect(f.spawn).toHaveBeenCalledTimes(1);
+    expect(f.reservePort).not.toHaveBeenCalled();
+    f.children[0].output(digits.slice(split));
+    await flush();
+    expect(f.spawn).toHaveBeenCalledTimes(1);
+    if (ending === '\r\n') {
+      f.children[0].output('\r');
+      await flush();
+      expect(f.spawn).toHaveBeenCalledTimes(1);
+    }
+    f.children[0].output('\n');
+    await flush();
+    expect(f.spawn).toHaveBeenCalledTimes(2);
+    expect(f.spawn.mock.calls[1][3].env.API_BASE_URL).toBe(
+      'http://127.0.0.1:4321'
+    );
+    f.children[1].output('writer server listening on http://localhost:9');
+    await flush();
+    expect(f.spawn).toHaveBeenCalledTimes(2);
+    f.children[1].output('022/writer/\n');
+    await flush();
+    expect(f.spawn).toHaveBeenCalledTimes(3);
+    f.children[2].exit(0, null);
+    await expect(outcome).resolves.toEqual({
+      baseUrl: 'http://127.0.0.1:9022',
+      exitCode: 0,
+      signal: null,
+    });
+  }
+);
+
+test.each(['x\n', ' \n', '/extra\n', '\r\r\n'])(
+  'ignores a simulator port with malformed ending %j before a later complete line',
+  async suffix => {
+    const f = fixture();
+    const permission = createAllowEffects();
+    const pending = observe(
+      f.runner.playwrightRunnerTestUtils.waitForSimulatorReady(
+        permission,
+        f.children[0].port
+      )
+    );
+    let observed;
+    void pending.then(
+      value => {
+        observed = value;
+      },
+      () => {}
+    );
+    f.children[0].output(
+      `gcp simulator listening on http://127.0.0.1:4321${suffix}`
+    );
+    await flush();
+    expect(observed).toBeUndefined();
+    f.children[0].output(
+      'another log\ngcp simulator listening on http://127.0.0.1:9876\n'
+    );
+    await expect(pending).resolves.toBe(9876);
+  }
+);
