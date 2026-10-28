@@ -1,7 +1,30 @@
-import { spawn } from 'node:child_process';
-import * as fsPromises from 'node:fs/promises';
-
-/** @typedef {Pick<typeof import('node:path'), 'join' | 'dirname' | 'resolve' | 'normalize' | 'relative'>} WorktreePaths */
+/** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
+/**
+ * @typedef {{
+ *   (permission: AllowEffects, event: 'error', listener: (error: Error) => void): unknown,
+ *   (permission: AllowEffects, event: 'exit', listener: (code: number | null) => void): unknown,
+ * }} WorktreeListener
+ */
+/** @typedef {(permission: AllowEffects, command: string, args: string[], options: {cwd: string, env: Env, stdio: 'inherit'}) => {once: WorktreeListener}} WorktreeSpawn */
+/**
+ * @typedef {{
+ *   mkdtemp: (permission: AllowEffects, prefix: string) => Promise<string>,
+ *   rm: (permission: AllowEffects, path: string, options: {recursive: boolean, force: boolean}) => Promise<void>,
+ *   cp: (permission: AllowEffects, from: string, to: string, options: {recursive: boolean}) => Promise<void>,
+ *   mkdir: (permission: AllowEffects, path: string, options: {recursive: boolean}) => Promise<unknown>,
+ *   writeFile: (permission: AllowEffects, path: string, content: string) => Promise<void>,
+ *   appendFile: (permission: AllowEffects, path: string, content: string) => Promise<void>,
+ * }} WorktreeFilesystem
+ */
+/**
+ * @typedef {{
+ *   join: (...parts: string[]) => string,
+ *   dirname: (path: string) => string,
+ *   resolve: (...parts: string[]) => string,
+ *   normalize: (path: string) => string,
+ *   relative: (from: string, to: string) => string,
+ * }} WorktreePaths
+ */
 
 // Environment typing is local to the worktree runner.
 /**
@@ -11,28 +34,23 @@ import * as fsPromises from 'node:fs/promises';
 /**
  * Create the Stryker worktree runner.
  * @param {{
- *   processModule?: { env: Env },
- *   fsModule?: {
- *     mkdtemp: typeof fsPromises.mkdtemp,
- *     rm: typeof fsPromises.rm,
- *     cp: typeof fsPromises.cp,
- *     mkdir: typeof fsPromises.mkdir,
- *     writeFile: typeof fsPromises.writeFile,
- *     appendFile: typeof fsPromises.appendFile,
- *   },
+ *   processModule: { env: Env },
+ *   fsModule: WorktreeFilesystem,
  *   pathModule: WorktreePaths,
- *   spawnImpl?: typeof spawn,
+ *   spawnImpl: WorktreeSpawn,
+ *   now: (permission: AllowEffects) => string,
+ *   bindEffectBoundary: import('../../../types/allow-effects').AllowEffectsBoundary,
  *   rootDir?: string,
  *   mutateTargetDir?: string,
- *   log?: (message: string) => void,
+ *   log?: (permission: AllowEffects, message: string) => void,
  * }} options Runner dependencies.
  * @returns {() => Promise<void>} Runner handle.
  */
 export function createRunStrykerWorktreeHandle(options) {
-  const processModule = options.processModule || process;
-  const fsModule = options.fsModule || fsPromises;
+  const processModule = options.processModule;
+  const fsModule = options.fsModule;
   const pathModule = options.pathModule;
-  const spawnImpl = options.spawnImpl || spawn;
+  const spawnImpl = options.spawnImpl;
   const mainRoot = options.rootDir || pathModule.resolve('.');
   let mutateTargetDir = null;
   if (options.mutateTargetDir) {
@@ -50,42 +68,43 @@ export function createRunStrykerWorktreeHandle(options) {
   /**
    * Bind command and logging adapters into a worktree command capability.
    * @param {{
-   *   fsModule: {
-   *     mkdir: typeof fsPromises.mkdir,
-   *     appendFile: typeof fsPromises.appendFile,
-   *   },
+   *   permission: AllowEffects,
    *   machineLogPath: string,
-   *   spawnImpl: typeof spawn,
    *   baseEnv: Env,
    * }} dependencies Command adapters and shared environment.
    * @returns {(extraEnv: Env, step: { command: string, args: string[], cwd: string }) => Promise<void>} Configured command runner.
    */
   function createLoggedCommandStepRunner(dependencies) {
-    const { fsModule, machineLogPath, spawnImpl, baseEnv } = dependencies;
+    const { machineLogPath, baseEnv, permission } = dependencies;
     return async function runLoggedCommandStep(extraEnv, step) {
       const { command, args, cwd } = step;
-      await writeCommandLog(fsModule, machineLogPath, 'command-start', step);
-      await runCommand({
+      await writeCommandLog(permission, machineLogPath, 'command-start', step);
+      await runCommand(permission, {
         spawnImpl,
         command,
         args,
         cwd,
         env: buildChildEnv(baseEnv, extraEnv),
       });
-      await writeCommandLog(fsModule, machineLogPath, 'command-success', step);
+      await writeCommandLog(
+        permission,
+        machineLogPath,
+        'command-success',
+        step
+      );
     };
   }
 
   /**
    * Record a command lifecycle event.
-   * @param {{ appendFile: typeof fsPromises.appendFile, mkdir: typeof fsPromises.mkdir }} fsModule Filesystem dependencies.
+   * @param {AllowEffects} permission Invocation permission.
    * @param {string} machineLogPath Machine log path.
    * @param {string} type Lifecycle event type.
    * @param {{ command: string, args: string[], cwd: string }} step Command step.
    * @returns {Promise<void>} Nothing.
    */
-  function writeCommandLog(fsModule, machineLogPath, type, step) {
-    return writeMachineLog(fsModule, machineLogPath, {
+  function writeCommandLog(permission, machineLogPath, type, step) {
+    return writeMachineLog(permission, machineLogPath, {
       type,
       command: step.command,
       args: step.args,
@@ -95,130 +114,138 @@ export function createRunStrykerWorktreeHandle(options) {
 
   /**
    * Append a machine-readable log entry that persists after teardown.
-   * @param {{
-   *   appendFile: typeof fsPromises.appendFile,
-   *   mkdir: typeof fsPromises.mkdir,
-   * }} fsModule Filesystem dependencies.
+   * @param {AllowEffects} permission Invocation permission.
    * @param {string} logPath Destination log path.
    * @param {Record<string, unknown>} entry Log payload.
    * @returns {Promise<void>} Resolves once the entry is written.
    */
-  async function writeMachineLog(fsModule, logPath, entry) {
-    await fsModule.mkdir(pathModule.dirname(logPath), { recursive: true });
+  async function writeMachineLog(permission, logPath, entry) {
+    await fsModule.mkdir(permission, pathModule.dirname(logPath), {
+      recursive: true,
+    });
     await fsModule.appendFile(
+      permission,
       logPath,
-      `${JSON.stringify({ timestamp: new Date().toISOString(), ...entry })}\n`
+      `${JSON.stringify({ timestamp: options.now(permission), ...entry })}\n`
     );
   }
 
-  return async () => {
-    if (!reusedWorktreePath) {
-      await fsModule.mkdir(worktreeParent, { recursive: true });
-    }
-
-    const worktreePath =
-      reusedWorktreePath || (await fsModule.mkdtemp(worktreePrefix));
-    const reportSource = pathModule.join(worktreePath, 'reports/mutation');
-    const reportTarget = pathModule.join(mainRoot, 'reports/mutation');
-    const machineLogPath = pathModule.join(reportTarget, 'worktree-run.jsonl');
-    const commandDependencies = {
-      fsModule,
-      machineLogPath,
-      spawnImpl,
-      baseEnv: processModule.env,
-    };
-    const runLoggedCommandStep =
-      createLoggedCommandStepRunner(commandDependencies);
-
-    await fsModule.mkdir(reportTarget, { recursive: true });
-    await writeMachineLog(fsModule, machineLogPath, {
-      type: 'start',
-      mainRoot,
-      worktreePath,
-      reportTarget,
-    });
-
-    try {
-      /** @type {Array<{command: string, args: string[], cwd: string}>} */
-      let setupSteps = [];
+  return () =>
+    options.bindEffectBoundary(async permission => {
       if (!reusedWorktreePath) {
-        setupSteps = [
-          {
-            command: 'git',
-            args: ['worktree', 'add', '--detach', worktreePath],
-            cwd: mainRoot,
-          },
-          {
-            command: 'npm',
-            args: ['install'],
-            cwd: worktreePath,
-          },
-        ];
+        await fsModule.mkdir(permission, worktreeParent, { recursive: true });
       }
-      for (const step of setupSteps) {
-        await runLoggedCommandStep(noDaemonEnv, step);
-      }
-      await fsModule.writeFile(
-        pathModule.join(worktreePath, worktreeStrykerConfig),
-        buildStrykerConfig(mutateTargetDir)
+
+      const worktreePath =
+        reusedWorktreePath ||
+        (await fsModule.mkdtemp(permission, worktreePrefix));
+      const reportSource = pathModule.join(worktreePath, 'reports/mutation');
+      const reportTarget = pathModule.join(mainRoot, 'reports/mutation');
+      const machineLogPath = pathModule.join(
+        reportTarget,
+        'worktree-run.jsonl'
       );
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'config-written',
-        filePath: pathModule.join(worktreePath, worktreeStrykerConfig),
+      const commandDependencies = {
+        permission,
+        machineLogPath,
+        baseEnv: processModule.env,
+      };
+      const runLoggedCommandStep =
+        createLoggedCommandStepRunner(commandDependencies);
+
+      await fsModule.mkdir(permission, reportTarget, { recursive: true });
+      await writeMachineLog(permission, machineLogPath, {
+        type: 'start',
+        mainRoot,
+        worktreePath,
+        reportTarget,
       });
-      await runLoggedCommandStep(
-        {
-          STRYKER_TEST_ENV: '1',
-          ...noDaemonEnv,
-        },
-        {
-          command: 'node',
-          args: [
-            '--experimental-vm-modules',
-            './node_modules/.bin/stryker',
-            'run',
-            worktreeStrykerConfig,
-          ],
-          cwd: worktreePath,
+
+      try {
+        /** @type {Array<{command: string, args: string[], cwd: string}>} */
+        let setupSteps = [];
+        if (!reusedWorktreePath) {
+          setupSteps = [
+            {
+              command: 'git',
+              args: ['worktree', 'add', '--detach', worktreePath],
+              cwd: mainRoot,
+            },
+            {
+              command: 'npm',
+              args: ['install'],
+              cwd: worktreePath,
+            },
+          ];
         }
-      );
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'reports-sync-start',
-        from: reportSource,
-        to: reportTarget,
-      });
-      await fsModule.cp(reportSource, reportTarget, { recursive: true });
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'reports-sync-success',
-        from: reportSource,
-        to: reportTarget,
-      });
-      log(
-        `Synced mutation reports to ${pathModule.relative(mainRoot, reportTarget)}`
-      );
-    } finally {
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'cleanup-start',
-        worktreePath,
-      });
-      if (!reusedWorktreePath) {
-        await runCommand({
-          spawnImpl,
-          command: 'git',
-          args: ['worktree', 'remove', '--force', worktreePath],
-          cwd: mainRoot,
-          env: buildChildEnv(processModule.env, noDaemonEnv),
-        }).catch(() => {});
-        await fsModule
-          .rm(worktreePath, { recursive: true, force: true })
-          .catch(() => {});
+        for (const step of setupSteps) {
+          await runLoggedCommandStep(noDaemonEnv, step);
+        }
+        await fsModule.writeFile(
+          permission,
+          pathModule.join(worktreePath, worktreeStrykerConfig),
+          buildStrykerConfig(mutateTargetDir, processModule.env)
+        );
+        await writeMachineLog(permission, machineLogPath, {
+          type: 'config-written',
+          filePath: pathModule.join(worktreePath, worktreeStrykerConfig),
+        });
+        await runLoggedCommandStep(
+          {
+            STRYKER_TEST_ENV: '1',
+            ...noDaemonEnv,
+          },
+          {
+            command: 'node',
+            args: [
+              '--experimental-vm-modules',
+              './node_modules/.bin/stryker',
+              'run',
+              worktreeStrykerConfig,
+            ],
+            cwd: worktreePath,
+          }
+        );
+        await writeMachineLog(permission, machineLogPath, {
+          type: 'reports-sync-start',
+          from: reportSource,
+          to: reportTarget,
+        });
+        await fsModule.cp(permission, reportSource, reportTarget, {
+          recursive: true,
+        });
+        await writeMachineLog(permission, machineLogPath, {
+          type: 'reports-sync-success',
+          from: reportSource,
+          to: reportTarget,
+        });
+        log(
+          permission,
+          `Synced mutation reports to ${pathModule.relative(mainRoot, reportTarget)}`
+        );
+      } finally {
+        await writeMachineLog(permission, machineLogPath, {
+          type: 'cleanup-start',
+          worktreePath,
+        });
+        if (!reusedWorktreePath) {
+          await runCommand(permission, {
+            spawnImpl,
+            command: 'git',
+            args: ['worktree', 'remove', '--force', worktreePath],
+            cwd: mainRoot,
+            env: buildChildEnv(processModule.env, noDaemonEnv),
+          }).catch(() => {});
+          await fsModule
+            .rm(permission, worktreePath, { recursive: true, force: true })
+            .catch(() => {});
+        }
+        await writeMachineLog(permission, machineLogPath, {
+          type: 'cleanup-complete',
+          worktreePath,
+        });
       }
-      await writeMachineLog(fsModule, machineLogPath, {
-        type: 'cleanup-complete',
-        worktreePath,
-      });
-    }
-  };
+    });
 }
 
 export { runCommand };
@@ -239,17 +266,18 @@ function buildChildEnv(baseEnv, overrides) {
 /**
  * Build the temporary Stryker config for the worktree.
  * @param {string | null} mutateTargetDir Optional mutate target relative to the repo root.
+ * @param {Env} env Injected runner configuration.
  * @returns {string} Serialized config module.
  */
-function buildStrykerConfig(mutateTargetDir) {
+function buildStrykerConfig(mutateTargetDir, env) {
   let mutateLine = '';
   if (mutateTargetDir) {
     mutateLine = `  mutate: [${JSON.stringify(mutateTargetDir)}],\n`;
   }
-  const concurrency = Number(process.env.STRYKER_CONCURRENCY || 1);
-  const testFiles = process.env.STRYKER_TEST_FILES;
+  const concurrency = Number(env.STRYKER_CONCURRENCY || 1);
+  const testFiles = env.STRYKER_TEST_FILES;
   const testFilesLine = testFiles ? `  testFiles: ${testFiles},\n` : '';
-  const timeoutMs = Number(process.env.STRYKER_TIMEOUT_MS || 10_000);
+  const timeoutMs = Number(env.STRYKER_TIMEOUT_MS || 10_000);
   return `import baseConfig from './stryker.config.mjs';
 
 export default {
@@ -263,35 +291,36 @@ ${testFilesLine}
 }
 
 /**
+ * @param {AllowEffects} permission Invocation permission.
  * @param {{
- *   spawnImpl: typeof spawn,
+ *   spawnImpl: WorktreeSpawn,
  *   command: string,
  *   args: string[],
  *   cwd: string,
  *   allowFailure?: boolean,
- *   env?: Env,
+ *   env: Env,
  * }} options Command options.
  * @returns {Promise<void>} Resolves when the command exits successfully.
  */
-async function runCommand(options) {
+async function runCommand(permission, options) {
   const spawnImpl = options.spawnImpl;
   const command = options.command;
   const args = options.args;
   const cwd = options.cwd;
   const allowFailure = options.allowFailure ?? false;
-  const env = options.env ?? process.env;
+  const env = options.env;
   await new Promise(
     /**
      * @param {(value?: unknown) => void} resolve Promise resolver.
      * @param {(reason?: unknown) => void} reject Promise rejecter.
      */
     (resolve, reject) => {
-      const child = spawnImpl(command, args, {
+      const child = spawnImpl(permission, command, args, {
         cwd,
         env,
         stdio: 'inherit',
       });
-      child.once('error', error =>
+      child.once(permission, 'error', error =>
         handleCommandError(error, allowFailure, resolve, reject)
       );
       const handleExit =
@@ -306,7 +335,7 @@ async function runCommand(options) {
           );
           handleCommandError(error, allowFailure, resolve, reject);
         };
-      child.once('exit', handleExit);
+      child.once(permission, 'exit', handleExit);
     }
   );
 }

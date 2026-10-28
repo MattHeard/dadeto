@@ -1,3 +1,10 @@
+import {
+  adaptAllowEffectsBag,
+  requireAllowEffects,
+} from '../../src/adapters/allow-effects.js';
+import { createWorktreeSpawn } from '../../src/adapters/worktree.js';
+import { bindEffectBoundary } from '../../src/local/allow-effects.js';
+
 /**
  * Require a controlled runner operation to settle before the mutation deadline.
  * @template T
@@ -23,13 +30,44 @@ export async function completeWorktreeOperation(operation) {
 
 /**
  * Bound a fixture's runner handle without changing construction errors.
- * @template Options
- * @param {(options: Options) => () => Promise<void>} factory Runner factory.
- * @returns {(options: Options) => () => Promise<void>} Fixture factory.
+ * @param {Function} factory Runner factory.
+ * @returns {(options: object) => () => Promise<void>} Fixture factory.
  */
 export function boundedWorktreeFactory(factory) {
   return options => {
-    const handle = factory(options);
+    const handle = factory({
+      ...options,
+      fsModule: adaptAllowEffectsBag(options.fsModule, {
+        mkdtemp: 'effect',
+        rm: 'effect',
+        cp: 'effect',
+        mkdir: 'effect',
+        writeFile: 'effect',
+        appendFile: 'effect',
+      }),
+      spawnImpl: createWorktreeSpawn(options.spawnImpl),
+      log: options.log ? requireAllowEffects(options.log) : undefined,
+      now: options.now ?? (() => '2026-10-27T00:00:00.000Z'),
+      bindEffectBoundary,
+    });
     return () => completeWorktreeOperation(handle());
   };
+}
+
+/**
+ * Adapt a controlled process fixture to the permission-first command contract.
+ * @param {Function} runner Core command runner.
+ * @param {object} options Controlled command inputs.
+ * @returns {Promise<void>} Bounded command result.
+ */
+export function boundedWorktreeCommand(runner, options) {
+  return completeWorktreeOperation(
+    bindEffectBoundary(permission =>
+      runner(permission, {
+        ...options,
+        env: options.env ?? {},
+        spawnImpl: createWorktreeSpawn(options.spawnImpl),
+      })
+    )
+  );
 }

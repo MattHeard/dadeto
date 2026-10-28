@@ -79,3 +79,27 @@ adaptAllowEffectsBag({ save() {} }, { remove: 'effect' } as const);
 
 // @ts-expect-error Classifications are explicitly limited to query/effect.
 adaptAllowEffectsBag({ save() {} }, { save: 'command' } as const);
+
+// Worktree commands and child subscriptions require the invocation capability.
+declare const worktree: import('../src/core/scripts/run-stryker-worktree-core.js').WorktreeFilesystem;
+const worktreeDirectory: Promise<string> = worktree.mkdtemp(
+  permission,
+  '/worktree-'
+);
+void worktreeDirectory;
+// @ts-expect-error Filesystem commands cannot omit the invocation capability.
+worktree.mkdtemp('/worktree-');
+declare const launchWorktree: import('../src/core/scripts/run-stryker-worktree-core.js').WorktreeSpawn;
+const childWorktree = launchWorktree(permission, 'node', [], {
+  cwd: '.',
+  env: {},
+  stdio: 'inherit',
+});
+childWorktree.once(permission, 'exit', code => {
+  const status: number | null = code;
+  void status;
+});
+// @ts-expect-error Child event registration is an effect too.
+childWorktree.once('exit', () => {});
+// @ts-expect-error Launching a child requires the capability as the first argument.
+launchWorktree('node', [], { cwd: '.', env: {}, stdio: 'inherit' });

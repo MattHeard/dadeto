@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/adapters/**',
+    '!src/local/allow-effects.js',
     '!test/core/scripts/run-stryker-worktree-core*.test.js',
     '!test/helpers/worktree-completion.js',
     '!jest.config.mjs',
@@ -18,7 +20,9 @@ export default {
   jest: {
     ...base.jest,
     config: {
-      testMatch: ['<rootDir>/test/core/scripts/run-stryker-worktree-core*.test.js'],
+      testMatch: [
+        '<rootDir>/test/core/scripts/run-stryker-worktree-core*.test.js',
+      ],
     },
   },
   reporters: ['progress', 'json'],

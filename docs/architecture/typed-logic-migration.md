@@ -467,3 +467,20 @@ succeeded. Focused36tests, scoped source coverage without gaps, all10split
 local static gates and build pass. Runtime source/test blobs remain unchanged
 for this receipt. Remaining direct built-ins:9modules/20imports; fs/spawn/env/time
 portability and the broader migration remain open. Rank11 staysActive/Partial.
+
+### Worktree platform boundary — 28 October 2026
+
+Child `dadeto-tx59` removes the worktree runner's remaining executable native
+imports and host environment/time defaults. Its local wrapper now supplies
+required filesystem/process/environment/clock adapters and the existing local
+AllowEffects invocation boundary. All injected filesystem commands, launches,
+child subscriptions, clock queries and logging receive that invocation token.
+The core dependency types describe only consumed portable operations. Preserve
+zero-argument public handle, exact lifecycle/config defaults, environment overrides
+and cleanup behavior. Focused 44 tests and scoped runner coverage (zero gaps),
+checkJs and build pass; nine split aggregate static gates pass, but a new Jest /
+deepmerge audit failure is tracked separately as `dadeto-sxun`. Neither child nor
+parent is closed on partial validation. Current AST static-import inventory is
+eight modules / 18 native imports; this does not prove global host independence.
+See `notes/agents/2026-10-28-worktree-effects-injection.md` for the typed overloaded
+subscription adapter, permission-forwarding regressions and terminal receipts.

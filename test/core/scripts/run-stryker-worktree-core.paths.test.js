@@ -1,6 +1,6 @@
 import {
   boundedWorktreeFactory,
-  completeWorktreeOperation,
+  boundedWorktreeCommand,
 } from '../../helpers/worktree-completion.js';
 import { jest } from '@jest/globals';
 await jest.unstable_mockModule('node:child_process', () => ({
@@ -16,7 +16,7 @@ const createRunStrykerWorktreeHandle = boundedWorktreeFactory(
   runnerModule.createRunStrykerWorktreeHandle
 );
 const runCommand = options =>
-  completeWorktreeOperation(runnerModule.runCommand(options));
+  boundedWorktreeCommand(runnerModule.runCommand, options);
 
 /**
  * Create a fully controlled runner with deliberately non-native path results.
@@ -260,33 +260,6 @@ test.each([false, true])(
   }
 );
 
-/**
- * Isolate the legacy host configuration inputs for one fixture operation.
- * @param {Record<string, string|undefined>} values Test configuration.
- * @param {() => Promise<void>} operation Test operation.
- * @returns {Promise<void>} Fixture completion.
- */
-async function withConfigValues(values, operation) {
-  const keys = [
-    'STRYKER_CONCURRENCY',
-    'STRYKER_TIMEOUT_MS',
-    'STRYKER_TEST_FILES',
-  ];
-  const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
-  try {
-    for (const key of keys) {
-      if (values[key] === undefined) delete process.env[key];
-      else process.env[key] = values[key];
-    }
-    await operation();
-  } finally {
-    for (const key of keys) {
-      if (previous[key] === undefined) delete process.env[key];
-      else process.env[key] = previous[key];
-    }
-  }
-}
-
 test.each([
   { label: 'defaults', values: {}, concurrency: 1, timeout: 10000 },
   {
@@ -355,8 +328,9 @@ test.each([
 ])(
   'generated config is exact for $label',
   async ({ values, concurrency, timeout, target }) => {
-    await withConfigValues(values, async () => {
+    {
       const { options } = fixture();
+      Object.assign(options.processModule.env, values);
       if (target) options.mutateTargetDir = target;
       await createRunStrykerWorktreeHandle(options)();
       const mutate = target
@@ -376,6 +350,6 @@ ${files}${'  '}
   concurrency: ${concurrency},
 };
 `);
-    });
+    }
   }
 );

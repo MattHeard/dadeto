@@ -1,6 +1,6 @@
 import {
   boundedWorktreeFactory,
-  completeWorktreeOperation,
+  boundedWorktreeCommand,
 } from '../../helpers/worktree-completion.js';
 import path from 'node:path';
 import {
@@ -37,8 +37,6 @@ await jest.unstable_mockModule('node:child_process', () => ({
   spawn: spawnMock,
 }));
 
-await jest.unstable_mockModule('node:fs/promises', () => fsModule);
-
 const runnerModule = await import(
   '../../../src/core/scripts/run-stryker-worktree-core.js'
 );
@@ -46,7 +44,7 @@ const createRunStrykerWorktreeHandle = boundedWorktreeFactory(
   runnerModule.createRunStrykerWorktreeHandle
 );
 const runCommand = options =>
-  completeWorktreeOperation(runnerModule.runCommand(options));
+  boundedWorktreeCommand(runnerModule.runCommand, options);
 
 describe('createRunStrykerWorktreeHandle defaults', () => {
   beforeEach(() => {
@@ -58,8 +56,10 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
     spawnMock.mockClear();
   });
 
-  test('uses default filesystem and spawn with an injected path bundle', async () => {
+  test('uses the supplied filesystem and spawn with an injected path bundle', async () => {
     const handle = createRunStrykerWorktreeHandle({
+      fsModule,
+      spawnImpl: spawnMock,
       pathModule: path,
       processModule: { env: {} },
     });
@@ -72,7 +72,7 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
     expect(fsModule.cp).toHaveBeenCalled();
   });
 
-  test('uses the process env when runCommand env is omitted', async () => {
+  test('passes an explicitly empty environment without host defaults', async () => {
     await runCommand({
       spawnImpl: spawnMock,
       command: 'node',
@@ -85,41 +85,28 @@ describe('createRunStrykerWorktreeHandle defaults', () => {
       ['--version'],
       expect.objectContaining({
         cwd: '/tmp/worktree',
-        env: process.env,
+        env: {},
         stdio: 'inherit',
       })
     );
   });
 
   test('writes configured test files, timeout, and concurrency', async () => {
-    const previous = {
-      testFiles: process.env.STRYKER_TEST_FILES,
-      timeout: process.env.STRYKER_TIMEOUT_MS,
-      concurrency: process.env.STRYKER_CONCURRENCY,
+    const env = {
+      STRYKER_TEST_FILES: "['test/example.test.js']",
+      STRYKER_TIMEOUT_MS: '5000',
+      STRYKER_CONCURRENCY: '2',
     };
-    process.env.STRYKER_TEST_FILES = "['test/example.test.js']";
-    process.env.STRYKER_TIMEOUT_MS = '5000';
-    process.env.STRYKER_CONCURRENCY = '2';
-
-    try {
-      const handle = createRunStrykerWorktreeHandle({
-        pathModule: path,
-        processModule: { env: {} },
-      });
-      await handle();
-      process.env.STRYKER_TIMEOUT_MS = 'invalid';
-      process.env.STRYKER_CONCURRENCY = '0';
-      await handle();
-    } finally {
-      for (const [key, value] of Object.entries({
-        STRYKER_TEST_FILES: previous.testFiles,
-        STRYKER_TIMEOUT_MS: previous.timeout,
-        STRYKER_CONCURRENCY: previous.concurrency,
-      })) {
-        if (value === undefined) delete process.env[key];
-        else process.env[key] = value;
-      }
-    }
+    const handle = createRunStrykerWorktreeHandle({
+      fsModule,
+      spawnImpl: spawnMock,
+      pathModule: path,
+      processModule: { env },
+    });
+    await handle();
+    env.STRYKER_TIMEOUT_MS = 'invalid';
+    env.STRYKER_CONCURRENCY = '0';
+    await handle();
 
     expect(fsModule.writeFile).toHaveBeenCalledWith(
       expect.any(String),

@@ -1,6 +1,6 @@
 import {
   boundedWorktreeFactory,
-  completeWorktreeOperation,
+  boundedWorktreeCommand,
 } from '../../helpers/worktree-completion.js';
 import { EventEmitter } from 'node:events';
 import fs from 'node:fs/promises';
@@ -20,7 +20,7 @@ const createRunStrykerWorktreeHandle = boundedWorktreeFactory(
   runnerModule.createRunStrykerWorktreeHandle
 );
 const runCommand = options =>
-  completeWorktreeOperation(runnerModule.runCommand(options));
+  boundedWorktreeCommand(runnerModule.runCommand, options);
 
 /**
  * Create a child-process mock that exits with the supplied code.
@@ -51,6 +51,7 @@ test('runs a reused worktree without setup or teardown commands', async () => {
   );
   const spawnImpl = spawnWithExit(0);
   const handle = createRunStrykerWorktreeHandle({
+    fsModule: fs,
     pathModule: path,
     rootDir,
     mutateTargetDir: '.',
@@ -68,16 +69,14 @@ test('runs a reused worktree without setup or teardown commands', async () => {
   await fs.rm(reused, { recursive: true, force: true });
 });
 
-test('uses the default filesystem with an injected path bundle', async () => {
-  expect(createRunStrykerWorktreeHandle({ pathModule: path })).toEqual(
-    expect.any(Function)
-  );
+test('uses explicitly supplied filesystem and path adapters', async () => {
   const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dadeto-stryker-'));
   const reused = await fs.mkdtemp(
     path.join(os.tmpdir(), 'dadeto-stryker-reuse-')
   );
   await fs.mkdir(path.join(reused, 'reports', 'mutation'), { recursive: true });
   const handle = createRunStrykerWorktreeHandle({
+    fsModule: fs,
     pathModule: path,
     rootDir,
     mutateTargetDir: 'src/../src/core',
