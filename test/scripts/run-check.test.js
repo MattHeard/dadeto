@@ -328,7 +328,7 @@ describe('runCheckSuite runner options and child lifecycle', () => {
         }
       );
 
-      expect(resolved.commands).toHaveLength(11);
+      expect(resolved.commands).toHaveLength(12);
       expect(resolved.failFast).toBe(false);
       expect(resolved.stdout).toBe(process.stdout);
       expect(resolved.stderr).toBe(process.stderr);

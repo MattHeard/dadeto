@@ -41,7 +41,7 @@
     "lint": "npx eslint \"src/{core,logic}/**/*.js\" test --cache --cache-location reports/lint/.eslintcache --fix --max-warnings=0 --no-color --format=stylish -o reports/lint/lint.txt && cat reports/lint/lint.txt",
     "copy": "node src/build/copy.js",
     "copy:dendrite": "node src/build/copy-dendrite.js",
-    "build:cloud": "node src/build/copy-cloud.js",
+    "build:cloud": "npm run cloud:templates:check && node src/build/copy-cloud.js",
     "verify:cloud-packages": "node src/local/verify-cloud-function-packages.js",
     "build:mattheard-net": "npm run copy && npm run generate",
     "build:dendritestories-co-nz": "npm run copy:dendrite",
@@ -73,7 +73,9 @@
     "start:writer:playwright": "node src/local/server.js",
     "start:writer": "node src/local/server.js",
     "start:writer:watch": "node --watch src/local/server.js",
-    "start:local": "WRITER_HOST=0.0.0.0 node src/local/server.js"
+    "start:local": "WRITER_HOST=0.0.0.0 node src/local/server.js",
+    "cloud:templates:refresh": "node src/local/generate-cloud-templates.js",
+    "cloud:templates:check": "node src/local/generate-cloud-templates.js --check"
   },
   "devDependencies": {
     "@babel/parser": "^7.29.7",

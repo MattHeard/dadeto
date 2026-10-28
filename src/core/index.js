@@ -685,6 +685,11 @@ export function createAsyncFsAdapters(fsPromisesModule) {
  * @type {{ name: string, command: string, args: string[] }[]}
  */
 const STATIC_CHECK_COMMANDS = [
+  {
+    name: 'cloud:templates:check',
+    command: 'npm',
+    args: ['run', 'cloud:templates:check'],
+  },
   { name: 'manuals:check', command: 'npm', args: ['run', 'manuals:check'] },
   { name: 'lint', command: 'npm', args: ['run', 'lint'] },
   { name: 'depcruise', command: 'npm', args: ['run', 'depcruise'] },

@@ -484,3 +484,18 @@ parent is closed on partial validation. Current AST static-import inventory is
 eight modules / 18 native imports; this does not prove global host independence.
 See `notes/agents/2026-10-28-worktree-effects-injection.md` for the typed overloaded
 subscription adapter, permission-forwarding regressions and terminal receipts.
+
+### Cloud template data — 28 October 2026
+
+Child `dadeto-48hf` replaces native filesystem loading in the cloud template helper
+with pure interpolation of compiled template strings. The five source HTML files
+stay authoritative; four cloud consumers import generated data without changing
+public renderer APIs. A permission-aware local compiler provides refresh/check
+commands; drift is enforced by both aggregate checks and before cloud packaging.
+The generated module remains inside all applicable quality and mutation surfaces.
+Byte-equivalent outputs, compiler/consumer/CLI regressions, static/cloud builds
+and deployment closure are required; exact mutation/CI receipts live in
+`notes/agents/2026-10-28-cloud-template-data.md`. Static native inventory now leaves
+seven modules /17imports; enforcement, namespace preparation and migration remain.
+Previous runner/effects and security-backport children tx59/sxun closed after
+FullCheck40651137720 succeeded at7f07f1b (1072suites8277tests/all4coverage100).

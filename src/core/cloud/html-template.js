@@ -1,12 +1,9 @@
-import { readFileSync } from 'node:fs';
-
 /**
- * Load and interpolate a checked-in HTML template.
- * @param {string|import('node:url').URL} templateUrl Path or URL of the template file.
+ * Interpolate checked-in HTML template text without reading the environment.
+ * @param {string} template Template text.
  * @param {Record<string, string>} values Template values.
  * @returns {string} Interpolated HTML.
  */
-export function renderHtmlTemplate(templateUrl, values) {
-  const template = readFileSync(templateUrl, 'utf8');
+export function renderHtmlTemplate(template, values) {
   return template.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_, key) => values[key]);
 }

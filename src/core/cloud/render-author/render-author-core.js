@@ -1,4 +1,5 @@
 import { renderHtmlTemplate } from '../html-template.js';
+import { cloudTemplates } from '../templates.js';
 import { withPageFooter } from '../page-footer.js';
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {{ id: string, update: (value: object) => Promise<unknown> }} AuthorDocumentReference */
@@ -22,7 +23,7 @@ export function renderAuthorPage(author, variants = [], moderatorReputation) {
   return {
     path: `a/${author.uuid}.html`,
     html: withPageFooter(
-      renderHtmlTemplate(new URL('./author-page.html', import.meta.url), {
+      renderHtmlTemplate(cloudTemplates.author, {
         authorName: escapeHtml(authorName),
         moderatorReputation: renderModeratorReputation(moderatorReputation),
         variants: renderVariants(variants),

@@ -10,6 +10,7 @@ import {
   resolveStaticObjectPrefix,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
+import { cloudTemplates } from '../templates.js';
 import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
 import { sendEffectFetch } from '../effectFetch.js';
@@ -281,7 +282,7 @@ const MENU_TOGGLE_SCRIPT = `    <script type="module" src="./contentsMenuToggle.
  */
 export const PAGE_HTML = list =>
   withPageFooter(
-    renderHtmlTemplate(new URL('./contents-page.html', import.meta.url), {
+    renderHtmlTemplate(cloudTemplates.contents, {
       head: HEAD_HTML,
       header: HEADER_HTML,
       mobileMenu: MOBILE_MENU_HTML,

@@ -469,7 +469,7 @@ describe('commonCore run-check options', () => {
   test('resolveRunCheckOptions uses built-in defaults when called without arguments', () => {
     const resolved = resolveRunCheckOptions();
 
-    expect(resolved.commands).toHaveLength(11);
+    expect(resolved.commands).toHaveLength(12);
     expect(resolved.failFast).toBe(false);
     expect(resolved.stdout).toBe(process.stdout);
     expect(resolved.stderr).toBe(process.stderr);

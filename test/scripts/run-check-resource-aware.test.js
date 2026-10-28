@@ -85,3 +85,17 @@ describe('runResourceAwareCheckSuite', () => {
     expect(calls[1]).not.toContainEqual(['test:impact', 'run', 'test:impact']);
   });
 });
+
+test('fast and full checks both enforce cloud template drift', () => {
+  const command = {
+    name: 'cloud:templates:check',
+    command: 'npm',
+    args: ['run', 'cloud:templates:check'],
+  };
+  expect(CHECK_COMMANDS.filter(item => item.name === command.name)).toEqual([
+    command,
+  ]);
+  expect(
+    FULL_CHECK_COMMANDS.filter(item => item.name === command.name)
+  ).toEqual([command]);
+});

@@ -2,7 +2,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { renderHtmlTemplate } from '../src/core/cloud/html-template.js';
 
 /**
@@ -15,7 +15,7 @@ import { renderHtmlTemplate } from '../src/core/cloud/html-template.js';
 export function renderTemplateFile(templatePath, dataPath, outputPath) {
   const data = JSON.parse(readFileSync(resolve(dataPath), 'utf8'));
   const html = renderHtmlTemplate(
-    pathToFileURL(resolve(templatePath)),
+    readFileSync(resolve(templatePath), 'utf8'),
     data
   );
   const target = resolve(outputPath);

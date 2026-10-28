@@ -14,6 +14,7 @@ import {
   matchAuthHeader,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
+import { cloudTemplates } from '../templates.js';
 import { withPageFooter } from '../page-footer.js';
 import { sendInvalidateRequest } from './cdn-invalidation.js';
 import { GOOGLE_AUTH_STATUS_ASSET_VERSION } from '../../google-auth-status-asset-version.js';
@@ -139,7 +140,7 @@ export function buildHtml(...args) {
   // Stryker disable next-line all -- stats rendering uses the fixed template
   // asset and HTML payload contract.
   return withPageFooter(
-    renderHtmlTemplate(new URL('./stats-page.html', import.meta.url), {
+    renderHtmlTemplate(cloudTemplates.stats, {
       head: STATS_PAGE_HEAD,
       header: SITE_HEADER_HTML,
       main,

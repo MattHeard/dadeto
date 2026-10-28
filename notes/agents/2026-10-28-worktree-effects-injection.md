@@ -83,3 +83,12 @@ backport with actual exploit/compatibility/clean-install probes. Its60focused
 cases and all10 split local static gates pass. The repaired descendant Full Check
 still must succeed before these quality tasks close; no source/mutation threshold
 or exclusion was relaxed. See2026-10-28-deepmerge-security-backport.md.
+
+## Successful repaired CI receipt
+
+Full Check40651137720 succeeded at7f07f1b. Artifact12799811655 confirms1,072suites /
+8,277tests passed and all four global coverage metrics100%; no files fall below
+thresholds. Together with prior exact runner coverage, unchanged runner source,
+focused/scoped/build/mutation evidence, this completes childdadeto-tx59 (closed).
+Report: `/tmp/dadeto-full-check-40651137720/coverage/check-full-report.md`.
+The broader Rank11 architecture work remains Active / Partial.

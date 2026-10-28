@@ -8,6 +8,7 @@ import {
   prefixStaticObjectPath,
 } from '../cloud-core.js';
 import { renderHtmlTemplate } from '../html-template.js';
+import { cloudTemplates } from '../templates.js';
 import { withPageFooter } from '../page-footer.js';
 import { assertFunction } from '../../commonCore.js';
 import { sendEffectFetch } from '../effectFetch.js';
@@ -929,7 +930,7 @@ export function buildHtml(buildHtmlInput) {
   const headElement = buildHeadElement(headTitle);
   const bodyElement = buildBodyElement(mainContent);
   return withPageFooter(
-    renderHtmlTemplate(new URL('./variant-page.html', import.meta.url), {
+    renderHtmlTemplate(cloudTemplates.variant, {
       headElement,
       bodyElement,
     })
@@ -1076,7 +1077,7 @@ export function buildAltsHtml(pageNumber, variants) {
     </script>
   </body>`;
   return withPageFooter(
-    renderHtmlTemplate(new URL('./alts-page.html', import.meta.url), {
+    renderHtmlTemplate(cloudTemplates.alts, {
       bodyContent,
     })
   );
