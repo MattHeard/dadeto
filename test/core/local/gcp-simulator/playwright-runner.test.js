@@ -1,9 +1,82 @@
 import { EventEmitter } from 'node:events';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import {
-  playwrightRunnerTestUtils,
-  runLocalPlaywright,
-} from '../../../../src/core/local/gcp-simulator/playwright-runner.js';
+import { createLocalPlaywrightRunner } from '../../../../src/core/local/gcp-simulator/playwright-runner.js';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+const permission = createAllowEffects();
+const TEST_ROOT = '/runner-root';
+const TEST_EXEC = 'test-node';
+const output = { stdout: () => {}, stderr: () => {} };
+
+/**
+ * Supply a fully portable process platform over in-memory child fixtures.
+ * @param {Function} [spawnImpl] Test launch implementation.
+ * @returns {ReturnType<typeof createLocalPlaywrightRunner>} Runner operations.
+ */
+function createTestRunner(
+  spawnImpl = () => {
+    throw new Error('missing fake launcher');
+  }
+) {
+  return createLocalPlaywrightRunner({
+    process: {
+      rootDir: TEST_ROOT,
+      execPath: TEST_EXEC,
+      env: { PARENT_FLAG: 'kept' },
+      spawn: (token, ...args) => {
+        expect(token).toBe(permission);
+        return spawnImpl(...args);
+      },
+      writeStdout: (token, chunk) => {
+        expect(token).toBe(permission);
+        output.stdout(chunk);
+      },
+      writeStderr: (token, chunk) => {
+        expect(token).toBe(permission);
+        output.stderr(chunk);
+      },
+    },
+    paths: { resolve: (...parts) => parts.join('/') },
+    reservePort: async token => {
+      expect(token).toBe(permission);
+      return 8888;
+    },
+  });
+}
+
+/**
+ * Bind fake raw launchers at the test boundary while keeping core options data-only.
+ * @param {object} [options] Test runner options.
+ * @param {Function} [options.spawnImpl] Fake raw launcher.
+ * @returns {Promise<object>} Runner result.
+ */
+function runLocalPlaywright(options = {}) {
+  const { spawnImpl, ...configuration } = options;
+  const pending = createTestRunner(spawnImpl).runLocalPlaywright(
+    permission,
+    configuration
+  );
+  void pending.catch(() => {});
+  return pending;
+}
+const playwrightRunnerTestUtils = {
+  waitForSimulatorReady: child =>
+    createTestRunner().playwrightRunnerTestUtils.waitForSimulatorReady(
+      permission,
+      child
+    ),
+  waitForExit: child =>
+    createTestRunner().playwrightRunnerTestUtils.waitForExit(permission, child),
+  terminateProcess: child =>
+    createTestRunner().playwrightRunnerTestUtils.terminateProcess(
+      permission,
+      child
+    ),
+  spawnPlaywright: ({ spawnImpl, ...input }) =>
+    createTestRunner(spawnImpl).playwrightRunnerTestUtils.spawnPlaywright(
+      permission,
+      input
+    ),
+};
 
 class FakeChildProcess extends EventEmitter {
   constructor() {
@@ -24,7 +97,38 @@ class FakeChildProcess extends EventEmitter {
     return super.emit(event, ...args);
   }
 
-  kill(signal) {
+  status(token) {
+    expect(token).toBe(permission);
+    return { exitCode: this.exitCode, signalCode: this.signalCode };
+  }
+
+  onceError(token, listener) {
+    expect(token).toBe(permission);
+    return this.once('error', listener);
+  }
+  onceExit(token, listener) {
+    expect(token).toBe(permission);
+    return this.once('exit', listener);
+  }
+  offError(token, listener) {
+    expect(token).toBe(permission);
+    return this.off('error', listener);
+  }
+  offExit(token, listener) {
+    expect(token).toBe(permission);
+    return this.off('exit', listener);
+  }
+  onStdout(token, listener) {
+    expect(token).toBe(permission);
+    return this.stdout?.on('data', listener);
+  }
+  onStderr(token, listener) {
+    expect(token).toBe(permission);
+    return this.stderr?.on('data', listener);
+  }
+
+  kill(token, signal) {
+    expect(token).toBe(permission);
     this.kills.push(signal);
     this.signalCode = signal;
     return true;
@@ -40,33 +144,16 @@ function flushEventLoop() {
 }
 
 describe('local playwright runner', () => {
-  /** @type {(() => void) | null} */
-  let restoreStdout = null;
-  /** @type {(() => void) | null} */
-  let restoreStderr = null;
-
   afterEach(() => {
-    restoreStdout?.mockRestore?.();
-    restoreStderr?.mockRestore?.();
-    restoreStdout = null;
-    restoreStderr = null;
+    output.stdout = () => {};
+    output.stderr = () => {};
   });
 
   it('starts the simulator, passes the bound base URL to Playwright, and cleans up', async () => {
     const stdoutWrites = [];
     const stderrWrites = [];
-    restoreStdout = jest
-      .spyOn(process.stdout, 'write')
-      .mockImplementation(chunk => {
-        stdoutWrites.push(String(chunk));
-        return true;
-      });
-    restoreStderr = jest
-      .spyOn(process.stderr, 'write')
-      .mockImplementation(chunk => {
-        stderrWrites.push(String(chunk));
-        return true;
-      });
+    output.stdout = chunk => stdoutWrites.push(String(chunk));
+    output.stderr = chunk => stderrWrites.push(String(chunk));
 
     const simulator = new FakeChildProcess();
     const writer = new FakeChildProcess();
@@ -89,7 +176,7 @@ describe('local playwright runner', () => {
       repoRoot: '/repo',
       env: { EXTRA_FLAG: '1' },
       spawnImpl,
-      simulatorCommand: process.execPath,
+      simulatorCommand: TEST_EXEC,
       simulatorScript: '/repo/src/local/gcp-simulator/server.js',
       playwrightCommand: 'npx',
       playwrightArgs: ['--grep', 'contents'],
@@ -101,6 +188,7 @@ describe('local playwright runner', () => {
       Buffer.from('gcp simulator listening on http://127.0.0.1:4532\n')
     );
     await flushEventLoop();
+    expect(spawnCalls).toHaveLength(2);
     writer.stdout.emit(
       'data',
       Buffer.from('writer server listening on http://localhost:4588/writer/\n')
@@ -112,6 +200,7 @@ describe('local playwright runner', () => {
       Buffer.from('gcp simulator listening on http://127.0.0.1:4532\n')
     );
     await Promise.resolve();
+    expect(spawnCalls).toHaveLength(3);
     playwright.emit('exit', 0, null);
 
     await expect(runPromise).resolves.toEqual({
@@ -122,7 +211,7 @@ describe('local playwright runner', () => {
 
     expect(spawnCalls).toHaveLength(3);
     expect(spawnCalls[0]).toMatchObject({
-      command: process.execPath,
+      command: TEST_EXEC,
       args: ['/repo/src/local/gcp-simulator/server.js'],
       options: {
         cwd: '/repo',
@@ -134,7 +223,7 @@ describe('local playwright runner', () => {
       GCP_SIMULATOR_PORT: '8080',
     });
     expect(spawnCalls[1]).toMatchObject({
-      command: process.execPath,
+      command: TEST_EXEC,
       args: ['/repo/src/local/server.js'],
       options: {
         cwd: '/repo',
@@ -185,7 +274,7 @@ describe('local playwright runner startup failures', () => {
     const runPromise = runLocalPlaywright({
       repoRoot: '/repo',
       spawnImpl,
-      simulatorCommand: process.execPath,
+      simulatorCommand: TEST_EXEC,
       simulatorScript: '/repo/src/local/gcp-simulator/server.js',
       playwrightCommand: 'npx',
     });
@@ -289,11 +378,13 @@ describe('local playwright runner configuration', () => {
       Buffer.from('gcp simulator listening on http://127.0.0.1:4321\n')
     );
     await flushEventLoop();
+    expect(spawnCalls).toHaveLength(2);
     writer.stdout.emit(
       'data',
       Buffer.from('writer server listening on http://localhost:4322/writer/\n')
     );
     await flushEventLoop();
+    expect(spawnCalls).toHaveLength(3);
     playwright.emit('exit', null, 'SIGTERM');
 
     await expect(runPromise).resolves.toEqual({
@@ -303,18 +394,18 @@ describe('local playwright runner configuration', () => {
     });
 
     expect(spawnCalls[0]).toMatchObject({
-      command: process.execPath,
-      args: [`${process.cwd()}/src/local/gcp-simulator/server.js`],
+      command: TEST_EXEC,
+      args: [`${TEST_ROOT}/src/local/gcp-simulator/server.js`],
       options: {
-        cwd: process.cwd(),
+        cwd: TEST_ROOT,
         stdio: ['ignore', 'pipe', 'pipe'],
       },
     });
     expect(spawnCalls[1]).toMatchObject({
-      command: process.execPath,
-      args: [`${process.cwd()}/src/local/server.js`],
+      command: TEST_EXEC,
+      args: [`${TEST_ROOT}/src/local/server.js`],
       options: {
-        cwd: process.cwd(),
+        cwd: TEST_ROOT,
         stdio: ['ignore', 'pipe', 'pipe'],
       },
     });
@@ -324,10 +415,10 @@ describe('local playwright runner configuration', () => {
         'playwright',
         'test',
         '--config',
-        `${process.cwd()}/test/e2e/local.config.ts`,
+        `${TEST_ROOT}/test/e2e/local.config.ts`,
       ],
       options: {
-        cwd: process.cwd(),
+        cwd: TEST_ROOT,
         stdio: 'inherit',
       },
     });
@@ -377,6 +468,7 @@ describe('local playwright runner process outcomes', () => {
         Buffer.from('gcp simulator listening on http://127.0.0.1:4321\n')
       );
       await flushEventLoop();
+      expect(spawnCalls).toHaveLength(2);
       writer.stdout.emit(
         'data',
         Buffer.from(
@@ -384,6 +476,7 @@ describe('local playwright runner process outcomes', () => {
         )
       );
       await flushEventLoop();
+      expect(spawnCalls).toHaveLength(3);
       playwright.emit('exit', code, signal);
 
       await expect(runPromise).resolves.toEqual({

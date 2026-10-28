@@ -51,7 +51,7 @@ describe('local playwright runner port reservation', () => {
     }));
 
     const { runLocalPlaywright } = await import(
-      '../../../../src/core/local/gcp-simulator/playwright-runner.js'
+      '../../../../src/local/gcp-simulator/playwright-runner.js'
     );
 
     const runPromise = runLocalPlaywright({

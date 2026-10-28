@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { runLocalPlaywright } from '../src/core/local/gcp-simulator/playwright-runner.js';
+import { runLocalPlaywright } from '../src/local/gcp-simulator/playwright-runner.js';
 
 const result = await runLocalPlaywright({
   playwrightArgs: process.argv.slice(2),

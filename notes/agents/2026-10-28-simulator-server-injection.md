@@ -106,3 +106,23 @@ required before child closure.
 The final-source site/cloud builds and import-closure rerun also pass unchanged
 27 packages / 713 reachable modules / 1,234 imports; logs
 `/tmp/dadeto-fyyl-hardening-{build,cloud-build,closure}.log`.
+
+## Terminal exact-source and CI receipts
+
+The final whole-module mutation gate passes at 100%, exit 0: **146/146 detected**,
+comprising 142 Killed and four Timeouts, zero survivors/runtime errors/ignored/
+uncovered, static evaluation enabled (none generated). The four replacements
+remove the Promise executor, listener setup/ready callback or resolver progress,
+leaving startup unsettled; no timeout budget changed. Report source matches
+SHA-256 `dce2077b626d86268264b4e07e71d1e6f98c559bf4cc710d0c792b1bca43bd83`.
+Reports `reports/mutation/simulator-server{,-summary}.json`, terminal log
+`/tmp/dadeto-fyyl-hardening-mutation.log`. This is not an all-Killed claim.
+
+Hardening `0abdb94a75a2bdb7679e499af166e03ec238f100` passed exact
+[Full Check40710216589](https://github.com/MattHeard/dadeto/actions/runs/40710216589).
+Artifact `12825104538` / `full-check-40710216589` confirms **1,083 suites /
+8,372 tests** all pass, all four global and server coverage metrics 100%, no
+files below thresholds. Downloaded report:
+`/tmp/dadeto-full-check-40710216589/coverage/check-full-report.md`.
+This completes `dadeto-fyyl` with the local/mutation/build evidence above.
+The overall architecture spec remains unfinished.

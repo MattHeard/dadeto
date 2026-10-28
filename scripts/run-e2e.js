@@ -2,7 +2,7 @@
 import { spawn, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { runLocalPlaywright } from '../src/core/local/gcp-simulator/playwright-runner.js';
+import { runLocalPlaywright } from '../src/local/gcp-simulator/playwright-runner.js';
 import { createPlaywrightArtifactUploader } from '../src/core/local/playwright-artifacts/playwright-artifacts.js';
 import { requireAllowEffects } from '../src/adapters/allow-effects.js';
 import {

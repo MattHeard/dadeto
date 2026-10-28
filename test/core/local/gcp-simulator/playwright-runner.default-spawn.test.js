@@ -42,7 +42,7 @@ describe('local playwright runner default spawn', () => {
     const playwright = new FakeChildProcess();
     const spawnCalls = [];
     const mockSpawn = jest.fn((command, args, options) => {
-      spawnCalls.push({ command, args, options });
+      spawnCalls.push({ command, args, options: { cwd: options.cwd } });
       if (spawnCalls.length === 1) {
         return simulator;
       }
@@ -60,7 +60,7 @@ describe('local playwright runner default spawn', () => {
         spawn: mockSpawn,
       }));
       ({ runLocalPlaywright } = await import(
-        '../../../../src/core/local/gcp-simulator/playwright-runner.js'
+        '../../../../src/local/gcp-simulator/playwright-runner.js'
       ));
     });
 

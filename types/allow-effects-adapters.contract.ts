@@ -218,3 +218,56 @@ simulatorServerPorts.log('ready');
 createSimulatorServer();
 // @ts-expect-error Server composition requires binary recognition and path operations too.
 createSimulatorServer({ port: 0, publicDir: 'public' });
+
+// All runner process and network operations require the invocation capability.
+import { createLocalPlaywrightRunner } from '../src/core/local/gcp-simulator/playwright-runner.js';
+declare const runnerPlatform: Parameters<typeof createLocalPlaywrightRunner>[0];
+const runner = createLocalPlaywrightRunner(runnerPlatform);
+runner.runLocalPlaywright(permission, { repoRoot: '/repo' });
+// @ts-expect-error Core invocation cannot mint a permission implicitly.
+runner.runLocalPlaywright({ repoRoot: '/repo' });
+// @ts-expect-error Raw launch overrides belong to the native boundary only.
+runner.runLocalPlaywright(permission, { spawnImpl: () => ({}) });
+// @ts-expect-error No ambient platform fallback exists in core.
+createLocalPlaywrightRunner();
+declare const runnerChild: import('../src/core/local/gcp-simulator/playwright-runner.js').RunnerChild;
+runnerChild.status(permission);
+runnerChild.onceError(permission, () => {});
+runnerChild.onceExit(permission, () => {});
+runnerChild.offError(permission, () => {});
+runnerChild.offExit(permission, () => {});
+runnerChild.onStdout(permission, () => {});
+runnerChild.onStderr(permission, () => {});
+runnerChild.kill(permission, 'SIGTERM');
+runnerPlatform.reservePort(permission);
+// @ts-expect-error Status queries require the current permission.
+runnerChild.status();
+// @ts-expect-error Process subscriptions require the current permission.
+runnerChild.onceError(() => {});
+// @ts-expect-error Process listener removal requires the current permission.
+runnerChild.offExit(() => {});
+// @ts-expect-error Stream subscriptions require the current permission.
+runnerChild.onStdout(() => {});
+// @ts-expect-error Cleanup cannot omit its permission.
+runnerChild.kill('SIGTERM');
+// @ts-expect-error Port reservations require a permission.
+runnerPlatform.reservePort();
+
+declare const runnerChunk: import('../src/core/local/gcp-simulator/playwright-runner.js').RunnerChunk;
+runnerPlatform.process.spawn(permission, 'node', [], {
+  cwd: '/repo',
+  env: {},
+  stdio: 'inherit',
+});
+runnerPlatform.process.writeStdout(permission, runnerChunk);
+runnerPlatform.process.writeStderr(permission, runnerChunk);
+// @ts-expect-error Launches require the permission before command arguments.
+runnerPlatform.process.spawn('node', [], {
+  cwd: '/repo',
+  env: {},
+  stdio: 'inherit',
+});
+// @ts-expect-error Output writes require a permission too.
+runnerPlatform.process.writeStdout(runnerChunk);
+// @ts-expect-error Error output writes require a permission too.
+runnerPlatform.process.writeStderr(runnerChunk);
