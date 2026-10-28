@@ -1,16 +1,15 @@
 import { jest } from '@jest/globals';
-import * as nativeFiles from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+import { createLocalGcpSimulator } from '../../../../src/core/local/gcp-simulator/simulator.js';
 
-const mkdtemp = jest.fn(async () => '/controlled-storage-root');
-await jest.unstable_mockModule('node:fs/promises', () => ({
-  ...nativeFiles,
-  mkdtemp,
-}));
-const { createLocalGcpSimulator } = await import(
-  '../../../../src/core/local/gcp-simulator/simulator.js'
-);
+const createStorageRoot = jest.fn(async () => '/controlled-storage-root');
+const platform = {
+  publicDir: 'virtual-public',
+  env: {},
+  createStorageRoot,
+  clearStorageRoot: jest.fn(),
+};
+const permission = createAllowEffects();
 
 /**
  * Provide all pre-existing boundary adapters without executing any of them.
@@ -26,13 +25,13 @@ function options() {
   };
 }
 
-beforeEach(() => mkdtemp.mockClear());
+beforeEach(() => createStorageRoot.mockClear());
 
 test('rejects a missing storage provider before allocating a directory', async () => {
-  await expect(createLocalGcpSimulator(options())).rejects.toThrow(
-    'createStorage must be provided'
-  );
-  expect(mkdtemp).not.toHaveBeenCalled();
+  await expect(
+    createLocalGcpSimulator(permission, platform, options())
+  ).rejects.toThrow('createStorage must be provided');
+  expect(createStorageRoot).not.toHaveBeenCalled();
 });
 
 test('passes the allocated root directly to the injected constructor', async () => {
@@ -41,10 +40,11 @@ test('passes the allocated root directly to the injected constructor', async () 
     throw failure;
   });
   await expect(
-    createLocalGcpSimulator({ ...options(), createStorage })
+    createLocalGcpSimulator(permission, platform, {
+      ...options(),
+      createStorage,
+    })
   ).rejects.toBe(failure);
-  expect(mkdtemp).toHaveBeenCalledWith(
-    path.join(os.tmpdir(), 'dadeto-gcp-sim-')
-  );
+  expect(createStorageRoot.mock.calls).toEqual([[permission]]);
   expect(createStorage.mock.calls).toEqual([['/controlled-storage-root']]);
 });

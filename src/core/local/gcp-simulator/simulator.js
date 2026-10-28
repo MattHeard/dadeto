@@ -1,8 +1,6 @@
 // Stryker disable all -- this module is the fixed local GCP simulator
 // lifecycle and route orchestration boundary covered by focused suites.
-import { mkdtemp, rm } from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
+import { createSimulatorStorage } from './storage-lifecycle.js';
 import { randomUUID } from 'node:crypto';
 import { ADMIN_UID } from '../../commonCore.js';
 import { createFakeFieldValue, createFakeFirestore } from './fake-firestore.js';
@@ -62,6 +60,8 @@ const FIRST_VARIANT_NAME = 'a';
 const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {import('./storage-lifecycle.js').StorageLifecyclePlatform & {publicDir: string, env: Record<string, string | undefined>}} SimulatorPlatform */
 /** @typedef {import('./fake-storage.js').StorageClient<Uint8Array>} SimulatorStorage */
 /** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
 /** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
@@ -90,6 +90,8 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 
 /**
  * Build the local GCP simulator used by Playwright and local tests.
+ * @param {AllowEffects} permission Startup permission.
+ * @param {SimulatorPlatform} platform Required host metadata and filesystem capabilities.
  * @param {{
  *   baseUrl?: string,
  *   bucketName?: string,
@@ -106,12 +108,16 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
  * }} [options] Simulator options.
  * @returns {Promise<object>} Simulator instance.
  */
-export async function createLocalGcpSimulator(options = {}) {
+export async function createLocalGcpSimulator(
+  permission,
+  platform,
+  options = {}
+) {
   const {
     baseUrl = 'http://127.0.0.1:4321',
     bucketName = 'local-static',
     projectId = 'local-project',
-    publicDir = path.resolve('public'),
+    publicDir = platform.publicDir,
     bindEffectBoundary,
     createStorage,
     saveStorageFile,
@@ -122,7 +128,7 @@ export async function createLocalGcpSimulator(options = {}) {
     consoleObj = {},
   } = options;
 
-  return createLocalGcpSimulatorRuntime({
+  return createLocalGcpSimulatorRuntime(permission, platform, {
     baseUrl,
     bucketName,
     projectId,
@@ -140,6 +146,8 @@ export async function createLocalGcpSimulator(options = {}) {
 
 /**
  * Build the local GCP simulator runtime.
+ * @param {AllowEffects} permission Startup permission.
+ * @param {SimulatorPlatform} platform Host metadata and filesystem capabilities.
  * @param {{
  *   baseUrl: string,
  *   bucketName: string,
@@ -156,9 +164,11 @@ export async function createLocalGcpSimulator(options = {}) {
  * }} config Simulator configuration.
  * @returns {Promise<object>} Simulator instance.
  */
-async function createLocalGcpSimulatorRuntime(config) {
+async function createLocalGcpSimulatorRuntime(permission, platform, config) {
   return buildSimulatorApi(
     await buildSimulatorState(
+      permission,
+      platform,
       {
         baseUrl: config.baseUrl,
         bucketName: config.bucketName,
@@ -256,30 +266,6 @@ function createSeedManifest(bucketName) {
     environment: 'local',
     staticBucket: bucketName,
   };
-}
-
-/**
- * Create a cleanup function for the simulator storage root.
- * @param {string} storageRoot Temporary storage root.
- * @returns {() => Promise<void>} Cleanup function.
- */
-function createClear(storageRoot) {
-  return async () => {
-    await rm(storageRoot, {
-      recursive: true,
-      force: true,
-      maxRetries: 3,
-      retryDelay: 50,
-    });
-  };
-}
-
-/**
- * Create the temporary storage root for the simulator.
- * @returns {Promise<string>} Storage root path.
- */
-async function createStorageRoot() {
-  return mkdtemp(path.join(os.tmpdir(), 'dadeto-gcp-sim-'));
 }
 
 /**
@@ -415,11 +401,13 @@ function validateSimulatorEffects(effects) {
 
 /**
  * Build simulator state and handlers.
+ * @param {AllowEffects} permission Startup permission.
+ * @param {SimulatorPlatform} platform Host metadata and filesystem capabilities.
  * @param {SimulatorRuntimeConfig} runtime Simulator identity and filesystem settings.
  * @param {SimulatorEffects} effects Injected effect adapters.
  * @returns {Promise<object>} Simulator state.
  */
-async function buildSimulatorState(runtime, effects) {
+async function buildSimulatorState(permission, platform, runtime, effects) {
   const requiredEffects = validateSimulatorEffects(effects);
   const {
     bindEffectBoundary,
@@ -433,7 +421,10 @@ async function buildSimulatorState(runtime, effects) {
   const bucketName = runtime.bucketName;
   const projectId = runtime.projectId;
   const publicDir = runtime.publicDir;
-  const storageRoot = await createStorageRoot();
+  const { storageRoot, clear } = await createSimulatorStorage(
+    permission,
+    platform
+  );
   const storage = createStorage(storageRoot);
   const fieldValue = createFakeFieldValue();
   /** @type {SimulatorTrigger[]} */
@@ -589,7 +580,7 @@ async function buildSimulatorState(runtime, effects) {
     setFirestoreDocument,
     runtime.consoleObj
   );
-  const env = process.env;
+  const env = platform.env;
   const search = createObjectMinuteRentalSearch({
     runnerCommitmentsRepository: createBrowserRunnerCommitmentsRepository(),
     runnerId: env.SEARCH_RUNNER_ID ?? DEFAULT_RUNNER_ID,
@@ -659,7 +650,7 @@ async function buildSimulatorState(runtime, effects) {
     getSeedManifest: createGetSeedManifest(bucketName),
     testUtils,
     verifyIdToken: authVerifiers.verifySimulatorIdToken,
-    clear: createClear(storageRoot),
+    clear,
     dispatchCommittedWrites,
     routes: createRoutes({
       submitNewStory,

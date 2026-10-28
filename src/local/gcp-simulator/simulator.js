@@ -1,3 +1,4 @@
+import { createSimulatorPlatform } from './simulator-platform.js';
 import { FakeStorage } from './fake-storage.js';
 export * from '../../core/local/gcp-simulator/simulator.js';
 import { createSimulatorHandle } from '../../core/local/gcp-simulator/simulator-entrypoint.js';
@@ -26,7 +27,7 @@ const createCreditEventEffectAdapters = db => ({
   setTransactionDocument: (permission, transaction, reference, data) => { void permission; return transaction.set(reference, data); },
 });
 
-const handle = createSimulatorHandle((_permission, options) => createSimulator(options), {
+const handle = createSimulatorHandle((permission, options) => createSimulator(permission, createSimulatorPlatform(), options), {
   createStorage: rootDir => new FakeStorage({ rootDir }),
   bindEffectBoundary, saveStorageFile, setFirestoreDocument,
   createCreditEventEffectAdapters, updateFirestoreDocument, createSubmissionBatch,
@@ -35,6 +36,8 @@ const handle = createSimulatorHandle((_permission, options) => createSimulator(o
 /** @param {Parameters<typeof handle>[0]} [options] Simulator configuration. @returns {Promise<any>} Externally bound simulator. */
 export async function createLocalGcpSimulator(options) {
   const simulator = /** @type {any} */ (await handle(options));
+  const clear = simulator.clear;
+  simulator.clear = () => bindEffectBoundary(clear);
   simulator.routes.submitNewStory = bindEffectResponder(simulator.routes.submitNewStory);
   simulator.routes.submitNewPage = bindEffectResponder(simulator.routes.submitNewPage);
   return simulator;

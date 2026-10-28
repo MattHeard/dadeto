@@ -285,3 +285,28 @@ const nativeRunnerResult: Promise<
   import('../src/core/local/gcp-simulator/playwright-runner.js').RunnerResult
 > = runNativePlaywright({ repoRoot: '/repo' });
 void nativeRunnerResult;
+
+
+// Simulator filesystem allocation and cleanup are explicit permission boundaries.
+import { createSimulatorStorage } from '../src/core/local/gcp-simulator/storage-lifecycle.js';
+import { createLocalGcpSimulator as createCoreSimulator } from '../src/core/local/gcp-simulator/simulator.js';
+import { createSimulatorPlatform } from '../src/local/gcp-simulator/simulator-platform.js';
+declare const simulatorPlatform: import('../src/core/local/gcp-simulator/simulator.js').SimulatorPlatform;
+const simulatorStorage = await createSimulatorStorage(permission, simulatorPlatform);
+simulatorStorage.clear(permission);
+// @ts-expect-error Core cleanup requires a fresh invocation permission.
+simulatorStorage.clear();
+// @ts-expect-error Allocation requires its permission before the platform.
+createSimulatorStorage(simulatorPlatform);
+createCoreSimulator(permission, simulatorPlatform);
+// @ts-expect-error The simulator requires explicit platform capabilities.
+createCoreSimulator(permission);
+// @ts-expect-error The simulator also requires its startup permission.
+createCoreSimulator(simulatorPlatform);
+const concreteSimulatorPlatform = createSimulatorPlatform();
+concreteSimulatorPlatform.createStorageRoot(permission);
+concreteSimulatorPlatform.clearStorageRoot(permission, 'test-root');
+// @ts-expect-error Native allocation requires a permission too.
+concreteSimulatorPlatform.createStorageRoot();
+// @ts-expect-error Native removal cannot receive only a root.
+concreteSimulatorPlatform.clearStorageRoot('test-root');

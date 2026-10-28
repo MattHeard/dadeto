@@ -1,6 +1,19 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { createLocalGcpSimulator } from '../../../../src/local/gcp-simulator/simulator.js';
-import { createLocalGcpSimulator as createCoreSimulator } from '../../../../src/core/local/gcp-simulator/simulator.js';
+import { createLocalGcpSimulator as createCoreSimulatorWithPlatform } from '../../../../src/core/local/gcp-simulator/simulator.js';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+
+const createCoreSimulator = options =>
+  createCoreSimulatorWithPlatform(
+    createAllowEffects(),
+    {
+      publicDir: 'virtual-public',
+      env: {},
+      createStorageRoot: jest.fn(),
+      clearStorageRoot: jest.fn(),
+    },
+    options
+  );
 
 let simulator;
 

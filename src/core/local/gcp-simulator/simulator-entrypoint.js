@@ -1,5 +1,7 @@
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
-/** @typedef {typeof import('./simulator.js').createLocalGcpSimulator} SimulatorConstructor */
+/** @typedef {typeof import('./simulator.js').createLocalGcpSimulator} CoreSimulatorConstructor */
+/** @typedef {NonNullable<Parameters<CoreSimulatorConstructor>[2]>} SimulatorOptions */
+/** @typedef {(options?: SimulatorOptions) => ReturnType<CoreSimulatorConstructor>} SimulatorConstructor */
 
 /**
  * Bind platform defaults and enter a scoped permission before constructing a simulator.

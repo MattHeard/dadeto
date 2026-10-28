@@ -63,3 +63,12 @@ Readiness protocols carried over streams need explicit framing after variable-le
 fields. Test chunk boundaries inside the field and before/inside its delimiter,
 then assert that dependent startup has not happened yet. An ordinary newline-ended
 happy path will not catch prefix acceptance.
+
+## Final CI receipt
+
+Exact ffa1488412aa67244c994cde7e93b038cc55eb28 passed
+Full Check40724876465, artifact12831794159. Downloaded report
+`/tmp/dadeto-full-check-40724876465/full-check-40724876465/coverage/check-full-report.md`:
+1,086 suites /8,410 tests all pass; all four global and runner coverage
+metrics100%, no files below thresholds. Owning child `dadeto-y3se` closes with
+this exact pushed revision plus the matching111-mutant local acceptance.
