@@ -310,3 +310,21 @@ concreteSimulatorPlatform.clearStorageRoot(permission, 'test-root');
 concreteSimulatorPlatform.createStorageRoot();
 // @ts-expect-error Native removal cannot receive only a root.
 concreteSimulatorPlatform.clearStorageRoot('test-root');
+
+
+// Simulator SDK callbacks bind one valid lifetime permission to the required UUID port.
+import { createSimulatorRandomness } from '../src/core/local/gcp-simulator/randomness.js';
+declare const simulatorUuidProvider: import('../src/core/local/gcp-simulator/randomness.js').SimulatorUuidProvider;
+createSimulatorRandomness(permission, simulatorUuidProvider);
+// @ts-expect-error A UUID provider is required; there is no native fallback.
+createSimulatorRandomness(permission);
+// @ts-expect-error Lifetime permission is required before the UUID provider.
+createSimulatorRandomness(simulatorUuidProvider);
+concreteSimulatorPlatform.randomUUID(permission);
+// @ts-expect-error The native UUID provider also requires its permission.
+concreteSimulatorPlatform.randomUUID();
+// @ts-expect-error UUID generation rejects a forged empty permission.
+concreteSimulatorPlatform.randomUUID({});
+declare const simulatorWithoutUuid: Omit<typeof simulatorPlatform, 'randomUUID'>;
+// @ts-expect-error Platform construction cannot silently omit UUID generation.
+createCoreSimulator(permission, simulatorWithoutUuid);

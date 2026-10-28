@@ -18,6 +18,7 @@ function fixture() {
   }));
   const platform = {
     publicDir: 'virtual-default-public',
+    randomUUID: jest.fn(() => 'abcdef01-2345-4678-8123-456789abcdef'),
     env: Object.freeze({
       SEARCH_RUNNER_ID: 'virtual-runner',
       SEARCH_ALLOWED_ORIGINS: ' https://one.example, ,https://two.example ',
@@ -83,4 +84,26 @@ test('preserves explicit public directories including empty string', async () =>
     expect(simulator.publicDir).toBe(publicDir);
     await simulator.clear(permission);
   }
+});
+
+test('author UUID creation uses the explicit lifetime provider once and preserves the stored UUID on repeat', async () => {
+  const f = fixture();
+  const permission = createAllowEffects();
+  const simulator = await createLocalGcpSimulator(
+    permission,
+    f.platform,
+    f.options
+  );
+  expect(f.platform.randomUUID).not.toHaveBeenCalled();
+  const request = { headers: { authorization: 'Bearer local-admin-token' } };
+  await expect(simulator.routes.getAuthorUuid(request)).resolves.toEqual({
+    status: 200,
+    body: { uuid: 'abcdef01-2345-4678-8123-456789abcdef' },
+  });
+  await expect(simulator.routes.getAuthorUuid(request)).resolves.toEqual({
+    status: 200,
+    body: { uuid: 'abcdef01-2345-4678-8123-456789abcdef' },
+  });
+  expect(f.platform.randomUUID.mock.calls).toEqual([[permission]]);
+  await simulator.clear(permission);
 });

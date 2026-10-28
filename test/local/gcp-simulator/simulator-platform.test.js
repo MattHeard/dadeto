@@ -4,6 +4,8 @@ import { createAllowEffects } from '../../../src/cloud/allow-effects.js';
 
 const mkdtemp = jest.fn(async () => 'native-temp-root');
 const rm = jest.fn(async () => {});
+const randomUUID = jest.fn(() => 'abcdef01-2345-4678-8123-456789abcdef');
+await jest.unstable_mockModule('node:crypto', () => ({ randomUUID }));
 await jest.unstable_mockModule('node:fs/promises', () => ({ mkdtemp, rm }));
 await jest.unstable_mockModule('node:os', () => ({
   default: { tmpdir: () => 'native-temp' },
@@ -15,6 +17,7 @@ const { createSimulatorPlatform } = await import(
 beforeEach(() => {
   mkdtemp.mockClear();
   rm.mockClear();
+  randomUUID.mockClear();
 });
 
 test('captures default public path and an independent environment snapshot without allocating', () => {
@@ -31,6 +34,7 @@ test('captures default public path and an independent environment snapshot witho
     expect(first.env).not.toBe(second.env);
     expect(mkdtemp).not.toHaveBeenCalled();
     expect(rm).not.toHaveBeenCalled();
+    expect(randomUUID).not.toHaveBeenCalled();
   } finally {
     if (previous === undefined) delete process.env.SEARCH_RUNNER_ID;
     else process.env.SEARCH_RUNNER_ID = previous;
@@ -76,4 +80,19 @@ test('preserves filesystem allocation and cleanup failures', async () => {
   await expect(
     platform.clearStorageRoot(permission, 'failed-root')
   ).rejects.toBe(clearFailure);
+});
+
+test('UUID capability delegates lazily to native crypto and preserves failures', () => {
+  const platform = createSimulatorPlatform();
+  const permission = createAllowEffects();
+  expect(randomUUID).not.toHaveBeenCalled();
+  expect(platform.randomUUID(permission)).toBe(
+    'abcdef01-2345-4678-8123-456789abcdef'
+  );
+  expect(randomUUID.mock.calls).toEqual([[]]);
+  const failure = new Error('native UUID unavailable');
+  randomUUID.mockImplementationOnce(() => {
+    throw failure;
+  });
+  expect(() => platform.randomUUID(permission)).toThrow(failure);
 });

@@ -75,3 +75,12 @@ Expose filesystem allocation and cleanup as separate permission-first capabiliti
 Test the startup and cleanup tokens independently; forwarding a startup token to a
 later cleanup call can pass an ordinary happy-path resource test. Keep the native
 external API stable by binding each invocation at the facade.
+
+## Final CI receipt
+
+Exact f94a04b6478003639ec03fc41529cdbf82fbffb1 passed Full Check40766222038,
+artifact12849134969. Downloaded report
+`/tmp/dadeto-full-check-40766222038/full-check-40766222038/coverage/check-full-report.md`
+confirms1,090 suites /8,421 tests pass, all four global and all three changed
+core-module coverage metrics100%, no files below thresholds. Child `dadeto-7mqr`
+closes on this exact revision plus the matching local/new-module mutation evidence.

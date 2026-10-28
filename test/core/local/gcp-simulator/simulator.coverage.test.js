@@ -8,6 +8,7 @@ const createCoreSimulator = options =>
     createAllowEffects(),
     {
       publicDir: 'virtual-public',
+      randomUUID: jest.fn(() => 'abcdef01-2345-4678-8123-456789abcdef'),
       env: {},
       createStorageRoot: jest.fn(),
       clearStorageRoot: jest.fn(),

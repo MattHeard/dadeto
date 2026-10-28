@@ -1,7 +1,7 @@
 // Stryker disable all -- this module is the fixed local GCP simulator
 // lifecycle and route orchestration boundary covered by focused suites.
 import { createSimulatorStorage } from './storage-lifecycle.js';
-import { randomUUID } from 'node:crypto';
+import { createSimulatorRandomness } from './randomness.js';
 import { ADMIN_UID } from '../../commonCore.js';
 import { createFakeFieldValue, createFakeFirestore } from './fake-firestore.js';
 import { createProcessNewStoryHandler } from '../../process-new-story-core.js';
@@ -61,7 +61,7 @@ const SECOND_VARIANT_NAME = 'a';
 const LOCAL_ID_TOKEN = 'local-admin-token';
 
 /** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
-/** @typedef {import('./storage-lifecycle.js').StorageLifecyclePlatform & {publicDir: string, env: Record<string, string | undefined>}} SimulatorPlatform */
+/** @typedef {import('./storage-lifecycle.js').StorageLifecyclePlatform & {publicDir: string, env: Record<string, string | undefined>, randomUUID: import('./randomness.js').SimulatorUuidProvider}} SimulatorPlatform */
 /** @typedef {import('./fake-storage.js').StorageClient<Uint8Array>} SimulatorStorage */
 /** @typedef {ReturnType<typeof createFakeFirestore>} SimulatorDb */
 /** @typedef {Parameters<typeof createApplyCreditEvent>[1]} CreditEventEffects */
@@ -74,8 +74,8 @@ const LOCAL_ID_TOKEN = 'local-admin-token';
 /** @typedef {{ path: string, before?: unknown, after?: unknown }} CommittedRecord */
 /** @typedef {{ pathPattern: string, eventName: 'onCreate' | 'onWrite', handler: (...args: any[]) => any }} SimulatorTrigger */
 /** @typedef {{ doc: { ref: { path: string }, data?: () => unknown }, createdAt: number, rand: number, path: string }} ModerationCandidate */
-/** @typedef {{ db: unknown, storage: { bucket: (name: string) => { file: (path: string) => { save: (contents: string, options: object) => Promise<unknown> } } }, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} GenerateStatsSimulatorOptions */
-/** @typedef {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} SimulatorTestUtilsOptions */
+/** @typedef {{ randomUUID: () => string, db: unknown, storage: { bucket: (name: string) => { file: (path: string) => { save: (contents: string, options: object) => Promise<unknown> } } }, fetchFn: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary, projectId: string, baseUrl: string, bucketName: string, verifyIdToken: (...args: any[]) => any }} GenerateStatsSimulatorOptions */
+/** @typedef {{ snapshotHelpers: ReturnType<typeof createSnapshotHelpers>, lookupHelpers: ReturnType<typeof createLookupHelpers>, authVerifiers: ReturnType<typeof createSimulatorAuthVerifiers>, fieldValue: ReturnType<typeof createFakeFieldValue>, db: SimulatorDb, randomUUID: () => string, createRandomSource: () => () => number, logGenerateStatsError: (permission: import('../../../../types/allow-effects').AllowEffects, logger: { error?: (...args: unknown[]) => void }, ...args: unknown[]) => void }} SimulatorTestUtilsOptions */
 /** @typedef {{ processNewStory: (permission: import('../../../../types/allow-effects').AllowEffects, ...args: any[]) => any, processNewPage: (...args: any[]) => any, renderContents: (...args: any[]) => any, renderVariant: (...args: any[]) => any, handleVariantWrite: (...args: any[]) => any, bindEffectBoundary: import('../../../../types/allow-effects').AllowEffectsBoundary }} SimulatorTriggerHandlers */
 /**
  * @typedef {object} SimulatorDocumentReference
@@ -421,6 +421,10 @@ async function buildSimulatorState(permission, platform, runtime, effects) {
   const bucketName = runtime.bucketName;
   const projectId = runtime.projectId;
   const publicDir = runtime.publicDir;
+  const { randomUUID, createRandomSource } = createSimulatorRandomness(
+    permission,
+    platform.randomUUID
+  );
   const { storageRoot, clear } = await createSimulatorStorage(
     permission,
     platform
@@ -441,15 +445,7 @@ async function buildSimulatorState(permission, platform, runtime, effects) {
   });
   const db = createDb(dispatchCommittedWrites);
   dbContext.db = db;
-  const localFetch = createLocalFetchStub();
-  const fetchFn = (
-    /** @type {import('../../../../types/allow-effects').AllowEffects} */ permission,
-    /** @type {string} */ input,
-    /** @type {object | undefined} */ init
-  ) => {
-    void permission;
-    return localFetch(input, init);
-  };
+  const fetchFn = createSimulatorFetch();
   /** @type {Parameters<typeof createRenderContents>[0]['saveRenderedPage']} */
   const saveRenderedPage = (permission, filePath, content, options) => {
     void permission;
@@ -508,6 +504,7 @@ async function buildSimulatorState(permission, platform, runtime, effects) {
 
   const authVerifiers = createSimulatorAuthVerifiers();
   const generateStatsConfig = createGenerateStatsConfig({
+    randomUUID,
     db,
     storage,
     fetchFn,
@@ -545,10 +542,10 @@ async function buildSimulatorState(permission, platform, runtime, effects) {
   );
   const lookupHelpers = createLookupHelpers(db);
   const submitNewPageConfig = createSubmitNewPageConfig({
+    randomUUID,
     verifyIdToken: authVerifiers.verifySubmitNewPageIdToken,
     db,
-    findExistingOptionPath: lookupHelpers.findExistingOptionPath,
-    findExistingPagePath: lookupHelpers.findExistingPagePath,
+    lookupHelpers,
   });
   const submitNewPage = createHandleSubmit(
     /** @type {Parameters<typeof createHandleSubmit>[0]} */ (
@@ -557,6 +554,7 @@ async function buildSimulatorState(permission, platform, runtime, effects) {
   );
 
   const submitNewStoryConfig = createSubmitNewStoryConfig({
+    randomUUID,
     verifyIdToken: authVerifiers.verifySubmitNewStoryIdToken,
     db,
   });
@@ -607,6 +605,7 @@ async function buildSimulatorState(permission, platform, runtime, effects) {
       runSearchHttp(searchHttp, permission, request)
     );
   const testUtils = createSimulatorTestUtils({
+    createRandomSource,
     snapshotHelpers,
     lookupHelpers,
     authVerifiers,
@@ -884,7 +883,7 @@ function createGenerateStatsConfig(options) {
       PLAYWRIGHT_ORIGIN: options.baseUrl,
       STATIC_BUCKET_NAME: options.bucketName,
     },
-    cryptoModule: { randomUUID },
+    cryptoModule: { randomUUID: options.randomUUID },
     console,
   };
 }
@@ -961,12 +960,11 @@ async function findExistingOptionPath(db, option) {
 
 /**
  * Create submit-new-page dependencies for the simulator.
- * @param {{ verifyIdToken: (token: string | undefined) => Promise<{uid: string | null, token?: string}>, db: SimulatorDb, findExistingOptionPath: (option: unknown) => Promise<string | null>, findExistingPagePath: (pageNumber: number) => Promise<string | null> }} options Dependencies.
+ * @param {{ randomUUID: () => string, verifyIdToken: (token: string | undefined) => Promise<{uid: string | null, token?: string}>, db: SimulatorDb, lookupHelpers: ReturnType<typeof createLookupHelpers> }} options Dependencies.
  * @returns {object} Submit-new-page config.
  */
 function createSubmitNewPageConfig(options) {
-  const { verifyIdToken, db, findExistingOptionPath, findExistingPagePath } =
-    options;
+  const { randomUUID, verifyIdToken, db, lookupHelpers } = options;
   return {
     verifyIdToken,
     randomUUID,
@@ -977,20 +975,18 @@ function createSubmitNewPageConfig(options) {
     ) => db.collection('pageFormSubmissions').doc(id).set(submission),
     serverTimestamp: () => new Date(),
     parseIncomingOption,
-    findExistingOption: (/** @type {unknown} */ option) =>
-      findExistingOptionPath(option),
-    findExistingPage: (/** @type {number} */ pageNumber) =>
-      findExistingPagePath(pageNumber),
+    findExistingOption: lookupHelpers.findExistingOptionPath,
+    findExistingPage: lookupHelpers.findExistingPagePath,
   };
 }
 
 /**
  * Create submit-new-story dependencies for the simulator.
- * @param {{ verifyIdToken: (token: string | undefined) => Promise<{uid: string | null, token?: string}>, db: SimulatorDb }} options Dependencies.
+ * @param {{ randomUUID: () => string, verifyIdToken: (token: string | undefined) => Promise<{uid: string | null, token?: string}>, db: SimulatorDb }} options Dependencies.
  * @returns {object} Submit-new-story config.
  */
 function createSubmitNewStoryConfig(options) {
-  const { verifyIdToken, db } = options;
+  const { randomUUID, verifyIdToken, db } = options;
   return {
     verifyIdToken,
     saveSubmission: (
@@ -1025,7 +1021,7 @@ function createSimulatorTestUtils(options) {
       overrideDb = null
     ) => handleMarkVariantDirty({ db: overrideDb ?? options.db }, request),
     createLocalFetchStub,
-    createRandomSource,
+    createRandomSource: options.createRandomSource,
     generateStatsVerifyIdToken: options.authVerifiers.verifyStatsIdToken,
     submitNewPageVerifyIdToken:
       options.authVerifiers.verifySubmitNewPageIdToken,
@@ -1793,6 +1789,18 @@ function resolveUid(request) {
 }
 
 /**
+ * Compose the local fetch response stub behind its permission-first port.
+ * @returns {(permission: AllowEffects, input: string, init?: object) => ReturnType<ReturnType<typeof createLocalFetchStub>>} Simulator fetch capability.
+ */
+function createSimulatorFetch() {
+  const localFetch = createLocalFetchStub();
+  return (permission, input, init) => {
+    void permission;
+    return localFetch(input, init);
+  };
+}
+
+/**
  * Create a local fetch stub for the simulator.
  * @returns {(input: string, init?: object) => Promise<{ ok: boolean, status: number, json: () => Promise<{ access_token: string }>, text: () => Promise<string> }>} Fetch stub.
  */
@@ -1813,18 +1821,6 @@ function createLocalFetchStub() {
       },
       text: async () => '',
     };
-  };
-}
-
-/**
- * Create a local random source without calling Math.random directly.
- * @returns {() => number} Random number generator.
- */
-function createRandomSource() {
-  return () => {
-    const sample = randomUUID().replace(/-/g, '').slice(0, 8);
-    const value = Number.parseInt(sample, 16);
-    return value / 0xffffffff;
   };
 }
 

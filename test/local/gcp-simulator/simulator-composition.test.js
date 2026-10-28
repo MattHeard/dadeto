@@ -21,6 +21,7 @@ await jest.unstable_mockModule(
 );
 const platform = {
   publicDir: 'native-default',
+  randomUUID: jest.fn(),
   env: {},
   createStorageRoot: jest.fn(),
   clearStorageRoot: jest.fn(),

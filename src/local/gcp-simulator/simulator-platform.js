@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -12,6 +13,11 @@ const clearStorageRoot = (permission, storageRoot) => {
   void permission;
   return rm(storageRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 });
 };
+/** @param {import('../../../types/allow-effects').AllowEffects} permission @returns {string} */
+const generateUuid = permission => {
+  void permission;
+  return randomUUID();
+};
 /** Capture native host metadata inside the simulator startup boundary.
  * @returns {import('../../core/local/gcp-simulator/simulator.js').SimulatorPlatform} Native configuration and filesystem capabilities.
  */
@@ -21,5 +27,6 @@ export function createSimulatorPlatform() {
     env: { ...process.env },
     createStorageRoot,
     clearStorageRoot,
+    randomUUID: generateUuid,
   };
 }

@@ -5,6 +5,7 @@ import { createLocalGcpSimulator } from '../../../../src/core/local/gcp-simulato
 const createStorageRoot = jest.fn(async () => '/controlled-storage-root');
 const platform = {
   publicDir: 'virtual-public',
+  randomUUID: jest.fn(() => 'abcdef01-2345-4678-8123-456789abcdef'),
   env: {},
   createStorageRoot,
   clearStorageRoot: jest.fn(),
