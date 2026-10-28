@@ -1,6 +1,8 @@
 import { createGeneratorHandle } from '../../src/core/build/generator.js';
 
-const handle = createGeneratorHandle();
+const handle = createGeneratorHandle({
+  renderStaticJsonlTable: () => '<table></table>',
+});
 
 describe('generator runtime handle', () => {
   it('applies option defaults without overwriting explicit values', () => {

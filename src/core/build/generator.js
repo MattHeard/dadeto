@@ -10,7 +10,7 @@ import {
   join,
   attrName,
 } from './html.js';
-import { renderStaticJsonlTable } from './staticJsonlTable.js';
+/** @typedef {ReturnType<typeof import('./staticJsonlTable.js').createStaticJsonlTable>['renderStaticJsonlTable']} TableRenderer */
 
 /**
  * Wrap a string or array of strings in paragraph tags.
@@ -388,10 +388,11 @@ function createManualToggleScript(manualId) {
 /**
  * Convert a blog post object to an article HTML string.
  * @param {object} post - Blog post data.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} HTML article.
  */
-function convertPostToArticleHTML(post) {
-  return generateArticle(post);
+function convertPostToArticleHTML(post, renderTable) {
+  return generateArticle(post, renderTable);
 }
 
 /**
@@ -406,10 +407,14 @@ function formatArticleHTML(articleHTML) {
 /**
  * Convert an array of posts to concatenated article HTML.
  * @param {object[]} posts - Array of post objects.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Combined HTML for all posts.
  */
-function processPostsToHTML(posts) {
-  return posts.map(convertPostToArticleHTML).map(formatArticleHTML).join('');
+function processPostsToHTML(posts, renderTable) {
+  return posts
+    .map(post => convertPostToArticleHTML(post, renderTable))
+    .map(formatArticleHTML)
+    .join('');
 }
 
 /**
@@ -432,10 +437,14 @@ function sortPostsByPublicationDateDescending(posts) {
 /**
  * Generate HTML for all articles in the blog.
  * @param {object[]} posts - Array of post objects.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Combined article HTML.
  */
-function generateArticles(posts) {
-  return processPostsToHTML(sortPostsByPublicationDateDescending(posts));
+function generateArticles(posts, renderTable) {
+  return processPostsToHTML(
+    sortPostsByPublicationDateDescending(posts),
+    renderTable
+  );
 }
 
 /**
@@ -496,10 +505,11 @@ function formatArticleContent(content) {
 /**
  * Create an <article> element string from a blog post object.
  * @param {object} post - Blog post data.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Article HTML.
  */
-function generateArticle(post) {
-  const content = generateArticleContent(post);
+function generateArticle(post, renderTable) {
+  const content = generateArticleContent(post, renderTable);
   const formattedContent = formatArticleContent(content);
   const attributes = createArticleAttributes(post);
   return createTag(ARTICLE_TAG_NAME, attributes, formattedContent);
@@ -711,9 +721,10 @@ function createContentSectionItem(content, isFirst) {
  * @param {object} entry - Normalized body entry.
  * @param {boolean} isFirstText - Whether this is the first text-like entry.
  * @param {object} post - Blog post.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Rendered HTML.
  */
-function renderBodyEntry(entry, isFirstText, post) {
+function renderBodyEntry(entry, isFirstText, post, renderTable) {
   if (
     entry.type === 'text' ||
     entry.type === 'quote' ||
@@ -734,7 +745,7 @@ function renderBodyEntry(entry, isFirstText, post) {
       throw new TypeError('Links body entry must contain a non-empty array');
     return renderLinksEntry(entry);
   }
-  if (entry.type === 'table') return renderStaticJsonlTable(entry);
+  if (entry.type === 'table') return renderTable(entry);
   throw new Error(
     `Unknown post body entry type: ${entry.type}; renderer is not a function`
   );
@@ -743,15 +754,16 @@ function renderBodyEntry(entry, isFirstText, post) {
 /**
  * Generate the HTML sections for all content items in a post.
  * @param {object} post - The blog post.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} HTML for the content sections.
  */
-function generateContentSections(post) {
+function generateContentSections(post, renderTable) {
   let hasContent = false;
   const contentItems = normalizePostBody(post).map(entry => {
     const isContentEntry = ['text', 'quote', 'manual'].includes(entry.type);
     const isFirstContent = isContentEntry && !hasContent;
     if (isContentEntry) hasContent = true;
-    return renderBodyEntry(entry, isFirstContent, post);
+    return renderBodyEntry(entry, isFirstContent, post, renderTable);
   });
   return join(contentItems);
 }
@@ -1279,11 +1291,12 @@ function generateToyScriptSection(post) {
 /**
  * Get all sections for a blog post article.
  * @param {object} post - The blog post.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string[]} - An array of HTML sections.
  */
-function getArticleSections(post) {
+function getArticleSections(post, renderTable) {
   const headerSection = generateHeaderSection(post);
-  const contentSection = generateContentSections(post);
+  const contentSection = generateContentSections(post, renderTable);
   const toyScriptSection = generateToyScriptSection(post);
   return [headerSection, contentSection, toyScriptSection];
 }
@@ -1291,10 +1304,11 @@ function getArticleSections(post) {
 /**
  * Generate the HTML content for a single blog post.
  * @param {object} post - The blog post.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} HTML for the article.
  */
-function generateArticleContent(post) {
-  return join(getArticleSections(post));
+function generateArticleContent(post, renderTable) {
+  return join(getArticleSections(post, renderTable));
 }
 
 /**
@@ -1314,10 +1328,11 @@ function getBlogHtmlContent(header, articles, footer) {
 /**
  * Retrieve the HTML for all articles from the blog.
  * @param {object} blog - The blog object.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} - Combined HTML for all articles.
  */
-function getArticles(blog) {
-  return generateArticles(blog.posts);
+function getArticles(blog, renderTable) {
+  return generateArticles(blog.posts, renderTable);
 }
 
 /**
@@ -1325,23 +1340,25 @@ function getArticles(blog) {
  * @param {string} header - The header HTML.
  * @param {object} blog - The blog object.
  * @param {string} footer - The footer HTML.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} - The combined HTML content.
  */
-function assembleBlogHTML(header, blog, footer) {
-  const articles = getArticles(blog);
+function assembleBlogHTML(header, blog, footer, renderTable) {
+  const articles = getArticles(blog, renderTable);
   return getBlogHtmlContent(header, articles, footer);
 }
 
 /**
- * Generate the complete blog HTML.
- * @param {{blog: object, header: string, footer: string}} parts - Blog pieces.
- * @param {(content: string) => string} wrapHtml - Wrapper function for the final HTML.
- * @returns {string} Full blog HTML.
+ * Bind the table renderer before generating complete blog HTML.
+ * @param {TableRenderer} renderTable Injected static table renderer.
+ * @returns {(parts: {blog: object, header: string, footer: string}, wrapHtml: (content: string) => string) => string} Blog renderer.
  */
-export function generateBlog(parts, wrapHtml) {
-  const { blog, header, footer } = parts;
-  const htmlContents = assembleBlogHTML(header, blog, footer);
-  return wrapHtml(htmlContents);
+function createBlogRenderer(renderTable) {
+  return (parts, wrapHtml) => {
+    const { blog, header, footer } = parts;
+    const htmlContents = assembleBlogHTML(header, blog, footer, renderTable);
+    return wrapHtml(htmlContents);
+  };
 }
 
 const createBlogComponents = () => ({
@@ -1363,35 +1380,37 @@ export function getBlogGenerationArgs() {
 /**
  * Convenience wrapper to generate a blog from a blog object.
  * @param {object} blog - Blog data object.
+ * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Complete blog HTML.
  */
-export const generateBlogOuter = blog => {
+export const generateBlogOuter = (blog, renderTable) => {
   const { header, footer, wrapFunc } = getBlogGenerationArgs();
-  return generateBlog({ blog, header, footer }, wrapFunc);
+  return createBlogRenderer(renderTable)({ blog, header, footer }, wrapFunc);
 };
 
 /**
  * Create the generator wrapper handle.
+ * @param {{renderStaticJsonlTable: TableRenderer}} dependencies Static table renderer.
  * @returns {{
  *   defaultKeyExtraClasses: typeof defaultKeyExtraClasses,
  *   createIdAttributeIfNeeded: typeof createIdAttributeIfNeeded,
  *   getSelectedMethod: typeof getSelectedMethod,
  *   getDefaultInputMethod: typeof getDefaultInputMethod,
  *   getDefaultOutputMethod: typeof getDefaultOutputMethod,
- *   generateBlog: typeof generateBlog,
+ *   generateBlog: ReturnType<typeof createBlogRenderer>,
  *   getBlogGenerationArgs: typeof getBlogGenerationArgs,
- *   generateBlogOuter: typeof generateBlogOuter
+ *   generateBlogOuter: (blog: object) => string
  * }} Generator exports.
  */
-export function createGeneratorHandle() {
+export function createGeneratorHandle({ renderStaticJsonlTable }) {
   return {
     defaultKeyExtraClasses,
     createIdAttributeIfNeeded,
     getSelectedMethod,
     getDefaultInputMethod,
     getDefaultOutputMethod,
-    generateBlog,
+    generateBlog: createBlogRenderer(renderStaticJsonlTable),
     getBlogGenerationArgs,
-    generateBlogOuter,
+    generateBlogOuter: blog => generateBlogOuter(blog, renderStaticJsonlTable),
   };
 }

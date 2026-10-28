@@ -5,7 +5,7 @@ import { generateBlogOuter } from '../../src/build/generator.js';
 import {
   parseStaticJsonlTable,
   renderStaticJsonlTable,
-} from '../../src/core/build/staticJsonlTable.js';
+} from '../../src/build/staticJsonlTable.js';
 
 /**
  * Create an isolated JSONL fixture directory.

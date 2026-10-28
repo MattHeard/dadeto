@@ -71,3 +71,14 @@ The existing legacy simulator blanket mutation directive and native lifecycle
 imports remain parent prerequisites; the new entrypoint and storage factory are
 fully mutated. Observable native-import enforcement, trusted boundary parsing,
 namespace preflight and actual migration remain unfinished.
+
+## Exact CI receipt
+
+Full Check [40664346982](https://github.com/MattHeard/dadeto/actions/runs/40664346982)
+succeeded at `396f9a19baf4f6fba11ee0cfad7d3d8ddd8168d0`. Artifact
+`12805293659` / `full-check-40664346982` confirms 1,078 suites / 8,328 tests
+all passed and 100% across all four global coverage measures and each of the three
+changed core modules. No files are below thresholds. Downloaded report:
+`/tmp/dadeto-full-check-40664346982/coverage/check-full-report.md`.
+Combined with the exact-source 23/23 mutation and local/build evidence, this closes
+`dadeto-plm8`. The parent/spec remains unfinished.

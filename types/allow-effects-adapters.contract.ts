@@ -168,3 +168,20 @@ simulatorConstructor({});
 simulatorConstructor({}, {});
 // @ts-expect-error A scoped runtime boundary is required when composing startup.
 createSimulatorHandle(simulatorConstructor, {});
+
+// Build table source capabilities are required; no ambient filesystem defaults.
+import { createStaticJsonlTable } from '../src/core/build/staticJsonlTable.js';
+const portableTables = createStaticJsonlTable({
+  fileSystem: { readFileSync: () => '{"score":1}' },
+  paths: { resolve: (...parts) => parts.join('|'), isAbsolute: () => false },
+  defaultDataRoot: 'catalog',
+});
+const portableTableHtml: string = portableTables.renderStaticJsonlTable({
+  source: 'rows.jsonl',
+  columns: ['score'],
+});
+void portableTableHtml;
+// @ts-expect-error No implicit host filesystem or root.
+createStaticJsonlTable();
+// @ts-expect-error Every source capability and default root is required.
+createStaticJsonlTable({ fileSystem: { readFileSync: () => '' } });
