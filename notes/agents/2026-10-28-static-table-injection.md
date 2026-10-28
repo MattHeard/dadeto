@@ -103,3 +103,33 @@ billing-runtime-core(1), simulator/playwright-runner(3), simulator/server(2),
 simulator/simulator(4). Legacy generator type-check exclusion (`dadeto-xyth`),
 existing broad mutation directives, observable prohibition and migration remain
 explicit parent prerequisites.
+
+## Terminal hardening receipts
+
+The complete final-source mutation gate exits 0 at 100%: **157/157 Killed**,
+all two static mutants evaluated, zero survivors/timeouts/runtime errors/ignored
+or uncovered. The report embeds the exact source SHA-256
+`b825410492716207dbc8d94a22933317fc49f9e00ce61b785346f2a00491eab7`.
+Report `reports/mutation/static-table.json`, summary
+`reports/mutation/static-table-summary.json`, terminal log
+`/tmp/dadeto-xr8f-hardening-mutation.log`. The count fell after removing a duplicate
+type-membership check, without changing accepted values or suppressing mutants.
+
+Hardening `feddea620cf3a39286ee9b85ddd45a850de18ff3` is pushed. Its exact
+[Full Check40703452379](https://github.com/MattHeard/dadeto/actions/runs/40703452379)
+succeeded. Artifact `12824290060` / `full-check-40703452379` confirms
+1,080 suites / **8,350 tests** all pass, all four global and table coverage
+metrics 100%, no files below thresholds. Downloaded report
+`/tmp/dadeto-full-check-40703452379/coverage/check-full-report.md`.
+Injection40702371651 also succeeded but is separate from this exact hardening
+acceptance. The owning child `dadeto-xr8f` is closed; the overall architecture
+spec and generator-typing prerequisite remain unfinished.
+
+The completed mutation scratch copy was later found by Jest's manifest crawler
+and produced duplicate package-name warnings. After checking the final report
+and terminal log, only `reports/tmp/static-table/dadeto-static-table-stryker` was
+removed; reports/logs/shared caches were preserved. Future task scratch should
+use an explicit directory outside the checkout, such as
+`/home/matt/.cache/dadeto-task-tmp/billing-uuid`, on the normal filesystem.
+No Jest/source exclusion was added. The separate generated Cloud Function
+manifest warning remains tracked in `dadeto-5wxt`.

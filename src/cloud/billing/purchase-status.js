@@ -1,6 +1,6 @@
 import { getAuth } from 'firebase-admin/auth';
 import { Firestore } from '../get-api-key-credit-v2/get-api-key-credit-v2-gcf.js';
-import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
+import { createBillingRuntime } from './runtime-adapter.js';
 import { createPurchaseStatusHandler } from '../../core/cloud/billing/purchase-status-core.js';
 import { createBillingTransactionRunner } from './transaction-effect-adapter.js';
 

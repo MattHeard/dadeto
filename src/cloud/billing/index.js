@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { getAuth } from 'firebase-admin/auth';
 import { Firestore } from '../get-api-key-credit-v2/get-api-key-credit-v2-gcf.js';
-import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
+import { createBillingRuntime } from './runtime-adapter.js';
 import { createBillingRefundRequestHandler } from '../../core/cloud/billing/refund-request-core.js';
 import { createBillingTransactionRunner } from './transaction-effect-adapter.js';
 import { createPublicBillingOffersHandler } from '../../core/cloud/billing/public-offers-core.js';

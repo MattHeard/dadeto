@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { getAuth } from 'firebase-admin/auth';
-import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
+import { createBillingRuntime } from '../billing/runtime-adapter.js';
 import {
   createOpenAIChatHandler,
   createOpenAIChatModelClient,

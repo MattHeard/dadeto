@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { createBillingPurchaseId } from '../billing/runtime-adapter.js';
 import { Firestore } from '../get-api-key-credit-v2/get-api-key-credit-v2-gcf.js';
 import { createPaymentWebhookIndexHandler } from '../../core/cloud/payment-webhook/payment-webhook-core.js';
 import {
@@ -24,6 +25,7 @@ const db = createEffectStartupBoundary(allowEffects =>
 );
 const handlePaymentWebhook = createPaymentWebhookIndexHandler({
   db,
+  randomUUID: createBillingPurchaseId,
   env: process.env,
   constructEvent: (payload, signature, secret) =>
     stripe.webhooks.constructEvent(payload, signature, secret),

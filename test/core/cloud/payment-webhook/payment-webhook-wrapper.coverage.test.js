@@ -8,6 +8,7 @@ import {
 const allowEffects = createAllowEffects();
 
 let mockBilling;
+const mockCreateBillingRuntime = jest.fn(() => mockBilling);
 const mockCreatePaymentWebhookHandler = jest.fn();
 const mockDomainHandler = jest.fn(async (_allowEffects, request) => ({
   status: 200,
@@ -17,7 +18,7 @@ const mockDomainHandler = jest.fn(async (_allowEffects, request) => ({
 await jest.unstable_mockModule(
   '../../../../src/core/cloud/billing/billing-runtime-core.js',
   () => ({
-    createBillingRuntime: () => mockBilling,
+    createBillingRuntime: mockCreateBillingRuntime,
   })
 );
 await jest.unstable_mockModule(
@@ -144,14 +145,20 @@ describe('payment webhook cloud wrapper', () => {
 describe('payment webhook cloud wrapper validation', () => {
   it('requires an injected database instead of constructing one implicitly', () => {
     expect(() =>
-      createPaymentWebhookIndexHandler(/** @type {any} */ ({}))
+      createPaymentWebhookIndexHandler(
+        /** @type {any} */ ({ randomUUID: () => 'generated-id' })
+      )
     ).toThrow('db must be provided');
   });
 
   it('requires an injected refund reconciliation writer', () => {
     expect(() =>
       createPaymentWebhookIndexHandler(
-        /** @type {any} */ ({ db: {}, writeRefundReconciliation: undefined })
+        /** @type {any} */ ({
+          randomUUID: () => 'generated-id',
+          db: {},
+          writeRefundReconciliation: undefined,
+        })
       )
     ).toThrow('writeRefundReconciliation must be provided');
   });
@@ -160,6 +167,7 @@ describe('payment webhook cloud wrapper validation', () => {
     expect(() =>
       createPaymentWebhookIndexHandler(
         /** @type {any} */ ({
+          randomUUID: () => 'generated-id',
           db: {},
           writeRefundReconciliation: jest.fn(),
           runBillingTransaction: undefined,
@@ -172,6 +180,7 @@ describe('payment webhook cloud wrapper validation', () => {
     expect(() =>
       createPaymentWebhookIndexHandler(
         /** @type {any} */ ({
+          randomUUID: () => 'generated-id',
           db: {},
           writeRefundReconciliation: jest.fn(),
           runBillingTransaction: jest.fn(),
@@ -287,7 +296,9 @@ async function runScenario135Part0(context) {
     send: jest.fn(),
     set: jest.fn(),
   };
+  context.randomUUID = jest.fn(() => 'webhook-generated-id');
   context.handle = createPaymentWebhookIndexHandler({
+    randomUUID: context.randomUUID,
     db: context.db,
     writeRefundReconciliation: jest.fn(async () => {}),
     runBillingTransaction: jest.fn(async (_permission, update) => update({})),
@@ -300,8 +311,14 @@ async function runScenario135Part0(context) {
     sendResponse: sendPaymentWebhookResponse,
     logError: logPaymentWebhookError,
   });
+  expect(mockCreateBillingRuntime).toHaveBeenCalledWith(
+    context.db,
+    expect.objectContaining({ randomUUID: context.randomUUID })
+  );
+  expect(context.randomUUID).not.toHaveBeenCalled();
   context.markProcessedEvent = jest.fn();
   createPaymentWebhookIndexHandler({
+    randomUUID: () => 'generated-id',
     db: context.db,
     writeRefundReconciliation: jest.fn(async () => {}),
     runBillingTransaction: jest.fn(async (_permission, update) => update({})),

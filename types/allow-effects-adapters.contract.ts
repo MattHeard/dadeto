@@ -185,3 +185,20 @@ void portableTableHtml;
 createStaticJsonlTable();
 // @ts-expect-error Every source capability and default root is required.
 createStaticJsonlTable({ fileSystem: { readFileSync: () => '' } });
+
+// Billing purchase UUID generation is an explicit permission-first capability.
+import { createBillingRuntime } from '../src/core/cloud/billing/billing-runtime-core.js';
+declare const purchaseIdProvider: Parameters<
+  typeof createBillingRuntime
+>[1]['randomUUID'];
+const purchaseId: string = purchaseIdProvider(permission);
+void purchaseId;
+// @ts-expect-error Generating an ID requires the current request permission.
+purchaseIdProvider();
+// @ts-expect-error Plain objects cannot authorize ID generation.
+purchaseIdProvider({});
+// @ts-expect-error Core billing cannot silently supply a native UUID implementation.
+createBillingRuntime({});
+// @ts-expect-error Runtime configuration requires its UUID capability.
+createBillingRuntime({}, { billingEnabled: false });
+createBillingRuntime({}, { randomUUID: purchaseIdProvider });

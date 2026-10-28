@@ -15,6 +15,7 @@ const allowEffects = createAllowEffects();
 function createHandler(db, options = {}) {
   const writeProcessedEvent = createMarkProcessedEventWriter(db);
   return createPaymentWebhookIndexHandler({
+    randomUUID: () => 'generated-id',
     db,
     env: { STRIPE_WEBHOOK_SECRET: 'secret' },
     constructEvent: payload => JSON.parse(payload.toString()),
@@ -82,6 +83,7 @@ describe('billing expiry inbox transactions', () => {
   it('keeps expiry applied across handler restart and quarantines late payment', async () => {
     const db = createFakeFirestore();
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       billingEnabled: true,
       runBillingTransaction: (_permission, update) => db.runTransaction(update),
     });

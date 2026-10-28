@@ -156,6 +156,7 @@ describe('createBillingRuntime', () => {
   it('fails closed for new operation charges and reservations by default', async () => {
     const db = createFakeFirestore();
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       runBillingTransaction: (_permission, update) => db.runTransaction(update),
     });
     const input = {
@@ -514,7 +515,9 @@ describe('billing runtime snapshot paths', () => {
       .set('scalar');
     await expect(billing.getPurchase('scalar-purchase')).resolves.toEqual({});
 
-    const defaultBilling = createBillingRuntime(db);
+    const defaultBilling = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
+    });
     await expect(
       defaultBilling.createPurchase(allowEffects, {
         apiKeyUuid: 'default-key',
@@ -1063,6 +1066,7 @@ describe('billing runtime reconciliation paths', () => {
       },
     };
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       billingEnabled: true,
       runBillingTransaction: (_permission, update) => db.runTransaction(update),
     });
@@ -1144,6 +1148,7 @@ describe('billing runtime reconciliation paths', () => {
       },
     };
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       billingEnabled: true,
       runBillingTransaction: (_permission, update) => db.runTransaction(update),
     });
@@ -1261,6 +1266,7 @@ describe('billing runtime charging paths', () => {
     const db = createFakeFirestore();
     const writeRefundReconciliation = jest.fn().mockResolvedValue(undefined);
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       now: () => new Date('2026-10-12T00:00:00.000Z'),
       writeRefundReconciliation,
     });
@@ -1290,7 +1296,9 @@ describe('billing runtime charging paths', () => {
   });
 
   it('fails closed when refund reconciliation has no persistence adapter', async () => {
-    const billing = createBillingRuntime(createFakeFirestore());
+    const billing = createBillingRuntime(createFakeFirestore(), {
+      randomUUID: () => 'generated-id',
+    });
 
     await expect(
       billing.recordRefundReconciliation(allowEffects, {
@@ -1309,6 +1317,7 @@ describe('billing runtime charging paths', () => {
       db.runTransaction(update)
     );
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       billingEnabled: true,
       runBillingTransaction,
     });
@@ -1333,7 +1342,9 @@ describe('billing runtime charging paths', () => {
   });
 
   it('fails closed when a purchase transaction runner is absent', async () => {
-    const billing = createBillingRuntime(createFakeFirestore());
+    const billing = createBillingRuntime(createFakeFirestore(), {
+      randomUUID: () => 'generated-id',
+    });
 
     await expect(
       billing.markPurchaseExpired(allowEffects, {
@@ -1348,7 +1359,10 @@ describe('billing runtime charging paths', () => {
     const runBillingTransaction = jest.fn((_permission, update) =>
       db.runTransaction(update)
     );
-    const billing = createBillingRuntime(db, { runBillingTransaction });
+    const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
+      runBillingTransaction,
+    });
 
     await expect(
       billing.resolveOperation(allowEffects, {
@@ -1373,6 +1387,7 @@ describe('billing runtime charging paths', () => {
       db.runTransaction(update)
     );
     const billing = createBillingRuntime(db, {
+      randomUUID: () => 'generated-id',
       billingEnabled: true,
       runBillingTransaction,
     });
@@ -1456,6 +1471,7 @@ describe('billing runtime confirmed refund intent events', () => {
       const db = createFakeFirestore();
       const refundIntentId = `intent-race-${suffix}`;
       const raceBilling = createBillingRuntime(db, {
+        randomUUID: () => 'generated-id',
         now: () => new Date('2026-08-05T00:00:00.000Z'),
         runBillingTransaction: async (_permission, update) => {
           await db.doc(`billing-refund-intents/${refundIntentId}`).set({

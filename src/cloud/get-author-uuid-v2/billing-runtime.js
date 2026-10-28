@@ -1,4 +1,4 @@
-import { createBillingRuntime } from '../../core/cloud/billing/billing-runtime-core.js';
+import { createBillingRuntime } from '../billing/runtime-adapter.js';
 import { createBillingTransactionRunner } from '../billing/transaction-effect-adapter.js';
 
 /**

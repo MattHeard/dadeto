@@ -6,7 +6,6 @@ import {
 } from './billing-protocol-core.js';
 import { reconcileBillingIdentity } from './reconciliation-core.js';
 import { quoteUnusedCreditRefund } from './floating-credit-core.js';
-import { randomUUID as nodeRandomUUID } from 'node:crypto';
 import {
   getApiKeyCreditDocument as creditRef,
   getApiKeyCreditEventDocument as eventRef,
@@ -281,13 +280,13 @@ async function findBillingPurchaseByCheckout(db, checkoutSessionId) {
 /**
  * Create Firestore-backed accessors for the billing domain.
  * @param {BillingRuntimeValue} db Firestore database.
- * @param {{ randomUUID?: () => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void>, runBillingTransaction?: (allowEffects: AllowEffects, update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} [runtime] Runtime helpers and permission-first persistence adapters.
+ * @param {{ randomUUID: (allowEffects: AllowEffects) => string, now?: () => Date, billingEnabled?: boolean, writeRefundReconciliation?: (allowEffects: AllowEffects, eventId: string, record: BillingDocumentData) => Promise<void>, runBillingTransaction?: (allowEffects: AllowEffects, update: (transaction: BillingRuntimeValue) => Promise<BillingResponse>) => Promise<BillingResponse> }} runtime Runtime helpers and permission-first persistence adapters.
  * @returns {BillingRuntimeService} Billing service.
  */
-export function createBillingRuntime(db, runtime = {}) {
+export function createBillingRuntime(db, runtime) {
+  const randomUUID = runtime.randomUUID;
   // Stryker disable all -- runtime helper defaults are dependency injection
   // compatibility behavior.
-  const randomUUID = runtime.randomUUID ?? nodeRandomUUID;
   const now = runtime.now ?? (() => new Date());
   const billingEnabled = runtime.billingEnabled === true;
   // Stryker restore all
@@ -375,8 +374,7 @@ export function createBillingRuntime(db, runtime = {}) {
    * @returns {Promise<BillingRuntimeValue>} Created purchase.
    */
   async function createPurchase(allowEffects, input) {
-    void allowEffects;
-    const purchaseId = input.purchaseId ?? randomUUID();
+    const purchaseId = input.purchaseId ?? randomUUID(allowEffects);
     const purchase = {
       ...input,
       purchaseId,
