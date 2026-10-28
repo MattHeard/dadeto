@@ -202,3 +202,19 @@ createBillingRuntime({});
 // @ts-expect-error Runtime configuration requires its UUID capability.
 createBillingRuntime({}, { billingEnabled: false });
 createBillingRuntime({}, { randomUUID: purchaseIdProvider });
+
+// Simulator server constructor and logger are permission-first startup ports.
+import { createSimulatorServer } from '../src/core/local/gcp-simulator/server.js';
+declare const simulatorServerPorts: Parameters<
+  ReturnType<typeof createSimulatorServer>['handle']
+>[0];
+simulatorServerPorts.createSimulator(permission, {});
+simulatorServerPorts.log(permission, 'ready');
+// @ts-expect-error Startup constructors require the boundary permission.
+simulatorServerPorts.createSimulator({});
+// @ts-expect-error Startup logging requires the boundary permission.
+simulatorServerPorts.log('ready');
+// @ts-expect-error Server composition has no implicit platform configuration.
+createSimulatorServer();
+// @ts-expect-error Server composition requires binary recognition and path operations too.
+createSimulatorServer({ port: 0, publicDir: 'public' });

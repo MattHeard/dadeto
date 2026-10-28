@@ -1,6 +1,7 @@
 import express from 'express';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { handle as startServer } from '../../core/local/gcp-simulator/server.js';
+import { createSimulatorServer } from '../../core/local/gcp-simulator/server.js';
 import { createLocalGcpSimulator } from './simulator.js';
 import { bindStartupEffectBoundary } from '../allow-effects.js';
 
@@ -10,15 +11,21 @@ const useMiddleware = (permission, app, middleware) => {
   app.use(middleware);
 };
 
+const server = createSimulatorServer({
+  join: path.join,
+  port: Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '8080', 10),
+  publicDir: fileURLToPath(new URL('../../../public', import.meta.url)),
+  isBinary: value => Buffer.isBuffer(value) || value instanceof Uint8Array,
+});
 const handle = deps =>
-  startServer({
+  server.handle({
     ...deps,
-    createSimulator: createLocalGcpSimulator,
+    createSimulator: (_permission, options) => createLocalGcpSimulator(options),
     bindStartupEffectBoundary,
     useMiddleware,
-    log: message => console.log(message),
+    log: (_permission, message) => console.log(message),
   });
-export { sendRouteResponse } from '../../core/local/gcp-simulator/server.js';
+export const sendRouteResponse = server.sendRouteResponse;
 
 export { handle };
 

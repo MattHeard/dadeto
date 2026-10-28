@@ -66,3 +66,15 @@ simulator/playwright-runner(3), simulator/server(2), simulator/simulator(4). Thi
 only an import census, not proof of no globals. Observable native prohibition,
 trusted parsing, namespace preparation/migration, existing mutation limitations
 and generator type-check exclusion (`dadeto-xyth`) remain unfinished.
+
+## Exact CI receipt
+
+Full Check [40705994407](https://github.com/MattHeard/dadeto/actions/runs/40705994407)
+succeeded at `616aa541cb87a723c38e62fe4bf722f12dfde232`. Artifact
+`12824313329` / `full-check-40705994407` confirms **1,082 suites / 8,359 tests**
+all pass and all four global and both changed core-module coverage metrics 100%,
+with no files below thresholds. Downloaded report:
+`/tmp/dadeto-full-check-40705994407/coverage/check-full-report.md`.
+This completes `dadeto-wmj5` with the scoped/local/build evidence above. The
+explicit broader billing mutation/clock/value-type/persistence prerequisites
+still belong to the parent; this is not an all-lines mutation or purity claim.

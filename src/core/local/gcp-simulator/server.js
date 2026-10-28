@@ -1,19 +1,7 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   createJsonExpressApp,
   createJsonExpressAppDeps,
 } from '../../express-app.js';
-
-// Stryker disable all -- this module is the fixed simulator HTTP/server
-// boundary covered by the server unit and integration contract suites.
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const defaultPublicDir = path.resolve(__dirname, '../../../../public');
-const port = Number.parseInt(process.env.GCP_SIMULATOR_PORT ?? '8080', 10);
-/** @type {Promise<LocalGcpSimulator> | null} */
-let simulatorPromise = null;
 
 /**
  * @typedef {{
@@ -26,283 +14,306 @@ let simulatorPromise = null;
  * }} LocalGcpSimulator
  */
 
-/**
- * @param {'get' | 'post'} method HTTP method.
- * @param {string} routePath Express route path.
- * @param {string} routeName Simulator route name.
- * @param {boolean} includeBody Whether to pass req.body to the route.
- * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
- */
-function createSimulatorRoute(method, routePath, routeName, includeBody) {
-  return {
-    method,
-    path: routePath,
-    routeName,
-    includeBody,
-  };
-}
+/** @typedef {import('../../../../types/allow-effects').AllowEffects} AllowEffects */
+/** @typedef {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator> | LocalGcpSimulator, createSimulator: (permission: AllowEffects, options: object) => Promise<object>, bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary, useMiddleware: (permission: AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void, log: (permission: AllowEffects, message: string) => void }} SimulatorServerDependencies */
 
 /**
- * @param {string} routePath Express route path.
- * @param {string} routeName Simulator route name.
- * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+ * Compose a portable simulator HTTP server with an isolated lazy simulator cache.
+ * @param {{join: (...parts: string[]) => string, port: number, publicDir: string, isBinary: (value: unknown) => boolean}} platform Explicit paths, listener configuration and byte recognition.
+ * @returns {{handle: (deps: SimulatorServerDependencies) => Promise<import('node:http').Server>, sendRouteResponse: (result: Promise<{status: number, body?: unknown}>, response: import('express').Response) => Promise<import('express').Response>}} Bound server operations.
  */
-function createGetRoute(routePath, routeName) {
-  return createSimulatorRoute('get', routePath, routeName, false);
-}
+export function createSimulatorServer(platform) {
+  /** @type {Promise<LocalGcpSimulator> | null} */
+  let simulatorPromise = null;
 
-/**
- * @param {string} routePath Express route path.
- * @param {string} routeName Simulator route name.
- * @param {boolean} [includeBody] Whether to pass req.body to the route.
- * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
- */
-function createPostRoute(routePath, routeName, includeBody = true) {
-  return createSimulatorRoute('post', routePath, routeName, includeBody);
-}
-
-/** @type {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }[]} */
-const SIMULATOR_ROUTES = [
-  createPostRoute('/__sim/submit-new-story', 'submitNewStory'),
-  createPostRoute('/__sim/submit-new-page', 'submitNewPage'),
-  createGetRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
-  createGetRoute('/api-keys/:uuid/credit/events', 'getApiKeyCreditV2'),
-  createPostRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
-  createGetRoute('/__sim/get-author-uuid-v2', 'getAuthorUuid'),
-  createGetRoute('/__sim/get-moderation-variant', 'getModerationVariant'),
-  createPostRoute('/__sim/assign-moderation-job', 'assignModerationJob'),
-  createPostRoute('/__sim/submit-moderation-rating', 'submitModerationRating'),
-  createPostRoute(
-    '/__sim/trigger-render-contents',
-    'triggerRenderContents',
-    false
-  ),
-  createPostRoute('/__sim/mark-variant-dirty', 'markVariantDirty'),
-  createPostRoute('/__sim/generate-stats', 'generateStats', false),
-  createPostRoute('/__sim/payment-webhook', 'paymentWebhook'),
-  createPostRoute(
-    '/__sim/object-minute-rental-search',
-    'objectMinuteRentalSearch'
-  ),
-];
-
-export const handle = startServer;
-
-/**
- * Start the local simulator server.
- * @param {{ express: Parameters<typeof createJsonExpressAppDeps>[0], simulator?: Promise<LocalGcpSimulator>, createSimulator: (options: object) => Promise<object>, bindStartupEffectBoundary: import('../../../../types/allow-effects').StartupAllowEffectsBoundary, useMiddleware: (permission: import('../../../../types/allow-effects').AllowEffects, app: import('../../../../types/native-http').NativeExpressApp, middleware: unknown) => void, log: (message: string) => void }} deps Runtime dependencies.
- * @returns {Promise<import('node:http').Server>} Server instance.
- */
-async function startServer(deps) {
-  const log = deps.log;
-  const express = deps.express;
-  const simulator = /** @type {LocalGcpSimulator} */ (
-    await (deps.simulator ?? getSimulatorPromise(deps.createSimulator))
-  );
-  const appHelpers = createJsonExpressAppDeps(express);
-  const app = createJsonExpressApp(
-    appHelpers.createApp,
-    appHelpers.parsers,
-    deps.bindStartupEffectBoundary,
-    deps.useMiddleware
-  );
-  app.use((_req, res, next) => {
-    res.set('Access-Control-Allow-Origin', '*');
-    res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-  });
-
-  app.use((req, res, next) => {
-    if (
-      req.method === 'OPTIONS' &&
-      req.path === '/__sim/object-minute-rental-search'
-    ) {
-      res.status(204).end();
-      return;
-    }
-    next();
-  });
-
-  app.get('/healthz', (_req, res) => {
-    res.json({ ok: true });
-  });
-
-  app.get('/config.json', (_req, res) => {
-    res.json(simulator.getConfig());
-  });
-
-  app.get('/seed.json', (_req, res) => {
-    res.json(simulator.getSeedManifest());
-  });
-
-  app.get('/new-story.html', (_req, res) => {
-    res
-      .status(200)
-      .type('html')
-      .send(
-        createNewStoryPage(
-          /** @type {{ submitNewStoryUrl: string }} */ (simulator.getConfig())
-        )
-      );
-  });
-
-  for (const route of SIMULATOR_ROUTES) {
-    registerSimulatorRoute(app, simulator, route);
-  }
-
-  app.use(
-    express.static(path.join(simulator.storageRoot, simulator.bucketName))
-  );
-  app.use(express.static(simulator.publicDir));
-
-  return new Promise(resolve => beginListening(app, resolve, log));
-}
-
-/**
- * Initiate listening after route setup and resolve only from the ready callback.
- * @param {ReturnType<typeof createJsonExpressApp>} app Configured application.
- * @param {(server: import('node:http').Server) => void} resolve Server resolver.
- * @param {(message: string) => void} log Startup logger.
- * @returns {void}
- */
-function beginListening(app, resolve, log) {
-  const server = app.listen(port, () =>
-    resolveListeningServer(server, port, resolve, log)
-  );
-}
-
-/**
- * Resolve and report the listening server.
- * @param {import('node:http').Server} server Listening server.
- * @param {number} fallbackPort Fallback port.
- * @param {(server: import('node:http').Server) => void} resolve Server resolver.
- * @param {(message: string) => void} log Startup logger.
- * @returns {void}
- */
-function resolveListeningServer(server, fallbackPort, resolve, log) {
-  const address = server.address();
-  const actualPort =
-    address && typeof address === 'object' ? address.port : fallbackPort;
-  log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
-  resolve(server);
-}
-
-/**
- * Register one simulator route on the Express app.
- * @param {import('express').Express} app Express application.
- * @param {LocalGcpSimulator} simulator Local simulator.
- * @param {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} route Route configuration.
- * @returns {void}
- */
-function registerSimulatorRoute(app, simulator, route) {
-  app[route.method](route.path, async (req, res) => {
-    const handler = /** @type {LocalGcpSimulator['routes'][string]} */ (
-      simulator.routes[route.routeName]
-    );
-    const result = await handler(buildSimulatorRequest(req, route));
-    if (
-      route.routeName === 'submitNewStory' &&
-      shouldRedirectSubmitStory(req, result)
-    ) {
-      res.redirect(303, '/index.html');
-      return;
-    }
-    await sendRouteResponse(Promise.resolve(result), res);
-  });
-}
-
-/**
- * Build a request object for a simulator route handler.
- * @param {import('express').Request} req Express request.
- * @param {{ includeBody: boolean }} route Route configuration.
- * @returns {{ method: string, body?: unknown, headers: import('node:http').IncomingHttpHeaders, get: (name: string) => string | undefined }} Simulator request object.
- */
-function buildSimulatorRequest(req, route) {
-  const request = {
-    method: req.method,
-    path: req.path,
-    headers: req.headers,
-    get: getRequestHeader(req),
-  };
-
-  if (!route.includeBody) {
-    return request;
-  }
-  return { ...request, body: req.body };
-}
-
-/**
- * Send a simulator route result to an Express response.
- * @param {Promise<{ status: number, body?: unknown }>} resultPromise Route result.
- * @param {import('express').Response} res Express response.
- * @returns {Promise<import('express').Response>} Resolves with the written response.
- */
-async function sendRouteResponse(resultPromise, res) {
-  const result = await resultPromise;
-  const isError = result.status >= 400;
-  res.status(isError ? result.status : result.status || 200);
-  if (isError) {
-    if (
-      typeof result.body === 'string' ||
-      Buffer.isBuffer(result.body) ||
-      result.body instanceof Uint8Array
-    )
-      return res.send(result.body);
-  }
-
-  if (!isError && result.body === undefined) return res.end();
-
-  return res.json(result.body);
-}
-
-export { sendRouteResponse };
-
-/**
- * @param {import('express').Request} req Express request.
- * @returns {(name: string) => string | undefined} Request header getter.
- */
-function getRequestHeader(req) {
-  return name => req.get(name);
-}
-
-/**
- * Determine whether a story submit should redirect like a browser form post.
- * @param {import('express').Request} req Express request.
- * @param {{ status: number, body?: unknown }} result Route result.
- * @returns {boolean} True when the request should be redirected.
- */
-function shouldRedirectSubmitStory(req, result) {
-  const accept = String(req.get('accept') ?? '');
-  return result.status === 201 && accept.includes('text/html');
-}
-
-/**
- * Lazily create the simulator so module import stays cheap.
- * @param {(options: object) => Promise<object>} createSimulator External route-binding constructor.
- * @returns {Promise<LocalGcpSimulator>} Simulator instance.
- */
-function getSimulatorPromise(createSimulator) {
-  if (!simulatorPromise) {
-    const options = {
-      baseUrl: `http://127.0.0.1:${port}`,
-      publicDir: defaultPublicDir,
+  /**
+   * @param {'get' | 'post'} method HTTP method.
+   * @param {string} routePath Express route path.
+   * @param {string} routeName Simulator route name.
+   * @param {boolean} includeBody Whether to pass req.body to the route.
+   * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+   */
+  function createSimulatorRoute(method, routePath, routeName, includeBody) {
+    return {
+      method,
+      path: routePath,
+      routeName,
+      includeBody,
     };
-    simulatorPromise = /** @type {Promise<LocalGcpSimulator>} */ (
-      createSimulator(options)
+  }
+
+  /**
+   * @param {string} routePath Express route path.
+   * @param {string} routeName Simulator route name.
+   * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+   */
+  function createGetRoute(routePath, routeName) {
+    return createSimulatorRoute('get', routePath, routeName, false);
+  }
+
+  /**
+   * @param {string} routePath Express route path.
+   * @param {string} routeName Simulator route name.
+   * @param {boolean} [includeBody] Whether to pass req.body to the route.
+   * @returns {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} Route descriptor.
+   */
+  function createPostRoute(routePath, routeName, includeBody = true) {
+    return createSimulatorRoute('post', routePath, routeName, includeBody);
+  }
+
+  /** @type {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }[]} */
+  const SIMULATOR_ROUTES = [
+    createPostRoute('/__sim/submit-new-story', 'submitNewStory'),
+    createPostRoute('/__sim/submit-new-page', 'submitNewPage'),
+    createGetRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
+    createGetRoute('/api-keys/:uuid/credit/events', 'getApiKeyCreditV2'),
+    createPostRoute('/api-keys/:uuid/credit', 'getApiKeyCreditV2'),
+    createGetRoute('/__sim/get-author-uuid-v2', 'getAuthorUuid'),
+    createGetRoute('/__sim/get-moderation-variant', 'getModerationVariant'),
+    createPostRoute('/__sim/assign-moderation-job', 'assignModerationJob'),
+    createPostRoute(
+      '/__sim/submit-moderation-rating',
+      'submitModerationRating'
+    ),
+    createPostRoute(
+      '/__sim/trigger-render-contents',
+      'triggerRenderContents',
+      false
+    ),
+    createPostRoute('/__sim/mark-variant-dirty', 'markVariantDirty'),
+    createPostRoute('/__sim/generate-stats', 'generateStats', false),
+    createPostRoute('/__sim/payment-webhook', 'paymentWebhook'),
+    createPostRoute(
+      '/__sim/object-minute-rental-search',
+      'objectMinuteRentalSearch'
+    ),
+  ];
+
+  /**
+   * Start the local simulator server.
+   * @param {AllowEffects} permission Startup permission.
+   * @param {SimulatorServerDependencies} deps Runtime dependencies.
+   * @returns {Promise<import('node:http').Server>} Server instance.
+   */
+  async function startServer(permission, deps) {
+    /**
+     * Report startup under the current invocation permission.
+     * @param {string} message Startup message.
+     * @returns {void} Logging completion.
+     */
+    const log = message => deps.log(permission, message);
+    const express = deps.express;
+    const simulator = /** @type {LocalGcpSimulator} */ (
+      await (deps.simulator ??
+        getSimulatorPromise(permission, deps.createSimulator))
+    );
+    const appHelpers = createJsonExpressAppDeps(express);
+    const app = createJsonExpressApp(
+      appHelpers.createApp,
+      appHelpers.parsers,
+      deps.bindStartupEffectBoundary,
+      deps.useMiddleware
+    );
+    app.use((_req, res, next) => {
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.set('Access-Control-Allow-Headers', 'Content-Type');
+      next();
+    });
+
+    app.use((req, res, next) => {
+      if (
+        req.method === 'OPTIONS' &&
+        req.path === '/__sim/object-minute-rental-search'
+      ) {
+        res.status(204).end();
+        return;
+      }
+      next();
+    });
+
+    app.get('/healthz', (_req, res) => {
+      res.json({ ok: true });
+    });
+
+    app.get('/config.json', (_req, res) => {
+      res.json(simulator.getConfig());
+    });
+
+    app.get('/seed.json', (_req, res) => {
+      res.json(simulator.getSeedManifest());
+    });
+
+    app.get('/new-story.html', (_req, res) => {
+      res
+        .status(200)
+        .type('html')
+        .send(
+          createNewStoryPage(
+            /** @type {{ submitNewStoryUrl: string }} */ (simulator.getConfig())
+          )
+        );
+    });
+
+    for (const route of SIMULATOR_ROUTES) {
+      registerSimulatorRoute(app, simulator, route);
+    }
+
+    app.use(
+      express.static(platform.join(simulator.storageRoot, simulator.bucketName))
+    );
+    app.use(express.static(simulator.publicDir));
+
+    return new Promise(resolve => beginListening(app, resolve, log));
+  }
+
+  /**
+   * Initiate listening after route setup and resolve only from the ready callback.
+   * @param {ReturnType<typeof createJsonExpressApp>} app Configured application.
+   * @param {(server: import('node:http').Server) => void} resolve Server resolver.
+   * @param {(message: string) => void} log Startup logger.
+   * @returns {void}
+   */
+  function beginListening(app, resolve, log) {
+    const server = app.listen(platform.port, () =>
+      resolveListeningServer(server, platform.port, resolve, log)
     );
   }
 
-  // Resolve the simulator promise through this adapter boundary.
-  return /** @type {Promise<LocalGcpSimulator>} */ (simulatorPromise);
-}
+  /**
+   * Resolve and report the listening server.
+   * @param {import('node:http').Server} server Listening server.
+   * @param {number} fallbackPort Fallback port.
+   * @param {(server: import('node:http').Server) => void} resolve Server resolver.
+   * @param {(message: string) => void} log Startup logger.
+   * @returns {void}
+   */
+  function resolveListeningServer(server, fallbackPort, resolve, log) {
+    const address = server.address();
+    const actualPort =
+      address && typeof address === 'object' ? address.port : fallbackPort;
+    log(`gcp simulator listening on http://127.0.0.1:${actualPort}`);
+    resolve(server);
+  }
 
-/**
- * Create the simulator-hosted new story page.
- * @param {{ submitNewStoryUrl: string }} config Simulator config.
- * @returns {string} HTML page.
- */
-function createNewStoryPage(config) {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New Story</title></head><body><header class="site-header"><a class="brand" href="/">Dendrite</a><nav aria-label="Primary" class="nav-inline"><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><a href="/about.html">About</a><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></nav><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu">Open menu</button></header><div id="mobile-menu" hidden aria-hidden="true"><h3>Write</h3><a href="/new-story.html">New story</a><h3>Moderation</h3><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><h3>About</h3><a href="/about.html">About</a><h3>Account</h3><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></div><main><h1>New story</h1><form data-submit-handler-ready="false" method="post" action="${config.submitNewStoryUrl}"><label for="title">Title</label><input id="title" name="title"><label for="content">Content</label><textarea id="content" name="content"></textarea><label for="author">Author</label><input id="author" name="author"><label for="option0">Option 1</label><input id="option0" name="option0"><label for="option1">Option 2</label><input id="option1" name="option1"><label for="option2">Option 3</label><input id="option2" name="option2"><label for="option3">Option 4</label><input id="option3" name="option3"><button type="submit">Submit</button></form><script>(async()=>{const config=await fetch('/config.json').then(r=>r.json());const form=document.querySelector('form');if(!form||!config.submitNewStoryUrl)return;form.setAttribute('action',config.submitNewStoryUrl);form.addEventListener('submit',async event=>{event.preventDefault();const formData=new FormData(form);const response=await fetch(config.submitNewStoryUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams(formData)});if(response.ok){window.location.assign('/index.html');}});form.dataset.submitHandlerReady='true';})().catch(()=>{});</script></main></body></html>`;
+  /**
+   * Register one simulator route on the Express app.
+   * @param {import('express').Express} app Express application.
+   * @param {LocalGcpSimulator} simulator Local simulator.
+   * @param {{ method: 'get' | 'post', path: string, routeName: string, includeBody: boolean }} route Route configuration.
+   * @returns {void}
+   */
+  function registerSimulatorRoute(app, simulator, route) {
+    app[route.method](route.path, async (req, res) => {
+      const handler = /** @type {LocalGcpSimulator['routes'][string]} */ (
+        simulator.routes[route.routeName]
+      );
+      const result = await handler(buildSimulatorRequest(req, route));
+      if (
+        route.routeName === 'submitNewStory' &&
+        shouldRedirectSubmitStory(req, result)
+      ) {
+        res.redirect(303, '/index.html');
+        return;
+      }
+      await sendRouteResponse(Promise.resolve(result), res);
+    });
+  }
+
+  /**
+   * Build a request object for a simulator route handler.
+   * @param {import('express').Request} req Express request.
+   * @param {{ includeBody: boolean }} route Route configuration.
+   * @returns {{ method: string, body?: unknown, headers: import('node:http').IncomingHttpHeaders, get: (name: string) => string | undefined }} Simulator request object.
+   */
+  function buildSimulatorRequest(req, route) {
+    const request = {
+      method: req.method,
+      path: req.path,
+      headers: req.headers,
+      get: getRequestHeader(req),
+    };
+
+    if (!route.includeBody) {
+      return request;
+    }
+    return { ...request, body: req.body };
+  }
+
+  /**
+   * Send a simulator route result to an Express response.
+   * @param {Promise<{ status: number, body?: unknown }>} resultPromise Route result.
+   * @param {import('express').Response} res Express response.
+   * @returns {Promise<import('express').Response>} Resolves with the written response.
+   */
+  async function sendRouteResponse(resultPromise, res) {
+    const result = await resultPromise;
+    const isError = result.status >= 400;
+    res.status(isError ? result.status : result.status || 200);
+    if (isError) {
+      if (typeof result.body === 'string' || platform.isBinary(result.body))
+        return res.send(result.body);
+    }
+
+    if (!isError && result.body === undefined) return res.end();
+
+    return res.json(result.body);
+  }
+
+  /**
+   * @param {import('express').Request} req Express request.
+   * @returns {(name: string) => string | undefined} Request header getter.
+   */
+  function getRequestHeader(req) {
+    return name => req.get(name);
+  }
+
+  /**
+   * Determine whether a story submit should redirect like a browser form post.
+   * @param {import('express').Request} req Express request.
+   * @param {{ status: number, body?: unknown }} result Route result.
+   * @returns {boolean} True when the request should be redirected.
+   */
+  function shouldRedirectSubmitStory(req, result) {
+    const accept = String(req.get('accept') ?? '');
+    return result.status === 201 && accept.includes('text/html');
+  }
+
+  /**
+   * Lazily create the simulator so module import stays cheap.
+   * @param {AllowEffects} permission Startup permission.
+   * @param {(permission: AllowEffects, options: object) => Promise<object>} createSimulator External route-binding constructor.
+   * @returns {Promise<LocalGcpSimulator>} Simulator instance.
+   */
+  function getSimulatorPromise(permission, createSimulator) {
+    if (!simulatorPromise) {
+      const options = {
+        baseUrl: `http://127.0.0.1:${platform.port}`,
+        publicDir: platform.publicDir,
+      };
+      simulatorPromise = /** @type {Promise<LocalGcpSimulator>} */ (
+        createSimulator(permission, options)
+      );
+    }
+
+    // Resolve the simulator promise through this adapter boundary.
+    return /** @type {Promise<LocalGcpSimulator>} */ (simulatorPromise);
+  }
+
+  /**
+   * Create the simulator-hosted new story page.
+   * @param {{ submitNewStoryUrl: string }} config Simulator config.
+   * @returns {string} HTML page.
+   */
+  function createNewStoryPage(config) {
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>New Story</title></head><body><header class="site-header"><a class="brand" href="/">Dendrite</a><nav aria-label="Primary" class="nav-inline"><a href="/new-story.html">New story</a><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><a href="/about.html">About</a><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></nav><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu">Open menu</button></header><div id="mobile-menu" hidden aria-hidden="true"><h3>Write</h3><a href="/new-story.html">New story</a><h3>Moderation</h3><a href="/mod.html">Moderate</a><a href="/stats.html">Stats</a><h3>About</h3><a href="/about.html">About</a><h3>Account</h3><a class="admin-link" href="/admin.html" style="display:none">Admin</a><div id="signinButton"></div><div id="signoutWrap" style="display:none"><a id="signoutLink" href="/signout">Sign out</a></div></div><main><h1>New story</h1><form data-submit-handler-ready="false" method="post" action="${config.submitNewStoryUrl}"><label for="title">Title</label><input id="title" name="title"><label for="content">Content</label><textarea id="content" name="content"></textarea><label for="author">Author</label><input id="author" name="author"><label for="option0">Option 1</label><input id="option0" name="option0"><label for="option1">Option 2</label><input id="option1" name="option1"><label for="option2">Option 3</label><input id="option2" name="option2"><label for="option3">Option 4</label><input id="option3" name="option3"><button type="submit">Submit</button></form><script>(async()=>{const config=await fetch('/config.json').then(r=>r.json());const form=document.querySelector('form');if(!form||!config.submitNewStoryUrl)return;form.setAttribute('action',config.submitNewStoryUrl);form.addEventListener('submit',async event=>{event.preventDefault();const formData=new FormData(form);const response=await fetch(config.submitNewStoryUrl,{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body:new URLSearchParams(formData)});if(response.ok){window.location.assign('/index.html');}});form.dataset.submitHandlerReady='true';})().catch(()=>{});</script></main></body></html>`;
+  }
+
+  return {
+    handle: async deps =>
+      deps.bindStartupEffectBoundary(permission =>
+        startServer(permission, deps)
+      ),
+    sendRouteResponse,
+  };
 }
-// Stryker restore all

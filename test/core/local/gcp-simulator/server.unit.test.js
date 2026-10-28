@@ -1,5 +1,29 @@
 import { jest } from '@jest/globals';
-import { handle } from '../../../../src/local/gcp-simulator/server.js';
+import { createSimulatorServer } from '../../../../src/core/local/gcp-simulator/server.js';
+import { createAllowEffects } from '../../../../src/cloud/allow-effects.js';
+
+/**
+ * Bind the fake simulator to a portable server factory for listener tests.
+ * @param {object} simulator Simulator fixture.
+ * @returns {(options: object) => Promise<unknown>} Test server startup.
+ */
+function createTestHandle(simulator) {
+  const operations = createSimulatorServer({
+    join: (...parts) => parts.join('/'),
+    port: 8080,
+    publicDir: '/tmp/public',
+    isBinary: value => value instanceof Uint8Array,
+  });
+  return options =>
+    operations.handle({
+      ...options,
+      createSimulator: async () => simulator,
+      bindStartupEffectBoundary: callback => callback(createAllowEffects()),
+      useMiddleware: (_permission, target, middleware) =>
+        target.use(middleware),
+      log: () => {},
+    });
+}
 
 describe('gcp simulator server without a listener', () => {
   test('registers and executes simulator routes with injected dependencies', async () => {
@@ -58,6 +82,8 @@ describe('gcp simulator server without a listener', () => {
       publicDir: '/tmp/public',
     };
 
+    const handle = createTestHandle(simulator);
+
     const listeningServer = { address: () => ({ port: 4321 }) };
     let notifyListening;
     app.listen.mockImplementationOnce((_port, callback) => {
@@ -66,9 +92,12 @@ describe('gcp simulator server without a listener', () => {
     });
     const starting = handle({ express, simulator });
     let settled = false;
-    void starting.then(() => {
-      settled = true;
-    });
+    void starting.then(
+      () => {
+        settled = true;
+      },
+      () => {}
+    );
     await Promise.resolve();
     await Promise.resolve();
     expect(app.listen).toHaveBeenCalledTimes(1);
