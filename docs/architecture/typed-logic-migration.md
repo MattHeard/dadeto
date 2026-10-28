@@ -513,3 +513,23 @@ Precise acceptance receipts and pending full mutation/CI live in
 builtin prohibition, boundary parsing and actual source migration remain pending.
 Previous template child48hf closed after exact FullCheck40653689602 succeeded
 atabfd8d5:1074suites8292tests/global+all8changedfilesall4metrics100%.
+
+
+## Native endpoint visibility restored — 28 October 2026
+
+Bead `dadeto-e1oz` now expands the original dependency graph scope with every
+Node runtime builtin endpoint. Real fixtures assert the named native prohibition
+for node:fs and bare fs/promises under legacy core and both new logic roots;
+native build/cloud/local adapters pass, browser native imports and prior package/
+domain/direction violations remain rejected. Negative config controls remove the
+named rule or restore the old endpoint filter and require the same assertion to fail.
+
+The current graph exposes163 native edges, zero from logic, with1,042 modules /
+1,983 dependencies and no violations. Source AST census is also zero static native
+imports after the bounded injection slices. All11 split local static gates and
+seven real-fixture/control tests pass. The last UUID child passed exact Full
+Check40767918736 (8,430 tests, global and changed-source metrics100%); the final
+exact policy Full Check is still required before closing this prerequisite. See
+`notes/agents/2026-10-28-native-dependency-policy.md` for hashes, artifacts and
+failure history. These are native-import policy results; legacy mutation skips,
+ambient/value typing, parser/thin preparation and actual namespace moves remain.

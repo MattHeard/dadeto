@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { createCheckDepcruiseHandle } from '../../src/core/scripts/check-depcruise.js';
 import { createCheckDepcruiseScopeDeps } from '../../src/local/check-depcruise-scope.js';
 import { LOGIC_SOURCE_ROOTS } from '../../src/core/local/logic-source-paths.js';
@@ -128,7 +129,19 @@ test('real dependency-cruiser enforces portability, direction and domain isolati
       `src/${integration}/entry.js`,
       "import '../logic/core/shared.js';\nimport '../logic/boundary/parser.js';\n"
     );
+  for (const integration of ['build', 'cloud', 'local'])
+    write(
+      root,
+      `src/${integration}/native.js`,
+      "import 'node:fs';\nimport 'fs/promises';\n"
+    );
+  write(root, 'src/browser/native.js', "import 'node:fs';\n");
   for (const folder of LOGIC_SOURCE_ROOTS) {
+    write(
+      root,
+      `${folder}/native.js`,
+      "import 'node:fs';\nimport 'fs/promises';\n"
+    );
     const platformPath = path.relative(folder, 'src/local/platform.js');
     write(
       root,
@@ -148,25 +161,11 @@ test('real dependency-cruiser enforces portability, direction and domain isolati
     'dependency-cruiser.config.cjs',
     fs.readFileSync('dependency-cruiser.config.cjs', 'utf8')
   );
-  const execution = spawnSync(
-    process.execPath,
-    [
-      path.resolve('node_modules/dependency-cruiser/bin/dependency-cruise.mjs'),
-      '--config',
-      path.join(root, 'dependency-cruiser.config.cjs'),
-      '--output-type',
-      'json',
-      'src',
-    ],
-    { cwd: root, encoding: 'utf8', timeout: 20000 }
-  );
-  expect(execution.error).toBeUndefined();
-  const report = JSON.parse(execution.stdout);
-  // The JSON reporter communicates violations in its summary, not exit status.
-  expect(execution.status).toBe(0);
+  const report = runDependencyGraph(root);
   expect(report.summary.error).toBeGreaterThan(0);
   const violations = report.summary.violations;
   for (const folder of LOGIC_SOURCE_ROOTS) {
+    assertNativeImportsBlocked(violations, folder);
     expect(violations).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -192,6 +191,20 @@ test('real dependency-cruiser enforces portability, direction and domain isolati
       }),
     ])
   );
+  expect(violations).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        from: 'src/browser/native.js',
+        to: 'fs',
+        rule: expect.objectContaining({ name: 'src-browser-only-core' }),
+      }),
+    ])
+  );
+  expect(
+    violations.filter(item =>
+      /^src\/(build|cloud|local)\/native\.js$/.test(item.from)
+    )
+  ).toEqual([]);
   expect(violations.filter(item => item.from.endsWith('/entry.js'))).toEqual(
     []
   );
@@ -199,3 +212,97 @@ test('real dependency-cruiser enforces portability, direction and domain isolati
     violations.filter(item => item.from === 'src/logic/boundary/parser.js')
   ).toEqual([]);
 });
+
+/**
+ * Run actual dependency-cruiser against a fixture and retain its reported violations.
+ * @param {string} root Fixture root.
+ * @returns {object} Real graph report.
+ */
+function runDependencyGraph(root) {
+  const execution = spawnSync(
+    process.execPath,
+    [
+      path.resolve('node_modules/dependency-cruiser/bin/dependency-cruise.mjs'),
+      '--config',
+      path.join(root, 'dependency-cruiser.config.cjs'),
+      '--output-type',
+      'json',
+      'src',
+    ],
+    { cwd: root, encoding: 'utf8', timeout: 20000 }
+  );
+  expect(execution.error).toBeUndefined();
+  // JSON output carries rule failures in its summary rather than process status.
+  expect(execution.status).toBe(0);
+  return JSON.parse(execution.stdout);
+}
+
+/**
+ * Require the named native rule to observe both normalized native import forms.
+ * @param {object[]} violations Actual cruiser violations.
+ * @param {string} folder Logic root.
+ * @returns {void} Nothing.
+ */
+function assertNativeImportsBlocked(violations, folder) {
+  for (const native of ['fs', 'fs/promises'])
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          from: `${folder}/native.js`,
+          to: native,
+          rule: expect.objectContaining({
+            name: 'src-core-scripts-no-node-builtins',
+          }),
+        }),
+      ])
+    );
+}
+
+const configControls = [
+  [
+    'missing named prohibition',
+    config => ({
+      ...config,
+      forbidden: config.forbidden.filter(
+        rule => rule.name !== 'src-core-scripts-no-node-builtins'
+      ),
+    }),
+  ],
+  [
+    'old hidden endpoints',
+    config => ({
+      ...config,
+      options: {
+        ...config.options,
+        includeOnly: '^(src|scripts|node_modules)',
+      },
+    }),
+  ],
+];
+
+test.each(configControls)(
+  'native regression rejects negative config control: %s',
+  (label, mutate) => {
+    const root = fixture();
+    for (const folder of LOGIC_SOURCE_ROOTS)
+      write(
+        root,
+        `${folder}/native.js`,
+        "import 'node:fs';\nimport 'fs/promises';\n"
+      );
+    const base = createRequire(import.meta.url)(
+      '../../dependency-cruiser.config.cjs'
+    );
+    write(
+      root,
+      'dependency-cruiser.config.cjs',
+      `module.exports = ${JSON.stringify(mutate(base))};\n`
+    );
+    const report = runDependencyGraph(root);
+    expect(() =>
+      LOGIC_SOURCE_ROOTS.forEach(folder =>
+        assertNativeImportsBlocked(report.summary.violations, folder)
+      )
+    ).toThrow();
+  }
+);

@@ -2,6 +2,11 @@
  * Baseline dependency-cruiser config for Dadeto.
  * Focus on a narrow acyclic rule while giving future learners a place to grow the policy.
  */
+const nativeModulePattern = require('node:module').builtinModules
+  .map(name => name.replace(/^node:/, ''))
+  .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('|');
+
 const logicDirectory = 'src/(?:core|logic/(?:core|boundary))';
 const logicRoot = `^${logicDirectory}(?:/|$)`;
 
@@ -60,6 +65,7 @@ module.exports = {
         path: '^src/build',
       },
       to: {
+        dependencyTypesNot: ['core'],
         pathNot: '^src/(build|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
@@ -72,6 +78,7 @@ module.exports = {
         path: '^src/cloud',
       },
       to: {
+        dependencyTypesNot: ['core'],
         pathNot: '^src/(cloud|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
@@ -84,6 +91,7 @@ module.exports = {
         path: '^src/local',
       },
       to: {
+        dependencyTypesNot: ['core'],
         pathNot: '^src/(local|core|adapters)(?:/|$)|^src/logic/(core|boundary)(?:/|$)|^node_modules(?:/|$)',
       },
     },
@@ -200,7 +208,8 @@ module.exports = {
     doNotFollow: {
       path: 'node_modules',
     },
-    includeOnly: '^(src|scripts|node_modules)',
+    // Expand the existing graph scope with every native endpoint; never filter them out.
+    includeOnly: `^(src|scripts|node_modules)|^(?:node:)?(?:${nativeModulePattern})$`,
     prefix: './',
   },
 };

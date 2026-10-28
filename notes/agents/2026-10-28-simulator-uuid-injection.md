@@ -72,3 +72,12 @@ Keep the provider permission-first at the shell/core boundary. Where a legacy SD
 requires no-argument callbacks, explicitly bind a real permission with documented
 lifetime scope. Test laziness, provider errors, exact fractions and repeated
 resource lookups; a changed import alone does not prove correct capability wiring.
+
+## Final CI receipt
+
+Exact0b52f7fd15e7b06b67e936d0611b68eab59f7845 passed Full Check40767918736,
+artifact12850613700. Downloaded report
+`/tmp/dadeto-full-check-40767918736/full-check-40767918736/coverage/check-full-report.md`
+confirms1,091 suites /8,430 tests pass, all four global and both changed core
+coverage metrics100%, no files below thresholds. Child `dadeto-rjmo` closes with
+this exact pushed revision plus the matching local/7-of-7 mutation acceptance.
