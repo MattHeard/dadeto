@@ -1,0 +1,8 @@
+{
+  "name": "@dadeto/deepmerge",
+  "version": "4.3.1-dadeto.1",
+  "private": true,
+  "description": "Repository-maintained deepmerge 4.3.1 security backport for Jest configuration",
+  "main": "index.cjs",
+  "license": "MIT"
+}

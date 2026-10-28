@@ -15,6 +15,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 WORKDIR /app
 COPY package.json package-lock.json* ./
+COPY vendor/deepmerge ./vendor/deepmerge
 RUN --mount=type=cache,target=/root/.npm,sharing=locked npm ci
 COPY scripts ./scripts
 COPY src ./src

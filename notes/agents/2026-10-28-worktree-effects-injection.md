@@ -72,3 +72,14 @@ Report `reports/mutation/worktree-runner.json`; exact classifications and source
 match in `reports/mutation/worktree-runner-summary.json`; log
 `/tmp/dadeto-tx59-mutation.log`. The final static rerun again passes nine gates and
 fails only the tracked audit. Full CI remains separate and the child stays open.
+
+## Pushed CI receipt and audit follow-up
+
+Runner commitcab50c4 Full Check40649466701 failed only audit. Downloaded
+artifact12799376885 confirms1,071suites /8,261tests all pass and all four global
+and runner coverage metrics100%. Overall failure remains failure. Separate
+childsxun now supplies a licensed, explicitly identified deepmerge security
+backport with actual exploit/compatibility/clean-install probes. Its60focused
+cases and all10 split local static gates pass. The repaired descendant Full Check
+still must succeed before these quality tasks close; no source/mutation threshold
+or exclusion was relaxed. See2026-10-28-deepmerge-security-backport.md.
