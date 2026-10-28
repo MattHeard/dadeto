@@ -2,8 +2,9 @@ const PERMISSION = Symbol('LocalAllowEffects');
 
 /**
  * Bind one local command to a freshly minted permission.
- * @param {(permission: import('../../types/allow-effects').AllowEffects) => Promise<any>} handler Effectful command.
- * @returns {Promise<any>} Command result.
+ * @template T
+ * @param {(permission: import('../../types/allow-effects').AllowEffects) => Promise<T>} handler Effectful command.
+ * @returns {Promise<T>} Command result.
  */
 export async function bindEffectBoundary(handler) {
   const permission = /** @type {import('../../types/allow-effects').AllowEffects} */ (
@@ -12,7 +13,12 @@ export async function bindEffectBoundary(handler) {
   return handler(permission);
 }
 
-/** Bind a synchronous startup effect to a freshly minted local permission. */
+/**
+ * Bind a synchronous startup effect to a freshly minted local permission.
+ * @template T
+ * @param {(permission: import('../../types/allow-effects').AllowEffects) => T} handler Startup operation.
+ * @returns {T} Startup result.
+ */
 export function bindStartupEffectBoundary(handler) {
   const permission = /** @type {import('../../types/allow-effects').AllowEffects} */ (
     /** @type {unknown} */ (Object.freeze({ [PERMISSION]: true }))

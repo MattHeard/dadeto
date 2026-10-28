@@ -70,13 +70,37 @@ suppression; the test boundary uses a named options object with a documented
 launcher field so the fixer does not invent an invalid root parameter.
 
 Remove redundant nullable exit-message formatting: String(code) and signal
-interpolation preserve the old primitive behavior. Readiness uses fragments joined
-without a delimiter; split-banner tests make that separator observable, whereas
-an unrelated initial text prefix was equivalent because leading logs are allowed.
-The complete final-source rerun currently has109 mutants and is independently
-running in `/tmp/dadeto-aaxq-hardening-mutation.log`, with one survivor observed.
-Do not claim terminal mutation acceptance from progress. No timeout was increased
-and no source/regex/mutation exclusion was added.
+interpolation preserve the old primitive behavior. Readiness now initializes from the first actual fragment with an identity function,
+then appends subsequent fragments through a closure. This preserves ordinary string
+accumulation without an artificial empty prefix that can mutate into equivalent
+leading log text. The intermediate second run failed99.08%: 109 mutants, 102 Killed,
+one equivalent array-prefix survivor, six Timeouts, four static, no runtime errors;
+retained `reports/mutation/playwright-runner.contracts.json`.
+
+Final entire-module mutation **PASS100%**, 110 detected: **99 Killed and 11 Timeouts**,
+four static, zero survivors/runtime errors/ignored/uncovered. Source equals the
+report byte-for-byte, SHA-256
+`d9da14312629cf1f6f86f603300ce7f9300b39cf9e05ab14eac8015776c9615c`.
+Timeouts remove settlement/listener/append/match progress or replace readiness
+digits with non-digits, leaving readiness/exit pending. This is not an all-Killed
+or zero-timeout claim; no timeout budget changed. See
+`reports/mutation/playwright-runner-summary.json` and
+`/tmp/dadeto-aaxq-final-mutation.log`.
+
+Concrete native adapter imports now participate in the compiler fixture. This
+exposed a previously implicit-any startup handler. Generic JSDoc for both local
+permission binders preserves returned types without changing runtime behavior or
+adding an exclusion. Final scoped35 tests/source0gaps, all11 split static gates,
+site/cloud builds and package closure pass; logs
+`/tmp/dadeto-aaxq-final-{impact,static,build,cloud-build,closure}.log`.
+
+Initial pushed revision6c903a6 passed exact Full Check40718657604. The final
+accumulator/native-type hardening requires its own pushed Full Check before closure.
+
+A separate in-memory characterization found a pre-existing simulator readiness
+framing bug: a stream chunk ending in `:4` resolves port4 before later `321` finishes
+4321. Owning follow-up `dadeto-y3se` requires complete-line/digit-split tests and
+framing correction; extraction preserves the old protocol in this slice.
 
 Use task scratch outside the checkout on normal storage. Preserve logs/reports;
 do not remove shared caches. Existing generated-cloud package-name warnings remain

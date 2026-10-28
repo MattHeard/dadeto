@@ -339,8 +339,8 @@ export function createLocalPlaywrightRunner(platform) {
    */
   function waitForPortAnnouncement(permission, child, pattern, label) {
     return new Promise((resolve, reject) => {
-      /** @type {string[]} */
-      const fragments = [];
+      /** @type {(fragment: string) => string} */
+      let append = fragment => fragment;
 
       const cleanup = () => {
         child.offError(permission, onError);
@@ -354,8 +354,9 @@ export function createLocalPlaywrightRunner(platform) {
        */
       const onStdout = chunk => {
         platform.process.writeStdout(permission, chunk);
-        fragments.push(chunk.toString('utf8'));
-        const match = fragments.join('').match(pattern);
+        const buffer = append(chunk.toString('utf8'));
+        append = fragment => buffer + fragment;
+        const match = buffer.match(pattern);
         if (match) {
           settleOnce(
             /** @type {(value: unknown) => void} */ (resolve),

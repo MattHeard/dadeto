@@ -271,3 +271,17 @@ runnerPlatform.process.spawn('node', [], {
 runnerPlatform.process.writeStdout(runnerChunk);
 // @ts-expect-error Error output writes require a permission too.
 runnerPlatform.process.writeStderr(runnerChunk);
+
+// The concrete local adapters expose the same permission-first resource contracts.
+import { createChildCapabilities } from '../src/local/gcp-simulator/child-process-adapter.js';
+import { reserveWriterPort } from '../src/local/gcp-simulator/port-adapter.js';
+import { runLocalPlaywright as runNativePlaywright } from '../src/local/gcp-simulator/playwright-runner.js';
+declare const nativeRunnerChild: Parameters<typeof createChildCapabilities>[0];
+createChildCapabilities(nativeRunnerChild).status(permission);
+reserveWriterPort(permission);
+// @ts-expect-error The native network adapter also requires its permission.
+reserveWriterPort();
+const nativeRunnerResult: Promise<
+  import('../src/core/local/gcp-simulator/playwright-runner.js').RunnerResult
+> = runNativePlaywright({ repoRoot: '/repo' });
+void nativeRunnerResult;
