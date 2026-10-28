@@ -65,3 +65,41 @@ unproven trusted-type cast to close that follow-up.
 Automatic approval review briefly failed due to its own usage quota; a normal
 reviewed retry succeeded. No alternative tool was used to bypass it. Workspace
 TMPDIR avoids the small shared /tmp volume.
+
+## Injection landing and hardening
+
+Injection `a47308e90d4dfce6454bfde7dcaf91338a5ee53a` is pushed. Exact Full Check
+[40702371651](https://github.com/MattHeard/dadeto/actions/runs/40702371651) was
+confirmed running; it does not yet validate later hardening.
+
+First complete mutation run failed: **163 total / 127 Killed / 35 Survived /
+one RuntimeError**, five static. Report `reports/mutation/static-table.initial.json`.
+Survivors exposed missing independent assertions for labels/text/script escaping,
+exact multi-row markup, later-column comparison and stable source-order ties,
+physical error line numbers/causes, whitespace-only lines, primitive rows and
+columns, finite-number rejection and own type fields for inherited column names.
+
+The RuntimeError emptied the factory body, making the native facade fail during
+test-module import. Native fixture imports now run in beforeAll, so this is a
+failed test hook rather than test-runner startup. No native contract case was
+removed. The duplicate SUPPORTED_TYPES membership was removed; the explicit
+type guard still narrows/accepts exactly strings and finite numbers. No skipped
+mutants, source exclusions, lower threshold or increased timeout.
+
+Added independent regression cases pass **five focused suites / 47 tests**.
+Final hardening scoped evaluation passes **100 suites / 227 tests**, with no
+uncovered lines/branches in table and generator, lint/parse/zero clones pass.
+`npm run check -- --skip-tests` passes all 11 gates after fixing the new test
+helper's JSDoc tag formatting. Site output remains **1,120 byte-identical files**
+with no missing paths. Logs `/tmp/dadeto-xr8f-hardening-{focused,impact,static-final,build}.log`;
+parity `reports/mutation/static-table-output-parity.json`.
+
+Final whole-source mutation has 157 mutants and is still running. Do not claim
+it passed from its live progress counter. Its source must match the report before
+closure, and the hardening commit requires its own successful Full Check.
+
+The current static import inventory leaves **four modules / 10 imports**:
+billing-runtime-core(1), simulator/playwright-runner(3), simulator/server(2),
+simulator/simulator(4). Legacy generator type-check exclusion (`dadeto-xyth`),
+existing broad mutation directives, observable prohibition and migration remain
+explicit parent prerequisites.

@@ -1,7 +1,5 @@
 import { compareTableValues as compareValues } from '../tableCore.js';
 
-const SUPPORTED_TYPES = new Set(['number', 'string']);
-
 /** @typedef {{index: number, values: Record<string, string|number>}} StaticTableRow */
 
 /**
@@ -131,7 +129,6 @@ export function createStaticJsonlTable(dependencies) {
           fail(`line ${lineIndex + 1} is missing column ${column}`);
         const cell = record[column];
         if (
-          !SUPPORTED_TYPES.has(typeof cell) ||
           (typeof cell !== 'number' && typeof cell !== 'string') ||
           (typeof cell === 'number' && !Number.isFinite(cell))
         )

@@ -1,11 +1,15 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { generateBlogOuter } from '../../src/build/generator.js';
-import {
-  parseStaticJsonlTable,
-  renderStaticJsonlTable,
-} from '../../src/build/staticJsonlTable.js';
+let generateBlogOuter;
+let parseStaticJsonlTable;
+let renderStaticJsonlTable;
+beforeAll(async () => {
+  ({ generateBlogOuter } = await import('../../src/build/generator.js'));
+  ({ parseStaticJsonlTable, renderStaticJsonlTable } = await import(
+    '../../src/build/staticJsonlTable.js'
+  ));
+});
 
 /**
  * Create an isolated JSONL fixture directory.
