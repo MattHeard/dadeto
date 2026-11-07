@@ -19,9 +19,15 @@ describe('createCheckFullReport', () => {
       changedPaths: [oldPath, newPath],
       deletedPaths: [oldPath, oldPath, 'README.md'],
     });
-    expect(report.changedFileCoverage.map(entry => entry.file)).toEqual([newPath]);
-    expect(report.changedFileCoverageNote).toBe(`Deleted logic files have no current source to measure: \`${oldPath}\`.`);
-    expect(renderCheckFullReportMarkdown(report)).toContain(report.changedFileCoverageNote);
+    expect(report.changedFileCoverage.map(entry => entry.file)).toEqual([
+      newPath,
+    ]);
+    expect(report.changedFileCoverageNote).toBe(
+      `Deleted logic files have no current source to measure: \`${oldPath}\`.`
+    );
+    expect(renderCheckFullReportMarkdown(report)).toContain(
+      report.changedFileCoverageNote
+    );
     expect(report.changedFileCoverageNote).not.toContain('absent from');
   });
 
@@ -34,14 +40,23 @@ describe('createCheckFullReport', () => {
       deletedPaths: [oldPath],
     });
     expect(report.changedFileCoverage).toEqual([]);
-    expect(report.changedFileCoverageNote).toBe(`Changed logic files are absent from the coverage summary: \`${missing}\`.\n\nDeleted logic files have no current source to measure: \`${oldPath}\`.`);
-    expect(renderCheckFullReportMarkdown(report)).toContain(report.changedFileCoverageNote);
+    expect(report.changedFileCoverageNote).toBe(
+      `Changed logic files are absent from the coverage summary: \`${missing}\`.\n\nDeleted logic files have no current source to measure: \`${oldPath}\`.`
+    );
+    expect(renderCheckFullReportMarkdown(report)).toContain(
+      report.changedFileCoverageNote
+    );
   });
 
   it('does not infer deletions from absent coverage or non-logic deletion metadata', () => {
     const missing = 'src/logic/core/missing.js';
-    const report = createCheckFullReport({ changedPaths: [missing], deletedPaths: ['src/local/adapter.js'] });
-    expect(report.changedFileCoverageNote).toBe(`Changed logic files are absent from the coverage summary: \`${missing}\`.`);
+    const report = createCheckFullReport({
+      changedPaths: [missing],
+      deletedPaths: ['src/local/adapter.js'],
+    });
+    expect(report.changedFileCoverageNote).toBe(
+      `Changed logic files are absent from the coverage summary: \`${missing}\`.`
+    );
   });
 
   it('uses unavailable defaults when the workflow supplied no evidence', () => {

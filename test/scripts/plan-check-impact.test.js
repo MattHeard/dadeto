@@ -99,56 +99,103 @@ function runnerArgs(call) {
 }
 
 describe('impact planner', () => {
-  it.each(['unstaged', 'staged', 'base'])('runs all units for %s source deletion without claiming scoped coverage', phase => {
-    const oldPath = 'src/core/deleted.js';
-    const { result, output, runCommand, runCoverage } = runHandle({
-      createHandle: createRunScopedCheckImpactHandle,
-      argv: phase === 'base' ? ['--base', 'origin/main'] : [],
-      fileExists: file => !file.endsWith('/deleted.js'),
-      runImpl: (command, args) => {
-        if (args.includes('-co')) return { status: 0, stdout: 'test/core/affected.test.js\0' };
-        if (command === 'git' && args[0] === 'rev-parse') return { status: 0, stdout: 'abc123\n' };
-        const isBase = args.some(value => value.includes('...HEAD'));
-        const target = phase === 'base' ? isBase : phase === 'staged' ? args.includes('--cached') : !args.includes('--cached') && !isBase;
-        if (command === 'git' && args[0] === 'diff' && target) return { status: 0, stdout: `D\0${oldPath}\0` };
-        return { status: 0, stdout: '' };
-      },
-    });
-    expect(result).toEqual({ exitCode: 0 });
-    expect(output.report()).toMatchObject({ changedPaths: [oldPath], deletedPaths: [oldPath], testSelection: 'all-unit', selectedTests: ['test/core/affected.test.js'], fallbackReason: 'Deleted source paths require conservative unit-test selection.', result: 'passed' });
-    expect(output.report()).not.toHaveProperty('scopedCoverage');
-    expect(runCoverage).not.toHaveBeenCalled();
-    expect(runCommand.mock.calls.some(call => call[2].includes('--findRelatedTests'))).toBe(false);
-  });
+  it.each(['unstaged', 'staged', 'base'])(
+    'runs all units for %s source deletion without claiming scoped coverage',
+    phase => {
+      const oldPath = 'src/core/deleted.js';
+      const { result, output, runCommand, runCoverage } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        argv: phase === 'base' ? ['--base', 'origin/main'] : [],
+        fileExists: file => !file.endsWith('/deleted.js'),
+        runImpl: (command, args) => {
+          if (args.includes('-co'))
+            return { status: 0, stdout: 'test/core/affected.test.js\0' };
+          if (command === 'git' && args[0] === 'rev-parse')
+            return { status: 0, stdout: 'abc123\n' };
+          const isBase = args.some(value => value.includes('...HEAD'));
+          const target =
+            phase === 'base'
+              ? isBase
+              : phase === 'staged'
+                ? args.includes('--cached')
+                : !args.includes('--cached') && !isBase;
+          if (command === 'git' && args[0] === 'diff' && target)
+            return { status: 0, stdout: `D\0${oldPath}\0` };
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(result).toEqual({ exitCode: 0 });
+      expect(output.report()).toMatchObject({
+        changedPaths: [oldPath],
+        deletedPaths: [oldPath],
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/affected.test.js'],
+        fallbackReason:
+          'Deleted source paths require conservative unit-test selection.',
+        result: 'passed',
+      });
+      expect(output.report()).not.toHaveProperty('scopedCoverage');
+      expect(runCoverage).not.toHaveBeenCalled();
+      expect(
+        runCommand.mock.calls.some(call =>
+          call[2].includes('--findRelatedTests')
+        )
+      ).toBe(false);
+    }
+  );
 
-  it.each([true, undefined])('does not treat Git deletion as current absence when fileExists returns %p', exists => {
-    const { output, runCoverage } = runHandle({
-      createHandle: createRunScopedCheckImpactHandle,
-      fileExists: exists === undefined ? undefined : () => exists,
-      runImpl: (command, args) => {
-        if (command === 'git' && args[0] === 'diff') return { status: 0, stdout: 'D\0src/core/restored.js\0' };
-        if (args.includes('--findRelatedTests')) return { status: 0, stdout: 'test/core/restored.test.js\n' };
-        return { status: 0, stdout: '' };
-      },
-    });
-    expect(output.report()).not.toHaveProperty('deletedPaths');
-    expect(output.report().testSelection).toBe('related');
-    expect(runCoverage).toHaveBeenCalledWith(expect.anything(), ['test/core/restored.test.js'], ['src/core/restored.js']);
-  });
+  it.each([true, undefined])(
+    'does not treat Git deletion as current absence when fileExists returns %p',
+    exists => {
+      const { output, runCoverage } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        fileExists: exists === undefined ? undefined : () => exists,
+        runImpl: (command, args) => {
+          if (command === 'git' && args[0] === 'diff')
+            return { status: 0, stdout: 'D\0src/core/restored.js\0' };
+          if (args.includes('--findRelatedTests'))
+            return { status: 0, stdout: 'test/core/restored.test.js\n' };
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(output.report()).not.toHaveProperty('deletedPaths');
+      expect(output.report().testSelection).toBe('related');
+      expect(runCoverage).toHaveBeenCalledWith(
+        expect.anything(),
+        ['test/core/restored.test.js'],
+        ['src/core/restored.js']
+      );
+    }
+  );
 
-  it.each([false, true])('fails safe on malformed %s base comparison status', base => {
-    const { output } = runHandle({
-      argv: base ? ['--base', 'origin/main'] : [],
-      runImpl: (command, args) => {
-        if (args.includes('-co')) return { status: 0, stdout: 'test/core/fallback.test.js\0' };
-        if (args[0] === 'rev-parse') return { status: 0, stdout: 'abc123\n' };
-        if (command === 'git' && args[0] === 'diff' && args.some(value => value.includes('...HEAD')) === base) return { status: 0, stdout: 'D\0old.js\0broken\0' };
-        return { status: 0, stdout: '' };
-      },
-    });
-    expect(output.report()).toMatchObject({ testSelection: 'all-unit', selectedTests: ['test/core/fallback.test.js'], fallbackReason: base ? 'Git returned malformed base change status evidence.' : 'Git returned malformed change status evidence.' });
-    expect(output.report()).not.toHaveProperty('deletedPaths');
-  });
+  it.each([false, true])(
+    'fails safe on malformed %s base comparison status',
+    base => {
+      const { output } = runHandle({
+        argv: base ? ['--base', 'origin/main'] : [],
+        runImpl: (command, args) => {
+          if (args.includes('-co'))
+            return { status: 0, stdout: 'test/core/fallback.test.js\0' };
+          if (args[0] === 'rev-parse') return { status: 0, stdout: 'abc123\n' };
+          if (
+            command === 'git' &&
+            args[0] === 'diff' &&
+            args.some(value => value.includes('...HEAD')) === base
+          )
+            return { status: 0, stdout: 'D\0old.js\0broken\0' };
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+        fallbackReason: base
+          ? 'Git returned malformed base change status evidence.'
+          : 'Git returned malformed change status evidence.',
+      });
+      expect(output.report()).not.toHaveProperty('deletedPaths');
+    }
+  );
 
   it('prints an explicit test plan without running Jest', () => {
     const { result, output, runCommand } = runHandle({
@@ -249,7 +296,8 @@ describe('test impact runner', () => {
         if (command === 'git' && args.includes('--cached'))
           return {
             status: 0,
-            stdout: 'M\0test/core/staged.test.js\0M\0test/core/shared.test.js\0',
+            stdout:
+              'M\0test/core/staged.test.js\0M\0test/core/shared.test.js\0',
           };
         if (command === 'git' && args[0] === 'ls-files')
           return { status: 0, stdout: 'src/core/untracked.js\0' };
