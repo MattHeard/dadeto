@@ -52,3 +52,19 @@ exclude changed Git-discovery grammar. New deletion behavior has separate real-G
 and explicit runner/report assertions. These contracts observe public results,
 full CLI output, permission forwarding, subprocess arguments/options and actual
 coverage selection, not private helper names or source spelling.
+
+Initial whole-module mutation exposed one equivalent parser mutant: removing the
+odd-field-count precheck leaves the same rejection, because the last unmatched
+status has no path and reaches the existing missing-path guard. Remove that
+duplicate precheck rather than adding a mutation exclusion. An independent
+comparison with committed parser `d959b14b03992ba2b0b38bf6c311dd8aae773a39`
+checks every sequence of zero through six tokens drawn from empty, A, D, M, T,
+U, Q, path and a newline-containing name, with and without a trailing NUL.
+All 1,195,742 outcomes match; ordered corpus SHA-256 is
+`264d23ec14d4231d00721a5051c9bc82ea33df4f88f7d077346914626838fb12`.
+Log: `/tmp/dadeto-0nth-parser-equivalence.log`. All six focused suites / 792
+tests then pass with all four changed-module coverage metrics at 100%; see
+`/tmp/dadeto-0nth-parser-hardened-tests.log`. Complete consumer mutation
+hardening remains separate acceptance; the original baseline report is retained
+as `reports/mutation/git-deletion-evidence.initial.json` and must not be called
+a passing run.

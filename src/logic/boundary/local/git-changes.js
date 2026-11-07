@@ -12,7 +12,6 @@ export function parseGitChanges(output) {
   if (output === '') return { ok: true, paths: [], deletedPaths: [] };
   if (!output.endsWith('\0')) return { ok: false };
   const fields = output.slice(0, -1).split('\0');
-  if (fields.length % 2 !== 0) return { ok: false };
   const paths = [];
   const deletedPaths = [];
   for (let index = 0; index < fields.length; index += 2) {
