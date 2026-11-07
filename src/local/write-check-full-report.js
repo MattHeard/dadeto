@@ -3,6 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createCheckFullReport, renderCheckFullReportMarkdown } from '../core/local/checkFullReport.js';
 import { bindStartupEffectBoundary } from './allow-effects.js';
+import { parseGitChanges } from '../logic/boundary/local/git-changes.js';
 
 const coverageDir = path.resolve('reports/coverage');
 const readJson = file => {
@@ -16,18 +17,18 @@ bindStartupEffectBoundary(permission => {
   void permission;
   const baseSha = process.env.DADETO_CHECK_BASE_SHA;
   const changedPaths = baseSha && /^[a-f0-9]{40,64}$/i.test(baseSha)
-    ? spawnSync('git', ['diff', '--name-only', '-z', '--no-renames', `${baseSha}...HEAD`, '--'], { encoding: 'utf8' })
+    ? spawnSync('git', ['diff', '--name-status', '-z', '--no-renames', `${baseSha}...HEAD`, '--'], { encoding: 'utf8' })
     : { error: null, status: 1, stdout: '' };
   const readGit = args => spawnSync('git', args, { encoding: 'utf8' });
+  const changes = parseGitChanges(changedPaths.error || changedPaths.status !== 0 ? null : changedPaths.stdout);
   const commit = process.env.GITHUB_SHA ?? readGit(['rev-parse', 'HEAD']).stdout?.trim() ?? '';
   const report = createCheckFullReport({
     commitSha: commit,
     workflowResult: process.env.CHECK_FULL_RESULT ?? 'unknown',
     coverageRun: readJson(path.join(coverageDir, 'full-test-run.json')),
     coverageSummary: readJson(path.join(coverageDir, 'coverage-summary.json')),
-    changedPaths: changedPaths.error || changedPaths.status !== 0
-      ? []
-      : changedPaths.stdout.split('\0').filter(Boolean),
+    changedPaths: changes.ok ? changes.paths : [],
+    deletedPaths: changes.ok ? changes.deletedPaths : [],
     failureLog: readText(path.resolve('reports/check-full.log')),
   });
   const markdown = renderCheckFullReportMarkdown(report);

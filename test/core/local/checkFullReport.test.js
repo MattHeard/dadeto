@@ -11,6 +11,39 @@ const completeMetrics = {
 };
 
 describe('createCheckFullReport', () => {
+  it('distinguishes a confirmed deleted path from its measured replacement', () => {
+    const oldPath = 'src/core/local/old.js';
+    const newPath = 'src/logic/core/local/new.js';
+    const report = createCheckFullReport({
+      coverageSummary: { total: completeMetrics, [newPath]: completeMetrics },
+      changedPaths: [oldPath, newPath],
+      deletedPaths: [oldPath, oldPath, 'README.md'],
+    });
+    expect(report.changedFileCoverage.map(entry => entry.file)).toEqual([newPath]);
+    expect(report.changedFileCoverageNote).toBe(`Deleted logic files have no current source to measure: \`${oldPath}\`.`);
+    expect(renderCheckFullReportMarkdown(report)).toContain(report.changedFileCoverageNote);
+    expect(report.changedFileCoverageNote).not.toContain('absent from');
+  });
+
+  it('keeps missing new/existing coverage visible beside confirmed deletions', () => {
+    const oldPath = 'src/logic/core/old.js';
+    const missing = 'src/logic/boundary/new.js';
+    const report = createCheckFullReport({
+      coverageSummary: { total: completeMetrics },
+      changedPaths: [oldPath, missing],
+      deletedPaths: [oldPath],
+    });
+    expect(report.changedFileCoverage).toEqual([]);
+    expect(report.changedFileCoverageNote).toBe(`Changed logic files are absent from the coverage summary: \`${missing}\`.\n\nDeleted logic files have no current source to measure: \`${oldPath}\`.`);
+    expect(renderCheckFullReportMarkdown(report)).toContain(report.changedFileCoverageNote);
+  });
+
+  it('does not infer deletions from absent coverage or non-logic deletion metadata', () => {
+    const missing = 'src/logic/core/missing.js';
+    const report = createCheckFullReport({ changedPaths: [missing], deletedPaths: ['src/local/adapter.js'] });
+    expect(report.changedFileCoverageNote).toBe(`Changed logic files are absent from the coverage summary: \`${missing}\`.`);
+  });
+
   it('uses unavailable defaults when the workflow supplied no evidence', () => {
     const report = createCheckFullReport();
 

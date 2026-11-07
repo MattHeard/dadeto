@@ -94,6 +94,15 @@ the architecture. Thin-wrapper preparation remains before the first move.
 
 ## Acceptance per implementation slice
 
+Deletion-evidence slice `dadeto-0nth` introduces an actual pure total Git
+name/status parser under `src/logic/boundary/local/git-changes.js`. Both report
+and impact entry points consume its typed complete/rejected outcome. Confirmed
+deletions stay visible, missing surviving-file coverage remains a failure signal,
+and local source deletions select all unit tests conservatively. See
+`notes/agents/2026-11-07-git-deletion-evidence.md` for the grammar, restored-file
+handling and exact entrypoint fixture. This does not complete the report's JSON
+evidence parsing, trusted formatting migration or remaining legacy modules.
+
 First source slice `dadeto-topt` relocates the report tooling's shared classifier
 to `src/logic/core/local/logic-source-paths.js` with identical bytes and precise
 string/boolean contracts. All active consumers import the destination directly;

@@ -18,7 +18,7 @@ const COVERAGE_METRICS = /** @type {const} */ ([
 
 /**
  * Build a truthful report for the authoritative full-check workflow.
- * @param {{ commitSha?: string, workflowResult?: string, coverageRun?: CoverageRunMetadata | null, coverageSummary?: CoverageSummary | null, changedPaths?: string[], failureLog?: string, coverageThresholds?: Record<string, number> }} input Workflow evidence.
+ * @param {{ commitSha?: string, workflowResult?: string, coverageRun?: CoverageRunMetadata | null, coverageSummary?: CoverageSummary | null, changedPaths?: string[], deletedPaths?: string[], failureLog?: string, coverageThresholds?: Record<string, number> }} input Workflow evidence. Deleted paths must come from successful Git status discovery.
  * @returns {CheckFullReport} Report data for JSON, Markdown, and the Actions summary.
  */
 export function createCheckFullReport({
@@ -27,6 +27,7 @@ export function createCheckFullReport({
   coverageRun = null,
   coverageSummary = null,
   changedPaths = [],
+  deletedPaths = [],
   failureLog = '',
   coverageThresholds = {
     statements: 100,
@@ -67,8 +68,10 @@ export function createCheckFullReport({
         }))
         .filter(entry => entry.metrics.length > 0)
     : [];
+  const deleted = new Set(deletedPaths);
+  const currentChangedPaths = changedPaths.filter(file => !deleted.has(file));
   const changedFileCoverage = coverageData
-    ? [...new Set(changedPaths)]
+    ? [...new Set(currentChangedPaths)]
         .filter(isLogicJavaScriptPath)
         .filter(file => isSummary(coverageData[file]))
         .sort()
@@ -94,8 +97,9 @@ export function createCheckFullReport({
     belowThresholdFiles,
     changedFileCoverage,
     changedFileCoverageNote: changedCoverageNote(
-      changedPaths,
-      changedFileCoverage
+      currentChangedPaths,
+      changedFileCoverage,
+      deletedPaths
     ),
     coverageUnavailableReason: coverageData
       ? null
@@ -328,7 +332,7 @@ function explainCoverageUnavailable({
  * @param {ChangedFileCoverageEntry[]} fileCoverage Reliable file coverage entries.
  * @returns {string | null} Note or null when at least one changed logic file was measured.
  */
-function changedCoverageNote(changedPaths, fileCoverage) {
+function currentCoverageNote(changedPaths, fileCoverage) {
   const changedCoreFiles = changedPaths.filter(isLogicJavaScriptPath);
   const measuredFiles = new Set(fileCoverage.map(file => file.file));
   const missingFiles = changedCoreFiles.filter(
@@ -342,4 +346,23 @@ function changedCoverageNote(changedPaths, fileCoverage) {
   )
     return 'Changed JavaScript files are outside the logic coverage collection (src/core, src/logic/core, src/logic/boundary), so changed-file coverage is unavailable.';
   return 'No changed logic JavaScript files were available for a reliable coverage comparison.';
+}
+
+/**
+ * Keep confirmed deletions visible without calling them missing current coverage.
+ * @param {string[]} changedPaths Surviving changed paths.
+ * @param {ChangedFileCoverageEntry[]} fileCoverage Measured current files.
+ * @param {string[]} deletedPaths Git-confirmed deleted paths.
+ * @returns {string | null} Current coverage and deletion evidence.
+ */
+function changedCoverageNote(changedPaths, fileCoverage, deletedPaths) {
+  const notes = [currentCoverageNote(changedPaths, fileCoverage)];
+  const deletedLogic = [...new Set(deletedPaths)]
+    .filter(isLogicJavaScriptPath)
+    .sort();
+  if (deletedLogic.length > 0)
+    notes.push(
+      `Deleted logic files have no current source to measure: ${deletedLogic.map(file => `\`${file}\``).join(', ')}.`
+    );
+  return notes.filter(Boolean).join('\n\n') || null;
 }

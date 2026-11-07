@@ -1,4 +1,5 @@
 import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
+import { parseGitChanges } from '../../logic/boundary/local/git-changes.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('../../../types/allow-effects').StartupAllowEffectsBoundary} StartupAllowEffectsBoundary */
@@ -249,7 +250,11 @@ function runPlan(permission, deps) {
  * @returns {{exitCode: number}} Test command exit status.
  */
 function runImpact(permission, deps, { includeStaticGates = false } = {}) {
-  const { plan, selectorFailure } = preparePlan(permission, deps);
+  const {
+    plan,
+    selectorFailure,
+    deletedPaths = [],
+  } = preparePlan(permission, deps);
   let exitCode = 0;
   let status = plan.mode === 'none' ? 'skipped' : 'passed';
   let selectedTests = plan.tests;
@@ -324,6 +329,7 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
   }
   const report = {
     changedPaths: plan.changedPaths,
+    ...(deletedPaths.length > 0 ? { deletedPaths } : {}),
     selectedTests,
     testSelection: plan.testSelection,
     fallbackReason: plan.testSelection === 'all-unit' ? plan.reason : null,
@@ -706,7 +712,7 @@ function runJestCommand(permission, deps, args, timeoutMs) {
  * Collect changes and, when needed, ask Jest for related unit tests.
  * @param {AllowEffects} permission Permission for process effects.
  * @param {CheckImpactDependencies} deps CLI and effect dependencies.
- * @returns {{plan: ReturnType<typeof createCheckImpactPlan>, selectorFailure: string}} Prepared test plan.
+ * @returns {{plan: ReturnType<typeof createCheckImpactPlan>, selectorFailure: string, deletedPaths?: string[]}} Prepared test plan.
  */
 function preparePlan(permission, deps) {
   const input = parseImpactArguments(deps.argv, deps.defaultBaseRef);
@@ -718,13 +724,13 @@ function preparePlan(permission, deps) {
 
   const collection = collectChangedPaths(permission, deps, input);
   if (collection.error)
-    return {
-      plan: createCheckImpactPlan({
-        changedPaths: collection.paths,
-        collectionError: collection.error,
-      }),
-      selectorFailure: '',
-    };
+    return createCollectionFallback(collection, collection.error);
+
+  if (collection.deletedPaths.some(file => classifyPath(file) === 'source'))
+    return createCollectionFallback(
+      collection,
+      'Deleted source paths require conservative unit-test selection.'
+    );
 
   const normalized = collection.paths.map(normalizePath);
   if (normalized.some(path => !classifyPath(path))) {
@@ -772,6 +778,23 @@ function preparePlan(permission, deps) {
       relatedTestsResolved,
     }),
     selectorFailure,
+  };
+}
+
+/**
+ * Preserve collected paths when reliable selection is unavailable.
+ * @param {{paths: string[], deletedPaths: string[]}} collection Collected evidence.
+ * @param {string} reason Conservative fallback reason.
+ * @returns {{plan: CheckImpactPlan, selectorFailure: string, deletedPaths: string[]}} Fallback selection.
+ */
+function createCollectionFallback(collection, reason) {
+  return {
+    plan: createCheckImpactPlan({
+      changedPaths: collection.paths,
+      collectionError: reason,
+    }),
+    selectorFailure: '',
+    deletedPaths: collection.deletedPaths,
   };
 }
 
@@ -832,15 +855,16 @@ function parseImpactArguments(argv, defaultBaseRef) {
  * @param {AllowEffects} permission Permission for Git effects.
  * @param {CheckImpactDependencies} deps CLI effects.
  * @param {{paths: string[] | null, baseRef?: string}} input Parsed input.
- * @returns {{paths: string[], error: string}} Changed paths or collection failure.
+ * @returns {{paths: string[], deletedPaths: string[], error: string}} Changed paths or collection failure.
  */
 function collectChangedPaths(permission, deps, input) {
-  if (input.paths) return { paths: input.paths, error: '' };
+  if (input.paths) return { paths: input.paths, deletedPaths: [], error: '' };
   /** @type {string[]} */
   const paths = [];
+  const deletionCandidates = [];
   const calls = [
-    ['diff', '--name-only', '-z', '--no-renames'],
-    ['diff', '--cached', '--name-only', '-z', '--no-renames'],
+    ['diff', '--name-status', '-z', '--no-renames'],
+    ['diff', '--cached', '--name-status', '-z', '--no-renames'],
     ['ls-files', '--others', '--exclude-standard', '-z'],
   ];
   for (const args of calls) {
@@ -851,16 +875,30 @@ function collectChangedPaths(permission, deps, input) {
       commandOptions(deps.rootDir, SELECTOR_TIMEOUT_MS)
     );
     if (result.error || result.status !== 0)
-      return {
+      return failedChangeCollection(
         paths,
-        error: 'Git could not inspect staged, unstaged, or untracked changes.',
-      };
-    paths.push(...splitGitPaths(result.stdout ?? ''));
+        'Git could not inspect staged, unstaged, or untracked changes.'
+      );
+    if (args[0] === 'ls-files')
+      paths.push(...splitGitPaths(result.stdout ?? ''));
+    else {
+      const changes = parseGitChanges(result.stdout ?? '');
+      if (!changes.ok)
+        return failedChangeCollection(
+          paths,
+          'Git returned malformed change status evidence.'
+        );
+      paths.push(...changes.paths);
+      deletionCandidates.push(...changes.deletedPaths);
+    }
   }
 
   if (input.baseRef) {
     if (input.baseRef.startsWith('-'))
-      return { paths, error: 'The selected Git base ref is unsafe.' };
+      return failedChangeCollection(
+        paths,
+        'The selected Git base ref is unsafe.'
+      );
     const resolvedBase = deps.runCommand(
       permission,
       'git',
@@ -878,13 +916,16 @@ function collectChangedPaths(permission, deps, input) {
       resolvedBase.status !== 0 ||
       !resolvedBase.stdout?.trim()
     )
-      return { paths, error: 'Git could not resolve the selected base ref.' };
+      return failedChangeCollection(
+        paths,
+        'Git could not resolve the selected base ref.'
+      );
     const baseDiff = deps.runCommand(
       permission,
       'git',
       [
         'diff',
-        '--name-only',
+        '--name-status',
         '-z',
         '--no-renames',
         `${resolvedBase.stdout.trim()}...HEAD`,
@@ -893,13 +934,35 @@ function collectChangedPaths(permission, deps, input) {
       commandOptions(deps.rootDir, SELECTOR_TIMEOUT_MS)
     );
     if (baseDiff.error || baseDiff.status !== 0)
-      return {
+      return failedChangeCollection(
         paths,
-        error: 'Git could not compare changes with the selected base ref.',
-      };
-    paths.push(...splitGitPaths(baseDiff.stdout ?? ''));
+        'Git could not compare changes with the selected base ref.'
+      );
+    const changes = parseGitChanges(baseDiff.stdout ?? '');
+    if (!changes.ok)
+      return failedChangeCollection(
+        paths,
+        'Git returned malformed base change status evidence.'
+      );
+    paths.push(...changes.paths);
+    deletionCandidates.push(...changes.deletedPaths);
   }
-  return { paths: [...new Set(paths)], error: '' };
+  const deletedPaths = [...new Set(deletionCandidates)].filter(file =>
+    deps.fileExists
+      ? !deps.fileExists(deps.pathModule.resolve(deps.rootDir, file))
+      : false
+  );
+  return { paths: [...new Set(paths)], deletedPaths, error: '' };
+}
+
+/**
+ * Reject partial deletion evidence while retaining paths for conservative tests.
+ * @param {string[]} paths Paths collected before failure.
+ * @param {string} error Collection failure reason.
+ * @returns {{paths: string[], deletedPaths: string[], error: string}} Failed collection.
+ */
+function failedChangeCollection(paths, error) {
+  return { paths, deletedPaths: [], error };
 }
 
 /**
