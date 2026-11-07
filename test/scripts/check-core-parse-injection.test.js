@@ -185,10 +185,10 @@ test('reads source as UTF-8 and emits both exact success diagnostics', () => {
   );
   expect(options.stdout.log.mock.calls).toEqual([
     [
-      'Checked parse-not-validate in src/core; no validation helpers found outside boundaries.',
+      'Checked parse-not-validate across configured source roots; no validator-only helpers found.',
     ],
     [
-      'Checked parse-boundary in src/core; no raw-input interpretation found outside boundaries.',
+      'Checked parse-boundary across configured source roots; no raw-input interpretation found outside parser boundaries.',
     ],
   ]);
 });

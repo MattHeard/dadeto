@@ -1,12 +1,21 @@
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue, walkJavaScriptFiles } from './gate-utils.js';
 import { readExemptions } from './read-exemptions.js';
+import { LOGIC_SOURCE_ROOTS } from '../local/logic-source-paths.js';
 
-/** @typedef {{ name: string, labels: string[] }} ClassifiedFunction */
+/** @typedef {{label: string, kind: string}} ClassificationSignal */
+/** @typedef {{ name: string, labels: string[], signals?: ClassificationSignal[] }} ClassifiedFunction */
 /** @typedef {(source: string) => ClassifiedFunction[]} ClassifySource */
 
 const DEFAULT_ROOT_DIR = '.';
 const DEFAULT_SOURCE_ROOT = 'src/core';
+const TRUSTED_LOGIC_ROOT = 'src/logic/core/';
+const BOUNDARY_LOGIC_ROOT = 'src/logic/boundary/';
+const RAW_INPUT_SIGNALS = new Set([
+  'primitive_parse',
+  'date_parse',
+  'schema_parse',
+]);
 const DEFAULT_CONFIG_PATH = 'core-parse-exemptions.json';
 const DEFAULT_STDOUT = { log() {}, error() {} };
 /**
@@ -72,6 +81,7 @@ function joinPath(...segments) {
  *   stdout: { log: (line: string) => void, error: (line: string) => void },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   sourceRoots: Array<{path: string, optional: boolean}>,
  *   configPath: string,
  * }} Normalized options.
  */
@@ -83,8 +93,22 @@ function normalizeOptions(options = { classifySource: missingClassifier }) {
     stdout: useDefaultValue(options.stdout, DEFAULT_STDOUT),
     rootDir: useDefaultValue(options.rootDir, DEFAULT_ROOT_DIR),
     sourceRoot: useDefaultValue(options.sourceRoot, DEFAULT_SOURCE_ROOT),
+    sourceRoots: selectSourceRoots(options.sourceRoot),
     configPath: useDefaultValue(options.configPath, DEFAULT_CONFIG_PATH),
   };
+}
+
+/**
+ * Preserve an explicit single-root scan; future default roots may be absent.
+ * @param {string | undefined} sourceRoot Explicit caller selection.
+ * @returns {Array<{path: string, optional: boolean}>} Scan roots.
+ */
+function selectSourceRoots(sourceRoot) {
+  if (sourceRoot !== undefined) return [{ path: sourceRoot, optional: false }];
+  return LOGIC_SOURCE_ROOTS.map(path => ({
+    path,
+    optional: path !== DEFAULT_SOURCE_ROOT,
+  }));
 }
 
 /**
@@ -102,7 +126,7 @@ function readExemptionsFromFsModule(deps) {
 
 /**
  * @param {string} rootDir Repository root path.
- * @param {string} sourceRoot Source tree path relative to the root.
+ * @param {{path: string, optional: boolean}} sourceRoot Source tree selection.
  * @param {{
  *   classifySource: ClassifySource,
  *   fsModule: { readdirSync: (dirPath: string, options: { withFileTypes: true }) => Array<{ isDirectory: () => boolean, isFile: () => boolean, name: string }> },
@@ -112,8 +136,8 @@ function readExemptionsFromFsModule(deps) {
  * @returns {string[]} Repo-relative JavaScript files under src/core.
  */
 function listJsFiles(rootDir, sourceRoot, deps) {
-  const baseDir = deps.pathModule.resolve(rootDir, sourceRoot);
-  return walk(baseDir, deps).map(filePath =>
+  const baseDir = deps.pathModule.resolve(rootDir, sourceRoot.path);
+  return walk(baseDir, deps, sourceRoot.optional).map(filePath =>
     filePath.replaceAll(deps.pathModule.sep, '/')
   );
 }
@@ -126,14 +150,55 @@ function listJsFiles(rootDir, sourceRoot, deps) {
  *   pathModule: { join: (...segments: string[]) => string, resolve: (...segments: string[]) => string, relative: (from: string, to: string) => string, sep: string },
  *   rootDir: string,
  * }} deps Scan dependencies.
+ * @param {boolean} optional Whether the root may be absent.
  * @returns {string[]} Repo-relative JavaScript files discovered under the directory.
  */
-function walk(dirPath, deps) {
+function walk(dirPath, deps, optional) {
   return walkJavaScriptFiles(
     dirPath,
-    (dir, options) => deps.fsModule.readdirSync(dir, options),
+    (dir, options) =>
+      readScanDirectory(dir, options, {
+        baseDir: dirPath,
+        optional,
+        fsModule: deps.fsModule,
+      }),
     deps.pathModule,
     fullPath => deps.pathModule.relative(deps.rootDir, fullPath)
+  );
+}
+
+/**
+ * Only absence of an optional scan root is benign; nested failures propagate.
+ * @param {string} directory Requested directory.
+ * @param {{withFileTypes: true}} options Directory-entry options.
+ * @param {{baseDir: string, optional: boolean, fsModule: Pick<ReturnType<typeof normalizeOptions>['fsModule'], 'readdirSync'>}} scan Scan dependencies.
+ * @returns {Array<{isDirectory: () => boolean, isFile: () => boolean, name: string}>} Entries.
+ */
+function readScanDirectory(directory, options, scan) {
+  try {
+    return scan.fsModule.readdirSync(directory, options);
+  } catch (error) {
+    if (
+      scan.optional &&
+      directory === scan.baseDir &&
+      isMissingDirectory(error)
+    ) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+/**
+ * @param {unknown} error Filesystem failure.
+ * @returns {boolean} Whether the directory is absent.
+ */
+function isMissingDirectory(error) {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'ENOENT'
   );
 }
 
@@ -172,23 +237,32 @@ function formatRawInputFailures(violations) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   sourceRoots: Array<{path: string, optional: boolean}>,
  *   configPath: string,
  * }} deps Parse gate dependencies.
- * @param {(source: string) => T[]} extractViolationsFromSource Source extractor.
+ * @param {(source: string, filePath: string) => T[]} extractViolationsFromSource Source extractor.
+ * @param {(filePath: string) => boolean} isAllowedBoundary Applicable boundary policy.
  * @returns {Array<{ filePath: string } & T>} Violations.
  */
-function findViolationsInCore(deps, extractViolationsFromSource) {
+function findViolationsInCore(
+  deps,
+  extractViolationsFromSource,
+  isAllowedBoundary
+) {
   const exemptions = readExemptionsFromFsModule(deps);
   const fileViolations = [];
-  for (const filePath of listJsFiles(deps.rootDir, deps.sourceRoot, deps)) {
-    if (BOUNDARY_FILE_PATTERN.test(filePath) || exemptions.has(filePath)) {
+  const files = deps.sourceRoots.flatMap(root =>
+    listJsFiles(deps.rootDir, root, deps)
+  );
+  for (const filePath of files) {
+    if (isAllowedBoundary(filePath) || exemptions.has(filePath)) {
       continue;
     }
     const source = deps.fsModule.readFileSync(
       deps.pathModule.resolve(deps.rootDir, filePath),
       'utf8'
     );
-    for (const violation of extractViolationsFromSource(source)) {
+    for (const violation of extractViolationsFromSource(source, filePath)) {
       fileViolations.push({ filePath, ...violation });
     }
   }
@@ -207,12 +281,17 @@ function findViolationsInCore(deps, extractViolationsFromSource) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   sourceRoots: Array<{path: string, optional: boolean}>,
  *   configPath: string,
  * }} deps Parse-validate gate dependencies.
  * @returns {Array<{ filePath: string, name: string }>} Validation helper violations.
  */
 function findValidationViolations(deps) {
-  return findClassifierViolations(deps, isValidatorOnlyFunction);
+  return findClassifierViolations(
+    deps,
+    isValidatorOnlyFunction,
+    isLegacyBoundaryFile
+  );
 }
 
 /**
@@ -227,12 +306,17 @@ function findValidationViolations(deps) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   sourceRoots: Array<{path: string, optional: boolean}>,
  *   configPath: string,
  * }} deps Parse-boundary gate dependencies.
  * @returns {Array<{ filePath: string, name: string }>} Raw-input violations.
  */
 function findRawInputViolations(deps) {
-  return findClassifierViolations(deps, isParserFunction);
+  return findClassifierViolations(
+    deps,
+    isRawInputFunction,
+    isParserBoundaryFile
+  );
 }
 
 /**
@@ -247,24 +331,96 @@ function findRawInputViolations(deps) {
  *   },
  *   rootDir: string,
  *   sourceRoot: string,
+ *   sourceRoots: Array<{path: string, optional: boolean}>,
  *   configPath: string,
  * }} deps Parse gate dependencies.
- * @param {(fn: { name: string, labels: string[] }) => boolean} predicate Function classifier predicate.
+ * @param {(fn: ClassifiedFunction, filePath: string) => boolean} predicate Function classifier predicate.
+ * @param {(filePath: string) => boolean} isAllowedBoundary Applicable boundary policy.
  * @returns {Array<{ filePath: string, name: string }>} Violations.
  */
-function findClassifierViolations(deps, predicate) {
-  return findViolationsInCore(deps, source => {
-    const functions = deps.classifySource(source);
-    return functions.filter(predicate).map(fn => ({ name: fn.name }));
-  });
+function findClassifierViolations(deps, predicate, isAllowedBoundary) {
+  return findViolationsInCore(
+    deps,
+    (source, filePath) => {
+      const functions = deps.classifySource(source);
+      return functions
+        .filter(fn => predicate(fn, filePath))
+        .map(fn => ({ name: fn.name }));
+    },
+    isAllowedBoundary
+  );
 }
 
 /**
- * @param {{ name: string, labels: string[] }} fn Classified function.
+ * @param {string} filePath Normalized repository-relative file.
+ * @returns {boolean} Whether it belongs to either destination namespace.
+ */
+function isDestinationLogicFile(filePath) {
+  return (
+    filePath.startsWith(TRUSTED_LOGIC_ROOT) ||
+    filePath.startsWith(BOUNDARY_LOGIC_ROOT)
+  );
+}
+
+/**
+ * @param {string} filePath Normalized repository-relative file.
+ * @returns {boolean} Whether legacy integration-path exemptions apply.
+ */
+function isLegacyBoundaryFile(filePath) {
+  if (isDestinationLogicFile(filePath)) return false;
+  return BOUNDARY_FILE_PATTERN.test(filePath);
+}
+
+/**
+ * @param {string} filePath Normalized repository-relative file.
+ * @returns {boolean} Whether raw-input parsing belongs here.
+ */
+function isParserBoundaryFile(filePath) {
+  return (
+    filePath.startsWith(BOUNDARY_LOGIC_ROOT) || isLegacyBoundaryFile(filePath)
+  );
+}
+
+/**
+ * @param {ClassifiedFunction} fn Classified function.
+ * @param {string} filePath Normalized repository-relative file.
  * @returns {boolean} True when the function is validator-only.
  */
-function isValidatorOnlyFunction(fn) {
+function isValidatorOnlyFunction(fn, filePath) {
+  if (isDestinationLogicFile(filePath) && fn.signals) {
+    return isDestinationValidation(fn, filePath, fn.signals);
+  }
   return fn.labels.includes('validator') && !isParserFunction(fn);
+}
+
+/**
+ * Core construction cannot conceal validation; boundary construction may parse.
+ * @param {ClassifiedFunction} fn Complete classification.
+ * @param {string} filePath Normalized repository-relative file.
+ * @param {ClassificationSignal[]} signals Observed AST signals.
+ * @returns {boolean} Whether validation-only logic violates the namespace.
+ */
+function isDestinationValidation(fn, filePath, signals) {
+  if (filePath.startsWith(BOUNDARY_LOGIC_ROOT) && isParserFunction(fn))
+    return false;
+  return signals.some(
+    signal => signal.label === 'validator' && signal.kind !== 'comparison_guard'
+  );
+}
+
+/**
+ * Generic construction signals are domain computation, not proof of raw input.
+ * @param {ClassifiedFunction} fn Classified function.
+ * @param {string} filePath Normalized repository-relative file.
+ * @returns {boolean} Whether raw-input parsing is present.
+ */
+function isRawInputFunction(fn, filePath) {
+  if (isDestinationLogicFile(filePath) && fn.signals) {
+    return fn.signals.some(
+      signal => signal.label === 'parser' && RAW_INPUT_SIGNALS.has(signal.kind)
+    );
+  }
+  return isParserFunction(fn);
 }
 
 /**
@@ -306,14 +462,14 @@ function createGateRunner({ successMessage, findViolations, formatFailures }) {
 
 const createParseNotValidateHandle = createGateRunner({
   successMessage:
-    'Checked parse-not-validate in src/core; no validation helpers found outside boundaries.',
+    'Checked parse-not-validate across configured source roots; no validator-only helpers found.',
   findViolations: findValidationViolations,
   formatFailures: formatValidationFailures,
 });
 
 const createParseBoundaryHandle = createGateRunner({
   successMessage:
-    'Checked parse-boundary in src/core; no raw-input interpretation found outside boundaries.',
+    'Checked parse-boundary across configured source roots; no raw-input interpretation found outside parser boundaries.',
   findViolations: findRawInputViolations,
   formatFailures: formatRawInputFailures,
 });

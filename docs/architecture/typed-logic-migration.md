@@ -73,6 +73,25 @@ realtime 2, scripts 15, wgs84 2. Matching test files: 697.
    preserve stable outputs, update agent documentation, then remove temporary
    both-root support once legacy core is empty. No deadline or big-bang rewrite.
 
+## Parser-root preflight — 7 November 2026
+
+Bead `dadeto-qtxd` extends default parser-policy discovery to the shared legacy,
+trusted-core and boundary roots, retaining an explicit single-root override.
+Only root-level ENOENT for optional future roots is tolerated; other scan/read
+failures propagate. Legacy integration-path exemptions never apply inside
+either destination namespace. Boundary permits parsing, while trusted core
+rejects raw interpretation and validator-only logic under every domain path.
+
+Generic classifier labels also describe legitimate object/array construction,
+map transformations and comparisons. Destination policy uses distinct AST
+signal kinds so these domain operations remain valid, and retains every kind
+so an earlier domain signal cannot hide later raw parsing/type validation.
+These syntactic checks do not prove a guard redundant: trace typed callers and
+preserve meaningful state decisions. See the reproducible fixtures and mutation
+evaluator in `notes/agents/2026-11-07-logic-parser-roots.md`. Final acceptance is
+recorded in the owning bead; this preflight does not move any source or complete
+the architecture. Thin-wrapper preparation remains before the first move.
+
 ## Acceptance per implementation slice
 
 Use focused tests and check:impact:run for moved logic coverage, npm run check

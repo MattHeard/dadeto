@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import { parse } from '@babel/parser';
+import { isTypeofComparison, recordClassificationSignal } from './src/core/scripts/classification-signals.js';
 
 const PARSER_PLUGINS = [
   'jsx',
@@ -102,12 +103,12 @@ function classifyFunction(node, filePath) {
   const body = getFunctionBody(node);
   const signals = [];
   const seenLabels = new Set();
+  const seenSignals = new Set();
+  const signalState = { signals, seenLabels, seenSignals };
   const startLocation = getStartLocation(node);
   walkNode(body, current => {
     const signal = classifySignal(current);
-    if (!signal || seenLabels.has(signal.label)) return;
-    seenLabels.add(signal.label);
-    signals.push(signal);
+    recordClassificationSignal(signal, signalState);
   });
   const labels = SIGNAL_ORDER.filter(label => seenLabels.has(label));
   return {
@@ -208,6 +209,7 @@ function parserSignalKind(node) {
 }
 
 function validatorSignalKind(node) {
+  if (node.type === 'BinaryExpression' && isTypeofComparison(node)) return 'type_guard';
   if (node.type === 'BinaryExpression' && node.operator === 'in') return 'property_presence';
   if (node.type === 'BinaryExpression' && isNullishComparison(node)) return 'nullish_guard';
   if (node.type === 'CallExpression' && isHasOwnPropertyCall(node)) return 'property_presence';
