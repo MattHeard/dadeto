@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!src/cloud/allow-effects.js',
     '!vendor/deepmerge/**',
     '!test/core/local/gcp-simulator/playwright-runner.test.js',

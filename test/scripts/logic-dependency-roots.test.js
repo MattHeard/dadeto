@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { createCheckDepcruiseHandle } from '../../src/core/scripts/check-depcruise.js';
 import { createCheckDepcruiseScopeDeps } from '../../src/local/check-depcruise-scope.js';
-import { LOGIC_SOURCE_ROOTS } from '../../src/core/local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from '../../src/logic/core/local/logic-source-paths.js';
 
 const temporaryRoots = [];
 afterEach(() => {
