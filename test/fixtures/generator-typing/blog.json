@@ -1,0 +1,55 @@
+{
+  "posts": [
+    {
+      "key": "OLDER", "title": "Legacy defaults", "publicationDate": "2020-01-02", "tags": [],
+      "toy": { "modulePath": "/old.js", "functionName": "oldToy" },
+      "content": [
+        "old text",
+        { "type": "quote", "content": ["first paragraph", "second paragraph"] },
+        { "type": "manual", "content": "plain manual" },
+        { "type": "manual", "id": "", "title": "", "content": ["one", "two"] },
+        { "type": "manual" }
+      ],
+      "relatedLinks": [{ "url": "/default", "title": "Plain link" }]
+    },
+    {
+      "key": "NEWER", "title": "All ordered payloads", "publicationDate": "2026-11-07", "release": "beta",
+      "tags": ["one", "two&<>\"'"],
+      "illustration": { "fileType": "png", "altText": "Legacy <image> & caption" },
+      "audio": { "fileType": "ogg" },
+      "youtube": { "id": "legacy-video", "timestamp": 0 },
+      "toy": { "modulePath": "/new.js", "functionName": "newToy", "defaultInputMethod": "number", "defaultOutputMethod": "pre" },
+      "content": [
+        "primitive text", 42, false, null,
+        { "type": "text", "content": "typed text" },
+        { "type": "quote", "content": "one quotation" },
+        { "type": "illustration", "content": { "fileName": "custom", "fileType": "webp", "altText": "Ordered & image" } },
+        { "type": "audio", "content": { "fileType": "mp3" } },
+        { "type": "video", "content": { "id": "ordered-video", "timestamp": 23, "title": "Video <title>" } },
+        { "type": "manual", "id": "remote&guide", "title": "Remote <guide>", "src": "/guide?one=1&two=2" },
+        { "type": "manual", "id": "markdown", "title": "Markdown", "markdown": "# <heading> & text" },
+        { "type": "manual", "src": "", "markdown": "src takes precedence" },
+        { "type": "toy" },
+        { "type": "table", "source": "rows.jsonl", "columns": ["name", "value"], "collapsed": true },
+        { "type": "links", "content": [{ "type": "tool", "url": "/tool", "title": "Tool" }] }
+      ],
+      "relatedLinks": [
+        { "type": "book", "url": "/book?a=1&b=2", "title": "Book <title>", "author": "An & author", "source": "A \"source\"", "quote": "A 'quote'" },
+        { "type": "microblog", "url": "/micro", "title": "Microblog" },
+        { "type": "article", "url": "/article", "title": "Article" },
+        { "type": "report", "url": "/report", "title": "Report" },
+        { "type": "", "url": "", "title": "", "author": "", "source": "", "quote": "" },
+        {},
+        { "type": "tool", "url": 0, "title": false, "author": 0, "source": false, "quote": 0 }
+      ]
+    },
+    { "key": "MIDDLE", "title": "No content or toy", "publicationDate": "2025-05-06", "relatedLinks": [] },
+    { "key": "MANUAL-FIRST", "title": "Manual precedes text", "publicationDate": "2024-04-04", "content": [{ "type": "manual", "content": ["opening"] }, { "type": "text", "content": "after manual" }] },
+    { "key": "QUOTE-FIRST", "title": "Quotation precedes text", "publicationDate": "2023-03-03", "content": [{ "type": "quote", "content": "opening quotation" }, "after quotation"] },
+    { "key": "TOY-NO-LINKS", "title": "Toy fallback without links", "publicationDate": "2021-02-03", "toy": { "modulePath": "/text.js", "functionName": "textToy", "defaultInputMethod": "text", "defaultOutputMethod": "text" }, "content": ["fallback toy at end"] },
+    { "key": "NO-MODULE", "title": "Incomplete toy", "publicationDate": "2019-01-01", "toy": { "functionName": "incomplete" } },
+    { "key": "NO-FUNCTION", "title": "Incomplete toy", "publicationDate": "2018-01-01", "toy": { "modulePath": "/incomplete.js" } },
+    { "key": "BAD-MANUAL-ID", "title": "Manual metadata compatibility", "publicationDate": "2017-01-01", "content": [{ "type": "manual", "id": 42, "title": 42, "content": "Non-string metadata falls back" }] },
+    { "key": "UNDATED", "title": "No date metadata", "publicationDate": "", "content": [] }
+  ]
+}

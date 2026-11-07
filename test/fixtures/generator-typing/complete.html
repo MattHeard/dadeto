@@ -1,0 +1,787 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Matt Heard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Sono:wght@200..800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <style>
+  @font-face {
+    font-family: "DADETO Sarasa";
+    src: url("/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "DADETO Sarasa";
+    src: url("/fonts/sarasa-gothic/v1.0.40/sarasa-fixed-sc-bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    color-scheme: dark;
+    --bg: #121212;
+    --terminal-bg: #121212;
+    --terminal-fg: #cccccc;
+    --terminal-key: #33ccff;
+    --terminal-key-muted: color-mix(in srgb, var(--terminal-key) 46%, var(--bg));
+    --terminal-heading: #ffffff;
+    --terminal-accent: #00ffff;
+    --terminal-hover: #33ffff;
+    --terminal-panel: #1a1a1a;
+    --terminal-warning: #ffa500;
+    --terminal-border: #33ccff;
+    --terminal-success: #00ff00;
+    --terminal-error: #ff0000;
+    --cell-w: 9.64px;
+    --cell-h: 24px;
+    --cols: 80;
+    --rows: 24;
+    --font-stack: "DADETO Sarasa", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    min-height: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 100% 3px;
+    color: var(--terminal-fg);
+    font-family: var(--font-stack);
+    font-size: 16px;
+    line-height: var(--cell-h);
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    text-rendering: geometricPrecision;
+  }
+
+  #container {
+    width: min(100%, calc(var(--cols) * var(--cell-w)));
+    min-height: calc(var(--rows) * var(--cell-h));
+    margin-inline: 0 auto;
+    padding: 0 0 32px;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  #container.toy-focus-mode-host {
+    width: 100vw;
+    max-width: 100vw;
+    overflow: visible;
+  }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 5ch minmax(0, 1fr);
+    padding-bottom: 0;
+    gap: 0 1ch;
+    align-items: start;
+    font: 16px / var(--cell-h) var(--font-stack);
+    letter-spacing: 0;
+    tab-size: 1;
+  }
+
+  .entry.toy-focus-mode {
+    width: 100%;
+    min-height: 100dvh;
+    max-width: 100%;
+    margin-inline: 0;
+    padding-inline: 1ch;
+  }
+
+  .entry.toy-focus-mode > .value {
+    min-width: 0;
+  }
+
+  .entry:first-of-type {
+    gap: 0 1ch;
+  }
+
+  .entry.nav-entry {
+    gap: 0 1ch;
+  }
+
+  .key {
+    font-weight: 700;
+    color: var(--terminal-key-muted);
+    text-align: right;
+    padding: 0;
+    transition: color 120ms ease;
+  }
+
+  .key:not(.article-title):hover {
+    color: var(--terminal-key);
+  }
+
+  .value {
+    text-align: left;
+    color: var(--terminal-fg);
+    min-width: 0;
+  }
+
+  .article-title {
+    color: var(--terminal-bg);
+    background-color: var(--terminal-accent);
+  }
+
+  .media {
+    color: var(--terminal-success);
+  }
+
+  .footer {
+    font-style: italic;
+  }
+
+  .full-width {
+    white-space: nowrap;
+    font-family: var(--font-stack);
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: clip;
+    line-height: var(--cell-h);
+    color: var(--terminal-accent);
+  }
+
+  h1, h2, h3 {
+    color: var(--terminal-heading);
+    font-size: 16px;
+    line-height: var(--cell-h);
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  img {
+    width: auto;
+    max-width: min(100%, calc(48 * var(--cell-w)));
+    max-height: calc(18 * var(--cell-h));
+    height: auto;
+    display: block;
+    filter: sepia(0.8) hue-rotate(151deg) saturate(2);
+    object-fit: contain;
+    object-position: top left;
+  }
+
+  .value:has(> img),
+  .value:has(> audio),
+  p.value:has(> iframe) {
+    display: block;
+    width: min(100%, calc(56 * var(--cell-w)));
+    min-height: var(--cell-h);
+    padding: var(--cell-h) 1ch;
+    background: var(--terminal-panel);
+    border: 1px solid var(--terminal-border);
+    overflow: hidden;
+  }
+
+  p.value:has(> iframe) {
+    height: calc(18 * var(--cell-h));
+    padding: 0;
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  audio {
+    width: min(100%, calc(48 * var(--cell-w)));
+    height: calc(2 * var(--cell-h));
+    display: block;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  ul, .related-links {
+    margin: 0;
+    padding-left: 0;
+    list-style-type: none;
+  }
+  
+  ul li::before, .related-links li::before {
+    content: "- ";
+    color: var(--terminal-key);
+  }
+
+  .manual {
+    display: grid;
+    gap: 1em;
+  }
+
+  .manual-toggle {
+    color: var(--terminal-key);
+  }
+
+  .manual-toggle-menu {
+    color: var(--terminal-key);
+    white-space: nowrap;
+  }
+
+  .manual-link {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--terminal-accent);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-decoration: none;
+  }
+
+  .manual-link:hover,
+  .manual-link:focus {
+    color: var(--terminal-hover);
+    text-decoration: underline;
+    outline: 0;
+  }
+
+  .manual-body {
+    display: grid;
+    gap: 1em;
+  }
+
+  .manual-markdown {
+    display: block;
+    font: inherit;
+    margin: 0;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  .manual-markdown a {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .manual-markdown a:hover,
+  .manual-markdown a:focus-visible {
+    color: var(--terminal-hover);
+  }
+
+  .manual-body[hidden] {
+    display: none;
+  }
+
+  a {
+    color: var(--terminal-accent);
+    text-decoration: none;
+  }
+
+  a:hover,
+  a:focus {
+    color: var(--terminal-hover);
+    text-decoration: underline;
+    outline: 0;
+  }
+
+  h1 > a, h2 > a, h3 > a {
+    color: var(--terminal-heading);
+  }
+
+  .warning {
+    color: var(--terminal-warning);
+  }
+
+  .error {
+    color: var(--terminal-error);
+  }
+
+  .success {
+    color: var(--terminal-success);
+  }
+
+  .metadata {
+    color: var(--terminal-key);
+  }
+
+  code {
+    background-color: var(--terminal-panel);
+    color: var(--terminal-accent);
+  }
+
+  pre:not(.header-banner) {
+    background: linear-gradient(0deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    overflow-x: auto;
+    margin: 1.5em 0px;
+  }
+
+  .header-banner {
+    background: linear-gradient(0deg, #00ffff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0px;
+    margin-bottom: 1em;
+    overflow: visible;
+  }
+
+  #audio-controls {
+    background-color: var(--terminal-panel);
+    color: var(--terminal-accent);
+    display: inline-block;
+  }
+
+  button {
+    border: 1px solid var(--terminal-border);
+    border-radius: 0;
+    padding: 0 1ch;
+    min-height: var(--cell-h);
+    background: var(--terminal-panel);
+    color: var(--terminal-accent);
+    cursor: pointer;
+    font: inherit;
+    line-height: var(--cell-h);
+  }
+
+  button:hover {
+    text-decoration: underline;
+  }
+
+  button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  .audio-btn {
+    height: 2em;
+    margin-right: 1em;
+  }
+
+  blockquote {
+    font-style: italic;
+    padding: 1.5em 2ch;
+    margin: 0;
+    background-color: #1a1a1a;
+    position: relative;
+  }
+
+  .corner {
+    position: absolute;
+    display: block;
+    width: 2ch;
+    height: 1.5em;
+  }
+
+  .corner .h-line,
+  .corner .v-line {
+    position: absolute;
+    background: var(--terminal-fg);
+    display: block;
+  }
+
+  .h-line {
+    height: 2px;
+    width: 2ch;
+  }
+
+  .v-line {
+    width: 2px;
+    height: 1.5em;
+  }
+
+  .corner-tl {
+    top: 0;
+    left: 0;
+  }
+
+  .corner-tl .h-line {
+    top: 0;
+    left: 0;
+  }
+
+  .corner-tl .v-line {
+    top: 0;
+    left: 0;
+  }
+
+  .corner-tr {
+    top: 0;
+    right: 0;
+  }
+
+  .corner-tr .h-line {
+    top: 0;
+    right: 0;
+  }
+
+  .corner-tr .v-line {
+    top: 0;
+    right: 0;
+  }
+
+  .corner-bl {
+    bottom: 0;
+    left: 0;
+  }
+
+  .corner-bl .h-line {
+    bottom: 0;
+    left: 0;
+  }
+
+  .corner-bl .v-line {
+    bottom: 0;
+    left: 0;
+  }
+
+  .corner-br {
+    bottom: 0;
+    right: 0;
+  }
+
+  .corner-br .h-line {
+    bottom: 0;
+    right: 0;
+  }
+
+  .corner-br .v-line {
+    bottom: 0;
+    right: 0;
+  }
+
+  .release-beta {
+    display: none;
+  }
+
+  .dendrite-form > div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5em;
+  }
+
+  .dendrite-form label {
+    margin-bottom: 0.25em;
+  }
+
+  input:not([type="file"]):not([type="checkbox"]),
+  textarea,
+  select {
+    display: block;
+    width: 100%;
+    min-height: var(--cell-h);
+    background-color: var(--terminal-panel);
+    color: var(--terminal-accent);
+    border: 1px solid var(--terminal-border);
+    border-radius: 0;
+    padding: 0 1ch;
+    margin: 0;
+    font: inherit;
+    line-height: var(--cell-h);
+    letter-spacing: 0;
+    accent-color: var(--terminal-accent);
+  }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-left: calc(1ch - 1px);
+    padding-right: 2.5ch;
+    background-image: none;
+  }
+
+  input:not([type="file"]):not([type="checkbox"]):focus,
+  textarea:focus,
+  select:focus {
+    outline: 1px solid var(--terminal-hover);
+    outline-offset: 0;
+  }
+
+  select.input,
+  select.output {
+    display: inline-block;
+    width: auto;
+    max-width: 100%;
+    margin-right: 1ch;
+  }
+
+  .canvas-doodle-output {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .canvas-doodle-output > canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  .select-wrapper {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .select-wrapper::after {
+    content: "▾";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0.75ch;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    color: inherit;
+    opacity: 0.8;
+    font-size: 0.8em;
+  }
+
+  .select-wrapper > select {
+    display: block;
+    inline-size: 100%;
+  }
+
+  input[type="checkbox"] {
+    inline-size: 1ch;
+    block-size: var(--cell-h);
+    margin: 0 1ch 0 0;
+    vertical-align: top;
+    accent-color: var(--terminal-accent);
+  }
+
+  .auto-submit-label {
+    display: inline-flex;
+    align-items: flex-start;
+    min-height: var(--cell-h);
+    margin-left: 1ch;
+    color: var(--terminal-fg);
+  }
+
+  .toy-focus-toggle {
+    margin-right: 1ch;
+  }
+
+  .filter-button {
+    cursor: pointer;
+    transition: color 120ms ease;
+  }
+
+  .filter-button:hover {
+    text-decoration: underline;
+  }
+
+  .filter-button.active {
+    font-weight: bold;
+  }
+
+  .toy-textarea {
+    display: block;
+    width: 100%;
+    min-height: calc(6 * var(--cell-h));
+    box-sizing: border-box;
+  }
+
+  .realtime-voice-toy {
+    border: 1px solid var(--terminal-border);
+    padding: var(--cell-h) 1ch;
+    background: var(--terminal-panel);
+  }
+
+  .realtime-voice-toy h3 {
+    margin-top: 0;
+  }
+
+  .realtime-voice-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1ch;
+    margin: var(--cell-h) 0;
+  }
+
+  .realtime-voice-controls button {
+    min-width: 12ch;
+  }
+
+  .mobile-controls-grid button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  .mosslight-keypad-form {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mosslight-keypad-form > .mosslight-keypad {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: "dpad face" "system system";
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    padding: 14px;
+    border: 1px solid #566d68;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #253b40, #152930);
+    box-shadow: inset 0 1px #d4e5c51c, 0 8px 18px #080e1166;
+  }
+
+  .mosslight-keypad-dpad {
+    grid-area: dpad;
+    display: grid;
+    grid-template: repeat(2, 48px) / repeat(3, 48px);
+    gap: 4px;
+  }
+
+  .mosslight-keypad-button {
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid #728680;
+    border-radius: 9px;
+    color: #eef0dc;
+    background: linear-gradient(145deg, #40575a, #263d42);
+    box-shadow: inset 0 1px #ffffff20, 0 3px #0c1c22;
+    font: 700 15px 'DM Mono', monospace;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  .mosslight-keypad-button:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px #ffffff20, 0 1px #0c1c22;
+  }
+
+  .mosslight-keypad-dpad .up { grid-area: 1 / 2; }
+  .mosslight-keypad-dpad .left { grid-area: 2 / 1; }
+  .mosslight-keypad-dpad .down { grid-area: 2 / 2; }
+  .mosslight-keypad-dpad .right { grid-area: 2 / 3; }
+
+  .mosslight-keypad-face {
+    grid-area: face;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: rotate(-18deg);
+  }
+
+  .mosslight-keypad-face .mosslight-keypad-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border-color: #d3948e;
+    background: linear-gradient(145deg, #a65564, #713e50);
+    font-size: 19px;
+  }
+
+  .mosslight-keypad-face .b { transform: translateY(-7px); }
+
+  .mosslight-keypad-system {
+    grid-area: system;
+    display: flex;
+    gap: 8px;
+    flex-basis: 100%;
+    justify-content: center;
+  }
+
+  .mosslight-keypad-system .mosslight-keypad-button {
+    min-width: 56px;
+    min-height: 30px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 8px;
+  }
+
+  @media (max-width: 480px) {
+    .mosslight-keypad-form > .mosslight-keypad {
+      gap: 8px;
+      padding: 10px 8px;
+    }
+
+    .mosslight-keypad-dpad {
+      grid-template: repeat(2, 44px) / repeat(3, 44px);
+      gap: 2px;
+    }
+
+    .mosslight-keypad-face { gap: 6px; }
+    .mosslight-keypad-face .mosslight-keypad-button {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      min-height: 48px;
+    }
+
+    .mosslight-keypad-system { gap: 4px; }
+    .mosslight-keypad-system .mosslight-keypad-button {
+      min-width: 48px;
+      padding: 3px 5px;
+      font-size: 7px;
+    }
+  }
+
+  .realtime-voice-status {
+    color: var(--terminal-success);
+    font-weight: bold;
+  }
+
+  .realtime-voice-log {
+    max-height: calc(8 * var(--cell-h));
+    overflow: auto;
+    padding-left: 3ch;
+  }
+
+  .nav-entry > .key {
+    color: var(--terminal-success);
+  }
+</style>
+  <script type="module">
+    window.interactiveComponents = [];
+    window.addComponent = (id, modulePath, functionName) => {
+      const component = { id, modulePath, functionName };
+      window.interactiveComponents.push(component);
+      return component;
+    };
+  </script>
+</head><body><div id="container"><!-- Header --><div class="entry"><div class="key"></div><div class="value"><pre class="header-banner" aria-label="Matt Heard" role="heading" aria-level="1">
+▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖
+▐▛▚▞▜▌▐▌ ▐▌ █    █
+▐▌  ▐▌▐▛▀▜▌ █    █
+▐▌  ▐▌▐▌ ▐▌ █    █
+▗▖ ▗▖▗▄▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄
+▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █
+▐▛▀▜▌▐▛▀▀▘▐▛▀▜▌▐▛▀▚▖▐▌  █
+▐▌ ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀
+</pre></div><div class="key"></div><div class="value"><p class="value metadata">Software developer and philosopher in Berlin</p></div></div><!-- Navigation --><div class="entry nav-entry">
+      <div class="key">links</div>
+      <p class="value metadata">
+        <a href="https://x.com/mattheard" target="_blank" rel="noopener">twitter</a>,
+        <a href="https://somethinglikeamind.substack.com" target="_blank" rel="noopener">substack</a>,
+        <a href="https://www.linkedin.com/in/matthewjohnheard" target="_blank" rel="noopener">linkedin</a>,
+        <a href="https://ridedott.com" target="_blank" rel="noopener">dott</a>
+      </p>
+    </div><div class="entry nav-entry">
+      <div class="key">nav</div>
+      <p class="value metadata">
+        <a class="filter-button active" data-filter="all">everything</a>,
+        <a class="filter-button" data-filter="blog">blog</a>,
+        <a class="filter-button" data-filter="toys">toys</a>
+      </p>
+    </div><article class="entry tag-one tag-two&<>"' release-beta" id="NEWER"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">NEWER</div><div class="value"><h2><a href="#NEWER">All ordered payloads</a></h2></div><div class="key">pubAt</div><p class="value metadata">7 Nov 2026</p><div class="key">tags</div><p class="value metadata"><a class="tag-one">one</a>, <a class="tag-two&amp;&lt;&gt;&quot;&#039;">two&amp;&lt;&gt;&quot;&#039;</a></p><div class="key media">illus</div><div class="value"><img loading="lazy" src="2026-11-07.png" alt="Legacy &lt;image&gt; &amp; caption"/></div><div class="key media">audio</div><audio class="value" controls><source src="2026-11-07.ogg"></audio><div class="key media">video</div><p class="value"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/legacy-video?start=0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p><div class="key">text</div><p class="value">primitive text</p><div class="key"></div><p class="value">42</p><div class="key"></div><p class="value">false</p><div class="key"></div><p class="value">null</p><div class="key"></div><p class="value">typed text</p><div class="key"></div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>one quotation</p></blockquote><div class="key media">illus</div><div class="value"><img loading="lazy" src="custom.webp" alt="Ordered &amp; image"/></div><div class="key media">audio</div><audio class="value" controls><source src="2026-11-07.mp3"></audio><div class="key media">video</div><p class="value"><iframe height="300px" width="100%" src="https://www.youtube.com/embed/ordered-video?start=23" title="Video &lt;title&gt;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" loading="lazy" allowfullscreen></iframe></p><div class="key">man</div><div class="manual" id="remote&amp;guide" data-manual-src="/guide?one=1&amp;two=2"><p class="manual-toggle">Remote &lt;guide&gt; <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="remote&amp;guide-body" aria-expanded="false">show</button>)</span></p><pre class="manual-body manual-markdown" id="remote&amp;guide-body" aria-live="polite" hidden></pre><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("remote&guide");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key">man</div><div class="manual" id="markdown"><p class="manual-toggle">Markdown <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="markdown-body" aria-expanded="false">show</button>)</span></p><pre class="manual-body manual-markdown" id="markdown-body" hidden># &lt;heading&gt; &amp; text</pre><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("markdown");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key">man</div><div class="manual" id="manual" data-manual-src=""><p class="manual-toggle">User manual <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="manual-body" aria-expanded="false">show</button>)</span></p><pre class="manual-body manual-markdown" id="manual-body" aria-live="polite" hidden></pre><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("manual");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key">in</div><div class="value"><span class="select-wrapper"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="life-seed">life-seed</option><option value="file">file</option><option value="number" selected>number</option><option value="real-hourly-wage">real-hourly-wage</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option><option value="mobile-controls">mobile-controls</option><option value="mosslight-keypad">mosslight-keypad</option><option value="gamepad-capture">gamepad-capture</option><option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option></select></span><input type="text" disabled></div><div class="key"></div><div class="value"><button type="button" class="toy-swap-toggle" aria-pressed="false">Swap input/output</button><button type="button" class="toy-focus-toggle">Focus mode</button><button type="submit" disabled>Submit</button><label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" /> Auto</label></div><div class="key">out</div><div class="value"><span class="select-wrapper"><select class="output"><option value="text">text</option><option value="pre" selected>pre</option><option value="copy-to-clipboard">copy-to-clipboard</option><option value="canvas-2d">canvas-2d</option><option value="graph-2d">graph-2d</option><option value="ledger-ingest">ledger-ingest</option><option value="real-hourly-wage">real-hourly-wage</option><option value="joycon-mapping">joycon-mapping</option><option value="realtime-voice">realtime-voice</option><option value="tic-tac-toe">tic-tac-toe</option><option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option><option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option></select></span><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><table>{"type":"table","source":"rows.jsonl","columns":["name","value"],"collapsed":true}</table><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="/tool" target="_blank" rel="noopener">Tool</a></li></ul></div><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="/book?a=1&amp;b=2" target="_blank" rel="noopener"><em>_Book &lt;title&gt;_</em></a> by An &amp; author, A &quot;source&quot; ("A &#039;quote&#039;")</li><li><a href="/micro" target="_blank" rel="noopener">"Microblog"</a></li><li><a href="/article" target="_blank" rel="noopener">"Article"</a></li><li><a href="/report" target="_blank" rel="noopener">"Report"</a></li><li><a href="" target="_blank" rel="noopener"></a></li><li><a href="" target="_blank" rel="noopener"></a></li><li><a href="" target="_blank" rel="noopener"></a></li></ul></div><script type="module">window.addComponent('NEWER', '/new.js', 'newToy');</script></article><article class="entry" id="MIDDLE"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">MIDDLE</div><div class="value"><h2><a href="#MIDDLE">No content or toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">6 May 2025</p></article><article class="entry" id="MANUAL-FIRST"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">MANUAL-FIRST</div><div class="value"><h2><a href="#MANUAL-FIRST">Manual precedes text</a></h2></div><div class="key">pubAt</div><p class="value metadata">4 Apr 2024</p><div class="key">man</div><div class="manual" id="manual"><p class="manual-toggle">User manual <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="manual-body" aria-expanded="false">show</button>)</span></p><div class="manual-body" id="manual-body" hidden><p>opening</p></div><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("manual");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key"></div><p class="value">after manual</p></article><article class="entry" id="QUOTE-FIRST"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">QUOTE-FIRST</div><div class="value"><h2><a href="#QUOTE-FIRST">Quotation precedes text</a></h2></div><div class="key">pubAt</div><p class="value metadata">3 Mar 2023</p><div class="key">text</div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>opening quotation</p></blockquote><div class="key"></div><p class="value">after quotation</p></article><article class="entry" id="TOY-NO-LINKS"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">TOY-NO-LINKS</div><div class="value"><h2><a href="#TOY-NO-LINKS">Toy fallback without links</a></h2></div><div class="key">pubAt</div><p class="value metadata">3 Feb 2021</p><div class="key">text</div><p class="value">fallback toy at end</p><div class="key">in</div><div class="value"><span class="select-wrapper"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="life-seed">life-seed</option><option value="file">file</option><option value="number">number</option><option value="real-hourly-wage">real-hourly-wage</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option><option value="mobile-controls">mobile-controls</option><option value="mosslight-keypad">mosslight-keypad</option><option value="gamepad-capture">gamepad-capture</option><option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option></select></span><input type="text" disabled></div><div class="key"></div><div class="value"><button type="button" class="toy-swap-toggle" aria-pressed="false">Swap input/output</button><button type="button" class="toy-focus-toggle">Focus mode</button><button type="submit" disabled>Submit</button><label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" /> Auto</label></div><div class="key">out</div><div class="value"><span class="select-wrapper"><select class="output"><option value="text" selected>text</option><option value="pre">pre</option><option value="copy-to-clipboard">copy-to-clipboard</option><option value="canvas-2d">canvas-2d</option><option value="graph-2d">graph-2d</option><option value="ledger-ingest">ledger-ingest</option><option value="real-hourly-wage">real-hourly-wage</option><option value="joycon-mapping">joycon-mapping</option><option value="realtime-voice">realtime-voice</option><option value="tic-tac-toe">tic-tac-toe</option><option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option><option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option></select></span><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><script type="module">window.addComponent('TOY-NO-LINKS', '/text.js', 'textToy');</script></article><article class="entry" id="OLDER"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">OLDER</div><div class="value"><h2><a href="#OLDER">Legacy defaults</a></h2></div><div class="key">pubAt</div><p class="value metadata">2 Jan 2020</p><div class="key">text</div><p class="value">old text</p><div class="key"></div><blockquote class="value"><div class="corner corner-tl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-tr"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-bl"><div class="h-line"></div><div class="v-line"></div></div><div class="corner corner-br"><div class="h-line"></div><div class="v-line"></div></div><p>first paragraph</p><p>second paragraph</p></blockquote><div class="key">man</div><div class="manual" id="manual"><p class="manual-toggle">User manual <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="manual-body" aria-expanded="false">show</button>)</span></p><div class="manual-body" id="manual-body" hidden><p>plain manual</p></div><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("manual");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key">man</div><div class="manual" id="manual"><p class="manual-toggle">User manual <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="manual-body" aria-expanded="false">show</button>)</span></p><div class="manual-body" id="manual-body" hidden><p>one</p><p>two</p></div><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("manual");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key">man</div><div class="manual" id="manual"><p class="manual-toggle">User manual <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="manual-body" aria-expanded="false">show</button>)</span></p><div class="manual-body" id="manual-body" hidden></div><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("manual");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div><div class="key">in</div><div class="value"><span class="select-wrapper"><select class="input"><option value="text">text</option><option value="textarea">textarea</option><option value="life-seed">life-seed</option><option value="file">file</option><option value="number">number</option><option value="real-hourly-wage">real-hourly-wage</option><option value="kv">kv</option><option value="blog-key">blog-key</option><option value="dendrite-story">dendrite-story</option><option value="dendrite-page">dendrite-page</option><option value="moderator-ratings">moderator-ratings</option><option value="keyboard-capture">keyboard-capture</option><option value="mobile-controls">mobile-controls</option><option value="mosslight-keypad">mosslight-keypad</option><option value="gamepad-capture">gamepad-capture</option><option value="gamepad-button-mapper">gamepad-button-mapper</option><option value="object-minute-asset">object-minute-asset</option><option value="possession-request">possession-request</option></select></span><input type="text" disabled></div><div class="key"></div><div class="value"><button type="button" class="toy-swap-toggle" aria-pressed="false">Swap input/output</button><button type="button" class="toy-focus-toggle">Focus mode</button><button type="submit" disabled>Submit</button><label class="auto-submit-label"><input type="checkbox" class="auto-submit-checkbox" /> Auto</label></div><div class="key">out</div><div class="value"><span class="select-wrapper"><select class="output"><option value="text">text</option><option value="pre">pre</option><option value="copy-to-clipboard">copy-to-clipboard</option><option value="canvas-2d">canvas-2d</option><option value="graph-2d">graph-2d</option><option value="ledger-ingest">ledger-ingest</option><option value="real-hourly-wage">real-hourly-wage</option><option value="joycon-mapping">joycon-mapping</option><option value="realtime-voice">realtime-voice</option><option value="tic-tac-toe">tic-tac-toe</option><option value="battleship-solitaire-fleet">battleship-solitaire-fleet</option><option value="battleship-solitaire-clues-presenter">battleship-solitaire-clues-presenter</option></select></span><div class="output warning"><p>This toy requires Javascript to run.</p></div></div><div class="key">links</div><div class="value"><ul class="related-links"><li><a href="/default" target="_blank" rel="noopener">Plain link</a></li></ul></div><script type="module">window.addComponent('OLDER', '/old.js', 'oldToy');</script></article><article class="entry" id="NO-MODULE"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">NO-MODULE</div><div class="value"><h2><a href="#NO-MODULE">Incomplete toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2019</p></article><article class="entry" id="NO-FUNCTION"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">NO-FUNCTION</div><div class="value"><h2><a href="#NO-FUNCTION">Incomplete toy</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2018</p></article><article class="entry" id="BAD-MANUAL-ID"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">BAD-MANUAL-ID</div><div class="value"><h2><a href="#BAD-MANUAL-ID">Manual metadata compatibility</a></h2></div><div class="key">pubAt</div><p class="value metadata">1 Jan 2017</p><div class="key">man</div><div class="manual" id="manual"><p class="manual-toggle">User manual <span class="manual-toggle-menu">(<button type="button" class="manual-link" data-manual-toggle aria-controls="manual-body" aria-expanded="false">show</button>)</span></p><div class="manual-body" id="manual-body" hidden><p>Non-string metadata falls back</p></div><script type="module">import { initializeManual } from '/core/browser/manual.js';const manual=document.getElementById("manual");if(manual){initializeManual(manual,globalThis.fetch.bind(globalThis));}</script></div></article><article class="entry" id="UNDATED"><div class="key full-width">▄▄▄▄▄▄▄▄▄▄</div><div class="value full-width">▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄</div><div class="key article-title">UNDATED</div><div class="value"><h2><a href="#UNDATED">No date metadata</a></h2></div></article><div class="entry"><div class="key"></div><div class="footer value warning">All content is authored by Matt Heard and is <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>, unless otherwise noted.</div></div></div><script type="module" src="browser/main.js" defer></script><script type="module" src="browser/webmcp.js" defer></script></body></html>

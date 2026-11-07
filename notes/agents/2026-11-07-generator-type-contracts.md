@@ -55,10 +55,62 @@ contracts limited to fields those helpers consume.
   suites against the complete module with static mutation enabled and a 100%
   threshold. Inspect its terminal report before claiming mutation success.
 
+## Independent HTML contract
+
+`test/fixtures/generator-typing/blog.json` contains ten representative authored
+posts. Its complete-page and caller-wrapped fragment goldens are generated from
+the original `e984e63f1b` generator, with relative imports resolved to unchanged
+helpers and a deterministic table-renderer port. The current generator was
+byte-compared with the original before either fixture was written. These are
+pre-change expectations, not snapshots blessed from the new implementation.
+
+- `complete.html`: 40,324 bytes, SHA-256
+  `faa0682a45ab1516e461acb8fb59ecb89eb898bea9b4fd558925c3d5fb5e1bd5`.
+- `fragments.html`: 23,075 bytes, SHA-256
+  `727574020874ae6be64a0c2a0e7ceb15d989e6951d1d5b441f91e15f472c9a4a`.
+
+The contract asserts exact HTML and input immutability, supported helper
+defaults/overrides, original error classes/messages and dependency-error
+propagation. Together with the existing related-links getter compatibility
+suite, it covers the complete generator at all-four metrics 100%: 16 tests in
+1.904 seconds, `/tmp/dadeto-xyth-contract-coverage-complete.log`.
+
+The initial compact run reached 98.5% branch coverage. The missing cases were
+the toy fallback when there is no links entry and the second related-links
+getter returning an empty array. That getter proves the second array check is
+observable under the existing API: retain the behavior rather than remove the
+guard to make coverage easier. Add first-manual/first-quotation fixtures to
+distinguish the first-content label state, plus incomplete toy configurations.
+
+`docs/quality/generator-contract.stryker.config.mjs` retains the exact whole-module
+mutation scope, static evaluation and 100% threshold while using this compact
+contract. All prior runtime tests and the broad mutation configuration remain.
+Both earlier experiments continue against their frozen snapshots. The new
+report is `reports/mutation/generator-contract.json`; do not treat a running
+process or a passing dry run as mutation acceptance.
+
+The first compact mutation run terminated at 98.43%: 627 killed, one timeout,
+ten survivors and 35 ignored. Preserve its report as
+`reports/mutation/generator-contract.pre-hardening.json`. The survivors exposed
+redundant checks after body normalization and duplicated empty-field state in
+link escaping. Remove the unreachable checks and compose link fields directly,
+preserving truthy getter read order. Numeric manual identifiers and falsy link
+metadata now characterize the meaningful compatibility guards. The contract
+still compares every output byte, but reports equality without constructing a
+large HTML diff for each failed mutant. A fresh run must resolve the timeout;
+the diagnostic change alone does not prove that it has.
+
+All legacy mutation directives have now been removed from the generator. The
+fresh complete-module run instruments 657 mutants, with no requested skips.
+After this hardening, the focused suite passes 127 suites / 306 tests with all
+four coverage metrics at 100% for generator and banner; see
+`/tmp/dadeto-xyth-unsuppressed-focused.log`. Mutation acceptance remains pending
+until the fresh report is terminal and inspected.
+
 ## Limits and next-time guidance
 
-Existing runtime validation and legacy generator mutation directives remain
-visible parent-spec work. These structural contracts describe supported inputs;
+Existing runtime validation remains visible parent-spec work. These structural
+contracts describe supported inputs;
 they do not establish a total `unknown` parser or complete the source migration.
 The source must not move until parse/thin-wrapper and remaining architecture
 prerequisites are verified. Exact pushed Full Check, required fast aggregate,

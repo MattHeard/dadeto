@@ -245,8 +245,6 @@ function formatDate(dateString) {
 // No longer using newlines and indentation
 const BIO_TEXT = `Software developer and philosopher in Berlin`;
 
-// Stryker disable all -- header/footer/page-shell fragments are reviewed static
-// templates; their exact output is covered by the generator structure tests.
 /**
  * Build the HTML for the page header section.
  * @returns {string} HTML representing the header section.
@@ -337,7 +335,6 @@ function createHeaderContentArray(headerElement) {
     createNavbar(),
   ];
 }
-// Stryker restore all
 
 /**
  * Generate the HTML for the beginning of the page including the header.
@@ -585,7 +582,7 @@ function normalizePostBody(post) {
     });
   }
   body.forEach(entry => {
-    if (!entry || typeof entry !== 'object' || typeof entry.type !== 'string') {
+    if (typeof entry.type !== 'string') {
       throw new TypeError(
         'Every post body entry must have a type; renderer is not a function'
       );
@@ -631,8 +628,6 @@ function createManualBlock(manual) {
   const escapedManualId = escapeHtml(manualId);
   const bodyId = `${escapedManualId}-body`;
   let title = 'User manual';
-  // Stryker disable next-line all -- optional manual-title normalization is a
-  // defensive compatibility boundary; default and custom titles are asserted.
   if (typeof manual.title === 'string' && manual.title) {
     title = manual.title;
   }
@@ -915,21 +910,25 @@ const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
  * @returns {{type?: string, url: string, title: string, author: string, source: string, quote: string}} Link object with escaped fields.
  */
 function escapeRelatedLinkFields(link) {
-  /** @type {('url'|'title'|'author'|'source'|'quote')[]} */
-  const fields = ['url', 'title', 'author', 'source', 'quote'];
-  return fields.reduce(
-    (acc, field) => {
-      // Stryker disable next-line all -- falsy metadata normalizes to the same
-      // empty field contract as absent metadata.
-      if (link[field]) {
-        acc[field] = escapeHtml(link[field]);
-      } else {
-        acc[field] = '';
-      }
-      return acc;
-    },
-    { type: link.type, url: '', title: '', author: '', source: '', quote: '' }
-  );
+  return {
+    type: link.type,
+    url: escapeRelatedLinkField(link, 'url'),
+    title: escapeRelatedLinkField(link, 'title'),
+    author: escapeRelatedLinkField(link, 'author'),
+    source: escapeRelatedLinkField(link, 'source'),
+    quote: escapeRelatedLinkField(link, 'quote'),
+  };
+}
+
+/**
+ * Preserve legacy falsy normalization and getter read semantics for one field.
+ * @param {RelatedLink} link Raw link information.
+ * @param {'url'|'title'|'author'|'source'|'quote'} field Metadata field.
+ * @returns {string} Escaped metadata or the legacy empty default.
+ */
+function escapeRelatedLinkField(link, field) {
+  if (link[field]) return escapeHtml(link[field]);
+  return '';
 }
 
 /**
