@@ -1,4 +1,7 @@
-import { getBuildEntrypointPatternFailures } from '../../src/core/build/entrypoint-pattern.js';
+import {
+  createBuildEntrypointPatternHandle,
+  getBuildEntrypointPatternFailures,
+} from '../../src/core/build/entrypoint-pattern.js';
 
 const validSource = `#!/usr/bin/env node
 import { environmentDependencies } from './environment.js';
@@ -8,7 +11,78 @@ executeCopyDendriteWorkflow(environmentDependencies);
 createCopyCore(environmentDependencies).runCopyWorkflow();
 `;
 
+test('command reads the configured entrypoints and reports migrated logic success', () => {
+  const reads = [];
+  const logs = [];
+  const errors = [];
+  const exits = [];
+  const handle = createBuildEntrypointPatternHandle({
+    readJson: file => {
+      reads.push(file);
+      return { entrypoints: ['src/build/copy.js'] };
+    },
+    readSource: file => {
+      reads.push(file);
+      return validSource.replace('../core/', '../logic/core/');
+    },
+    output: { log: line => logs.push(line), error: line => errors.push(line) },
+    setExitCode: code => exits.push(code),
+  });
+  expect(handle()).toBeUndefined();
+  expect(reads).toEqual([
+    'src/build/entrypoint-patterns.json',
+    'src/build/copy.js',
+  ]);
+  expect(logs).toEqual([
+    'Checked 1 build entrypoints for the object-passing pattern.',
+  ]);
+  expect(errors).toEqual([]);
+  expect(exits).toEqual([]);
+});
+
+test('command reports configured entrypoint failures and propagates reader errors', () => {
+  const errors = [];
+  const logs = [];
+  const exits = [];
+  createBuildEntrypointPatternHandle({
+    readJson: () => ({ entrypoints: ['src/build/bad.js'] }),
+    readSource: () => '',
+    output: { log: line => logs.push(line), error: line => errors.push(line) },
+    setExitCode: code => exits.push(code),
+  })();
+  expect(logs).toEqual([]);
+  expect(exits).toEqual([1]);
+  expect(errors).toEqual([
+    'src/build/bad.js: missing shebang',
+    'src/build/bad.js: imports are not in the expected env/core split',
+    'src/build/bad.js: required direct execution pattern snippets are missing',
+  ]);
+  const failure = new Error('configuration unreadable');
+  const handle = createBuildEntrypointPatternHandle({
+    readJson: () => {
+      throw failure;
+    },
+    readSource: () => '',
+    output: { log() {}, error() {} },
+    setExitCode() {},
+  });
+  expect(handle).toThrow(failure);
+});
+
 describe('getBuildEntrypointPatternFailures', () => {
+  test('preserves the line-start function heuristic with whitespace and nested declarations', () => {
+    const check = source =>
+      getBuildEntrypointPatternFailures({
+        entrypoints: ['src/build/copy.js'],
+        readSource: () => source,
+      });
+    expect(
+      check(`${validSource}\nconst create = () => { function nested() {} };`)
+    ).toEqual([]);
+    expect(check(`${validSource}\nfunction   manySpaces() {}`)).toEqual([
+      'src/build/copy.js: top-level functions are not allowed',
+    ]);
+  });
   it('accepts an entrypoint with the complete direct-execution pattern', () => {
     expect(
       getBuildEntrypointPatternFailures({

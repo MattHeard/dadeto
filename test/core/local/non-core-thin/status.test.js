@@ -262,7 +262,6 @@ describe('non-core thin status reporting paths', () => {
     expect(
       nonCoreThinStatusTestOnly.getWrapperPatternViolations(
         'src/core/local/non-core-thin/status.js',
-        new Set(),
         0,
         {
           fsModule: {
