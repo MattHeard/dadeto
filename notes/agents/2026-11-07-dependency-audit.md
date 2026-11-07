@@ -20,7 +20,7 @@ retaining the prior brace-expansion pin. Legacy test-exclude still resolves the
 callable glob 7/minimatch 3 APIs; replacing those indiscriminately would break
 coverage tooling. No Jest, ESLint, Stryker or madge downgrade, advisory exception,
 gate exclusion or threshold change is involved. Live registry engine metadata
-supports this repository's Node 24 runtime.
+supports CI's configured Node 22 and this host's Node 24 runtime.
 
 ## Evidence
 
@@ -54,6 +54,21 @@ supports this repository's Node 24 runtime.
   seven files processed; no circular dependency found.
 
 ## Environment guidance
+
+The first pushed CI attempt failed before tests: local npm 11.12.1 accepted the
+lockfile, while CI's npm 10.9.9 reported missing glob 10 dependencies. The same
+files reproduce that failure with `npm exec --yes --package=npm@10.9.9 -- npm ci --dry-run --ignore-scripts`;
+the npm 11 control passes. Modern override selectors must also include their
+pinned replacement versions for this npm 10 graph. Expanding only those two
+upper bounds fixes the resolver disagreement without changing the lockfile or
+resolved package versions. The compatibility suite guards that selector
+invariant. A real npm 10 clean install then passes with zero vulnerabilities;
+`/tmp/dadeto-2gx2-npm10-{red,inclusive,clean-install}.log` and
+`/tmp/dadeto-2gx2-npm11-control.log` retain the comparison. Both initial PR runs
+failed dependency installation, so neither establishes full-suite validation.
+
+Use clean installation with the CI npm version before claiming a lockfile
+repair. A successful incremental install and audit are insufficient evidence.
 
 Use a separate worktree when another validation process uses the original
 node_modules: installing patched dependencies must not change a running

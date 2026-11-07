@@ -2,9 +2,19 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
 import { RE2JS } from 're2js';
+import semver from 'semver';
 
 const require = createRequire(import.meta.url);
 const glob = createRequire(require.resolve('jest-config'))('glob');
+
+test('modern matcher overrides include their replacements for npm 10 clean installs', () => {
+  const { overrides } = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  for (const [selector, replacement] of Object.entries(overrides)) {
+    if (!/^(glob|minimatch)@/.test(selector)) continue;
+    const range = selector.slice(selector.indexOf('@') + 1);
+    expect(semver.satisfies(replacement, range)).toBe(true);
+  }
+});
 
 test.each([
   'eslint',
