@@ -62,3 +62,31 @@ ESLint; its automatic comment skeleton is insufficient. Repaired
 both exact digests and all 36 thrown-value probes. `git diff --exit-code -- src`
 proves no production source changed at this checkpoint. The owning task remains
 open for actual extraction, complete mutation/coverage and exact-head CI.
+
+## Actual source extraction prepared
+
+The actual interpreter now lives in
+`src/logic/boundary/local/impact-arguments.js`; its body remains byte-identical
+to the immutable original. Precise JSDoc describes unparsed argument primitives,
+normal interpreted input and the original unknown structural failure. Its pure
+total wrapper returns `{ok: true, input}` or `{ok: false, error}`. The effect
+runner removes its former parser and unwraps/rethrows the original failure before
+any process, coverage or output effect. There is no legacy source forwarder.
+
+The reference diagnostic now invokes the actual destination on its current side;
+the original Git source and both digests stay unchanged. Exact-category tests
+cover repeated options, accumulated paths, base precedence and diagnostic wording.
+All three public runner modes preserve exact thrown values before any effects.
+One initial expectation wrongly assumed sparse argv must throw: the baseline
+shows it produces `Unsupported impact option: undefined.` instead. Correct only
+that test expectation; do not invent new validation.
+
+Four focused suites / 818 tests pass, with all four coverage metrics at100% for
+both the entire touched effect runner and new boundary. Log:
+`/tmp/dadeto-9i6i-relocated-focused-repaired.log`; coverage:
+`reports/coverage/impact-arguments/coverage-summary.json`. All eleven local static
+gates pass (`/tmp/dadeto-9i6i-relocated-check.log`). The existing complete
+seven-module git-deletion evidence harness adds the new actual boundary and its
+category tests, retaining every previous module, threshold100 and static mutants.
+The compact impact harness also includes the new boundary; no selection silently
+loses the relocated parser. Complete mutation, builds and exact CI remain pending.

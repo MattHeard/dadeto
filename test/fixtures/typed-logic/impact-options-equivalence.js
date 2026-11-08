@@ -1,7 +1,7 @@
+import { parseImpactArguments } from '../../../src/logic/boundary/local/impact-arguments.js';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { parse } from '@babel/parser';
 import * as current from '../../../src/core/local/checkImpactPlan.js';
 import {
@@ -82,7 +82,17 @@ function observe(parser, argv, defaultBaseRef) {
 }
 
 const originalParser = await loadParser(originalSource);
-const currentParser = await loadParser(readFileSync(moduleUrl, 'utf8'));
+/**
+ * Observe the actual total boundary through its original public throw contract.
+ * @param {string[]} argv Unparsed option primitives.
+ * @param {string | undefined} defaultBaseRef Optional default ref.
+ * @returns {object} Original interpreted options.
+ */
+function currentParser(argv, defaultBaseRef) {
+  const parsed = parseImpactArguments(argv, defaultBaseRef);
+  if (!parsed.ok) throw parsed.error;
+  return parsed.input;
+}
 const hash = createHash('sha256');
 let parserCases = 0;
 const samples = [];

@@ -617,3 +617,15 @@ source modules are removed. See `notes/agents/2026-11-08-wgs84-migration.md` for
 independent numeric/coercion oracle, reproduced pre-existing browser omission,
 actual browser/cloud import checks and outstanding full mutation/CI acceptance.
 This is a bounded migration slice; the broader legacy tree remains unfinished.
+
+
+## Impact option boundary extraction prepared — 8 November 2026
+
+`dadeto-9i6i` relocates actual `--files`/`--base` interpretation from the legacy
+impact effect runner to `src/logic/boundary/local/impact-arguments.js`. Total typed
+results retain option diagnostics and original unknown exceptions; the runner
+rethrows exceptions before effects. It cannot move wholesale to trusted core
+because it composes boundary parsing and injected effects. There is no forwarding
+parser in the old module. See `notes/agents/2026-11-08-impact-option-boundary.md`
+for immutable-original behavior and full acceptance status. The remaining planning
+and orchestration source is still legacy; this is not the completed architecture.

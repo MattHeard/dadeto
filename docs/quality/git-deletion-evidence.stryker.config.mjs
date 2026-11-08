@@ -4,6 +4,7 @@ export default {
   ...base,
   plugins: ['@stryker-mutator/jest-runner'],
   mutate: [
+    'src/logic/boundary/local/impact-arguments.js',
     'src/logic/boundary/local/git-changes.js',
     'src/logic/boundary/local/coverage-line.js',
     'src/logic/boundary/local/impact-paths.js',
@@ -16,6 +17,7 @@ export default {
     '!src/core/**',
     '!src/logic/core/**',
     '!src/logic/boundary/**',
+    '!test/logic/boundary/local/impact-arguments.test.js',
     '!test/logic/boundary/local/git-changes.test.js',
     '!test/logic/boundary/local/coverage-line.test.js',
     '!test/logic/boundary/local/impact-paths.test.js',
@@ -33,6 +35,7 @@ export default {
     ...base.jest,
     config: {
       testMatch: [
+        '<rootDir>/test/logic/boundary/local/impact-arguments.test.js',
         '<rootDir>/test/logic/boundary/local/git-changes.test.js',
         '<rootDir>/test/logic/boundary/local/coverage-line.test.js',
         '<rootDir>/test/logic/boundary/local/impact-paths.test.js',

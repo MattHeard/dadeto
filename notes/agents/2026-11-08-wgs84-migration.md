@@ -235,3 +235,25 @@ The numerical module itself reports137Killed/1Timeout in this run; its negative
 iteration step hits the execution limit and is not described as Killed. All six
 embedded module sources match8d1f8faf96. Fresh full execution remains required to
 prove the fixture timing repair eliminates every runtime-error classification.
+
+## Clean acceptance and approved landing
+
+PR2821 merged at `1fcaebd28fc508558962ec51aaa7e7ba3648bd47` under standing
+user approval. Its landed tree exactly equals accepted candidate
+`c1b91bd8e443450ec6bc1fa3dcae862ee85427f0`. The final complete six-module
+mutation run exited0 at100%:1376Killed/1Timeout among1377mutants, including
+110static, zero survivors/runtime errors/ignored/uncovered. Every embedded source
+matches the candidate. Timeout1254 changes increment to `iteration -= 1` and
+hits execution limit298511/298500; this is genuine non-progress, not a Killed
+classification. Report SHA256:
+`2bd03744077d032438b87d8b782f134f554ab9dcfdae8a60b1100777ca8f6715`.
+Log: `/tmp/dadeto-z85m-final-fault-mutation.log`,21m27s. This clean run supersedes
+the nominal100 report containing nine runtime errors, retained above as failure.
+
+Exact FullCheck42522435819 and Terraform42522435908 pass. Downloaded artifact
+13634511103 verifies56/56shards1111suites10290tests, all4global and10changed
+logic-module metrics100%,12E2E5.4s and11gates. Tested merge
+`3d3e310ba6708bc3bbd87caea34040501f4a78e2` also equals the accepted tree.
+Post-main FullCheck42524404294 is separately monitored before bead closure;
+Terraform42524404346 and production Netlify42524404326 have passed. Overall
+Rank11 remains Active/Partial; impact option extraction is the next actual move.
