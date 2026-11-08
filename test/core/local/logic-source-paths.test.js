@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals';
 import {
   LOGIC_SOURCE_ROOTS,
   isLogicJavaScriptPath,
-} from '../../../src/core/local/logic-source-paths.js';
+} from '../../../src/logic/core/local/logic-source-paths.js';
 
 test('declares immutable measured migration roots', () => {
   expect(LOGIC_SOURCE_ROOTS).toEqual([

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import ts from 'typescript';
 import mutation from '../../stryker.config.mjs';
-import { LOGIC_SOURCE_ROOTS } from '../../src/core/local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from '../../src/logic/core/local/logic-source-paths.js';
 
 const rootPaths = [...LOGIC_SOURCE_ROOTS];
 const lint = new ESLint({ cache: false });

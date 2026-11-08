@@ -2,7 +2,7 @@ import * as gateUtils from './gate-utils.js';
 import * as commonCore from '../commonCore.js';
 import { CORE_GLOBALS } from '../local/check-depcruise-scope.js';
 import { DEFAULT_STDOUT, DEFAULT_STDERR } from './gate-script-defaults.js';
-import { LOGIC_SOURCE_ROOTS } from '../local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from '../../logic/core/local/logic-source-paths.js';
 import {
   createBrowserMainGlobalFinder,
   createBrowserMainSourceReader,

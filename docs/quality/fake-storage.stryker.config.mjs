@@ -12,6 +12,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!src/local/gcp-simulator/fake-storage.js',
     '!src/local/allow-effects.js',
     '!vendor/deepmerge/**',

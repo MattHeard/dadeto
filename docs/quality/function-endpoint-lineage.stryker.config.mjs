@@ -11,7 +11,7 @@ export default {
     '**',
     '!src/core/build/function-endpoint-lineage.js',
     '!src/core/build/function-endpoint-registry.js',
-    '!src/core/local/logic-source-paths.js',
+    '!src/logic/core/local/logic-source-paths.js',
     '!test/core/functionEndpointLineage.test.js',
     '!jest.config.mjs',
     '!jest.mutation.config.mjs',

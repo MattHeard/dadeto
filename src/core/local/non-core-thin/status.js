@@ -1,6 +1,6 @@
 import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
 import { countTextLines } from '../textLines.js';
-import { LOGIC_SOURCE_ROOTS } from '../logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from '../../../logic/core/local/logic-source-paths.js';
 
 const EXPORTED_HANDLE_DECLARATION = /\bexport\s+const\s+handle\s*=/u;
 

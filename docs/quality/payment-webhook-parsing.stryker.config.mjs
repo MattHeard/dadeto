@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!test/core/cloud/payment-webhook/parsing.test.js',
     '!jest.config.mjs',
     '!jest.mutation.config.mjs',
