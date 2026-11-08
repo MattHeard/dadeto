@@ -1,13 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { createCheckFullReport, renderCheckFullReportMarkdown } from '../core/local/checkFullReport.js';
+import { createCheckCoverageReport, createCheckFullReport, mapCoverageMetrics, renderCheckFullReportMarkdown } from '../logic/core/local/checkFullReport.js';
 import { bindStartupEffectBoundary } from './allow-effects.js';
+import { parseGitChanges } from '../logic/boundary/local/git-changes.js';
+import { parseCheckFullReportEvidence } from '../logic/boundary/local/checkFullReport.js';
 
 const coverageDir = path.resolve('reports/coverage');
-const readJson = file => {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
-};
 const readText = file => {
   try { return fs.readFileSync(file, 'utf8'); } catch { return ''; }
 };
@@ -16,20 +15,21 @@ bindStartupEffectBoundary(permission => {
   void permission;
   const baseSha = process.env.DADETO_CHECK_BASE_SHA;
   const changedPaths = baseSha && /^[a-f0-9]{40,64}$/i.test(baseSha)
-    ? spawnSync('git', ['diff', '--name-only', '-z', '--no-renames', `${baseSha}...HEAD`, '--'], { encoding: 'utf8' })
+    ? spawnSync('git', ['diff', '--name-status', '-z', '--no-renames', `${baseSha}...HEAD`, '--'], { encoding: 'utf8' })
     : { error: null, status: 1, stdout: '' };
   const readGit = args => spawnSync('git', args, { encoding: 'utf8' });
+  const changes = parseGitChanges(changedPaths.error || changedPaths.status !== 0 ? null : changedPaths.stdout);
   const commit = process.env.GITHUB_SHA ?? readGit(['rev-parse', 'HEAD']).stdout?.trim() ?? '';
-  const report = createCheckFullReport({
-    commitSha: commit,
-    workflowResult: process.env.CHECK_FULL_RESULT ?? 'unknown',
-    coverageRun: readJson(path.join(coverageDir, 'full-test-run.json')),
-    coverageSummary: readJson(path.join(coverageDir, 'coverage-summary.json')),
-    changedPaths: changedPaths.error || changedPaths.status !== 0
-      ? []
-      : changedPaths.stdout.split('\0').filter(Boolean),
+  const parsed = parseCheckFullReportEvidence({
+    coverageRunText: readText(path.join(coverageDir, 'full-test-run.json')),
+    coverageSummaryText: readText(path.join(coverageDir, 'coverage-summary.json')),
     failureLog: readText(path.resolve('reports/check-full.log')),
   });
+  if (!parsed.ok) throw parsed.error;
+  const report = createCheckFullReport(
+    { commitSha: commit, workflowResult: process.env.CHECK_FULL_RESULT ?? 'unknown' }, parsed.evidence,
+    createCheckCoverageReport(parsed.evidence.coverage, mapCoverageMetrics(() => 100), changes.ok ? changes.paths : [], changes.ok ? changes.deletedPaths : [])
+  );
   const markdown = renderCheckFullReportMarkdown(report);
   fs.mkdirSync(coverageDir, { recursive: true });
   fs.writeFileSync(path.join(coverageDir, 'check-full-report.json'), `${JSON.stringify(report, null, 2)}\n`);

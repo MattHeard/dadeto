@@ -4,7 +4,7 @@ import { readExemptions } from './read-exemptions.js';
 import { LOGIC_SOURCE_ROOTS } from '../../logic/core/local/logic-source-paths.js';
 
 /** @typedef {{label: string, kind: string}} ClassificationSignal */
-/** @typedef {{ name: string, labels: string[], signals?: ClassificationSignal[] }} ClassifiedFunction */
+/** @typedef {{ name: string, labels: string[], signals?: ClassificationSignal[], hasValueReturn?: boolean }} ClassifiedFunction */
 /** @typedef {(source: string) => ClassifiedFunction[]} ClassifySource */
 
 const DEFAULT_ROOT_DIR = '.';
@@ -401,10 +401,16 @@ function isValidatorOnlyFunction(fn, filePath) {
  * @returns {boolean} Whether validation-only logic violates the namespace.
  */
 function isDestinationValidation(fn, filePath, signals) {
-  if (filePath.startsWith(BOUNDARY_LOGIC_ROOT) && isParserFunction(fn))
+  if (
+    filePath.startsWith(BOUNDARY_LOGIC_ROOT) &&
+    (isParserFunction(fn) || fn.hasValueReturn)
+  )
     return false;
   return signals.some(
-    signal => signal.label === 'validator' && signal.kind !== 'comparison_guard'
+    signal =>
+      signal.label === 'validator' &&
+      signal.kind !== 'comparison_guard' &&
+      !(signal.kind === 'nullish_guard' && fn.hasValueReturn)
   );
 }
 

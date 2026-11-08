@@ -33,3 +33,47 @@ export function isTypeofComparison(comparison) {
 function isTypeofOperand(operand) {
   return operand.type === 'UnaryExpression' && operand.operator === 'typeof';
 }
+
+/** @typedef {{type: string, callee?: {type: string, computed?: boolean, object?: {type: string, name?: string}, property?: {type: string, name?: string}}}} ValueExpression */
+
+/**
+ * Identify concrete value production without changing legacy classifier labels.
+ * Boolean predicates and unknown calls are deliberately not value evidence.
+ * @param {ValueExpression | null | undefined} expression Returned expression.
+ * @returns {boolean} Whether it projects or constructs a non-predicate value.
+ */
+export function isValueExpression(expression) {
+  if (!expression) return false;
+  if (
+    [
+      'StringLiteral',
+      'NumericLiteral',
+      'TemplateLiteral',
+      'ObjectExpression',
+      'ArrayExpression',
+      'MemberExpression',
+      'OptionalMemberExpression',
+    ].includes(expression.type)
+  )
+    return true;
+  return (
+    expression.type === 'CallExpression' &&
+    isObjectEntryProjection(expression.callee)
+  );
+}
+
+/**
+ * Recognize an object value projection rather than a boolean validation call.
+ * @param {ValueExpression['callee']} callee Called expression.
+ * @returns {boolean} Whether it is the ordinary Object.fromEntries projection.
+ */
+function isObjectEntryProjection(callee) {
+  return (
+    callee?.type === 'MemberExpression' &&
+    !callee.computed &&
+    callee.object?.type === 'Identifier' &&
+    callee.object.name === 'Object' &&
+    callee.property?.type === 'Identifier' &&
+    callee.property.name === 'fromEntries'
+  );
+}

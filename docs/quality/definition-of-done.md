@@ -56,9 +56,13 @@ Use the evaluator matrix as source of truth. At minimum:
 - **Non-core JS changes:** `npm run non-core-thin`
 - **E2E-covered release surfaces:** `npm run test:e2e`
 
-## Core-first architecture gates
+## Logic architecture gates
 
-Business logic should live under `src/core`. Code outside `src/core` should stay thin: environment integration, dependency wiring, and generated-entry shims. The aggregate check enforces this direction in three ways:
+Trusted computation belongs under `src/logic/core`; pure total untrusted-input
+parsers belong under `src/logic/boundary`. Legacy `src/core` remains enforced
+during the incremental migration. Code outside these recognized logic roots
+stays thin: environment integration, dependency wiring and generated-entry shims.
+The aggregate check enforces this direction:
 
 - `npm run lint` treats warnings as failures for the linted surface, so core quality rules are strict.
 - `npm run duplication` keeps zero-duplication detection across legacy `src/core` and both target logic roots (`src/logic/core`, `src/logic/boundary`) and fails the gate on any reported clone, even if the underlying scanner exits 0.

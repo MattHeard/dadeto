@@ -28,6 +28,13 @@ function runClassifier(source) {
 }
 
 describe('classify-functions CLI', () => {
+  it('retains the public CLI schema without internal value-return metadata', () => {
+    const { output } = runClassifier(
+      'export function format(state) { if (state.count === null) return "unavailable"; return `${state.count}`; }'
+    );
+    expect(output.functions[0].labels).toEqual(['validator']);
+    expect(output.functions[0]).not.toHaveProperty('hasValueReturn');
+  });
   it('separates numeric solver control flow from input rejection', () => {
     const { output } = runClassifier(`
       function solve(x) {
