@@ -2,7 +2,8 @@ import { describe, expect, test } from '@jest/globals';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import * as impact from '../../src/core/local/checkImpactPlan.js';
-import * as report from '../../src/core/local/checkFullReport.js';
+import * as reportCore from '../../src/logic/core/local/checkFullReport.js';
+import { createReportFromLegacyFixture } from '../fixtures/typed-logic/normalized-report.js';
 import {
   impactContractCases,
   observeImpactContract,
@@ -20,6 +21,10 @@ const legacy = JSON.parse(
 );
 const hash = value =>
   createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const report = {
+  ...reportCore,
+  createCheckFullReport: createReportFromLegacyFixture,
+};
 
 describe('pre-change public CLI/report compatibility', () => {
   test('uses the independently verified original implementation as its oracle', () => {

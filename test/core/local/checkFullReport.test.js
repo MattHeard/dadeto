@@ -1,7 +1,5 @@
-import {
-  createCheckFullReport,
-  renderCheckFullReportMarkdown,
-} from '../../../src/core/local/checkFullReport.js';
+import { renderCheckFullReportMarkdown } from '../../../src/logic/core/local/checkFullReport.js';
+import { createReportFromLegacyFixture as createCheckFullReport } from '../../fixtures/typed-logic/normalized-report.js';
 
 const completeMetrics = {
   statements: { pct: 100 },
@@ -11,6 +9,68 @@ const completeMetrics = {
 };
 
 describe('createCheckFullReport', () => {
+  it('keeps global and per-file threshold decisions independent', () => {
+    const below = Object.fromEntries(
+      Object.entries(completeMetrics).map(([metric, summary]) => [
+        metric,
+        { ...summary, pct: 99 },
+      ])
+    );
+    const globalOnly = createCheckFullReport({
+      coverageSummary: { total: below, 'src/core/a.js': completeMetrics },
+      changedPaths: ['src/core/a.js'],
+    });
+    expect(globalOnly.belowThresholdMetrics).toEqual([
+      'statements',
+      'branches',
+      'functions',
+      'lines',
+    ]);
+    expect(globalOnly.belowThresholdFiles).toEqual([]);
+    expect(renderCheckFullReportMarkdown(globalOnly)).not.toContain(
+      'No global metrics or files are below'
+    );
+    const fileOnly = createCheckFullReport({
+      coverageSummary: { total: completeMetrics, 'src/core/a.js': below },
+      changedPaths: ['src/core/a.js'],
+    });
+    expect(fileOnly.belowThresholdMetrics).toEqual([]);
+    expect(fileOnly.belowThresholdFiles).toEqual([
+      {
+        file: 'src/core/a.js',
+        metrics: ['statements', 'branches', 'functions', 'lines'],
+      },
+    ]);
+    expect(renderCheckFullReportMarkdown(fileOnly)).not.toContain(
+      'No global metrics or files are below'
+    );
+  });
+
+  it('renders mixed measured, missing and multiple deleted paths with stable separators', () => {
+    const measured = 'src/logic/core/current.js';
+    const missing = 'src/logic/boundary/missing.js';
+    const deleted = ['src/logic/core/z.js', 'src/core/a.js'];
+    const report = createCheckFullReport({
+      coverageSummary: { total: completeMetrics, [measured]: completeMetrics },
+      changedPaths: [measured, missing, ...deleted],
+      deletedPaths: deleted,
+    });
+    const note = `Changed logic files are absent from the coverage summary: \`${missing}\`.\n\nDeleted logic files have no current source to measure: \`src/core/a.js\`, \`src/logic/core/z.js\`.`;
+    expect(report.changedFileCoverageNote).toBe(note);
+    expect(renderCheckFullReportMarkdown(report)).toContain(
+      `\n\n${note}\n\n## Artifacts`
+    );
+  });
+
+  it('does not describe unrelated JavaScript or source documents as unmeasured adapter JavaScript', () => {
+    const report = createCheckFullReport({
+      changedPaths: ['other/module.js', 'src/readme.md', 'README.md'],
+    });
+    expect(report.changedFileCoverageNote).toBe(
+      'No changed logic JavaScript files were available for a reliable coverage comparison.'
+    );
+  });
+
   it('distinguishes a confirmed deleted path from its measured replacement', () => {
     const oldPath = 'src/core/local/old.js';
     const newPath = 'src/logic/core/local/new.js';

@@ -1,7 +1,57 @@
 import {
   isTypeofComparison,
+  isValueExpression,
   recordClassificationSignal,
 } from '../../src/core/scripts/classification-signals.js';
+
+test.each([
+  'StringLiteral',
+  'NumericLiteral',
+  'TemplateLiteral',
+  'ObjectExpression',
+  'ArrayExpression',
+  'MemberExpression',
+  'OptionalMemberExpression',
+])('recognizes value-producing %s', type => {
+  expect(isValueExpression({ type })).toBe(true);
+});
+
+test.each([
+  null,
+  undefined,
+  { type: 'BooleanLiteral' },
+  { type: 'NullLiteral' },
+  { type: 'Identifier' },
+  { type: 'BinaryExpression' },
+  { type: 'CallExpression' },
+])('does not invent value evidence for %j', expression => {
+  expect(isValueExpression(expression)).toBe(false);
+});
+
+test('distinguishes Object.fromEntries from predicates, computed properties and other callees', () => {
+  const callee = {
+    type: 'MemberExpression',
+    computed: false,
+    object: { type: 'Identifier', name: 'Object' },
+    property: { type: 'Identifier', name: 'fromEntries' },
+  };
+  expect(isValueExpression({ type: 'CallExpression', callee })).toBe(true);
+  const invalid = [
+    { ...callee, type: 'OptionalMemberExpression' },
+    { ...callee, computed: true },
+    { ...callee, object: undefined },
+    { ...callee, object: { type: 'ThisExpression', name: 'Object' } },
+    { ...callee, object: { type: 'Identifier', name: 'Other' } },
+    { ...callee, property: undefined },
+    { ...callee, property: { type: 'StringLiteral', name: 'fromEntries' } },
+    { ...callee, property: { type: 'Identifier', name: 'is' } },
+  ];
+  for (const candidate of invalid)
+    expect(
+      isValueExpression({ type: 'CallExpression', callee: candidate })
+    ).toBe(false);
+  expect(isValueExpression({ type: 'Identifier', callee })).toBe(false);
+});
 
 test('collects every distinct kind while preserving first signal identity and order', () => {
   const state = { signals: [], seenLabels: new Set(), seenSignals: new Set() };

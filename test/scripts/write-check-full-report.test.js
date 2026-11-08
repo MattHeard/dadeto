@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import {
   mkdtempSync,
   mkdirSync,
@@ -7,10 +7,70 @@ import {
   renameSync,
   readFileSync,
   rmSync,
+  existsSync,
 } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+test.each([
+  ['invalid JSON', 'not-json', '{}', { status: 0, available: false }],
+  ['malformed shape', '{}', '{}', { status: 1, available: false }],
+  [
+    'irrelevant malformed reason',
+    JSON.stringify({
+      total: Object.fromEntries(
+        ['statements', 'branches', 'functions', 'lines'].map(metric => [
+          metric,
+          { pct: 100 },
+        ])
+      ),
+    }),
+    '{"failureReason":{"toString":17}}',
+    { status: 0, available: true },
+  ],
+])(
+  'the actual report adapter preserves %s semantics',
+  (_name, summary, run, expected) => {
+    const directory = mkdtempSync(
+      path.join(os.tmpdir(), 'dadeto-report-json-')
+    );
+    const coverageDir = path.join(directory, 'reports/coverage');
+    const entrypoint = fileURLToPath(
+      new URL('../../src/local/write-check-full-report.js', import.meta.url)
+    );
+    try {
+      mkdirSync(coverageDir, { recursive: true });
+      writeFileSync(path.join(coverageDir, 'coverage-summary.json'), summary);
+      writeFileSync(path.join(coverageDir, 'full-test-run.json'), run);
+      const execution = spawnSync(process.execPath, [entrypoint], {
+        cwd: directory,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          GITHUB_SHA: 'fixture',
+          DADETO_CHECK_BASE_SHA: '',
+          CHECK_FULL_RESULT: 'failure',
+          GITHUB_STEP_SUMMARY: '',
+        },
+      });
+      expect(execution.status).toBe(expected.status);
+      const reportPath = path.join(coverageDir, 'check-full-report.json');
+      if (expected.status === 0)
+        expect(
+          JSON.parse(readFileSync(reportPath, 'utf8')).coverageAvailable
+        ).toBe(expected.available);
+      else {
+        expect(execution.stderr).toContain(
+          "TypeError: Cannot read properties of undefined (reading 'statements')"
+        );
+        expect(existsSync(reportPath)).toBe(false);
+      }
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+);
 
 test('the actual report entrypoint distinguishes a Git rename from missing current coverage', () => {
   const directory = mkdtempSync(

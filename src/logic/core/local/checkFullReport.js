@@ -1,56 +1,60 @@
-import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
+import { isLogicJavaScriptPath } from './logic-source-paths.js';
 
-const COVERAGE_METRICS = /** @type {const} */ ([
+export const COVERAGE_METRICS = /** @type {const} */ ([
   'statements',
   'branches',
   'functions',
   'lines',
 ]);
 
-/** @typedef {{pct: number, covered: number, total: number, skipped: number}} CoverageMetricSummary */
-/** @typedef {{statements: CoverageMetricSummary, branches: CoverageMetricSummary, functions: CoverageMetricSummary, lines: CoverageMetricSummary}} CoverageFileSummary */
-/** @typedef {Record<string, CoverageFileSummary> & {total: CoverageFileSummary}} CoverageSummary */
-/** @typedef {{testSuites?: number | null, tests?: number | null, passed?: number | null, failed?: number | null, completedShards?: number | null, totalShards?: number | null, failureReason?: string | null, status?: string}} CoverageRunMetadata */
-/** @typedef {{suites: number | null, tests: number | null, passed: number | null, failed: number | null, complete: boolean, completedShards: number | null, totalShards: number | null}} TestSummary */
+/** @typedef {typeof COVERAGE_METRICS[number]} CoverageMetric */
+/** @typedef {Record<CoverageMetric, number>} MetricValues */
+/** @typedef {{total: MetricValues, files: Array<{file: string, metrics: MetricValues}>}} CoverageData */
+/** @typedef {{suites: null, tests: null, passed: null, failed: null, complete: false, completedShards: null, totalShards: null} | {suites: number, tests: number, passed: number | null, failed: number | null, complete: boolean, completedShards: number | null, totalShards: number | null}} TestSummary */
+/** @typedef {{kind: 'heap'} | {kind: 'timeout'} | {kind: 'unit-failure'} | {kind: 'custom', message: string} | {kind: 'other', running: boolean}} FailureEvidence */
+/** @typedef {{tests: TestSummary, runPresent: boolean} & ({coverage: CoverageData, failure: null} | {coverage: null, failure: FailureEvidence})} ReportEvidence */
+/** @typedef {Record<CoverageMetric, {percentage: number, threshold: number, passed: boolean}>} CoverageResults */
+/** @typedef {{coverageAvailable: true, coverage: CoverageResults} | {coverageAvailable: false, coverage: null}} CoverageState */
 /** @typedef {{file: string, metrics: string[]}} BelowThresholdFile */
 /** @typedef {{file: string, metrics: Record<string, number>}} ChangedFileCoverageEntry */
-/** @typedef {{commitSha: string, workflowResult: string, tests: TestSummary, coverageAvailable: boolean, coverage: Record<string, {percentage: number, threshold: number, passed: boolean}> | null, thresholds: Record<string, number>, belowThresholdMetrics: string[], belowThresholdFiles: BelowThresholdFile[], changedFileCoverage: ChangedFileCoverageEntry[], changedFileCoverageNote: string | null, coverageUnavailableReason: string | null, artifacts: {coverageSummary: string | null, coverageDetail: string | null, partialCoverage: string | null, testRun: string | null, fullCheckLog: string}}} CheckFullReport */
+/** @typedef {CoverageState & {commitSha: string, workflowResult: string, tests: TestSummary, thresholds: MetricValues, belowThresholdMetrics: string[], belowThresholdFiles: BelowThresholdFile[], changedFileCoverage: ChangedFileCoverageEntry[], changedFileCoverageNote: string | null, coverageUnavailableReason: string | null, artifacts: {coverageSummary: string | null, coverageDetail: string | null, partialCoverage: string | null, testRun: string | null, fullCheckLog: string}}} CheckFullReport */
 
 /**
- * Build a truthful report for the authoritative full-check workflow.
- * @param {{ commitSha?: string, workflowResult?: string, coverageRun?: CoverageRunMetadata | null, coverageSummary?: CoverageSummary | null, changedPaths?: string[], deletedPaths?: string[], failureLog?: string, coverageThresholds?: Record<string, number> }} input Workflow evidence. Deleted paths must come from successful Git status discovery.
- * @returns {CheckFullReport} Report data for JSON, Markdown, and the Actions summary.
+ * Project the fixed schema without weakening its required named-key contract.
+ * @template T
+ * @param {(metric: CoverageMetric) => T} project Typed value projection.
+ * @returns {Record<CoverageMetric, T>} Every schema key, in canonical order.
  */
-export function createCheckFullReport({
-  commitSha = '',
-  workflowResult = 'unknown',
-  coverageRun = null,
-  coverageSummary = null,
-  changedPaths = [],
-  deletedPaths = [],
-  failureLog = '',
-  coverageThresholds = {
-    statements: 100,
-    branches: 100,
-    functions: 100,
-    lines: 100,
-  },
-} = {}) {
-  const coverageData = isCoverageSummary(coverageSummary)
-    ? coverageSummary
-    : null;
+export function mapCoverageMetrics(project) {
+  return /** @type {Record<CoverageMetric, T>} */ (
+    Object.fromEntries(
+      COVERAGE_METRICS.map(metric => [metric, project(metric)])
+    )
+  );
+}
+
+/** @typedef {CoverageState & {thresholds: MetricValues, belowThresholdMetrics: string[], belowThresholdFiles: BelowThresholdFile[], changedFileCoverage: ChangedFileCoverageEntry[], changedFileCoverageNote: string | null}} CheckCoverageReport */
+
+/**
+ * Evaluate current coverage against explicit policy and requested change scope.
+ * @param {CoverageData | null} coverageData Normalized measurements.
+ * @param {MetricValues} coverageThresholds Required percentages.
+ * @param {string[]} changedPaths All changed paths.
+ * @param {string[]} deletedPaths Confirmed deleted paths.
+ * @returns {CheckCoverageReport} Coverage projection in public field order.
+ */
+export function createCheckCoverageReport(
+  coverageData,
+  coverageThresholds,
+  changedPaths,
+  deletedPaths
+) {
   const metrics = coverageData
-    ? Object.fromEntries(
-        COVERAGE_METRICS.map(metric => [
-          metric,
-          {
-            percentage: coverageData.total[metric].pct,
-            threshold: coverageThresholds[metric],
-            passed:
-              coverageData.total[metric].pct >= coverageThresholds[metric],
-          },
-        ])
-      )
+    ? mapCoverageMetrics(metric => ({
+        percentage: coverageData.total[metric],
+        threshold: coverageThresholds[metric],
+        passed: coverageData.total[metric] >= coverageThresholds[metric],
+      }))
     : null;
   const belowThresholdMetrics = metrics
     ? Object.entries(metrics)
@@ -58,40 +62,28 @@ export function createCheckFullReport({
         .map(([metric]) => metric)
     : [];
   const belowThresholdFiles = coverageData
-    ? Object.entries(coverageData)
-        .filter(([file, summary]) => file !== 'total' && isSummary(summary))
-        .map(([file, summary]) => ({
+    ? coverageData.files
+        .map(({ file, metrics: percentages }) => ({
           file,
           metrics: COVERAGE_METRICS.filter(
-            metric => summary[metric].pct < coverageThresholds[metric]
+            metric => percentages[metric] < coverageThresholds[metric]
           ),
         }))
         .filter(entry => entry.metrics.length > 0)
     : [];
   const deleted = new Set(deletedPaths);
   const currentChangedPaths = changedPaths.filter(file => !deleted.has(file));
-  const changedFileCoverage = coverageData
-    ? [...new Set(currentChangedPaths)]
-        .filter(isLogicJavaScriptPath)
-        .filter(file => isSummary(coverageData[file]))
-        .sort()
-        .map(file => ({
-          file,
-          metrics: Object.fromEntries(
-            COVERAGE_METRICS.map(metric => [
-              metric,
-              coverageData[file][metric].pct,
-            ])
-          ),
-        }))
-    : [];
+  const changedFileCoverage = changedCoverageEntries(
+    coverageData,
+    currentChangedPaths
+  );
+  /** @type {CoverageState} */
+  const coverageState = metrics
+    ? { coverageAvailable: true, coverage: metrics }
+    : { coverageAvailable: false, coverage: null };
 
-  const report = {
-    commitSha,
-    workflowResult,
-    tests: summarizeTests(coverageRun),
-    coverageAvailable: coverageData !== null,
-    coverage: metrics,
+  return {
+    ...coverageState,
     thresholds: coverageThresholds,
     belowThresholdMetrics,
     belowThresholdFiles,
@@ -101,9 +93,30 @@ export function createCheckFullReport({
       changedFileCoverage,
       deletedPaths
     ),
-    coverageUnavailableReason: coverageData
+  };
+}
+
+/**
+ * Compose parsed evidence and evaluated coverage into the public workflow report.
+ * @param {{commitSha: string, workflowResult: string}} revision Workflow revision.
+ * @param {ReportEvidence} evidence Normalized evidence.
+ * @param {CheckCoverageReport} coverageReport Evaluated coverage policy.
+ * @returns {CheckFullReport} Report data for JSON, Markdown and Actions summary.
+ */
+export function createCheckFullReport(
+  { commitSha, workflowResult },
+  evidence,
+  coverageReport
+) {
+  const coverageData = evidence.coverage;
+  const report = {
+    commitSha,
+    workflowResult,
+    tests: evidence.tests,
+    ...coverageReport,
+    coverageUnavailableReason: evidence.coverage
       ? null
-      : explainCoverageUnavailable({ workflowResult, coverageRun, failureLog }),
+      : explainCoverageUnavailable(workflowResult, evidence.failure),
     artifacts: {
       coverageSummary: coverageData
         ? 'reports/coverage/coverage-summary.json'
@@ -112,8 +125,10 @@ export function createCheckFullReport({
         ? 'reports/coverage/coverage-final.json'
         : null,
       partialCoverage:
-        !coverageData && coverageRun ? 'reports/coverage/work/' : null,
-      testRun: coverageRun ? 'reports/coverage/full-test-run.json' : null,
+        !coverageData && evidence.runPresent ? 'reports/coverage/work/' : null,
+      testRun: evidence.runPresent
+        ? 'reports/coverage/full-test-run.json'
+        : null,
       fullCheckLog: 'reports/check-full.log',
     },
   };
@@ -145,9 +160,7 @@ export function renderCheckFullReportMarkdown(report) {
   } else {
     lines.push('| Metric | Result | Required | Status |');
     lines.push('| --- | ---: | ---: | --- |');
-    const coverage = /** @type {NonNullable<CheckFullReport['coverage']>} */ (
-      report.coverage
-    );
+    const coverage = report.coverage;
     for (const metric of COVERAGE_METRICS) {
       const value = coverage[metric];
       lines.push(
@@ -211,76 +224,11 @@ export function renderCheckFullReportMarkdown(report) {
 }
 
 /**
- * @param {CoverageFileSummary | null | undefined} summary Coverage entry.
- * @returns {summary is CoverageFileSummary} True when all configured metrics have percentages.
- */
-function isSummary(summary) {
-  return (
-    summary !== null && summary !== undefined && hasMetricPercentages(summary)
-  );
-}
-
-/**
- * Check whether the summary includes every global coverage metric.
- * @param {CoverageSummary | null} summary Candidate coverage summary.
- * @returns {summary is CoverageSummary} True when complete coverage data exists.
- */
-function isCoverageSummary(summary) {
-  return summary !== null && hasMetricPercentages(summary.total);
-}
-
-/**
- * Check whether all coverage metrics have finite percentages.
- * @param {CoverageFileSummary} summary Candidate coverage entry.
- * @returns {boolean} True when every required percentage is available.
- */
-function hasMetricPercentages(summary) {
-  return COVERAGE_METRICS.every(metric => Number.isFinite(summary[metric].pct));
-}
-
-/**
- * Summarize partial or complete Jest shard counts.
- * @param {CoverageRunMetadata | null} run Coverage runner metadata.
- * @returns {TestSummary} Test counts.
- */
-function summarizeTests(run) {
-  if (!run || !Number.isFinite(run.testSuites) || !Number.isFinite(run.tests))
-    return {
-      suites: null,
-      tests: null,
-      passed: null,
-      failed: null,
-      complete: false,
-      completedShards: null,
-      totalShards: null,
-    };
-  return {
-    suites: /** @type {number} */ (run.testSuites),
-    tests: /** @type {number} */ (run.tests),
-    passed: Number.isFinite(run.passed)
-      ? /** @type {number} */ (run.passed)
-      : null,
-    failed: Number.isFinite(run.failed)
-      ? /** @type {number} */ (run.failed)
-      : null,
-    complete:
-      Number.isFinite(run.totalShards) &&
-      run.completedShards === run.totalShards,
-    completedShards: Number.isFinite(run.completedShards)
-      ? /** @type {number} */ (run.completedShards)
-      : null,
-    totalShards: Number.isFinite(run.totalShards)
-      ? /** @type {number} */ (run.totalShards)
-      : null,
-  };
-}
-
-/**
- * @param {{ suites: number | null, tests: number | null, passed: number | null, failed: number | null, complete: boolean, completedShards: number | null, totalShards: number | null }} tests Test counts.
+ * @param {TestSummary} tests Normalized, correlated test counts.
  * @returns {string} Human-readable test counts.
  */
 function formatTests(tests) {
-  if (tests.suites === null || tests.tests === null)
+  if (tests.suites === null)
     return 'Test and suite counts unavailable; see the full check log.';
   const passed =
     tests.passed === null ? 'unknown passed' : `${tests.passed} passed`;
@@ -293,37 +241,46 @@ function formatTests(tests) {
 }
 
 /**
- * Explain missing coverage without turning it into a zero or a pass.
- * @param {{ workflowResult: string, coverageRun: CoverageRunMetadata | null, failureLog: string }} input Failure evidence.
+ * Explain absence using parsed failure categories and meaningful workflow state.
+ * @param {string} workflowResult Workflow state supplied by the caller.
+ * @param {FailureEvidence} failure Parsed failure evidence.
  * @returns {string} Coverage availability reason.
  */
-function explainCoverageUnavailable({
-  workflowResult,
-  coverageRun,
-  failureLog,
-}) {
-  const evidence =
-    `${coverageRun?.failureReason ?? ''}\n${failureLog}`.toLowerCase();
-  if (
-    /heap out of memory|javascript heap|heap limit|allocation failed/.test(
-      evidence
-    )
-  )
+function explainCoverageUnavailable(workflowResult, failure) {
+  if (failure.kind === 'heap')
     return 'The test process exhausted its JavaScript heap before producing the complete coverage summary.';
-  if (/timed out|timeout|sigterm/.test(evidence))
+  if (failure.kind === 'timeout')
     return 'The test or aggregate check timed out before producing the complete coverage summary.';
-  if (
-    /test suites?:.*failed|tests?:.*failed|coverage shard failed/.test(evidence)
-  )
+  if (failure.kind === 'unit-failure')
     return 'The unit test process failed before producing the complete coverage summary.';
-  if (coverageRun?.failureReason) return String(coverageRun.failureReason);
+  if (failure.kind === 'custom') return failure.message;
   if (workflowResult === 'success')
     return 'The full check completed without a readable coverage summary.';
-  if (coverageRun?.status === 'running')
+  if (failure.running)
     return 'The aggregate process timed out or was terminated before the unit coverage run wrote its completion record.';
   if (workflowResult === 'cancelled')
     return 'The full-check workflow was cancelled before the coverage summary was produced.';
   return 'The full check failed before the coverage summary was produced; see the full check log for the failure details.';
+}
+
+/**
+ * Project requested current logic paths from normalized finite file measurements.
+ * @param {CoverageData | null} coverage Available normalized coverage.
+ * @param {string[]} paths Current changed paths.
+ * @returns {ChangedFileCoverageEntry[]} Sorted measured entries.
+ */
+function changedCoverageEntries(coverage, paths) {
+  if (!coverage) return [];
+  const files = new Map(
+    coverage.files.map(entry => [entry.file, entry.metrics])
+  );
+  return [...new Set(paths)]
+    .filter(isLogicJavaScriptPath)
+    .sort()
+    .flatMap(file => {
+      const metrics = files.get(file);
+      return metrics ? [{ file, metrics }] : [];
+    });
 }
 
 /**

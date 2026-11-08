@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import { parse } from '@babel/parser';
-import { isTypeofComparison, recordClassificationSignal } from './src/core/scripts/classification-signals.js';
+import { isTypeofComparison, isValueExpression, recordClassificationSignal } from './src/core/scripts/classification-signals.js';
 
 const PARSER_PLUGINS = [
   'jsx',
@@ -52,7 +52,12 @@ function main(argv) {
     emitErrorAndExit({ kind: 'file_read_error', message: 'Could not read file', filePath });
   }
   try {
-    const functions = classifyFunctionsFromSource(source, filePath);
+    // Value-return evidence is internal policy metadata; retain the CLI schema.
+    const functions = classifyFunctionsFromSource(source, filePath).map(fn => {
+      const output = { ...fn };
+      delete output.hasValueReturn;
+      return output;
+    });
     process.stdout.write(`${JSON.stringify({ filePath, functions }, null, 2)}\n`);
   } catch (error) {
     emitErrorAndExit({
@@ -106,7 +111,9 @@ function classifyFunction(node, filePath) {
   const seenSignals = new Set();
   const signalState = { signals, seenLabels, seenSignals };
   const startLocation = getStartLocation(node);
+  let hasValueReturn = isValueExpression(body);
   walkNode(body, current => {
+    if (current.type === 'ReturnStatement' && isValueExpression(current.argument)) hasValueReturn = true;
     const signal = classifySignal(current);
     recordClassificationSignal(signal, signalState);
   });
@@ -121,6 +128,7 @@ function classifyFunction(node, filePath) {
     endColumn: node.loc.end.column,
     labels,
     signals,
+    hasValueReturn,
     jsdoc: null,
   };
 }

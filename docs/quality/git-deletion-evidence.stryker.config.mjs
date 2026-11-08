@@ -6,7 +6,8 @@ export default {
   mutate: [
     'src/logic/boundary/local/git-changes.js',
     'src/core/local/checkImpactPlan.js',
-    'src/core/local/checkFullReport.js',
+    'src/logic/core/local/checkFullReport.js',
+    'src/logic/boundary/local/checkFullReport.js',
   ],
   ignorePatterns: [
     '**',
