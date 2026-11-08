@@ -99,6 +99,189 @@ function runnerArgs(call) {
 }
 
 describe('impact planner', () => {
+  it('uses exact NUL status protocols and resolves a base before comparing it', () => {
+    const { runCommand, permission, output } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
+      argv: ['--base', 'topic'],
+      runImpl: (_command, args) =>
+        args[0] === 'rev-parse'
+          ? { status: 0, stdout: 'abc123\n' }
+          : { status: 0, stdout: '' },
+    });
+    expect(runCommand.mock.calls.map(call => call[2])).toEqual([
+      ['diff', '--name-status', '-z', '--no-renames'],
+      ['diff', '--cached', '--name-status', '-z', '--no-renames'],
+      ['ls-files', '--others', '--exclude-standard', '-z'],
+      [
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        '--end-of-options',
+        'topic^{commit}',
+      ],
+      ['diff', '--name-status', '-z', '--no-renames', 'abc123...HEAD', '--'],
+    ]);
+    for (const call of runCommand.mock.calls) {
+      expect(call[0]).toBe(permission);
+      expect(call[1]).toBe('git');
+      expect(call[3]).toEqual({
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        timeout: 45000,
+        maxBuffer: 16 * 1024 * 1024,
+      });
+    }
+    expect(output.report().mode).toBe('none');
+  });
+
+  it('rejects a single-hyphen base without invoking ref resolution', () => {
+    const { output, runCommand } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
+      argv: ['--base', '-danger'],
+    });
+    expect(output.report().reason).toBe('The selected Git base ref is unsafe.');
+    expect(runCommand.mock.calls).toHaveLength(3);
+  });
+
+  it('rejects successful base lookup without stdout', () => {
+    const { output } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
+      argv: ['--base', 'topic'],
+      runImpl: () => ({ status: 0 }),
+    });
+    expect(output.report().reason).toBe(
+      'Git could not resolve the selected base ref.'
+    );
+  });
+
+  it('skips related-test discovery for mixed safe and unsafe Git paths', () => {
+    const { output, runCommand } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args[0] === 'diff' ? 'M\0src/core/a.js\0M\0../unsafe.js\0' : '',
+      }),
+    });
+    expect(output.report()).toMatchObject({
+      mode: 'fallback',
+      testSelection: 'all-unit',
+    });
+    expect(runCommand.mock.calls).toHaveLength(3);
+  });
+
+  it.each(['unstaged', 'staged', 'base'])(
+    'runs all units for %s source deletion without claiming scoped coverage',
+    phase => {
+      const oldPath = 'src/core/deleted.js';
+      const { result, output, runCommand, runCoverage } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        argv: phase === 'base' ? ['--base', 'origin/main'] : [],
+        fileExists: file => file.endsWith('.test.js'),
+        runImpl: (command, args) => {
+          if (args.includes('-co'))
+            return { status: 0, stdout: 'test/core/affected.test.js\0' };
+          if (command === 'git' && args[0] === 'rev-parse')
+            return { status: 0, stdout: 'abc123\n' };
+          const isBase = args.some(value => value.includes('...HEAD'));
+          const target =
+            phase === 'base'
+              ? isBase
+              : phase === 'staged'
+                ? args.includes('--cached')
+                : !args.includes('--cached') && !isBase;
+          if (command === 'git' && args[0] === 'diff' && target)
+            return { status: 0, stdout: `D\0${oldPath}\0` };
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(result).toEqual({ exitCode: 0 });
+      expect(output.report()).toMatchObject({
+        changedPaths: [oldPath],
+        deletedPaths: [oldPath],
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/affected.test.js'],
+        selectorFailure: '',
+        fallbackReason:
+          'Deleted source paths require conservative unit-test selection.',
+        result: 'passed',
+      });
+      expect(output.report()).not.toHaveProperty('scopedCoverage');
+      expect(runCoverage).not.toHaveBeenCalled();
+      expect(
+        runCommand.mock.calls.some(call =>
+          call[2].includes('--findRelatedTests')
+        )
+      ).toBe(false);
+    }
+  );
+
+  it('retains unsupported-path diagnostics for a deleted documentation file', () => {
+    const { output } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
+      fileExists: () => false,
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args[0] === 'diff' ? 'D\0docs/deleted.md\0' : '',
+      }),
+    });
+    expect(output.report().reason).toBe(
+      'Unsupported or unsafe changed path: docs/deleted.md.'
+    );
+  });
+
+  it.each([true, undefined])(
+    'does not treat Git deletion as current absence when fileExists returns %p',
+    exists => {
+      const { output, runCoverage } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        fileExists: exists === undefined ? undefined : () => exists,
+        runImpl: (command, args) => {
+          if (command === 'git' && args[0] === 'diff')
+            return { status: 0, stdout: 'D\0src/core/restored.js\0' };
+          if (args.includes('--findRelatedTests'))
+            return { status: 0, stdout: 'test/core/restored.test.js\n' };
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(output.report()).not.toHaveProperty('deletedPaths');
+      expect(output.report().testSelection).toBe('related');
+      expect(runCoverage).toHaveBeenCalledWith(
+        expect.anything(),
+        ['test/core/restored.test.js'],
+        ['src/core/restored.js']
+      );
+    }
+  );
+
+  it.each([false, true])(
+    'fails safe on malformed %s base comparison status',
+    base => {
+      const { output } = runHandle({
+        argv: base ? ['--base', 'origin/main'] : [],
+        runImpl: (command, args) => {
+          if (args.includes('-co'))
+            return { status: 0, stdout: 'test/core/fallback.test.js\0' };
+          if (args[0] === 'rev-parse') return { status: 0, stdout: 'abc123\n' };
+          if (
+            command === 'git' &&
+            args[0] === 'diff' &&
+            args.some(value => value.includes('...HEAD')) === base
+          )
+            return { status: 0, stdout: 'D\0old.js\0broken\0' };
+          return { status: 0, stdout: '' };
+        },
+      });
+      expect(output.report()).toMatchObject({
+        testSelection: 'all-unit',
+        selectedTests: ['test/core/fallback.test.js'],
+        fallbackReason: base
+          ? 'Git returned malformed base change status evidence.'
+          : 'Git returned malformed change status evidence.',
+      });
+      expect(output.report()).not.toHaveProperty('deletedPaths');
+    }
+  );
+
   it('prints an explicit test plan without running Jest', () => {
     const { result, output, runCommand } = runHandle({
       createHandle: createPlanCheckImpactHandle,
@@ -193,12 +376,13 @@ describe('test impact runner', () => {
         )
           return {
             status: 0,
-            stdout: 'src/core/unstaged.js\0test/core/shared.test.js\0',
+            stdout: 'M\0src/core/unstaged.js\0M\0test/core/shared.test.js\0',
           };
         if (command === 'git' && args.includes('--cached'))
           return {
             status: 0,
-            stdout: 'test/core/staged.test.js\0test/core/shared.test.js\0',
+            stdout:
+              'M\0test/core/staged.test.js\0M\0test/core/shared.test.js\0',
           };
         if (command === 'git' && args[0] === 'ls-files')
           return { status: 0, stdout: 'src/core/untracked.js\0' };
@@ -248,7 +432,7 @@ describe('test impact runner', () => {
         if (command === 'git' && args[0] === 'rev-parse')
           return { status: 0, stdout: 'abcdef123456\n' };
         if (command === 'git' && args.some(arg => arg.includes('...HEAD')))
-          return { status: 0, stdout: 'test/core/from-base.test.js\0' };
+          return { status: 0, stdout: 'A\0test/core/from-base.test.js\0' };
         return { status: 0, stdout: '' };
       },
     });
@@ -525,7 +709,7 @@ describe('scoped static-check impact executor', () => {
               },
               [unrelatedFile]: {
                 statementMap: { 0: { start: { line: 1 } } },
-                s: { 0: 0 },
+                s: { 0: 99, 1: 1, 2: 1 },
                 branchMap: {},
                 b: {},
               },
@@ -1124,6 +1308,7 @@ describe('test impact runner fallback execution', () => {
     const failures = [
       { phase: 'resolve', result: { status: 1, stdout: 'abcdef123456\n' } },
       { phase: 'resolve', result: { status: 0, stdout: '  ' } },
+      { phase: 'resolve', result: { status: 0 } },
       {
         phase: 'resolve',
         result: {
@@ -1172,6 +1357,263 @@ describe('test impact runner fallback execution', () => {
 });
 
 describe('logic migration scoped enforcement', () => {
+  it('continues all shards and fails overall when only the middle shard fails', () => {
+    const tests = [
+      'test/core/a.test.js',
+      'test/core/b.test.js',
+      'test/core/c.test.js',
+    ];
+    const { result, output, runCommand } = runHandle({
+      argv: ['--unsupported'],
+      impactShardSize: 1,
+      runImpl: (command, args) =>
+        command === 'git'
+          ? { status: 0, stdout: tests.join('\0') }
+          : { status: args.includes(tests[1]) ? 1 : 0, stdout: '' },
+    });
+    expect(result.exitCode).toBe(1);
+    expect(output.report()).toMatchObject({
+      selectedTests: tests,
+      result: 'failed',
+    });
+    expect(
+      runCommand.mock.calls
+        .filter(call => call[1] === process.execPath)
+        .map(call => call[2].at(-1))
+    ).toEqual(tests);
+    expect(output.chunks).toEqual(
+      expect.arrayContaining([
+        'Impact tests: shard 1/3 passed.\n',
+        'Impact tests: shard 2/3 failed.\n',
+        'Impact tests: shard 3/3 passed.\n',
+      ])
+    );
+  });
+
+  it('sorts and deduplicates fallback candidates before execution', () => {
+    const { result, output } = runHandle({
+      argv: ['--unsupported'],
+      runImpl: (command, args) => ({
+        status: 0,
+        stdout:
+          command === 'git' && args.includes('-co')
+            ? 'test/core/z.test.js\0test/core/a.test.js\0test/core/z.test.js\0'
+            : '',
+      }),
+    });
+    expect(result.exitCode).toBe(0);
+    expect(output.report().selectedTests).toEqual([
+      'test/core/a.test.js',
+      'test/core/z.test.js',
+    ]);
+  });
+
+  it.each([false, true])(
+    'preserves zero branch counts with a missing counter side (%s)',
+    missingFirst => {
+      let index = 0;
+      const { result, output } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        argv: ['--files', 'src/core/a.js'],
+        impactShardSize: 1,
+        runImpl: (_command, args) => ({
+          status: 0,
+          stdout: args.includes('--findRelatedTests')
+            ? 'test/core/a.test.js\ntest/core/b.test.js\n'
+            : '',
+        }),
+        coverageImpl: () => {
+          const missing = (index++ === 0) === missingFirst;
+          return {
+            status: 0,
+            coverage: {
+              'src/core/a.js': {
+                statementMap: {},
+                s: {},
+                branchMap: { a: { line: 8 } },
+                b: missing ? {} : { a: [0] },
+              },
+            },
+          };
+        },
+      });
+      expect(result.exitCode).toBe(1);
+      expect(output.report().scopedCoverage.files).toEqual([
+        {
+          file: 'src/core/a.js',
+          collected: true,
+          uncoveredLines: [],
+          uncoveredBranches: [{ line: 8, arm: 1 }],
+        },
+      ]);
+    }
+  );
+
+  it('omits invalid branch lines without hiding an independent valid miss', () => {
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/a.js'],
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args.includes('--findRelatedTests')
+          ? 'test/core/a.test.js\n'
+          : '',
+      }),
+      coverageImpl: () => ({
+        status: 0,
+        coverage: {
+          'src/core/a.js': {
+            branchMap: {
+              a: { line: 2.5 },
+              b: { line: '8' },
+              c: { line: 9, locations: [{ start: { line: '5' } }] },
+              d: { line: 7 },
+            },
+            b: { a: [0], b: [0], c: [0], d: [0] },
+          },
+        },
+      }),
+    });
+    expect(result.exitCode).toBe(1);
+    expect(output.report().scopedCoverage.files).toEqual([
+      {
+        file: 'src/core/a.js',
+        collected: true,
+        uncoveredLines: [],
+        uncoveredBranches: [{ line: 7, arm: 1 }],
+      },
+    ]);
+  });
+
+  it.each([
+    {
+      name: 'coverage error despite complete locations',
+      records: { 'src/core/a.js': {} },
+      error: 'read failed',
+      files: ['src/core/a.js'],
+      lines: [],
+      branches: [],
+    },
+    {
+      name: 'one uncollected file among collected files',
+      records: { 'src/core/a.js': {} },
+      files: ['src/core/a.js', 'src/core/b.js'],
+      lines: [],
+      branches: [],
+    },
+    {
+      name: 'isolated ordered unique statement misses',
+      records: {
+        'src/core/a.js': {
+          statementMap: {
+            a: { start: { line: 10 } },
+            b: { start: { line: 2 } },
+            c: { start: { line: 10 } },
+            d: { start: { line: 1 } },
+            e: {},
+            f: { start: {} },
+            g: { start: { line: 2.5 } },
+          },
+          s: { a: 0, b: 0, c: 0, d: 0, e: 0, f: 0, g: 0, missing: 0 },
+        },
+      },
+      files: ['src/core/a.js'],
+      lines: [1, 2, 10],
+      branches: [],
+    },
+    {
+      name: 'missing branch arm location falls back to branch line',
+      records: {
+        'src/core/a.js': {
+          branchMap: { a: { line: 12, locations: [] } },
+          b: { a: [0] },
+        },
+      },
+      files: ['src/core/a.js'],
+      lines: [],
+      branches: [{ line: 12, arm: 1 }],
+    },
+  ])('fails for $name without another failure hiding it', fixture => {
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', ...fixture.files],
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args.includes('--findRelatedTests')
+          ? 'test/core/a.test.js\n'
+          : '',
+      }),
+      coverageImpl: () => ({
+        status: 0,
+        coverage: fixture.records,
+        coverageError: fixture.error,
+      }),
+    });
+    expect(result.exitCode).toBe(1);
+    expect(output.report()).toMatchObject({
+      result: 'failed',
+      scopedCoverage: {
+        files: [
+          {
+            file: fixture.files[0],
+            collected: true,
+            uncoveredLines: fixture.lines,
+            uncoveredBranches: fixture.branches,
+          },
+          ...(fixture.files.length > 1
+            ? [
+                {
+                  file: fixture.files[1],
+                  collected: false,
+                  uncoveredLines: [],
+                  uncoveredBranches: [],
+                },
+              ]
+            : []),
+        ],
+        errors: fixture.error ? [fixture.error] : [],
+      },
+    });
+  });
+
+  it('adds positive statement and branch counters across shards', () => {
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/a.js'],
+      impactShardSize: 1,
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args.includes('--findRelatedTests')
+          ? 'test/core/z.test.js\ntest/core/a.test.js\n'
+          : '',
+      }),
+      coverageImpl: () => ({
+        status: 0,
+        coverage: {
+          'src/core/a.js': {
+            statementMap: { a: { start: { line: 8 } } },
+            s: { a: 1 },
+            branchMap: { a: { line: 8 } },
+            b: { a: [1] },
+          },
+        },
+      }),
+    });
+    expect(result.exitCode).toBe(0);
+    expect(output.report().scopedCoverage.files).toEqual([
+      {
+        file: 'src/core/a.js',
+        collected: true,
+        uncoveredLines: [],
+        uncoveredBranches: [],
+      },
+    ]);
+    expect(output.report().selectedTests).toEqual([
+      'test/core/a.test.js',
+      'test/core/z.test.js',
+    ]);
+  });
+
   it.each(['src/logic/core/example.js', 'src/logic/boundary/example.js'])(
     'fails closed when %s is not collected',
     file => {
