@@ -176,7 +176,7 @@ describe('impact planner', () => {
       const { result, output, runCommand, runCoverage } = runHandle({
         createHandle: createRunScopedCheckImpactHandle,
         argv: phase === 'base' ? ['--base', 'origin/main'] : [],
-        fileExists: file => !file.endsWith('/deleted.js'),
+        fileExists: file => file.endsWith('.test.js'),
         runImpl: (command, args) => {
           if (args.includes('-co'))
             return { status: 0, stdout: 'test/core/affected.test.js\0' };
@@ -200,6 +200,7 @@ describe('impact planner', () => {
         deletedPaths: [oldPath],
         testSelection: 'all-unit',
         selectedTests: ['test/core/affected.test.js'],
+        selectorFailure: '',
         fallbackReason:
           'Deleted source paths require conservative unit-test selection.',
         result: 'passed',
@@ -213,6 +214,20 @@ describe('impact planner', () => {
       ).toBe(false);
     }
   );
+
+  it('retains unsupported-path diagnostics for a deleted documentation file', () => {
+    const { output } = runHandle({
+      createHandle: createPlanCheckImpactHandle,
+      fileExists: () => false,
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args[0] === 'diff' ? 'D\0docs/deleted.md\0' : '',
+      }),
+    });
+    expect(output.report().reason).toBe(
+      'Unsupported or unsafe changed path: docs/deleted.md.'
+    );
+  });
 
   it.each([true, undefined])(
     'does not treat Git deletion as current absence when fileExists returns %p',
@@ -694,7 +709,7 @@ describe('scoped static-check impact executor', () => {
               },
               [unrelatedFile]: {
                 statementMap: { 0: { start: { line: 1 } } },
-                s: { 0: 0 },
+                s: { 0: 99, 1: 1, 2: 1 },
                 branchMap: {},
                 b: {},
               },
@@ -1342,6 +1357,134 @@ describe('test impact runner fallback execution', () => {
 });
 
 describe('logic migration scoped enforcement', () => {
+  it('continues all shards and fails overall when only the middle shard fails', () => {
+    const tests = [
+      'test/core/a.test.js',
+      'test/core/b.test.js',
+      'test/core/c.test.js',
+    ];
+    const { result, output, runCommand } = runHandle({
+      argv: ['--unsupported'],
+      impactShardSize: 1,
+      runImpl: (command, args) =>
+        command === 'git'
+          ? { status: 0, stdout: tests.join('\0') }
+          : { status: args.includes(tests[1]) ? 1 : 0, stdout: '' },
+    });
+    expect(result.exitCode).toBe(1);
+    expect(output.report()).toMatchObject({
+      selectedTests: tests,
+      result: 'failed',
+    });
+    expect(
+      runCommand.mock.calls
+        .filter(call => call[1] === process.execPath)
+        .map(call => call[2].at(-1))
+    ).toEqual(tests);
+    expect(output.chunks).toEqual(
+      expect.arrayContaining([
+        'Impact tests: shard 1/3 passed.\n',
+        'Impact tests: shard 2/3 failed.\n',
+        'Impact tests: shard 3/3 passed.\n',
+      ])
+    );
+  });
+
+  it('sorts and deduplicates fallback candidates before execution', () => {
+    const { result, output } = runHandle({
+      argv: ['--unsupported'],
+      runImpl: (command, args) => ({
+        status: 0,
+        stdout:
+          command === 'git' && args.includes('-co')
+            ? 'test/core/z.test.js\0test/core/a.test.js\0test/core/z.test.js\0'
+            : '',
+      }),
+    });
+    expect(result.exitCode).toBe(0);
+    expect(output.report().selectedTests).toEqual([
+      'test/core/a.test.js',
+      'test/core/z.test.js',
+    ]);
+  });
+
+  it.each([false, true])(
+    'preserves zero branch counts with a missing counter side (%s)',
+    missingFirst => {
+      let index = 0;
+      const { result, output } = runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        argv: ['--files', 'src/core/a.js'],
+        impactShardSize: 1,
+        runImpl: (_command, args) => ({
+          status: 0,
+          stdout: args.includes('--findRelatedTests')
+            ? 'test/core/a.test.js\ntest/core/b.test.js\n'
+            : '',
+        }),
+        coverageImpl: () => {
+          const missing = (index++ === 0) === missingFirst;
+          return {
+            status: 0,
+            coverage: {
+              'src/core/a.js': {
+                statementMap: {},
+                s: {},
+                branchMap: { a: { line: 8 } },
+                b: missing ? {} : { a: [0] },
+              },
+            },
+          };
+        },
+      });
+      expect(result.exitCode).toBe(1);
+      expect(output.report().scopedCoverage.files).toEqual([
+        {
+          file: 'src/core/a.js',
+          collected: true,
+          uncoveredLines: [],
+          uncoveredBranches: [{ line: 8, arm: 1 }],
+        },
+      ]);
+    }
+  );
+
+  it('omits invalid branch lines without hiding an independent valid miss', () => {
+    const { result, output } = runHandle({
+      createHandle: createRunScopedCheckImpactHandle,
+      argv: ['--files', 'src/core/a.js'],
+      runImpl: (_command, args) => ({
+        status: 0,
+        stdout: args.includes('--findRelatedTests')
+          ? 'test/core/a.test.js\n'
+          : '',
+      }),
+      coverageImpl: () => ({
+        status: 0,
+        coverage: {
+          'src/core/a.js': {
+            branchMap: {
+              a: { line: 2.5 },
+              b: { line: '8' },
+              c: { line: 9, locations: [{ start: { line: '5' } }] },
+              d: { line: 7 },
+            },
+            b: { a: [0], b: [0], c: [0], d: [0] },
+          },
+        },
+      }),
+    });
+    expect(result.exitCode).toBe(1);
+    expect(output.report().scopedCoverage.files).toEqual([
+      {
+        file: 'src/core/a.js',
+        collected: true,
+        uncoveredLines: [],
+        uncoveredBranches: [{ line: 7, arm: 1 }],
+      },
+    ]);
+  });
+
   it.each([
     {
       name: 'coverage error despite complete locations',

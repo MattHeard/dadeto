@@ -45,6 +45,15 @@ describe('createScopedCoverageCommand', () => {
 });
 
 describe('createCheckImpactPlan', () => {
+  it('propagates the established structural error for sparse related candidates', () => {
+    expect(() =>
+      createCheckImpactPlan({
+        changedPaths: ['src/core/a.js'],
+        relatedTestPaths: new Array(1),
+        relatedTestsResolved: true,
+      })
+    ).toThrow("Cannot read properties of undefined (reading 'startsWith')");
+  });
   it('reports that no tests are selected when there are no changes', () => {
     expect(createCheckImpactPlan()).toEqual({
       mode: 'none',
@@ -156,11 +165,18 @@ describe('createCheckImpactPlan', () => {
     });
   });
 
-  it.each(['other/module.js', 'else/a.test.js', 42, ''])(
+  it.each([
+    'other/module.js',
+    'else/a.test.js',
+    'src/core/file.ts',
+    'z/unsupported.md',
+    42,
+    '',
+  ])(
     'falls back for mixed supported and unsupported changes including %p',
     unsupported => {
       const plan = createCheckImpactPlan({
-        changedPaths: ['src/core/valid.js', unsupported],
+        changedPaths: ['src/core/a.js', unsupported],
         relatedTestsResolved: true,
         relatedTestPaths: ['test/core/valid.test.js'],
       });

@@ -115,6 +115,12 @@ outcome, retains source deletions for conservative all-unit selection, and keeps
 restored files and explicit paths subject to strict current-file coverage.
 See `notes/agents/2026-11-07-git-deletion-evidence.md` for its integration contract.
 Complete impact-consumer hardening remains required before that task closes.
+Its next source slice moves the actual scalar path interpretation to
+`src/logic/boundary/local/impact-paths.js` and untrusted Istanbul line handling to
+`src/logic/boundary/local/coverage-line.js`. The effect runner consumes explicit
+parsed results and actual shard outcomes; these partial moves do not relocate
+the remaining impact computation or the broader legacy tree. See
+`notes/agents/2026-11-08-impact-mutation.md` for caller proofs and required scopes.
 
 First source slice `dadeto-topt` relocates the report tooling's shared classifier
 to `src/logic/core/local/logic-source-paths.js` with identical bytes and precise

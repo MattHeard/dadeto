@@ -38,3 +38,75 @@ Next time, inspect the terminal complete-module report before editing source.
 Some default/guard survivors can be equivalent because later filtering erases
 the changed sentinel. Trace callers and move real input normalization into typed
 boundary results rather than adding irrelevant output or suppressing mutants.
+
+The complete first strengthened run is retained as
+`reports/mutation/check-impact.strengthened.json`: 824 mutants, 786 killed,
+28 survived and ten timed out, score 96.60%, three static mutants. Its embedded
+source matches checkpoint `ca94b6428d`; it is a failure, not acceptance. Exact
+Full Check 42465445664/artifact 13612015898 passed that checkpoint with 10,205
+unit tests, all four global/impact metrics100, twelve E2E tests and eleven gates.
+These results do not validate subsequent source edits.
+
+The next bounded source slice relocates the actual scalar path normalization and
+classification into `src/logic/boundary/local/impact-paths.js` and introduces
+`coverage-line.js`. Integer line parsing is non-coercing and preserves negative,
+negative-zero and large integer values. The checked numeric cast stays beside
+Number.isInteger's proof in boundary; report consumers use its number/null result.
+Related-path absence now defaults at the final normalized output, not to a raw
+sentinel that later filtering erases. CLI-produced candidate lists retain their
+existing ordering/deduplication policy. A later independent programmatic corpus
+caught that sparse lists must preserve an outward TypeError rather than become
+an empty selection. The boundary returns that original error explicitly and the
+caller propagates it, preserving the established failure semantics.
+
+Three redundant steps were removed after tracing callers: normalizing an empty
+string already yields empty; final selected tests are sorted after combining
+related/direct tests; empty Git candidates already normalize to rejected unit
+paths before the surviving-file check. The first unsupported-path witness now
+also determines whether a path is unsupported, including the empty-string case.
+Source plans with no tests already become fallback plans, so selected source
+coverage is computed only from real executed shard outcomes. Each shard's output,
+status assessment and progress text keep their established order. Missing Git
+deletion metadata remains absent for explicit paths and failed collections.
+
+Coverage records are projected per requested file before folding, retaining
+original shard/key ordering and duplicate normalized paths. Unrelated positive
+counters cannot hide a requested miss. New fixtures isolate missing counter
+sides, non-integer branch lines, unsupported paths after valid paths, truthful
+deletion metadata and a failed middle shard followed by a successful final shard.
+Five focused suites pass 825 tests with all four metrics100 across the complete
+impact module and both new boundaries; TypeScript and targeted lint pass. Required
+aggregate, complete combined mutation and exact published CI remain pending for
+this source slice. Every complete touched module stays in the mutation target.
+
+The local aggregate then exposed exactly two clone pairs: repeated failure-state
+assignments and identical no-selector plan returns. Derive final status once
+from test/static/coverage failure evidence and use one unsupported-or-no-source
+early return. Focused 825 tests/all-four100 and the strict zero-clone scan pass
+after that repair. The in-flight pre-repair mutation run was stopped as obsolete
+(wrapper143); no score is claimed for it. Start a fresh complete run against the
+repaired source, not the earlier snapshot.
+
+`node test/fixtures/typed-logic/impact-path-equivalence.js` reproducibly compares
+the actual moved scalar path helpers against private helpers loaded from the
+committed `ca94b6428d` baseline. All 88,752 primitive/string cases match, including
+all concatenations of seventeen path/extension/separator tokens through length
+four. Output SHA-256 is
+`d5c5e248b8322f4561a63b154f0a1e3af6485e66d120dca807cd13b2ee918245`.
+The harness accepts an explicit full baseline SHA; never substitute a current
+implementation as its independent oracle.
+
+The harness now also compares 864 public programmatic option combinations,
+including absent/dense/sparse lists and malformed containers. It first failed
+against the unpublished Array.from implementation, then passed after preserving
+the original sparse-list TypeError as an explicit boundary failure. The caller
+rethrows the same error. Programmatic outcome SHA-256 is
+`25d955d1101ac703e775f5da4fa8ae057faa306c7f1b7e7cb0da990778562a8f`.
+The pre-fix mutation run was superseded and terminated143 without a score claim.
+
+Final repaired-source local evidence: five focused suites, 827 tests, all four
+metrics100 on all three touched logic modules; targeted lint passes. The prior
+full fast aggregate passed before the sparse repair; after separately rerunning
+the focused impact tests and both equivalence corpora, the documented
+`npm run check -- --skip-tests` path passes all eleven static gates on the repaired
+source. Authoritative full CI and a fresh complete mutation run remain required.

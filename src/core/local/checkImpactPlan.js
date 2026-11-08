@@ -1,5 +1,11 @@
 import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
 import { parseGitChanges } from '../../logic/boundary/local/git-changes.js';
+import { parseCoverageLine } from '../../logic/boundary/local/coverage-line.js';
+import {
+  normalizeImpactPath as normalizePath,
+  classifyImpactPath as classifyPath,
+  parseRelatedImpactPaths,
+} from '../../logic/boundary/local/impact-paths.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('../../../types/allow-effects').StartupAllowEffectsBoundary} StartupAllowEffectsBoundary */
@@ -9,8 +15,6 @@ import { parseGitChanges } from '../../logic/boundary/local/git-changes.js';
 /** @typedef {Record<string, IstanbulCoverageRecord>} IstanbulCoverageMap */
 /** @typedef {{status: number | null, stdout?: string, stderr?: string, error?: Error, coverage?: IstanbulCoverageMap, command?: string, coverageError?: string}} ScopedCoverageRun */
 
-const SOURCE_ROOT = 'src/';
-const UNIT_TEST_ROOT = 'test/';
 const SELECTOR_TIMEOUT_MS = 45_000;
 const JEST_RUNNER = 'scripts/run-jest.js';
 
@@ -18,41 +22,6 @@ const JEST_RUNNER = 'scripts/run-jest.js';
 /** @typedef {CheckImpactPlanBase & {mode: 'none' | 'fallback', reason: string}} FallbackCheckImpactPlan */
 /** @typedef {CheckImpactPlanBase & {mode: 'selected', reason?: undefined}} SelectedCheckImpactPlan */
 /** @typedef {FallbackCheckImpactPlan | SelectedCheckImpactPlan} CheckImpactPlan */
-
-/**
- * Normalize a repository-relative path for stable impact plans.
- * @param {unknown} value Path to normalize.
- * @returns {string} Normalized path or an empty string when unsafe.
- */
-function normalizePath(value) {
-  if (typeof value !== 'string' || value.length === 0) return '';
-  const normalized = value.replaceAll('\\', '/').replace(/^\.\//, '');
-  if (
-    normalized.startsWith('/') ||
-    normalized.split('/').includes('..') ||
-    normalized.includes('\0') ||
-    normalized.includes('\n') ||
-    normalized.includes('\r')
-  )
-    return '';
-  return normalized;
-}
-
-/**
- * Classify a changed path as supported source or unit-test input.
- * @param {string} path Normalized repository-relative path.
- * @returns {'source' | 'test' | ''} Path kind.
- */
-function classifyPath(path) {
-  if (path.startsWith(SOURCE_ROOT) && path.endsWith('.js')) return 'source';
-  if (
-    path.startsWith(UNIT_TEST_ROOT) &&
-    path.endsWith('.test.js') &&
-    !path.startsWith('test/e2e/')
-  )
-    return 'test';
-  return '';
-}
 
 /**
  * Quote one path for a human-readable POSIX command preview.
@@ -71,18 +40,17 @@ function quotePath(value) {
  */
 export function createCheckImpactPlan({
   changedPaths = [],
-  relatedTestPaths = [],
+  relatedTestPaths,
   relatedTestsResolved = false,
   collectionError = '',
 } = {}) {
   const changed = [...new Set(changedPaths.map(normalizePath))].sort();
-  const invalid = changed.find(path => !path || !classifyPath(path));
-  const hasUnsupportedPath = changed.some(path => !path || !classifyPath(path));
+  const invalid = changed.find(path => !classifyPath(path));
   const sourceChanges = changed.filter(path => classifyPath(path) === 'source');
   const directTests = changed.filter(path => classifyPath(path) === 'test');
-  const related = [...new Set(relatedTestPaths.map(normalizePath))]
-    .filter(path => classifyPath(path) === 'test')
-    .sort();
+  const parsedRelated = parseRelatedImpactPaths(relatedTestPaths);
+  if (!parsedRelated.ok) throw parsedRelated.error;
+  const related = parsedRelated.paths;
   let reason = collectionError;
 
   if (!reason && changed.length === 0)
@@ -96,7 +64,7 @@ export function createCheckImpactPlan({
       reason: 'No changed source or unit-test paths were found.',
       authoritative: 'npm run check:full',
     };
-  if (!reason && hasUnsupportedPath)
+  if (!reason && invalid !== undefined)
     reason = `Unsupported or unsafe changed path: ${invalid || '(empty)'}.`;
   if (!reason && sourceChanges.length > 0 && !relatedTestsResolved)
     reason = 'Jest related-test discovery did not complete successfully.';
@@ -255,16 +223,15 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
     selectorFailure,
     deletedPaths = [],
   } = preparePlan(permission, deps);
-  let exitCode = 0;
-  let status = plan.mode === 'none' ? 'skipped' : 'passed';
+  let testsFailed = false;
   let selectedTests = plan.tests;
   let fallbackFailure = '';
   const scopedSourceFiles =
     includeStaticGates && plan.mode === 'selected'
       ? plan.changedPaths.filter(isLogicJavaScriptPath)
       : [];
-  /** @type {ScopedCoverageRun[]} */
-  const coverageRuns = [];
+  /** @type {ReturnType<typeof createScopedCoverageReport> | undefined} */
+  let scopedCoverage;
   const staticChecks = includeStaticGates
     ? runScopedStaticGates(permission, deps, plan)
     : undefined;
@@ -276,44 +243,27 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
       fallbackFailure = discovery.error;
     }
     if (selectedTests.length === 0) {
-      exitCode = 1;
-      status = 'failed';
+      testsFailed = true;
       fallbackFailure ||= 'Jest did not identify unit test files to execute.';
     } else {
-      const shards = partitionTests(
+      const runs = runImpactShards(
+        permission,
+        deps,
         selectedTests,
-        resolveImpactShardSize(deps)
+        scopedSourceFiles
       );
-      for (const [index, shard] of shards.entries()) {
-        deps.writeOutput(
-          permission,
-          `Impact tests: starting shard ${index + 1}/${shards.length} (${shard.length} test files).\n`
+      testsFailed = runs.some(run => !run.passed);
+      if (scopedSourceFiles.length > 0)
+        scopedCoverage = createScopedCoverageReport(
+          scopedSourceFiles,
+          runs.map(run => run.execution),
+          deps
         );
-        const execution =
-          scopedSourceFiles.length > 0
-            ? deps.runCoverage(permission, shard, scopedSourceFiles)
-            : runTestShard(permission, deps, shard);
-        if (scopedSourceFiles.length > 0) coverageRuns.push(execution);
-        if (execution.stdout) deps.writeOutput(permission, execution.stdout);
-        if (execution.stderr) deps.writeOutput(permission, execution.stderr);
-        const shardPassed = !execution.error && execution.status === 0;
-        deps.writeOutput(
-          permission,
-          `Impact tests: shard ${index + 1}/${shards.length} ${shardPassed ? 'passed' : 'failed'}.\n`
-        );
-        if (!shardPassed) {
-          exitCode = 1;
-          status = 'failed';
-        }
-      }
     }
   }
 
-  const scopedCoverage =
-    scopedSourceFiles.length > 0
-      ? createScopedCoverageReport(scopedSourceFiles, coverageRuns, deps)
-      : undefined;
-  if (
+  const failed =
+    testsFailed ||
     staticChecks?.some(check => check.result === 'failed') ||
     (scopedCoverage &&
       (scopedCoverage.errors.length > 0 ||
@@ -322,11 +272,13 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
             !file.collected ||
             file.uncoveredLines.length > 0 ||
             file.uncoveredBranches.length > 0
-        )))
-  ) {
-    exitCode = 1;
-    status = 'failed';
-  }
+        )));
+  const exitCode = failed ? 1 : 0;
+  const status = failed
+    ? 'failed'
+    : plan.mode === 'none'
+      ? 'skipped'
+      : 'passed';
   const report = {
     changedPaths: plan.changedPaths,
     ...(deletedPaths.length > 0 ? { deletedPaths } : {}),
@@ -346,6 +298,36 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
 }
 
 /**
+ * Execute each bounded shard once and retain its real result and assessed status.
+ * @param {AllowEffects} permission Process/output permission.
+ * @param {CheckImpactDependencies} deps Process/output dependencies.
+ * @param {string[]} tests Selected test paths.
+ * @param {string[]} sourceFiles Explicit scoped source paths, empty for test-only runs.
+ * @returns {Array<{passed: boolean, execution: ScopedCoverageRun}>} Actual outcomes in execution order.
+ */
+function runImpactShards(permission, deps, tests, sourceFiles) {
+  const shards = partitionTests(tests, resolveImpactShardSize(deps));
+  return shards.map((shard, index) => {
+    deps.writeOutput(
+      permission,
+      `Impact tests: starting shard ${index + 1}/${shards.length} (${shard.length} test files).\n`
+    );
+    const execution =
+      sourceFiles.length > 0
+        ? deps.runCoverage(permission, shard, sourceFiles)
+        : runTestShard(permission, deps, shard);
+    if (execution.stdout) deps.writeOutput(permission, execution.stdout);
+    if (execution.stderr) deps.writeOutput(permission, execution.stderr);
+    const passed = !execution.error && execution.status === 0;
+    deps.writeOutput(
+      permission,
+      `Impact tests: shard ${index + 1}/${shards.length} ${passed ? 'passed' : 'failed'}.\n`
+    );
+    return { passed, execution };
+  });
+}
+
+/**
  * Summarize only the changed core files reported by scoped Jest coverage.
  * @param {string[]} sourceFiles Changed core source paths.
  * @param {ScopedCoverageRun[]} coverageRuns Coverage shard results.
@@ -353,29 +335,25 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
  * @returns {{scope: string, files: Array<{file: string, collected: boolean, uncoveredLines: number[], uncoveredBranches: Array<{line: number, arm: number}>}>, commands: string[], errors: string[], authoritative: string}} Scoped coverage evidence.
  */
 function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
-  const expectedFiles = new Set(sourceFiles);
-  /** @type {Map<string, IstanbulCoverageRecord>} */
-  const records = new Map();
-  const errors = [];
-  for (const run of coverageRuns) {
-    if (run.coverageError) errors.push(run.coverageError);
-    for (const [filePath, record] of Object.entries(run.coverage ?? {})) {
+  const errors = coverageRuns.flatMap(run =>
+    run.coverageError ? [run.coverageError] : []
+  );
+  const entries = coverageRuns.flatMap(run =>
+    Object.entries(run.coverage ?? {}).map(([filePath, record]) => {
       const relativePath = deps.pathModule.isAbsolute(filePath)
         ? deps.pathModule.relative(deps.rootDir, filePath)
         : filePath;
       const normalizedPath = normalizePath(
         relativePath.split(deps.pathModule.sep).join('/')
       );
-      if (!expectedFiles.has(normalizedPath)) continue;
-      records.set(
-        normalizedPath,
-        mergeCoverageRecord(records.get(normalizedPath), record)
-      );
-    }
-  }
+      return { file: normalizedPath, record };
+    })
+  );
 
   const files = sourceFiles.map(file => {
-    const record = records.get(file);
+    const record = mergeCoverageRecords(
+      entries.filter(entry => entry.file === file).map(entry => entry.record)
+    );
     if (!record)
       return {
         file,
@@ -397,6 +375,18 @@ function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
     errors,
     authoritative: 'npm run check:full',
   };
+}
+
+/**
+ * Fold requested-file records in original shard/key order.
+ * @param {IstanbulCoverageRecord[]} records Records already projected for one file.
+ * @returns {IstanbulCoverageRecord | undefined} Merged evidence or actual absence.
+ */
+function mergeCoverageRecords(records) {
+  /** @type {IstanbulCoverageRecord | undefined} */
+  let merged;
+  for (const record of records) merged = mergeCoverageRecord(merged, record);
+  return merged;
 }
 
 /**
@@ -465,10 +455,8 @@ function listUncoveredLines(record) {
       Object.entries(counters)
         .filter(([, count]) => count === 0)
         .flatMap(([key]) => {
-          const line = locations[key]?.start?.line;
-          return typeof line === 'number' && Number.isInteger(line)
-            ? [line]
-            : [];
+          const line = parseCoverageLine(locations[key]?.start?.line);
+          return line === null ? [] : [line];
         })
     ),
   ].sort((left, right) => left - right);
@@ -486,10 +474,10 @@ function listUncoveredBranches(record) {
     counts.flatMap((count, index) => {
       if (count !== 0) return [];
       const branch = locations[key];
-      const line = branch?.locations?.[index]?.start?.line ?? branch?.line;
-      return typeof line === 'number' && Number.isInteger(line)
-        ? [{ line, arm: index + 1 }]
-        : [];
+      const line = parseCoverageLine(
+        branch?.locations?.[index]?.start?.line ?? branch?.line
+      );
+      return line === null ? [] : [{ line, arm: index + 1 }];
     })
   );
 }
@@ -614,11 +602,13 @@ function discoverAllUnitTests(permission, deps) {
         `Git unit-test discovery exited with status ${result.status}.`,
     };
   }
-  const candidates = (result.stdout ?? '').split('\0').filter(Boolean);
+  const candidates =
+    result.stdout
+      ?.split('\0')
+      .map(candidate => toUnitTestPath(candidate, deps))
+      .filter(Boolean) ?? [];
   return {
-    tests: [
-      ...new Set(candidates.map(candidate => toUnitTestPath(candidate, deps))),
-    ]
+    tests: [...new Set(candidates)]
       .filter(Boolean)
       .filter(test =>
         deps.fileExists
@@ -726,50 +716,41 @@ function preparePlan(permission, deps) {
   if (collection.error)
     return createCollectionFallback(collection, collection.error);
 
-  if (collection.deletedPaths.some(file => classifyPath(file) === 'source'))
+  if (collection.deletedPaths?.some(file => classifyPath(file) === 'source'))
     return createCollectionFallback(
       collection,
       'Deleted source paths require conservative unit-test selection.'
     );
 
   const normalized = collection.paths.map(normalizePath);
-  if (normalized.some(path => !classifyPath(path))) {
+  const sourcePaths = normalized.filter(
+    path => classifyPath(path) === 'source'
+  );
+  if (normalized.some(path => !classifyPath(path)) || sourcePaths.length === 0)
     return {
       plan: createCheckImpactPlan({ changedPaths: collection.paths }),
       selectorFailure: '',
     };
-  }
-  const sourcePaths = normalized.filter(
-    path => classifyPath(path) === 'source'
+
+  const selector = runJestCommand(
+    permission,
+    deps,
+    ['--runInBand', '--listTests', '--findRelatedTests', ...sourcePaths],
+    SELECTOR_TIMEOUT_MS
   );
-  /** @type {string[]} */
-  let relatedTestPaths = [];
-  let relatedTestsResolved = sourcePaths.length === 0;
-  let selectorFailure = '';
-  if (sourcePaths.length > 0) {
-    const selector = runJestCommand(
-      permission,
-      deps,
-      ['--runInBand', '--listTests', '--findRelatedTests', ...sourcePaths],
-      SELECTOR_TIMEOUT_MS
-    );
-    relatedTestsResolved = !selector.error && selector.status === 0;
-    if (relatedTestsResolved) {
-      relatedTestPaths = (selector.stdout ?? '')
-        .split(/\r?\n/)
-        .filter(Boolean)
-        .map(value => {
-          const relativePath = deps.pathModule.isAbsolute(value)
-            ? deps.pathModule.relative(deps.rootDir, value)
-            : value;
-          return relativePath.split(deps.pathModule.sep).join('/');
-        });
-    } else {
-      selectorFailure =
-        selector.error?.message ??
-        `Jest related-test discovery exited with status ${selector.status}.`;
-    }
-  }
+  const relatedTestsResolved = !selector.error && selector.status === 0;
+  const relatedTestPaths = relatedTestsResolved
+    ? selector.stdout?.split(/\r?\n/).map(value => {
+        const relativePath = deps.pathModule.isAbsolute(value)
+          ? deps.pathModule.relative(deps.rootDir, value)
+          : value;
+        return relativePath.split(deps.pathModule.sep).join('/');
+      })
+    : undefined;
+  const selectorFailure = relatedTestsResolved
+    ? ''
+    : (selector.error?.message ??
+      `Jest related-test discovery exited with status ${selector.status}.`);
 
   return {
     plan: createCheckImpactPlan({
@@ -783,9 +764,9 @@ function preparePlan(permission, deps) {
 
 /**
  * Preserve collected paths when reliable selection is unavailable.
- * @param {{paths: string[], deletedPaths: string[]}} collection Collected evidence.
+ * @param {{paths: string[], deletedPaths?: string[]}} collection Collected evidence.
  * @param {string} reason Conservative fallback reason.
- * @returns {{plan: CheckImpactPlan, selectorFailure: string, deletedPaths: string[]}} Fallback selection.
+ * @returns {{plan: CheckImpactPlan, selectorFailure: string, deletedPaths?: string[]}} Fallback selection.
  */
 function createCollectionFallback(collection, reason) {
   return {
@@ -855,10 +836,10 @@ function parseImpactArguments(argv, defaultBaseRef) {
  * @param {AllowEffects} permission Permission for Git effects.
  * @param {CheckImpactDependencies} deps CLI effects.
  * @param {{paths: string[] | null, baseRef?: string}} input Parsed input.
- * @returns {{paths: string[], deletedPaths: string[], error: string}} Changed paths or collection failure.
+ * @returns {{paths: string[], deletedPaths?: string[], error: string}} Changed paths or collection failure; deletion metadata exists only when collected from Git.
  */
 function collectChangedPaths(permission, deps, input) {
-  if (input.paths) return { paths: input.paths, deletedPaths: [], error: '' };
+  if (input.paths) return { paths: input.paths, error: '' };
   /** @type {string[]} */
   const paths = [];
   const deletionCandidates = [];
@@ -959,10 +940,10 @@ function collectChangedPaths(permission, deps, input) {
  * Reject partial deletion evidence while retaining paths for conservative tests.
  * @param {string[]} paths Paths collected before failure.
  * @param {string} error Collection failure reason.
- * @returns {{paths: string[], deletedPaths: string[], error: string}} Failed collection.
+ * @returns {{paths: string[], error: string}} Failed collection without reliable deletion evidence.
  */
 function failedChangeCollection(paths, error) {
-  return { paths, deletedPaths: [], error };
+  return { paths, error };
 }
 
 /**
