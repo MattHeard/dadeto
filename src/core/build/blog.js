@@ -1,3 +1,4 @@
+import { createWgs84AssetCopies } from '../../logic/core/build/wgs84-assets.js';
 import {
   buildCopyLogMessage,
   formatPathRelativeToProject,
@@ -843,6 +844,13 @@ export function createCopyCore(options) {
     const copyContext = { io, messageLogger, copyFile };
     copyBrowserTrees(dirs, copyContext);
     copyCoreRootFiles(dirs, copyContext);
+    for (const asset of createWgs84AssetCopies(
+      dirs.srcDir,
+      dirs.publicDir,
+      join
+    )) {
+      copyFile(asset.source, asset.target);
+    }
     copyCoreConstants(dirs, { io, messageLogger, copyFile });
     copyStaticContentTrees(dirs, copyContext);
     copyBlogJson({

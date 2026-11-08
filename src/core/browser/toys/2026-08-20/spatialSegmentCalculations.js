@@ -1,5 +1,5 @@
 // Coordinate-resolved segment calculations with caller-specific failure policies.
-import { wgs84Distance } from './wgs84Distance.js';
+import { calculateWgs84SurfaceDistance as wgs84Distance } from '../../../../logic/core/wgs84/wgs84.js';
 import { wgs84CirclePointPredicate } from './wgs84CirclePointPredicate.js';
 import { indexResolvedPoints } from '../2026-08-22/spacePointResolution.js';
 

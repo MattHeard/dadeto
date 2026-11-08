@@ -4,7 +4,7 @@ import {
   parseSegmentMeasurementInput,
   measureSpacetimeSegment,
 } from './spacetimeInput.js';
-import { degreesToRadians as radians } from '../../../wgs84/wgs84.js';
+import { degreesToRadians as radians } from '../../../../logic/core/wgs84/wgs84.js';
 
 /**
  * Calculate UTC duration for a SPAC2 segment.

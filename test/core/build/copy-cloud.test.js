@@ -172,7 +172,7 @@ describe('createCopyCloudHandle', () => {
 
     expect(writes.length).toBeGreaterThan(20);
     expect(copies).toContainEqual({
-      source: '/repo/src/core/wgs84.js',
+      source: '/repo/src/build/assets/wgs84/root.js.txt',
       target:
         '/repo/infra/cloud-functions/object-minute-rental-search/core/wgs84.js',
     });
@@ -195,7 +195,7 @@ describe('createCopyCloudHandle', () => {
     });
     for (const filename of ['index.js', 'wgs84.js']) {
       expect(copies).toContainEqual({
-        source: `/repo/src/core/wgs84/${filename}`,
+        source: `/repo/src/build/assets/wgs84/${filename === 'index.js' ? 'index' : 'math'}.js.txt`,
         target: `/repo/infra/cloud-functions/object-minute-rental-search/core/wgs84/${filename}`,
       });
     }

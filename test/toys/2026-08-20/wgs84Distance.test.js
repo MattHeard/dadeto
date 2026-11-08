@@ -1,8 +1,5 @@
 import { describe, expect, test } from '@jest/globals';
-import {
-  spherical,
-  wgs84Distance,
-} from '../../../src/core/browser/toys/2026-08-20/wgs84Distance.js';
+import { spherical, wgs84Distance } from '../../../src/adapters/wgs84.js';
 
 describe('wgs84Distance', () => {
   test('normalizes numeric strings at the public boundary', () => {

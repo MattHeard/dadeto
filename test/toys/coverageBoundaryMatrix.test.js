@@ -18,7 +18,7 @@ import { wgs84CircleSegmentPredicate } from '../../src/core/browser/toys/2026-08
 import { constantSpeedGeodesicTravelDuration } from '../../src/core/browser/toys/2026-08-20/constantSpeedGeodesicTravelDuration.js';
 import { deliveryOutboundSegmentProposal } from '../../src/core/browser/toys/2026-08-20/deliveryOutboundSegmentProposal.js';
 import { pickupReturnSegmentProposal } from '../../src/core/browser/toys/2026-08-20/pickupReturnSegmentProposal.js';
-import { wgs84Distance } from '../../src/core/browser/toys/2026-08-20/wgs84Distance.js';
+import { wgs84Distance } from '../../src/adapters/wgs84.js';
 import { assetSegmentAssignmentList } from '../../src/core/browser/toys/2026-08-20/assetSegmentAssignmentList.js';
 import { assetCustodianSegmentAssignmentList } from '../../src/core/browser/toys/2026-08-20/assetCustodianSegmentAssignmentList.js';
 import { personSegmentAssignmentList } from '../../src/core/browser/toys/2026-08-20/personSegmentAssignmentList.js';

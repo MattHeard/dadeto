@@ -1,5 +1,5 @@
 // Toy: WGS84 Circle Point Predicate
-import { wgs84Distance } from './wgs84Distance.js';
+import { calculateWgs84SurfaceDistance as wgs84Distance } from '../../../../logic/core/wgs84/wgs84.js';
 import { resolvePoint } from '../2026-08-22/spacePointResolution.js';
 
 /**
