@@ -5,10 +5,6 @@ import path from 'node:path';
 export default {
   ...base,
   maxTestRunnerReuse: 10,
-  ignorePatterns: [
-    ...base.ignorePatterns,
-    '!test/fixtures/generator-typing/**',
-  ],
   jest: {
     ...base.jest,
     config: {

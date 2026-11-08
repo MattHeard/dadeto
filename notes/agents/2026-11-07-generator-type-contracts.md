@@ -120,3 +120,22 @@ The read-only sandbox blocks Jest cache creation and Node's git subprocess;
 rerunning those operations with approved access resolves those environment
 failures. Fresh dependency audit findings are separately owned by
 `dadeto-2gx2`; preserve audit enforcement while repairing their dependency tree.
+
+
+## Review dependency repair and current-main refresh
+
+After explicit user approval to merge goal PRs, inspect the current candidate,
+not only its old CI. Review identified missing selected-test inputs in the broad
+mutation sandbox: `test/fixtures/generator-typing/**` and `infra/dendrite.css`.
+The relocated Jest classifier also requires both destination logic namespaces.
+Put all these copied inputs in the broad manifest and let the compact config
+inherit them; keep mutation scope, static evaluation and thresholds unchanged.
+
+Both actual initial-test-only runs pass after the repair: broad 221 tests and
+compact 16 tests; `/tmp/dadeto-xyth-{review,compact}-bootstrap.log`. These are
+bootstrap results, not new mutation scores. The retained complete 657/657-Killed
+report still embeds the exact generator source, SHA-256
+`c7f936d1762b3b34f940847f4f0637963d8b02b469e245ac240d264bc4ce189f`.
+Current-main integration must preserve that identity and receive fresh Full Check
+before merging. When adding selected tests, inspect their fixture/style reads;
+a passing compact harness does not validate a broader sandbox's copied inputs.
