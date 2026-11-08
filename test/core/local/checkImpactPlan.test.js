@@ -32,6 +32,9 @@ describe('createScopedCoverageCommand', () => {
       "'--coverageDirectory' '<temporary-coverage-dir>'"
     );
     expect(result.command).not.toContain('/tmp/coverage');
+    expect(result.command).toBe(
+      "'node' 'scripts/run-jest.js' '--runInBand' '--coverage' '--coverageReporters=json' '--coverageThreshold={\"global\":{\"branches\":0,\"functions\":0,\"lines\":0,\"statements\":0}}' '--coverageDirectory' '<temporary-coverage-dir>' '--collectCoverageFrom=src/core/example.js' '--runTestsByPath' 'test/core/example.test.js'"
+    );
     expect(result.options).toMatchObject({
       cwd: '/repo',
       timeout: 120 * 60 * 1000,
@@ -150,6 +153,47 @@ describe('createCheckImpactPlan', () => {
       mode: 'selected',
       testSelection: 'related',
       tests: ['test/build/generate.test.js'],
+    });
+  });
+
+  it.each(['other/module.js', 'else/a.test.js', 42, ''])(
+    'falls back for mixed supported and unsupported changes including %p',
+    unsupported => {
+      const plan = createCheckImpactPlan({
+        changedPaths: ['src/core/valid.js', unsupported],
+        relatedTestsResolved: true,
+        relatedTestPaths: ['test/core/valid.test.js'],
+      });
+      expect(plan).toMatchObject({
+        mode: 'fallback',
+        testSelection: 'all-unit',
+        tests: [],
+        reason: `Unsupported or unsafe changed path: ${unsupported === 42 || unsupported === '' ? '(empty)' : unsupported}.`,
+      });
+    }
+  );
+
+  it('sorts and deduplicates mixed direct and related unit tests', () => {
+    expect(
+      createCheckImpactPlan({
+        changedPaths: ['test/core/m.test.js', 'src/core/a.js'],
+        relatedTestsResolved: true,
+        relatedTestPaths: [
+          'test/core/z.test.js',
+          'test/core/a.test.js',
+          'test/core/m.test.js',
+          'other/not-unit.test.js',
+        ],
+      })
+    ).toMatchObject({
+      mode: 'selected',
+      changedPaths: ['src/core/a.js', 'test/core/m.test.js'],
+      tests: [
+        'test/core/a.test.js',
+        'test/core/m.test.js',
+        'test/core/z.test.js',
+      ],
+      testSelection: 'related',
     });
   });
 });

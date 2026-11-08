@@ -15,6 +15,7 @@ export default {
     '!src/logic/core/**',
     '!src/logic/boundary/**',
     '!test/logic/boundary/local/git-changes.test.js',
+    '!test/logic/boundary/local/checkFullReport*.test.js',
     '!test/core/local/checkImpactPlan.test.js',
     '!test/core/local/checkFullReport.test.js',
     '!test/scripts/plan-check-impact.test.js',
@@ -29,6 +30,7 @@ export default {
     config: {
       testMatch: [
         '<rootDir>/test/logic/boundary/local/git-changes.test.js',
+        '<rootDir>/test/logic/boundary/local/checkFullReport*.test.js',
         '<rootDir>/test/core/local/checkImpactPlan.test.js',
         '<rootDir>/test/core/local/checkFullReport.test.js',
         '<rootDir>/test/scripts/plan-check-impact.test.js',
