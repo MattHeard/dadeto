@@ -1,0 +1,70 @@
+{
+  "baseline": "bde25b950cf237a1e0b65a4e4a6d2e7ef0f8e2b1",
+  "sourceSha256": "a650a9920470dd785a1d7d6fd4f4ad64eb51603225303aa82a455f2d21c9ede2",
+  "legacyWgs84Copies": [
+    [
+      "/reference/src/core/wgs84.js",
+      "/reference/infra/cloud-functions/object-minute-rental-search/core/wgs84.js"
+    ],
+    [
+      "/reference/src/core/wgs84/index.js",
+      "/reference/infra/cloud-functions/object-minute-rental-search/core/wgs84/index.js"
+    ],
+    [
+      "/reference/src/core/wgs84/wgs84.js",
+      "/reference/infra/cloud-functions/object-minute-rental-search/core/wgs84/wgs84.js"
+    ]
+  ],
+  "scenarios": [
+    {
+      "payload": "",
+      "effects": {
+        "copies": {
+          "count": 1180,
+          "sha256": "93969774fc2df16dafa0ad556f047a71e6a700441d0db342d54d80f8f38f3f2e"
+        },
+        "directories": {
+          "count": 192,
+          "sha256": "9881ad43c8112b1d0d20d1275c5217a1402a86f5ae054805c4c0e12dfeae5db9"
+        },
+        "reads": {
+          "count": 276,
+          "sha256": "1c9e5584521193db2b11fc012b6dbcad9f5be7e01798072d16cfdba6ddb349dd"
+        },
+        "writes": {
+          "count": 27,
+          "sha256": "818f2911980af8beb68d63b4a438956d677555c996c3cd3185ca1196a5542524"
+        },
+        "rewrites": {
+          "count": 0,
+          "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+        }
+      }
+    },
+    {
+      "payload": "import '..';\nimport '../../..';\nimport '../../commonCore.js';\nimport '../../core/commonCore.js';\nimport '../../core/realtime/openaiRealtimeCalls.js';\nimport '.././commonCore.js';\nimport '../allow-effects.js';\nimport '../allowed-origins.js';\nimport '../assign-moderation-job/assign-moderation-job-core.js';\nimport '../auth-helpers.js';\nimport '../cloud-core.js';\nimport '../common-core.js';\nimport '../commonCore.js';\nimport '../core/cloud/cloud-core.js';\nimport '../cors-config.js';\nimport '../firebase-functions.js';\nimport '../firestore-helpers.js';\nimport '../firestore.js';\nimport '../generate-stats/generate-stats-core.js';\nimport '../generate-stats/verifyAdmin.js';\nimport '../handler-utils.js';\nimport '../http-method-guard.js';\nimport '../mark-variant-dirty/verifyAdmin.js';\nimport '../process-new-page/process-new-page-core.js';\nimport '../responder-utils.js';\nimport '../response-utils.js';\nimport '../submit-new-page/submit-new-page-core.js';\nimport '../submit-new-story/submit-new-story-core.js';\nimport '../submit-shared.js';\nimport './allow-effects.js';\nimport './allowed-origins.js';\nimport './assign-moderation-job-core.js';\nimport './auth-helpers.js';\nimport './cloud-core.js';\nimport './commonCore.js';\nimport './copy.js';\nimport './core/realtime/openaiRealtimeCalls.js';\nimport './cors-config.js';\nimport './firebase-functions.js';\nimport './firestore.js';\nimport './generate-stats-core.js';\nimport './handler-utils.js';\nimport './http-method-guard.js';\nimport './mark-variant-dirty-verifyAdmin.js';\nimport './process-new-page-core.js';\nimport './responder-utils.js';\nimport './response-utils.js';\nimport './submit-new-page-core.js';\nimport './submit-new-story-core.js';\nimport './submit-shared.js';\nimport './verifyAdmin.js';",
+      "effects": {
+        "copies": {
+          "count": 1180,
+          "sha256": "93969774fc2df16dafa0ad556f047a71e6a700441d0db342d54d80f8f38f3f2e"
+        },
+        "directories": {
+          "count": 192,
+          "sha256": "9881ad43c8112b1d0d20d1275c5217a1402a86f5ae054805c4c0e12dfeae5db9"
+        },
+        "reads": {
+          "count": 276,
+          "sha256": "1c9e5584521193db2b11fc012b6dbcad9f5be7e01798072d16cfdba6ddb349dd"
+        },
+        "writes": {
+          "count": 303,
+          "sha256": "21ee86936a338a06e35cfd810e9997dcfa059a605ff3e34ae21a08e345e649ec"
+        },
+        "rewrites": {
+          "count": 276,
+          "sha256": "81eb8799b80a94ca0d3218aef4e7cd7e3be01b42398249584dfa60cae9b0c41c"
+        }
+      }
+    }
+  ]
+}

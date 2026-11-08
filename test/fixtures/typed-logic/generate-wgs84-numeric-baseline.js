@@ -2,16 +2,19 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
-const baseline = process.argv[2] ?? 'bde25b950cf237a1e0b65a4e4a6d2e7ef0f8e2b1';
+const baseline =
+  process.argv.slice(2).find(argument => !argument.startsWith('--')) ??
+  'bde25b950cf237a1e0b65a4e4a6d2e7ef0f8e2b1';
 assert.match(baseline, /^[a-f0-9]{40}$/);
 const source = execFileSync(
   'git',
   ['show', `${baseline}:src/core/wgs84/wgs84.js`],
   { encoding: 'utf8' }
 );
-const math = await import(
-  `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
-);
+if (process.argv.includes('--source')) {
+  process.stdout.write(source);
+  process.exit(0);
+}
 const encode = value => (Object.is(value, -0) ? '-0' : String(value));
 const inputs = [];
 for (const a of [-90, 0, 45, 90])
@@ -39,8 +42,6 @@ for (const value of [
   }
 const cases = inputs.map(coordinates => ({
   coordinates: coordinates.map(encode),
-  ellipsoid: encode(math.calculateWgs84SurfaceDistance(...coordinates)),
-  spherical: encode(math.spherical(...coordinates)),
 }));
 console.log(
   JSON.stringify(

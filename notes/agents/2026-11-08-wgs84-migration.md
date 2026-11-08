@@ -112,3 +112,49 @@ Terraform assertions and generated-file absence negative controls. The repaired
 three-suite contract run passes22 tests. Prove an instrumented initial-only run
 passes before retrying the expensive complete scope. Both failed logs are kept;
 neither has a terminal mutation score.
+
+## Portable numeric and complete deployment references
+
+Exact-head Full Check42494712279 failed after45/56shards:7824tests,7823passed,
+one failed in the frozen numeric fixture. Artifact13623067058 is retained at
+`/tmp/dadeto-z85m-full-check-failure.zip`. All eleven static gates passed. The
+calculation source remains byte-identical; the fixture recorded local Node24 /
+aarch64 floating-point outputs while CI uses another runtime/platform. Preserve
+exact compatibility by evaluating the immutable original calculation on the
+same runtime as the actual calculation, rather than accepting numerical tolerance
+or imposing one generating host's transcendental rounding on every host.
+
+The 404 coordinate vectors remain. The original110-line module is stored as a
+`.js.txt` test resource, pinned to the original SHA-256 above, and evaluated in an
+import-free VM context. Same-process comparisons retain exact special-number and
+floating-point equality. Reproduce the immutable source resource with:
+
+`node test/fixtures/typed-logic/generate-wgs84-numeric-baseline.js --source > test/fixtures/typed-logic/wgs84-math-baseline.js.txt`
+
+The input-vector generator still regenerates the JSON fixture byte-for-byte.
+Current five focused suites pass23 tests with all four destination/adapter
+coverage metrics100. Fresh authoritative CI remains required for the portability
+fix; do not describe the earlier failed workflow as passing.
+
+The complete cloud deployment-effect oracle is generated independently from the
+immutable pre-migration cloud builder, SHA-256
+`a650a9920470dd785a1d7d6fd4f4ad64eb51603225303aa82a455f2d21c9ede2`.
+Two scenarios capture all1180ordered copies,192directory reads,276rewrite reads,
+27/303writes and0/276rewrite messages. Compare every ordered effect using counts
+and SHA-256 digests. The seven new WGS84 copies are checked explicitly before
+restoring exactly the original three-entry tail for the baseline comparison;
+there is no broad path filter or exemption for other deployment changes.
+
+`node test/fixtures/typed-logic/generate-cloud-copy-baseline.js` regenerates the
+compact JSON reference; add `--full` to inspect complete effects. The loader must
+rewrite only actual import/export specifier AST nodes. An initial regex loader
+also rewrote generated export-template text; the reference comparison caught the
+mismatch before publication, and AST-directed replacement fixed it. Do not treat
+that loader bug as a production copy difference or mask differing output hashes.
+
+The original complete1366-mutant run stopped during a later session gap: its
+handle and PID644294 are gone, no workers or terminal report remain, and the log
+ends at924tested/501survived. Cause is not established. Preserve
+`/tmp/dadeto-z85m-validated-mutation.log` as interrupted partial evidence only;
+no final score is claimed. A new run is justified by authoritative process absence
+and strengthened references, not merely by an expired observation handle.
