@@ -568,8 +568,11 @@ The current graph exposes163 native edges, zero from logic, with1,042 modules /
 1,983 dependencies and no violations. Source AST census is also zero static native
 imports after the bounded injection slices. All11 split local static gates and
 seven real-fixture/control tests pass. The last UUID child passed exact Full
-Check40767918736 (8,430 tests, global and changed-source metrics100%); the final
-exact policy Full Check is still required before closing this prerequisite. See
+Check40767918736 (8,430 tests, global and changed-source metrics100%). Final
+policy [Full Check40769557406](https://github.com/MattHeard/dadeto/actions/runs/40769557406)
+succeeded at e984e63f1b. Its downloaded artifact12850599870 confirms1,091 suites /
+8,432 tests pass, all four global coverage metrics100%, and no below-threshold
+files. This terminal receipt was verified on7November2026. See
 `notes/agents/2026-10-28-native-dependency-policy.md` for hashes, artifacts and
 failure history. These are native-import policy results; legacy mutation skips,
 ambient/value typing, parser/thin preparation and actual namespace moves remain.

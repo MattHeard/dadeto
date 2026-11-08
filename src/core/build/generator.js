@@ -11,6 +11,22 @@ import {
   attrName,
 } from './html.js';
 /** @typedef {ReturnType<typeof import('./staticJsonlTable.js').createStaticJsonlTable>['renderStaticJsonlTable']} TableRenderer */
+/** @typedef {string|number|boolean|null|undefined} TextValue */
+/** @typedef {{fileName?: string, fileType: string, altText: string}} Illustration */
+/** @typedef {{fileType: string}} Audio */
+/** @typedef {{id: string, timestamp?: number, title?: string}} Video */
+/** @typedef {{type?: string, url?: string, title?: string, author?: string, source?: string, quote?: string}} RelatedLink */
+/** @typedef {{type: 'manual', id?: string, title?: string, src?: string, markdown?: string, content?: string|string[]}} ManualEntry */
+/** @typedef {{type: 'text', content: TextValue}|{type: 'quote', content: string|string[]}|ManualEntry} TextEntry */
+/** @typedef {{type: 'illustration', content: Illustration}|{type: 'audio', content: Audio}|{type: 'video', content: Video}} MediaEntry */
+/** @typedef {{type: 'links', content: RelatedLink[]}} LinksEntry */
+/** @typedef {{type: 'table', source: string, columns: string[], collapsed?: boolean}} TableEntry */
+/** @typedef {TextEntry|MediaEntry|LinksEntry|TableEntry|{type: 'toy'}} BodyEntry */
+/** @typedef {BodyEntry|TextValue} ContentInput */
+/** @typedef {{modulePath?: string, functionName?: string, defaultInputMethod?: string, defaultOutputMethod?: string}} Toy */
+/** @typedef {{key: string, title: string, publicationDate: string, release?: string, tags?: string[], content?: ContentInput[], illustration?: Illustration, audio?: Audio, youtube?: Video, relatedLinks?: RelatedLink[], toy?: Toy}} Post */
+/** @typedef {{posts: Post[]}} Blog */
+/** @typedef {{label: string, valueHTML: string, wrapValueDiv?: boolean, keyExtraClasses?: string}} LabeledSection */
 
 /**
  * Wrap a string or array of strings in paragraph tags.
@@ -48,6 +64,7 @@ const BLOCKQUOTE_CORNERS = `<div class="corner corner-tl"><div class="h-line"></
 const DIV_TAG_NAME = 'div';
 const ARTICLE_TAG_NAME = 'article';
 const DATE_LOCALE = 'en-GB';
+/** @type {Intl.DateTimeFormatOptions} */
 const DATE_FORMAT_OPTIONS = {
   day: 'numeric',
   month: 'short',
@@ -82,7 +99,7 @@ function getKeyClass(keyExtraClasses) {
  * Combine a key div and value HTML into a labeled section pair.
  * @param {string} keyDiv - HTML for the key element.
  * @param {string} valueHTML - HTML for the value element.
- * @param {boolean} wrapValueDiv - Whether to wrap the value in a div.
+ * @param {boolean|undefined} wrapValueDiv - Whether to wrap the value in a div.
  * @returns {string} Combined HTML pair.
  */
 function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
@@ -92,9 +109,8 @@ function buildLabeledSectionPair(keyDiv, valueHTML, wrapValueDiv) {
 
 /**
  * Ensure that `wrapValueDiv` is defined on the args object.
- * @param {object} args - Options for creating a labeled section.
- * @param {boolean} [args.wrapValueDiv] - Whether to wrap value HTML in a div.
- * @returns {object} Args object with wrapValueDiv defaulted to true if undefined.
+ * @param {LabeledSection} args - Options for creating a labeled section.
+ * @returns {LabeledSection} Args object with wrapValueDiv defaulted to true if undefined.
  */
 function defaultWrapValueDiv(args) {
   if (args.wrapValueDiv === undefined) {
@@ -105,9 +121,9 @@ function defaultWrapValueDiv(args) {
 
 /**
  * Ensure that `keyExtraClasses` exists on the args object.
- * @param {object} args - Options for creating a labeled section.
- * @param {string} [args.keyExtraClasses] - Additional CSS classes for the key div.
- * @returns {object} Args object with keyExtraClasses defaulted to empty string.
+ * @template {{keyExtraClasses?: string}} T
+ * @param {T} args - Options for creating a labeled section.
+ * @returns {T} Args object with keyExtraClasses defaulted to empty string.
  */
 export function defaultKeyExtraClasses(args) {
   if (args.keyExtraClasses === undefined) {
@@ -118,8 +134,8 @@ export function defaultKeyExtraClasses(args) {
 
 /**
  * Apply default values for labeled section options.
- * @param {object} args - Options for creating a labeled section.
- * @returns {object} Args object with defaults applied.
+ * @param {LabeledSection} args - Options for creating a labeled section.
+ * @returns {LabeledSection} Args object with defaults applied.
  */
 function applyLabeledSectionDefaults(args) {
   return defaultKeyExtraClasses(defaultWrapValueDiv(args));
@@ -127,8 +143,8 @@ function applyLabeledSectionDefaults(args) {
 
 /**
  * Convert labeled section options into explicit arguments.
- * @param {object} args - Options object for labeled section creation.
- * @returns {{keyDiv: string, valueHTML: string, wrapValueDiv: boolean}}
+ * @param {LabeledSection} args - Options object for labeled section creation.
+ * @returns {{keyDiv: string, valueHTML: string, wrapValueDiv: boolean|undefined}}
  *   Prepared arguments for section creation.
  */
 function prepareLabeledSectionArgs(args) {
@@ -156,7 +172,7 @@ function createLabeledSection(args) {
 /**
  * Optionally wrap value HTML in a value div.
  * @param {string} valueHTML - Value HTML to wrap.
- * @param {boolean} wrapValueDiv - Whether to wrap in a div.
+ * @param {boolean|undefined} wrapValueDiv - Whether to wrap in a div.
  * @returns {string} Wrapped or raw value HTML.
  */
 function labeledSectionValuePart(valueHTML, wrapValueDiv) {
@@ -229,8 +245,6 @@ function formatDate(dateString) {
 // No longer using newlines and indentation
 const BIO_TEXT = `Software developer and philosopher in Berlin`;
 
-// Stryker disable all -- header/footer/page-shell fragments are reviewed static
-// templates; their exact output is covered by the generator structure tests.
 /**
  * Build the HTML for the page header section.
  * @returns {string} HTML representing the header section.
@@ -321,7 +335,6 @@ function createHeaderContentArray(headerElement) {
     createNavbar(),
   ];
 }
-// Stryker restore all
 
 /**
  * Generate the HTML for the beginning of the page including the header.
@@ -387,7 +400,7 @@ function createManualToggleScript(manualId) {
 
 /**
  * Convert a blog post object to an article HTML string.
- * @param {object} post - Blog post data.
+ * @param {Post} post - Blog post data.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} HTML article.
  */
@@ -406,7 +419,7 @@ function formatArticleHTML(articleHTML) {
 
 /**
  * Convert an array of posts to concatenated article HTML.
- * @param {object[]} posts - Array of post objects.
+ * @param {Post[]} posts - Array of post objects.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Combined HTML for all posts.
  */
@@ -423,8 +436,8 @@ function processPostsToHTML(posts, renderTable) {
  */
 /**
  * Sort posts with the newest publication date first.
- * @param {object[]} posts - Array of blog post objects.
- * @returns {object[]} New array sorted by `publicationDate` descending.
+ * @param {Post[]} posts - Array of blog post objects.
+ * @returns {Post[]} New array sorted by `publicationDate` descending.
  */
 function sortPostsByPublicationDateDescending(posts) {
   return [...posts].sort(
@@ -436,7 +449,7 @@ function sortPostsByPublicationDateDescending(posts) {
 
 /**
  * Generate HTML for all articles in the blog.
- * @param {object[]} posts - Array of post objects.
+ * @param {Post[]} posts - Array of post objects.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Combined article HTML.
  */
@@ -449,7 +462,7 @@ function generateArticles(posts, renderTable) {
 
 /**
  * Create an id attribute if the post has a key.
- * @param {object} post - Blog post data.
+ * @param {Pick<Post, 'key'>} post - Blog post data.
  * @returns {string} id attribute string including leading space.
  */
 export function createIdAttributeIfNeeded(post) {
@@ -458,7 +471,7 @@ export function createIdAttributeIfNeeded(post) {
 
 /**
  * Derive tag class names for a post.
- * @param {object} post - Blog post data.
+ * @param {Post} post - Blog post data.
  * @returns {string[]} Array of tag class names.
  */
 function getTagClassList(post) {
@@ -470,7 +483,7 @@ function getTagClassList(post) {
 
 /**
  * Build the class attribute for an article element.
- * @param {object} post - Blog post data.
+ * @param {Post} post - Blog post data.
  * @returns {string} class attribute pair.
  */
 function createArticleClassAttr(post) {
@@ -484,7 +497,7 @@ function createArticleClassAttr(post) {
 
 /**
  * Compose the attributes string for an article element.
- * @param {object} post - Blog post data.
+ * @param {Post} post - Blog post data.
  * @returns {string} Combined class and id attributes.
  */
 function createArticleAttributes(post) {
@@ -504,7 +517,7 @@ function formatArticleContent(content) {
 
 /**
  * Create an <article> element string from a blog post object.
- * @param {object} post - Blog post data.
+ * @param {Post} post - Blog post data.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Article HTML.
  */
@@ -517,8 +530,8 @@ function generateArticle(post, renderTable) {
 
 /**
  * Get the content array from a post, defaulting to an empty array.
- * @param {object} post - Blog post.
- * @returns {Array} Content array.
+ * @param {Post} post - Blog post.
+ * @returns {ContentInput[]} Content array.
  */
 function getContentArray(post) {
   return post.content || [];
@@ -526,8 +539,8 @@ function getContentArray(post) {
 
 /**
  * Normalize a post's visible body into one ordered sequence.
- * @param {object} post - Blog post.
- * @returns {Array<object>} Ordered body entries.
+ * @param {Post} post - Blog post.
+ * @returns {BodyEntry[]} Ordered body entries.
  */
 function normalizePostBody(post) {
   const content = getContentArray(post);
@@ -535,6 +548,7 @@ function normalizePostBody(post) {
     throw new TypeError('Post content must be an array');
   }
 
+  /** @type {BodyEntry[]} */
   const legacyEntries = [];
   if (post.illustration)
     legacyEntries.push({ type: 'illustration', content: post.illustration });
@@ -568,7 +582,7 @@ function normalizePostBody(post) {
     });
   }
   body.forEach(entry => {
-    if (!entry || typeof entry !== 'object' || typeof entry.type !== 'string') {
+    if (typeof entry.type !== 'string') {
       throw new TypeError(
         'Every post body entry must have a type; renderer is not a function'
       );
@@ -578,86 +592,32 @@ function normalizePostBody(post) {
 }
 
 /**
- * Normalize a content item.
- * If content is already an object, return it unchanged;
- * otherwise, wrap it in an object with type 'text' and content fields.
- * @param {object | string} content - The content item to normalize.
- * @returns {object} - Normalized content object.
- */
-/**
- * @typedef {object} NormalizedContent
- * @property {string} type - The normalized content type.
- * @property {unknown} content - The normalized content data.
- */
-
-/**
- * @typedef {object} ContentTypeHandler
- * @property {(content: unknown) => boolean} predicate - Returns true if this handler matches the content.
- * @property {(content: unknown) => NormalizedContent} normalize - Normalizes the content to a standard object.
- * @property {string} type - The normalized content type name.
- * @property {(content: unknown) => string} render - Renders the normalized content as HTML.
- */
-
-// Hardcoded normalization rules and content renderers
-const normalizationRules = [
-  [
-    c => typeof c !== 'object' || c === null,
-    c => ({ type: 'text', content: c }),
-  ],
-  [() => true, c => c],
-];
-
-const CONTENT_RENDERERS = {
-  quote: createBlockquote,
-  text: renderAsParagraph,
-  __default__: renderAsParagraph,
-};
-
-/**
- * Returns the normalizer function for the given raw content.
- * @param {unknown} content - Raw content to normalize.
- * @returns {(content: unknown) => NormalizedContent} - Normalizer function that returns a normalized content object.
- */
-function getContentNormalizer(content) {
-  const found = normalizationRules.find(([predicate]) => predicate(content));
-  return found[1];
-}
-
-/**
- * Normalizes a content item using the registered normalizers.
- * @param {unknown} content - Raw content to normalize.
- * @returns {NormalizedContent} Normalized content object with { type, content }.
+ * Normalize primitive legacy text after object entries have been selected.
+ * @param {TextValue} content Authored primitive content.
+ * @returns {{type: 'text', content: TextValue}} Ordered text entry.
  */
 function normalizeContentItem(content) {
-  return getContentNormalizer(content)(content);
+  return { type: 'text', content };
 }
 
 /**
- * Returns the renderer function for a given normalized content type.
- * @param {string} type - The normalized content type.
- * @returns {(content: unknown) => string} - Renderer function that returns HTML.
- */
-function getContentRenderer(type) {
-  return CONTENT_RENDERERS[type];
-}
-
-/**
- * Renders normalized content by dispatching to the correct renderer by type.
- * @param {NormalizedContent} normalizedContent - Normalized content object with { type, content }.
+ * Render text-like entries using their declared payload contracts.
+ * @param {TextEntry} normalizedContent Typed text, quotation or manual.
  * @returns {string} Rendered HTML.
  */
 function renderValueDiv(normalizedContent) {
-  const { type, content } = normalizedContent;
-  if (type === 'manual') {
+  if (normalizedContent.type === 'manual') {
     return createManualBlock(normalizedContent);
   }
-  const renderer = getContentRenderer(type);
-  return renderer(content);
+  if (normalizedContent.type === 'quote') {
+    return createBlockquote(normalizedContent.content);
+  }
+  return renderAsParagraph(normalizedContent.content);
 }
 
 /**
  * Render a collapsed, text-only manual block with show/hide links.
- * @param {object} manual Manual content payload.
+ * @param {ManualEntry} manual Manual content payload.
  * @returns {string} Manual HTML.
  */
 function createManualBlock(manual) {
@@ -668,8 +628,6 @@ function createManualBlock(manual) {
   const escapedManualId = escapeHtml(manualId);
   const bodyId = `${escapedManualId}-body`;
   let title = 'User manual';
-  // Stryker disable next-line all -- optional manual-title normalization is a
-  // defensive compatibility boundary; default and custom titles are asserted.
   if (typeof manual.title === 'string' && manual.title) {
     title = manual.title;
   }
@@ -689,7 +647,7 @@ function createManualBlock(manual) {
 
 /**
  * Wrap plain text in a paragraph element.
- * @param {string} content - The text content to wrap.
+ * @param {TextValue} content - The text content to wrap.
  * @returns {string} HTML paragraph string.
  */
 function renderAsParagraph(content) {
@@ -698,12 +656,12 @@ function renderAsParagraph(content) {
 
 /**
  * Create a content section item with exact formatting
- * @param {object | string} content - The content object or text
+ * @param {TextEntry} content - The normalized text entry
  * @param {boolean} isFirst - Whether this is the first content item
  * @returns {string} - Formatted content section HTML
  */
 function createContentSectionItem(content, isFirst) {
-  const normalizedContent = normalizeContentItem(content);
+  const normalizedContent = content;
   let key = '';
   if (isFirst) {
     key = 'text';
@@ -718,13 +676,14 @@ function createContentSectionItem(content, isFirst) {
 
 /**
  * Render one normalized ordered body entry.
- * @param {object} entry - Normalized body entry.
+ * @param {BodyEntry} entry - Normalized body entry.
  * @param {boolean} isFirstText - Whether this is the first text-like entry.
- * @param {object} post - Blog post.
+ * @param {Post} post - Blog post.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Rendered HTML.
  */
 function renderBodyEntry(entry, isFirstText, post, renderTable) {
+  const entryType = entry.type;
   if (
     entry.type === 'text' ||
     entry.type === 'quote' ||
@@ -747,13 +706,13 @@ function renderBodyEntry(entry, isFirstText, post, renderTable) {
   }
   if (entry.type === 'table') return renderTable(entry);
   throw new Error(
-    `Unknown post body entry type: ${entry.type}; renderer is not a function`
+    `Unknown post body entry type: ${entryType}; renderer is not a function`
   );
 }
 
 /**
  * Generate the HTML sections for all content items in a post.
- * @param {object} post - The blog post.
+ * @param {Post} post - The blog post.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} HTML for the content sections.
  */
@@ -768,6 +727,7 @@ function generateContentSections(post, renderTable) {
   return join(contentItems);
 }
 
+/** @type {{condition: (post: Post) => unknown, generator: (post: Post) => string}[]} */
 const HEADER_SECTIONS_CONFIG = [
   {
     condition: () => true,
@@ -794,27 +754,35 @@ const HEADER_SECTIONS_CONFIG = [
     },
   },
   {
-    condition: post => hasTags(post),
-    generator: post => {
-      const tagLinks = post.tags
-        .map(tag => {
-          const escapedTag = escapeHtml(tag);
-          return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
-        })
-        .join(', ');
-      const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagLinks}</p>`;
-      return createLabeledSection({
-        label: 'tags',
-        valueHTML,
-        wrapValueDiv: false,
-      });
-    },
+    condition: () => true,
+    generator: generateTagSection,
   },
 ];
 
 /**
+ * Render tag metadata only when tags are present.
+ * @param {Post} post Blog post.
+ * @returns {string} Tag section or empty HTML.
+ */
+function generateTagSection(post) {
+  if (!hasTags(post)) return '';
+  const tagLinks = post.tags
+    .map(tag => {
+      const escapedTag = escapeHtml(tag);
+      return `<a class="tag-${escapedTag}">${escapedTag}</a>`;
+    })
+    .join(', ');
+  const valueHTML = `<p class="${CLASS.VALUE} ${CLASS.METADATA}">${tagLinks}</p>`;
+  return createLabeledSection({
+    label: 'tags',
+    valueHTML,
+    wrapValueDiv: false,
+  });
+}
+
+/**
  * Build the header section for a blog post.
- * @param {object} post - The blog post.
+ * @param {Post} post - The blog post.
  * @returns {string} HTML for the header section.
  */
 function generateHeaderSection(post) {
@@ -825,8 +793,8 @@ function generateHeaderSection(post) {
 
 /**
  * Check if post has tags
- * @param {object} post - The blog post
- * @returns {boolean} - True if post has tags
+ * @param {Post} post - The blog post
+ * @returns {post is Post & {tags: string[]}} - True if post has tags
  */
 function hasTags(post) {
   return Array.isArray(post.tags) && post.tags.length > 0;
@@ -835,6 +803,11 @@ function hasTags(post) {
 /**
  * Check if post has the specified media type
  */
+/**
+ * @template T
+ * @typedef {{label: string, content: (post: T) => string, wrapValueDiv?: boolean, keyExtraClasses: string}} MediaSection
+ */
+/** @type {[MediaSection<Post & {illustration: Illustration}>, MediaSection<Post & {audio: Audio}>, MediaSection<Post & {youtube: Video}>]} */
 const MEDIA_SECTIONS_CONFIG = [
   {
     label: 'illus',
@@ -871,26 +844,42 @@ const MEDIA_SECTIONS_CONFIG = [
 
 /**
  * Generate HTML for any available media sections of the given post.
- * @param {object} post - The blog post data.
+ * @param {Post} post - The blog post data.
  * @returns {string} The HTML markup for media sections.
  */
 /**
  * Render one normalized media entry.
- * @param {object} entry - Normalized media entry.
- * @param {object} post - Blog post.
+ * @param {MediaEntry} entry - Normalized media entry.
+ * @param {Post} post - Blog post.
  * @returns {string} Rendered media section HTML.
  */
 function renderMediaEntry(entry, post) {
-  const labels = { illustration: 'illus', audio: 'audio', video: 'video' };
-  const section = MEDIA_SECTIONS_CONFIG.find(
-    item => item.label === labels[entry.type]
-  );
-  const mediaPost = {
+  if (entry.type === 'illustration') {
+    return renderMediaSection(MEDIA_SECTIONS_CONFIG[0], {
+      ...post,
+      illustration: entry.content,
+    });
+  }
+  if (entry.type === 'audio') {
+    return renderMediaSection(MEDIA_SECTIONS_CONFIG[1], {
+      ...post,
+      audio: entry.content,
+    });
+  }
+  return renderMediaSection(MEDIA_SECTIONS_CONFIG[2], {
     ...post,
-    ...(entry.type === 'illustration' ? { illustration: entry.content } : {}),
-    ...(entry.type === 'audio' ? { audio: entry.content } : {}),
-    ...(entry.type === 'video' ? { youtube: entry.content } : {}),
-  };
+    youtube: entry.content,
+  });
+}
+
+/**
+ * Apply a media renderer to the matching typed post payload.
+ * @template T
+ * @param {MediaSection<T>} section Media presentation.
+ * @param {T} mediaPost Post with the selected media payload.
+ * @returns {string} Labeled media HTML.
+ */
+function renderMediaSection(section, mediaPost) {
   return createLabeledSection({
     label: section.label,
     valueHTML: section.content(mediaPost),
@@ -901,8 +890,9 @@ function renderMediaEntry(entry, post) {
 
 /**
  * Check if the provided value is a non-empty array.
- * @param {unknown} value - Value to test.
- * @returns {boolean} True if value is an array with elements.
+ * @template T
+ * @param {T[]|null|undefined} value - Value to test.
+ * @returns {value is T[]} True if value is an array with elements.
  */
 function isNonEmptyArray(value) {
   return Array.isArray(value) && value.length > 0;
@@ -910,36 +900,41 @@ function isNonEmptyArray(value) {
 
 /**
  * Format a related link to display in the list
- * @param {object} link - The related link object
+ * @param {RelatedLink} link - The related link object
  * @returns {string} - Formatted HTML for a related link
  */
 const DEFAULT_RELATED_LINK_ATTRS = 'target="_blank" rel="noopener"';
 /**
  * Escape user provided link fields.
- * @param {object} link - Raw link information.
- * @returns {object} Link object with escaped fields.
+ * @param {RelatedLink} link - Raw link information.
+ * @returns {{type?: string, url: string, title: string, author: string, source: string, quote: string}} Link object with escaped fields.
  */
 function escapeRelatedLinkFields(link) {
-  const fields = ['url', 'title', 'author', 'source', 'quote'];
-  return fields.reduce(
-    (acc, field) => {
-      // Stryker disable next-line all -- falsy metadata normalizes to the same
-      // empty field contract as absent metadata.
-      if (link[field]) {
-        acc[field] = escapeHtml(link[field]);
-      } else {
-        acc[field] = '';
-      }
-      return acc;
-    },
-    { type: link.type }
-  );
+  return {
+    type: link.type,
+    url: escapeRelatedLinkField(link, 'url'),
+    title: escapeRelatedLinkField(link, 'title'),
+    author: escapeRelatedLinkField(link, 'author'),
+    source: escapeRelatedLinkField(link, 'source'),
+    quote: escapeRelatedLinkField(link, 'quote'),
+  };
+}
+
+/**
+ * Preserve legacy falsy normalization and getter read semantics for one field.
+ * @param {RelatedLink} link Raw link information.
+ * @param {'url'|'title'|'author'|'source'|'quote'} field Metadata field.
+ * @returns {string} Escaped metadata or the legacy empty default.
+ */
+function escapeRelatedLinkField(link, field) {
+  if (link[field]) return escapeHtml(link[field]);
+  return '';
 }
 
 /**
  * Prepend a prefix if the value exists.
  * @param {string} prefix - Prefix text.
- * @param {string} value - Value text.
+ * @param {string|undefined} value - Value text.
  * @returns {string|undefined} Prefixed string or undefined.
  */
 function prefixIfPresent(prefix, value) {
@@ -951,19 +946,21 @@ function prefixIfPresent(prefix, value) {
 
 /**
  * Format a link title depending on its type.
- * @param {string} type - Link type identifier.
+ * @param {string|undefined} type - Link type identifier.
  * @param {string} title - Link title.
  * @returns {string} Formatted title string.
  */
 function formatTitleByType(type, title) {
+  /** @type {Record<string, ((value: string) => string)|undefined>} */
   const formatters = {
     book: t => `<em>_${t}_</em>`,
     microblog: t => `"${t}"`,
     article: t => `"${t}"`,
     report: t => `"${t}"`,
   };
+  /** @type {(value: string) => string} */
   let formatter;
-  if (formatters[type]) {
+  if (type && formatters[type]) {
     formatter = formatters[type];
   } else {
     formatter = t => t;
@@ -973,7 +970,7 @@ function formatTitleByType(type, title) {
 
 /**
  * Format the basic `<a>` element for a related link.
- * @param {string} type - Link type.
+ * @param {string|undefined} type - Link type.
  * @param {string} url - URL for the link.
  * @param {string} title - Link title.
  * @returns {string} HTML anchor element.
@@ -986,7 +983,7 @@ function formatBaseLink(type, url, title) {
 /**
  * Wrap a value with prefix and suffix when present.
  * @param {string} prefix - Prefix text.
- * @param {string} value - Value text.
+ * @param {string|undefined} value - Value text.
  * @param {string} suffix - Suffix text.
  * @returns {string|undefined} Wrapped string or undefined.
  */
@@ -1015,19 +1012,17 @@ function createLinkParts(baseLink, { author, source, quote }) {
 /**
  * Combine link parts into an HTML list item.
  * @param {string} baseLink - Base anchor element.
- * @param {object} meta - Link metadata.
+ * @param {{author?: string, source?: string, quote?: string}} meta - Link metadata.
  * @returns {string} HTML list item string.
  */
 function composeLinkParts(baseLink, meta) {
   const parts = createLinkParts(baseLink, meta);
-  // Stryker disable next-line all -- join renders empty metadata parts as no
-  // output, making this filter mutation equivalent for the supported contract.
-  return `<li>${join(parts.filter(Boolean))}</li>`;
+  return `<li>${parts.join('')}</li>`;
 }
 
 /**
  * Format a related link object into an HTML list item.
- * @param {object} link - The related link data.
+ * @param {RelatedLink} link - The related link data.
  * @returns {string} HTML list item string.
  */
 function formatRelatedLink(link) {
@@ -1040,12 +1035,12 @@ function formatRelatedLink(link) {
 
 /**
  * Generate the related links section for a blog post
- * @param {object} post - The blog post
+ * @param {Post} post - The blog post
  * @returns {string} - HTML for the related links section
  */
 /**
  * Render one normalized related-links entry.
- * @param {object} entry - Normalized links entry.
+ * @param {LinksEntry} entry - Normalized links entry.
  * @returns {string} Rendered links section HTML.
  */
 function renderLinksEntry(entry) {
@@ -1057,27 +1052,14 @@ function renderLinksEntry(entry) {
 }
 
 /**
- * Return true if every predicate returns truthy for the provided object.
- * @param {object} obj - Value to test.
- * @param {((value: string) => boolean)[]} fns - Predicate functions.
- * @returns {boolean} Whether all predicates returned truthy.
- */
-function allTruthy(obj, fns) {
-  return fns.every(fn => Boolean(fn(obj)));
-}
-
-/**
  * Check whether a post has a configured toy component.
- * @param {object} post - The blog post.
- * @returns {boolean} True if a toy is configured.
+ * @param {Post} post The blog post.
+ * @returns {post is Post & {toy: Toy & {modulePath: string, functionName: string}}} True if a toy is configured.
  */
 function hasToy(post) {
-  return allTruthy(post, [
-    p => p,
-    p => p.toy,
-    p => p.toy.modulePath,
-    p => p.toy.functionName,
-  ]);
+  return Boolean(
+    post && post.toy && post.toy.modulePath && post.toy.functionName
+  );
 }
 
 /**
@@ -1087,6 +1069,7 @@ function hasToy(post) {
  */
 
 // Output types for toy dropdown
+/** @type {[string, string][]} */
 const TOY_OUTPUT_TYPES = [
   ['text', 'text'],
   ['pre', 'pre'],
@@ -1149,7 +1132,7 @@ function getToyOutputValueContent(selectedMethod) {
 
 /**
  * Generate script tag to add the component
- * @param {object} post - The blog post
+ * @param {Post & {toy: Toy}} post - The blog post
  * @returns {string} - HTML script tag
  */
 function generateToyScript(post) {
@@ -1181,8 +1164,8 @@ const INPUT_METHODS = [
 
 /**
  * Build the input dropdown for a toy
- * @param {string} defaultMethod - The configured default input method
- * @returns {string} - HTML for the dropdown and text input
+ * @param {string|undefined} defaultMethod - The configured default input method
+ * @returns {string|undefined} - Selected non-text method
  */
 export function getSelectedMethod(defaultMethod) {
   if (defaultMethod === 'text') {
@@ -1207,7 +1190,7 @@ function buildOption(method, selectedMethod) {
 
 /**
  * Build the input dropdown for a toy.
- * @param {string} defaultMethod - Default input method.
+ * @param {string|undefined} defaultMethod - Default input method.
  * @returns {string} HTML select + input element.
  */
 function buildToyInputDropdown(defaultMethod) {
@@ -1218,6 +1201,7 @@ function buildToyInputDropdown(defaultMethod) {
   return `<span class="select-wrapper"><select class="input">${options}</select></span><input type="text" disabled>`;
 }
 
+/** @type {{label: string, content: (defaults: {input: string|undefined, output: string|undefined}) => string}[]} */
 const TOY_UI_SECTIONS_CONFIG = [
   {
     label: 'in',
@@ -1241,8 +1225,8 @@ const TOY_UI_SECTIONS_CONFIG = [
 
 /**
  * Retrieve the configured default input method for a post.
- * @param {object} post - The blog post.
- * @returns {string} Method name.
+ * @param {Pick<Post, 'toy'>} post - The blog post.
+ * @returns {string|undefined} Method name.
  */
 export function getDefaultInputMethod(post) {
   const toy = post.toy ?? { defaultInputMethod: 'text' };
@@ -1251,7 +1235,7 @@ export function getDefaultInputMethod(post) {
 
 /**
  * Retrieve the configured default output method for a post.
- * @param {object} post - The blog post.
+ * @param {Pick<Post, 'toy'>} post - The blog post.
  * @returns {string | undefined} Presenter key.
  */
 export function getDefaultOutputMethod(post) {
@@ -1261,7 +1245,7 @@ export function getDefaultOutputMethod(post) {
 
 /**
  * Generate the toy UI components for a blog post.
- * @param {object} post - The blog post.
+ * @param {Post} post - The blog post.
  * @returns {string} HTML for the toy UI components.
  */
 function generateToyUISection(post) {
@@ -1278,7 +1262,7 @@ function generateToyUISection(post) {
 
 /**
  * Generate the script element to load a toy component.
- * @param {object} post - The blog post.
+ * @param {Post} post - The blog post.
  * @returns {string} HTML script tag or empty string.
  */
 function generateToyScriptSection(post) {
@@ -1290,7 +1274,7 @@ function generateToyScriptSection(post) {
 
 /**
  * Get all sections for a blog post article.
- * @param {object} post - The blog post.
+ * @param {Post} post - The blog post.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string[]} - An array of HTML sections.
  */
@@ -1303,7 +1287,7 @@ function getArticleSections(post, renderTable) {
 
 /**
  * Generate the HTML content for a single blog post.
- * @param {object} post - The blog post.
+ * @param {Post} post - The blog post.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} HTML for the article.
  */
@@ -1327,7 +1311,7 @@ function getBlogHtmlContent(header, articles, footer) {
 
 /**
  * Retrieve the HTML for all articles from the blog.
- * @param {object} blog - The blog object.
+ * @param {Blog} blog - The blog object.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} - Combined HTML for all articles.
  */
@@ -1338,7 +1322,7 @@ function getArticles(blog, renderTable) {
 /**
  * Assemble the blog HTML content by combining header, articles, and footer.
  * @param {string} header - The header HTML.
- * @param {object} blog - The blog object.
+ * @param {Blog} blog - The blog object.
  * @param {string} footer - The footer HTML.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} - The combined HTML content.
@@ -1351,7 +1335,7 @@ function assembleBlogHTML(header, blog, footer, renderTable) {
 /**
  * Bind the table renderer before generating complete blog HTML.
  * @param {TableRenderer} renderTable Injected static table renderer.
- * @returns {(parts: {blog: object, header: string, footer: string}, wrapHtml: (content: string) => string) => string} Blog renderer.
+ * @returns {(parts: {blog: Blog, header: string, footer: string}, wrapHtml: (content: string) => string) => string} Blog renderer.
  */
 function createBlogRenderer(renderTable) {
   return (parts, wrapHtml) => {
@@ -1369,7 +1353,7 @@ const createBlogComponents = () => ({
 
 /**
  * Extracts the blog generation arguments from the blog components.
- * @returns {object} - An object containing header, footer, and wrapFunc.
+ * @returns {{header: string, footer: string, wrapFunc: typeof wrapHtml}} - Header, footer, and wrapper.
  */
 export function getBlogGenerationArgs() {
   const components = createBlogComponents();
@@ -1379,7 +1363,7 @@ export function getBlogGenerationArgs() {
 
 /**
  * Convenience wrapper to generate a blog from a blog object.
- * @param {object} blog - Blog data object.
+ * @param {Blog} blog - Blog data object.
  * @param {TableRenderer} renderTable Injected static table renderer.
  * @returns {string} Complete blog HTML.
  */
@@ -1399,7 +1383,7 @@ export const generateBlogOuter = (blog, renderTable) => {
  *   getDefaultOutputMethod: typeof getDefaultOutputMethod,
  *   generateBlog: ReturnType<typeof createBlogRenderer>,
  *   getBlogGenerationArgs: typeof getBlogGenerationArgs,
- *   generateBlogOuter: (blog: object) => string
+ *   generateBlogOuter: (blog: Blog) => string
  * }} Generator exports.
  */
 export function createGeneratorHandle({ renderStaticJsonlTable }) {
