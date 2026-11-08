@@ -10,7 +10,7 @@ export default {
     '**',
     '!src/core/cloud/billing/refund-request-core.js',
     '!src/core/cloud/billing/authentication-core.js',
-    '!src/core/local/logic-source-paths.js',
+    '!src/logic/core/local/logic-source-paths.js',
     '!test/core/cloud/billing/refund-request-core.test.js',
     '!jest.config.mjs',
     '!jest.mutation.config.mjs',

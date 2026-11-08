@@ -1,7 +1,7 @@
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
 import { useDefaultValue, walkJavaScriptFiles } from './gate-utils.js';
 import { readExemptions } from './read-exemptions.js';
-import { LOGIC_SOURCE_ROOTS } from '../local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from '../../logic/core/local/logic-source-paths.js';
 
 /** @typedef {{label: string, kind: string}} ClassificationSignal */
 /** @typedef {{ name: string, labels: string[], signals?: ClassificationSignal[] }} ClassifiedFunction */

@@ -1,4 +1,4 @@
-import { isLogicJavaScriptPath } from './logic-source-paths.js';
+import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {import('../../../types/allow-effects').StartupAllowEffectsBoundary} StartupAllowEffectsBoundary */

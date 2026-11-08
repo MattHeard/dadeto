@@ -12,6 +12,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!src/local/check-depcruise-scope.js',
     '!test/core/scripts/check-depcruise.test.js',
     '!test/scripts/logic-dependency-roots.test.js',

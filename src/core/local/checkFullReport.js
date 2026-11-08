@@ -1,4 +1,4 @@
-import { isLogicJavaScriptPath } from './logic-source-paths.js';
+import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
 
 const COVERAGE_METRICS = /** @type {const} */ ([
   'statements',

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { LOGIC_SOURCE_ROOTS } from '../src/core/local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from '../src/logic/core/local/logic-source-paths.js';
 import path from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
 import { acquireJestSlot } from './jest-pool.js';

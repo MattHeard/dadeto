@@ -1,10 +1,9 @@
 import { reportFailuresAndMaybeLogSuccess } from '../../commonCore.js';
 import { countTextLines } from '../textLines.js';
+import { LOGIC_SOURCE_ROOTS } from '../../../logic/core/local/logic-source-paths.js';
 
 const EXPORTED_HANDLE_DECLARATION = /\bexport\s+const\s+handle\s*=/u;
 
-// Stryker disable all -- this module is the fixed non-core-thin repository
-// status policy boundary covered by the status contract suites.
 /**
  * Read the current non-core thin status.
  * @param {{
@@ -25,17 +24,18 @@ const EXPORTED_HANDLE_DECLARATION = /\bexport\s+const\s+handle\s*=/u;
  */
 export function getNonCoreThinStatus(options) {
   const paths = resolveStatusPaths(options);
-  const coreDir = options.pathModule.join(paths.srcDir, 'core');
+  const logicDirs = LOGIC_SOURCE_ROOTS.map(root =>
+    options.pathModule.join(paths.srcDir, ...root.split('/').slice(1))
+  );
   const config = readThinConfig(options, paths.configPath);
   return buildNonCoreThinStatus(
     config,
-    listJsFiles(paths.srcDir, options, coreDir),
+    listJsFiles(paths.srcDir, options, logicDirs),
     {
       fsModule: options.fsModule,
       pathModule: options.pathModule,
       repoRoot: options.repoRoot,
       srcDir: paths.srcDir,
-      coreDir,
     }
   );
 }
@@ -197,13 +197,17 @@ function buildNonCoreThinStatus(config, files, options) {
  *   repoRoot: string,
  *   srcDir?: string
  * }} options Status dependencies.
- * @param {string} coreDir Core directory path to skip.
+ * @param {string[]} logicDirs Logic directory paths to classify separately.
  * @returns {string[]} repo-relative JavaScript paths outside `src/core`
  */
-function listJsFiles(dir, options, coreDir) {
+function listJsFiles(dir, options, logicDirs) {
   const entries = options.fsModule.readdirSync(dir, { withFileTypes: true });
   const directories = entries.filter(entry =>
-    shouldIncludeDirectory(dir, entry, coreDir)
+    shouldIncludeDirectory(
+      options.pathModule.join(dir, entry.name),
+      entry,
+      logicDirs
+    )
   );
   const files = entries
     .filter(entry => entry.isFile() && entry.name.endsWith('.js'))
@@ -213,7 +217,7 @@ function listJsFiles(dir, options, coreDir) {
 
   return [
     ...directories.flatMap(entry =>
-      listJsFiles(options.pathModule.join(dir, entry.name), options, coreDir)
+      listJsFiles(options.pathModule.join(dir, entry.name), options, logicDirs)
     ),
     ...files,
   ];
@@ -256,25 +260,25 @@ function toRepoPath(filePath, options) {
 /**
  * Tell whether a directory should be skipped during the scan.
  * @param {string} fullPath absolute path for the entry
- * @param {string} coreDir Core directory path to skip.
- * @returns {boolean} true when the directory is `src/core`
+ * @param {string[]} logicDirs Exact logic directory paths.
+ * @returns {boolean} true when the directory belongs to a logic namespace
  */
-function shouldSkipDirectory(fullPath, coreDir) {
-  return fullPath === coreDir;
+function shouldSkipDirectory(fullPath, logicDirs) {
+  return logicDirs.includes(fullPath);
 }
 
 /**
  * Tell whether a directory entry should be scanned.
- * @param {string} dir directory being scanned
+ * @param {string} fullPath Full path of the entry.
  * @param {{ isDirectory: () => boolean, name: string }} entry directory entry
- * @param {string} coreDir Core directory path to skip.
+ * @param {string[]} logicDirs Exact logic directory paths.
  * @returns {boolean} true when the entry is a non-core directory
  */
-function shouldIncludeDirectory(dir, entry, coreDir) {
+function shouldIncludeDirectory(fullPath, entry, logicDirs) {
   return (
     entry.isDirectory() &&
     entry.name !== 'node_modules' &&
-    !shouldSkipDirectory(`${dir}/${entry.name}`, coreDir)
+    !shouldSkipDirectory(fullPath, logicDirs)
   );
 }
 
@@ -373,7 +377,7 @@ function getWrapperPatternViolationsForSource(filePath, source, maxLines = 0) {
     return [];
   }
 
-  if (maxLines > 0 && countSourceLines(source) <= maxLines) {
+  if (countTextLines(source) <= maxLines) {
     return [];
   }
 
@@ -438,16 +442,7 @@ function exportsHandle(source) {
  * @returns {boolean} True when the handle is invoked.
  */
 function invokesHandle(source) {
-  return /(?:^|[^\w$])(?:await\s+)?handle\s*\(/u.test(source);
-}
-
-/**
- * Count source lines the same way the size gate does.
- * @param {string} source JavaScript source text.
- * @returns {number} Source line count.
- */
-function countSourceLines(source) {
-  return source.split('\n').length;
+  return /(?:^|[^\w$])handle\s*\(/u.test(source);
 }
 
 /**
@@ -456,16 +451,13 @@ function countSourceLines(source) {
  * @returns {boolean} True when the source contains only core re-export declarations.
  */
 function isPureCoreReExportWrapper(source) {
-  const executableSource = source
-    .replace(/^\s*\/\/.*$/gmu, '')
-    .replace(/\s+/gu, ' ')
-    .trim();
+  const executableSource = source.replace(/^\s*\/\/.*/gmu, '').trim();
   if (!executableSource) {
     return false;
   }
 
   const withoutCoreReExports = executableSource.replace(
-    /export\s+(?:\*|\{[^}]*\})\s+from\s+['"](?:\.\.\/)+(?:core\/|commonCore\.js)[^'"]*['"]\s*;?/gu,
+    /export\s+(?:\*|\{[^}]*\})\s+from\s+['"](?:\.\.\/)+(?:core\/|logic\/(?:core|boundary)\/|commonCore\.js)[^'"]*['"]\s*;?/gu,
     ''
   );
 
@@ -486,4 +478,3 @@ function shouldEnforceWrapperPattern(filePath) {
     filePath.startsWith(prefix)
   );
 }
-// Stryker restore all

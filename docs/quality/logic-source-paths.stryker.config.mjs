@@ -3,10 +3,10 @@ import base from '../../stryker.config.mjs';
 export default {
   ...base,
   plugins: ['@stryker-mutator/jest-runner'],
-  mutate: ['src/core/local/logic-source-paths.js'],
+  mutate: ['src/logic/core/local/logic-source-paths.js'],
   ignorePatterns: [
     '**',
-    '!src/core/local/logic-source-paths.js',
+    '!src/logic/core/local/logic-source-paths.js',
     '!test/core/local/logic-source-paths.test.js',
     '!jest.config.mjs',
     '!jest.mutation.config.mjs',

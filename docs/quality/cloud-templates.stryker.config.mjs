@@ -13,6 +13,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!vendor/deepmerge/**',
     '!test/core/local/cloud-templates.test.js',
     '!test/core/cloud/html-template.test.js',

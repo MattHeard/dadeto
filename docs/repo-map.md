@@ -4,7 +4,9 @@
 
 | Subsystem | Purpose | Primary paths |
 | --- | --- | --- |
-| Shared core domain | Cross-environment business logic and reusable orchestration | `src/core/` |
+| Shared core domain | Legacy cross-environment logic during migration | `src/core/` |
+| Trusted logic | Precisely typed computation; shared classifier is the first relocated module | `src/logic/core/` |
+| Boundary logic | Pure total parsers with explicit untrusted inputs and typed outcomes | `src/logic/boundary/` |
 | Browser app layer | UI bootstrapping, event wiring, and browser adapters for site + toys | `src/browser/`, `public/browser/` |
 | Build and generation | Static generation and deployment copy pipelines | `src/build/` |
 | Cloud function layer | Google Cloud Function wrappers + runtime integration | `src/cloud/`, `infra/browser/functions/` |

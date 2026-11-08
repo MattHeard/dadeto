@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!test/core/copy.test.js',
     '!test/core/build-copy-path-injection.test.js',
     '!jest.config.mjs',

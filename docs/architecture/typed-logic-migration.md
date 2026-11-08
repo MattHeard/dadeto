@@ -94,6 +94,27 @@ the architecture. Thin-wrapper preparation remains before the first move.
 
 ## Acceptance per implementation slice
 
+First source slice `dadeto-topt` relocates the report tooling's shared classifier
+to `src/logic/core/local/logic-source-paths.js` with identical bytes and precise
+string/boolean contracts. All active consumers import the destination directly;
+there is no legacy forwarder. Focused sandbox availability now includes actual
+destination dependencies without changing mutation scope or thresholds. See
+`notes/agents/2026-11-07-first-trusted-source.md` for exact-source and validation
+evidence. This is the first dependency move toward the report/parser slice, not
+the report migration or completion of the architecture. The pinned census above
+remains historical and is not silently regenerated.
+
+Thin-wrapper preflight `dadeto-eg7y` classifies exact legacy and destination logic
+directories from the canonical root list, relative to the configured source
+directory. The rest of `src/logic` remains subject to adapter rules; this is not
+a subtree exemption. Pure re-exports and build entrypoint logic imports recognize
+both destinations, preserving the existing adapter limit and wrapper/entrypoint
+semantics. Build policy keeps its import markers local rather than violating the
+build-to-local dependency prohibition. Both touched mutation suppressions are
+removed; the full-module evaluator and retained evidence are documented in
+`notes/agents/2026-11-07-logic-thin-roots.md`. Acceptance belongs to the owning
+bead's terminal checks and exact CI, not merely this implementation description.
+
 Use focused tests and check:impact:run for moved logic coverage, npm run check
 locally, and separate terminal Full Check evidence. Build for generated output,
 build:cloud/package-import verification for cloud moves, Cloud Run for browser

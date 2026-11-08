@@ -7,7 +7,7 @@ import tautologicalWrapperRule from './src/core/lint/tautological-wrapper.js';
 import createNoParameterBagAritySmugglingRule from './src/core/lint/no-parameter-bag-arity-smuggling.js';
 import ts from 'typescript';
 import { createAllowEffectsRule } from './src/core/scripts/allow-effects.js';
-import { LOGIC_SOURCE_ROOTS } from './src/core/local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from './src/logic/core/local/logic-source-paths.js';
 
 let capabilityProgramCache;
 

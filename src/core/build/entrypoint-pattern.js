@@ -1,4 +1,9 @@
 import { reportFailuresAndMaybeLogSuccess } from '../commonCore.js';
+const LOGIC_IMPORT_MARKERS = [
+  '../core/',
+  '../logic/core/',
+  '../logic/boundary/',
+];
 const CONFIG_PATH = 'src/build/entrypoint-patterns.json';
 const REQUIRED_EXECUTION_SNIPPETS = [
   'const environmentDependencies = {',
@@ -119,7 +124,7 @@ function validateImports(filePath, source) {
 function validateTopLevelFunctions(filePath, source) {
   return createValidationFailure(
     filePath,
-    getTopLevelFunctionNames(source).size === 0,
+    !hasTopLevelFunctions(source),
     'top-level functions are not allowed'
   );
 }
@@ -164,24 +169,25 @@ function hasExpectedImportSplit(source) {
     .filter(line => line.startsWith('import '));
 
   return (
-    importLines.filter(line => line.includes('../core/')).length === 1 &&
-    importLines.filter(line => !line.includes('../core/')).length >= 1
+    importLines.filter(isLogicImport).length === 1 &&
+    importLines.filter(line => !isLogicImport(line)).length >= 1
   );
 }
 
 /**
- * Get top-level function names from source.
- * @param {string} source Entrypoint source.
- * @returns {Set<string>} Top-level function names.
+ * Preserve the existing import-line heuristic across every logic namespace.
+ * @param {string} line Source import line.
+ * @returns {boolean} Whether the line names a logic dependency.
  */
-function getTopLevelFunctionNames(source) {
-  // Stryker disable all -- this intentionally narrow source heuristic is
-  // validated by the entrypoint policy tests; alternate equivalent regex
-  // forms do not change the supported top-level function contract.
-  return new Set(
-    [...source.matchAll(/^function\s+([A-Za-z0-9_$]+)/gmu)].map(
-      match => match[1]
-    )
-  );
+function isLogicImport(line) {
+  return LOGIC_IMPORT_MARKERS.some(marker => line.includes(marker));
 }
-// Stryker restore all
+
+/**
+ * Detect the existing line-start named-function pattern.
+ * @param {string} source Entrypoint source.
+ * @returns {boolean} Whether a matching function declaration exists.
+ */
+function hasTopLevelFunctions(source) {
+  return /^function\s+[A-Za-z0-9_$]/mu.test(source);
+}

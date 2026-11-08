@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!src/local/verify-cloud-function-packages.js',
     '!src/local/allow-effects.js',
     '!vendor/deepmerge/**',

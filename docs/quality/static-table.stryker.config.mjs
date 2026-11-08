@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!src/content/blog-data/**',
     '!src/build/generator.js',
     '!src/build/staticJsonlTable.js',

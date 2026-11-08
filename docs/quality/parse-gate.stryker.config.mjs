@@ -9,6 +9,8 @@ export default {
   ignorePatterns: [
     '**',
     '!src/core/**',
+    '!src/logic/core/**',
+    '!src/logic/boundary/**',
     '!test/scripts/check-core-parse.test.js',
     '!test/scripts/check-core-parse-injection.test.js',
     '!classify-functions.js',

@@ -1,4 +1,4 @@
-import { LOGIC_SOURCE_ROOTS } from './src/core/local/logic-source-paths.js';
+import { LOGIC_SOURCE_ROOTS } from './src/logic/core/local/logic-source-paths.js';
 
 const config = {
   transform: {
