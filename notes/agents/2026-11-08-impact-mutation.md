@@ -110,3 +110,20 @@ full fast aggregate passed before the sparse repair; after separately rerunning
 the focused impact tests and both equivalence corpora, the documented
 `npm run check -- --skip-tests` path passes all eleven static gates on the repaired
 source. Authoritative full CI and a fresh complete mutation run remain required.
+
+The published `572d5b525a` run is retained as
+`reports/mutation/git-deletion-evidence.published-boundary-failed.json`:
+1,210 killed, two survived and 21 timed out, score 99.84%. Both survivors remove
+one of two identical Boolean filters around fallback candidate deduplication;
+each removal is hidden by the other. Keep filtering at normalization and remove
+the redundant post-Set filter. Existing 827 tests/all-four100, 576 CLI outcomes,
+864 programmatic outcomes and 88,752 scalar cases pass after that one-line fix.
+
+The shared-checkout audit request was completed separately using already-
+published patches: its live audit is zero and all twenty unrelated tracked
+hashes remain unchanged. A supplemental root Jest scan consumed 2.4 GB on this
+4 GB host and filled swap. Eleven of the 21 timeouts hit the unchanged report
+core during that pressure; its prior standalone run killed all 264 mutants.
+Do not claim those timeouts prove non-termination. After stopping only the owned
+smoke process, the same 24 security tests pass with canonical test discovery.
+Rerun the complete repaired mutation scope without concurrent oversized scans.

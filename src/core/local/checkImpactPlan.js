@@ -609,7 +609,6 @@ function discoverAllUnitTests(permission, deps) {
       .filter(Boolean) ?? [];
   return {
     tests: [...new Set(candidates)]
-      .filter(Boolean)
       .filter(test =>
         deps.fileExists
           ? deps.fileExists(deps.pathModule.resolve(deps.rootDir, test))
