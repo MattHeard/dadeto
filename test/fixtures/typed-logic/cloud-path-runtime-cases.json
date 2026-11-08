@@ -1,0 +1,131 @@
+{
+  "sourceSha256": "b650b24c8ff6cca371781aaf7c6b9db0179ac20b1822365df706710f1cae4a12",
+  "cases": [
+    {
+      "id": "1163",
+      "location": {
+        "end": {
+          "column": 43,
+          "line": 2259
+        },
+        "start": {
+          "column": 5,
+          "line": 2259
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1165",
+      "location": {
+        "end": {
+          "column": 26,
+          "line": 2260
+        },
+        "start": {
+          "column": 5,
+          "line": 2260
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1167",
+      "location": {
+        "end": {
+          "column": 27,
+          "line": 2261
+        },
+        "start": {
+          "column": 5,
+          "line": 2261
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1169",
+      "location": {
+        "end": {
+          "column": 23,
+          "line": 2262
+        },
+        "start": {
+          "column": 5,
+          "line": 2262
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1171",
+      "location": {
+        "end": {
+          "column": 26,
+          "line": 2263
+        },
+        "start": {
+          "column": 5,
+          "line": 2263
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1173",
+      "location": {
+        "end": {
+          "column": 34,
+          "line": 2264
+        },
+        "start": {
+          "column": 5,
+          "line": 2264
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1175",
+      "location": {
+        "end": {
+          "column": 27,
+          "line": 2265
+        },
+        "start": {
+          "column": 5,
+          "line": 2265
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1177",
+      "location": {
+        "end": {
+          "column": 27,
+          "line": 2266
+        },
+        "start": {
+          "column": 5,
+          "line": 2266
+        }
+      },
+      "replacement": "() => undefined"
+    },
+    {
+      "id": "1179",
+      "location": {
+        "end": {
+          "column": 25,
+          "line": 2267
+        },
+        "start": {
+          "column": 5,
+          "line": 2267
+        }
+      },
+      "replacement": "() => undefined"
+    }
+  ]
+}

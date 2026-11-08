@@ -67,9 +67,10 @@ it.each([0, 1, 2])(
   }
 );
 
-it('propagates a batch-only rewrite failure while continuing to ignore absent files', async () => {
+it('propagates a final-batch rewrite failure while continuing to ignore absent files', async () => {
+  // Use the final planned file so malformed paths fail before injecting I/O faults.
   const target =
-    '/repo/infra/cloud-functions/chronoflow-time/chronoflow-time-core.js';
+    '/repo/infra/cloud-functions/object-minute-rental-search/firestore.js';
   const failure = Object.assign(new Error('isolated batch read failure'), {
     code: 'EACCES',
   });

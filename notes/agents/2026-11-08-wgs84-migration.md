@@ -208,3 +208,30 @@ All eleven repaired local static gates pass. Site/four-public-module checks and
 cloud assembly/27packages711modules1231imports pass on the repaired source.
 New core source SHA-256 is7682d7a2d8e25b95254c33a2297aba2931fb872b2a5d93177e09eaa60ab0faa8.
 Fresh exact CI and a complete mutation run remain required for this source.
+
+## Do not accept runtime errors hidden by a nominal score
+
+The next engine run exited0 at100%, but its full report has1367Killed,
+1Timeout and9RuntimeError among1377mutants. This is not accepted. Preserve
+`reports/mutation/wgs84.state-runtime-errors.json`, SHA-256
+90a802d5463caf5923f04776d6ee598ecf9ab86761efedee69d4b4acee586b1d,
+and `/tmp/dadeto-z85m-state-repair-mutation.log`.
+
+All nine errors replace a filename-pattern arrow with undefined. A malformed
+later filename throws while the fixture's early chronoflow I/O rejection is
+already pending, before Promise.all can attach handlers. That orphan rejection
+crashes the worker. Inject at the final planned batch file instead:
+object-minute-rental-search/firestore.js. Keep exact EACCES propagation and the
+ENOENT policy assertions. This leaves malformed paths as ordinary TypeError test
+failures, rather than suppressing errors or excluding mutants.
+
+The committed source-hashed nine-case fixture and replay verify that all nine
+reject before the I/O fault is injected, while unmodified code still returns the
+original injected EACCES. Reproduce with strict unhandled-rejection handling:
+
+`node --unhandled-rejections=strict test/fixtures/typed-logic/replay-cloud-path-runtime-cases.js`
+
+The numerical module itself reports137Killed/1Timeout in this run; its negative
+iteration step hits the execution limit and is not described as Killed. All six
+embedded module sources match8d1f8faf96. Fresh full execution remains required to
+prove the fixture timing repair eliminates every runtime-error classification.
