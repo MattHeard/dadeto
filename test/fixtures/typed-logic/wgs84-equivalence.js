@@ -23,14 +23,11 @@ const original = await import(
   `data:text/javascript;base64,${Buffer.from(originalPublic.stdout.replaceAll('./wgs84.js', mathUrl)).toString('base64')}`
 );
 const current = await import(
-  new URL(
-    process.argv[3] ?? '../../../src/core/wgs84/index.js',
-    import.meta.url
-  )
+  new URL(process.argv[3] ?? '../../../src/adapters/wgs84.js', import.meta.url)
 );
 const currentMath = await import(
   new URL(
-    process.argv[4] ?? '../../../src/core/wgs84/wgs84.js',
+    process.argv[4] ?? '../../../src/logic/core/wgs84/wgs84.js',
     import.meta.url
   )
 );

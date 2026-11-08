@@ -604,3 +604,16 @@ files. This terminal receipt was verified on7November2026. See
 `notes/agents/2026-10-28-native-dependency-policy.md` for hashes, artifacts and
 failure history. These are native-import policy results; legacy mutation skips,
 ambient/value typing, parser/thin preparation and actual namespace moves remain.
+
+## WGS84 source migration in progress — 8 November 2026
+
+`dadeto-z85m` moves actual numerical calculation into `src/logic/core/wgs84`,
+coordinate interpretation into `src/logic/boundary/wgs84`, and public throw/order
+composition into the thin shared adapter. Already-normalized numerical callers
+consume trusted calculation directly; legacy logic does not import the adapter.
+One shared asset plan assembles real relocated modules and preserves four stable
+public module URLs through build-only compatibility templates. All former WGS84
+source modules are removed. See `notes/agents/2026-11-08-wgs84-migration.md` for the
+independent numeric/coercion oracle, reproduced pre-existing browser omission,
+actual browser/cloud import checks and outstanding full mutation/CI acceptance.
+This is a bounded migration slice; the broader legacy tree remains unfinished.

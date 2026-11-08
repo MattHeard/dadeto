@@ -22,6 +22,8 @@ build/
 public/
 !src/build/
 !src/core/build/
+!src/logic/core/build/
+!test/logic/core/build/
 
 # Editor and IDE files
 .idea/

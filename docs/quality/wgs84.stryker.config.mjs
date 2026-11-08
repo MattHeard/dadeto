@@ -1,0 +1,50 @@
+import base from '../../stryker.config.mjs';
+
+export default {
+  ...base,
+  plugins: ['@stryker-mutator/jest-runner'],
+  mutate: [
+    'src/logic/core/wgs84/wgs84.js',
+    'src/logic/boundary/wgs84/coordinates.js',
+    'src/logic/core/build/wgs84-assets.js',
+    'src/adapters/wgs84.js',
+    'src/core/build/blog.js',
+    'src/core/build/copy-cloud.js',
+  ],
+  ignorePatterns: [
+    '**',
+    '!src/core/**',
+    '!src/logic/**',
+    '!src/adapters/**',
+    '!src/browser/**',
+    '!src/build/assets/wgs84/**',
+    '!test/core/copy.test.js',
+    '!test/core/build/copy-cloud.test.js',
+    '!test/logic/core/wgs84/**',
+    '!test/logic/boundary/wgs84/**',
+    '!test/logic/core/build/wgs84-assets.test.js',
+    '!test/toys/2026-08-20/wgs84Distance.test.js',
+    '!test/fixtures/typed-logic/wgs84-numeric-baseline.json',
+    '!jest.config.mjs',
+    '!jest.mutation.config.mjs',
+    '!package.json',
+  ],
+  jest: {
+    ...base.jest,
+    config: {
+      testMatch: [
+        '<rootDir>/test/core/copy.test.js',
+        '<rootDir>/test/core/build/copy-cloud.test.js',
+        '<rootDir>/test/logic/core/wgs84/**/*.test.js',
+        '<rootDir>/test/logic/boundary/wgs84/**/*.test.js',
+        '<rootDir>/test/logic/core/build/wgs84-assets.test.js',
+        '<rootDir>/test/toys/2026-08-20/wgs84Distance.test.js',
+      ],
+    },
+  },
+  reporters: ['progress', 'json'],
+  jsonReporter: { fileName: 'reports/mutation/wgs84.json' },
+  thresholds: { break: 100, high: 100, low: 100 },
+  ignoreStatic: false,
+  tempDirName: '.tmp/wgs84-stryker',
+};

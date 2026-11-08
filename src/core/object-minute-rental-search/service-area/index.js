@@ -1,4 +1,4 @@
-import { wgs84Distance } from '../../wgs84.js';
+import { calculateWgs84SurfaceDistance as wgs84Distance } from '../../../logic/core/wgs84/wgs84.js';
 import { whenOrNull } from '../../commonCore.js';
 
 export const SOPHIE_CHARLOTTE_SERVICE_AREA = Object.freeze({

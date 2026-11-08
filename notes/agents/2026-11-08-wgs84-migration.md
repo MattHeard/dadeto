@@ -44,3 +44,52 @@ acceptance remains all-four changed-module coverage100, complete relevant
 mutation with static enabled and no skips, local aggregate, actual site/cloud
 packaging and import verification, and exact full CI. This checkpoint establishes
 compatibility/packaging evaluators; it does not claim the migration is complete.
+
+## Actual source migration prepared
+
+The numerical module now lives at `src/logic/core/wgs84/wgs84.js`, byte-identical
+to the original math SHA above. `src/logic/boundary/wgs84/coordinates.js` returns
+a total success/error outcome from the original four Number conversions in their
+original order. Thin `src/adapters/wgs84.js` composes the result, propagates the
+original failure, and calls trusted calculation. All former WGS84 source modules,
+including the old toy reexport, are removed.
+
+The first aggregate correctly rejected legacy-core imports of the outer adapter.
+Do not weaken that direction rule. Service-area coordinates already pass the
+finite numeric normalizer; circle point values pass map(Number); segment duration
+and assignment callers explicitly call Number for all four arguments. They now
+consume the number-only calculation directly, removing only duplicate conversion
+of values already proven numeric. The public coercing API stays outside logic.
+
+`src/logic/core/build/wgs84-assets.js` supplies one complete seven-asset plan to
+both builders. Real source modules retain their paths within artifacts. Four
+build-only compatibility templates preserve the three published WGS84 modules
+and the dated public toy URL. This repairs the existing missing browser imports
+without keeping legacy source forwarding trees. Explicit Git ignore negations
+keep the new logic build helper and its tests in normal tracking/discovery.
+
+Independent 24,711-case parity is unchanged. The numeric Jest fixture is generated
+from the immutable Git source, never current computation. Regenerate it with:
+
+`node test/fixtures/typed-logic/generate-wgs84-numeric-baseline.js > test/fixtures/typed-logic/wgs84-numeric-baseline.json`
+
+Its 404 vectors compare exact floating-point and special-number outputs in the
+same process as mutation instrumentation. The separate broad compatibility CLI
+also preserves public coercion and errors. Four focused destination suites pass
+21 tests and all four metrics100 on math, parser, asset plan and thin adapter.
+The related-consumer run passes 35 suites /362 tests. After the direction repair,
+all eleven local static gates pass, including unchanged dependency enforcement,
+TypeScript, parser policies, thin integration and zero clones.
+
+Actual site assembly and all four published WGS84 module imports pass. Actual
+cloud assembly and the verifier pass for 27 Terraform packages, 711 reachable
+modules and 1,231 imports. The object-minute-rental-search Terraform archive
+uses infra/cloud-functions/object-minute-rental-search; the assembled service-area
+module directly imports the relocated trusted calculation within that archive.
+
+The changed cloud builder previously had blanket inline mutation skips covering
+manifest and integration calls. They are removed rather than hiding the new
+shared-plan call inside an inherited exclusion. The focused mutation config
+includes six complete modules: math, parser, asset plan, adapter and both full
+builders, with static enabled, break100 and no skips. Complete mutation and exact
+published Full Check remain required; no terminal mutation score is claimed yet.

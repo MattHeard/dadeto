@@ -6,7 +6,7 @@ import {
 import { resolveSegmentTiming } from '../2026-08-20/assignmentIntervals.js';
 export { resolveSegmentTiming } from '../2026-08-20/assignmentIntervals.js';
 export { overlaps } from '../2026-08-20/assignmentIntervals.js';
-import { wgs84Distance } from '../2026-08-20/wgs84Distance.js';
+import { calculateWgs84SurfaceDistance as wgs84Distance } from '../../../../logic/core/wgs84/wgs84.js';
 import { createToyMessageBoundary } from '../formatToyError.js';
 
 const runFeasibilityCalculation = createToyMessageBoundary(
