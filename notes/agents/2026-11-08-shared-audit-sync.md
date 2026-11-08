@@ -45,3 +45,22 @@ branch repair. Main's existing authoritative CI proves its own snapshot; do not
 describe it as fresh full-suite/coverage evidence for the old source or the user's
 dirty working files. Keep the typed-logic mutation environment unchanged while
 performing this operational synchronization.
+
+The live shared checkout then installed cleanly and independently audited zero
+at every severity. All twenty unrelated tracked hashes remained unchanged. Its
+supplemental default-root Jest discovery consumed about 2.4 GB on this 4 GB host
+and filled swap before running the selected suites. Stop only the verified owned
+test process; do not kill user processes or label that canceled run successful.
+The identical two suites pass all 24 tests in 1.871 seconds with discovery bounded
+to the canonical test directory:
+
+`node scripts/run-jest.js --runInBand --runTestsByPath test/scripts/november-dependency-compatibility.test.js test/security/deepmerge-backport.test.js --no-coverage --roots test`
+
+No requested test was dropped and no repository Jest configuration changed.
+Keep root discovery/resource behavior separate from dependency regressions.
+The concurrent typed-logic run gained resource-confounded timeouts during this
+incident; never describe those as proven non-termination detections. Revalidate
+its final repaired source after memory pressure is removed. Live artifacts:
+`/tmp/dadeto-38xi-shared-audit.json`,
+`/tmp/dadeto-38xi-shared-security-bounded.log`, and
+`/tmp/dadeto-38xi-resource-pressure.json`.
