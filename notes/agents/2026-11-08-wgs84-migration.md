@@ -93,3 +93,11 @@ shared-plan call inside an inherited exclusion. The focused mutation config
 includes six complete modules: math, parser, asset plan, adapter and both full
 builders, with static enabled, break100 and no skips. Complete mutation and exact
 published Full Check remain required; no terminal mutation score is claimed yet.
+
+The first complete mutation bootstrap generated 1,366 mutants but failed before
+mutation execution: the retained cloud-builder clean-checkout test copies four
+tracked infra assets and two source-contract suites, which the focused sandbox
+had omitted. Include those exact files and Babel config in sandbox availability;
+keep the test and complete mutation scope intact. Failed log:
+`/tmp/dadeto-z85m-complete-mutation.log`. This is not a mutation score. A subsequent
+run must prove the initial suite passes before any score can be accepted.

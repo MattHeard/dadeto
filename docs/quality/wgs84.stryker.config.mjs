@@ -28,6 +28,13 @@ export default {
     '!jest.config.mjs',
     '!jest.mutation.config.mjs',
     '!package.json',
+    '!babel.config.cjs',
+    '!infra/admin.html',
+    '!infra/functions-v2.tf',
+    '!infra/load-balancer.tf',
+    '!infra/main.tf',
+    '!test/infra/cloudBrowserEntrypoints.test.js',
+    '!test/infra/googleAuthEntrypoints.test.js',
   ],
   jest: {
     ...base.jest,
