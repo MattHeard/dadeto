@@ -1638,3 +1638,56 @@ describe('logic migration scoped enforcement', () => {
     }
   );
 });
+
+describe('total option boundary outer error propagation', () => {
+  test.each([
+    createPlanCheckImpactHandle,
+    createRunCheckImpactHandle,
+    createRunScopedCheckImpactHandle,
+  ])(
+    'rethrows the exact structural failure before effects in %p',
+    createHandle => {
+      for (const failure of [
+        undefined,
+        null,
+        false,
+        0,
+        'failure',
+        Symbol('failure'),
+        {},
+        new Error('original'),
+      ]) {
+        const argv = [undefined];
+        Object.defineProperty(argv, '0', {
+          get() {
+            throw failure;
+          },
+        });
+        const runCommand = jest.fn();
+        const runCoverage = jest.fn();
+        const writeOutput = jest.fn();
+        const handle = createHandle({
+          argv,
+          rootDir: '/repo',
+          processExecPath: '/node',
+          pathModule: path,
+          bindStartupEffectBoundary: callback => callback({}),
+          runCommand,
+          runCoverage,
+          writeOutput,
+        });
+        let thrown = false;
+        try {
+          handle();
+        } catch (error) {
+          thrown = true;
+          expect(error).toBe(failure);
+        }
+        expect(thrown).toBe(true);
+        expect(runCommand).not.toHaveBeenCalled();
+        expect(runCoverage).not.toHaveBeenCalled();
+        expect(writeOutput).not.toHaveBeenCalled();
+      }
+    }
+  );
+});

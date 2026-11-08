@@ -1,3 +1,4 @@
+import { parseImpactArguments } from '../../logic/boundary/local/impact-arguments.js';
 import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
 import { parseGitChanges } from '../../logic/boundary/local/git-changes.js';
 import { parseCoverageLine } from '../../logic/boundary/local/coverage-line.js';
@@ -704,7 +705,9 @@ function runJestCommand(permission, deps, args, timeoutMs) {
  * @returns {{plan: ReturnType<typeof createCheckImpactPlan>, selectorFailure: string, deletedPaths?: string[]}} Prepared test plan.
  */
 function preparePlan(permission, deps) {
-  const input = parseImpactArguments(deps.argv, deps.defaultBaseRef);
+  const parsed = parseImpactArguments(deps.argv, deps.defaultBaseRef);
+  if (!parsed.ok) throw parsed.error;
+  const input = parsed.input;
   if (input.error)
     return {
       plan: createCheckImpactPlan({ collectionError: input.error }),
@@ -776,58 +779,6 @@ function createCollectionFallback(collection, reason) {
     selectorFailure: '',
     deletedPaths: collection.deletedPaths,
   };
-}
-
-/**
- * Parse explicit paths and optional base-ref arguments.
- * @param {string[]} argv Input arguments.
- * @param {string | undefined} defaultBaseRef Default comparison base.
- * @returns {{paths: string[] | null, baseRef: string | undefined, error: string}} Parsed inputs.
- */
-function parseImpactArguments(argv, defaultBaseRef) {
-  /** @type {string[]} */
-  const paths = [];
-  let hasExplicitPaths = false;
-  let baseRef = defaultBaseRef;
-  for (let index = 0; index < argv.length; index += 1) {
-    if (argv[index] === '--files') {
-      hasExplicitPaths = true;
-      while (index + 1 < argv.length && !argv[index + 1].startsWith('--')) {
-        paths.push(argv[index + 1]);
-        index += 1;
-      }
-      if (paths.length === 0)
-        return {
-          paths: null,
-          baseRef,
-          error: 'Provide one or more paths after --files.',
-        };
-      continue;
-    }
-    if (argv[index] === '--base') {
-      if (!argv[index + 1] || argv[index + 1].startsWith('--'))
-        return {
-          paths: null,
-          baseRef,
-          error: 'Provide a Git ref after --base.',
-        };
-      baseRef = argv[index + 1];
-      index += 1;
-      continue;
-    }
-    return {
-      paths: null,
-      baseRef,
-      error: `Unsupported impact option: ${argv[index]}.`,
-    };
-  }
-  if (hasExplicitPaths && baseRef)
-    return {
-      paths: null,
-      baseRef,
-      error: 'Choose explicit --files or Git status/base discovery, not both.',
-    };
-  return { paths: hasExplicitPaths ? paths : null, baseRef, error: '' };
 }
 
 /**
