@@ -1,7 +1,8 @@
+import * as current from '../../../src/logic/core/local/impact-commands.js';
+import * as currentEffects from '../../../src/core/local/checkImpactPlan.js';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { parse } from '@babel/parser';
 import {
@@ -110,7 +111,6 @@ function observe(implementation, vector) {
 }
 
 const original = await load(git.stdout);
-const current = await load(readFileSync(moduleUrl, 'utf8'));
 const commandHash = createHash('sha256');
 let commandCases = 0;
 const vectors = Object.entries({
@@ -268,7 +268,7 @@ const publicHash = createHash('sha256');
 let publicCases = 0;
 for (const input of impactContractCases()) {
   const expected = observeImpactContract(original, input);
-  assert.deepEqual(observeImpactContract(current, input), expected);
+  assert.deepEqual(observeImpactContract(currentEffects, input), expected);
   publicHash.update(`${JSON.stringify(expected)}\n`);
   publicCases += 1;
 }

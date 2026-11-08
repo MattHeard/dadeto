@@ -68,3 +68,42 @@ No cases, dimensions or expected outcomes were removed. Repaired
 pass772tests. `git diff --exit-code -- src` confirms production is unchanged.
 Actual relocation, complete destination coverage/mutation and exact CI remain
 required; this baseline checkpoint does not close the owning task.
+
+## Actual trusted source move prepared
+
+The separate worktree is based on validated option-parent
+`a9fe5c069edb5bd441df24ca1aea1c011a11d99b`; integration remains after that
+slice passes its complete mutation gate. Actual construction now lives in
+`src/logic/core/local/impact-commands.js`. The legacy runner removes all three
+former function bodies and the constant and imports their actual destination.
+The native coverage adapter imports the constructor directly; no legacy forwarding
+export remains. Its existing 47-line thin surface is preserved without exemption.
+
+All three function parameter/body runtime ASTs match the immutable original.
+Portable precise JSDoc replaces broad Node platform types: consumed path joining
+and literal process-option fields, with no native runtime import, argument guard
+or unchecked cast. Meaningful stream output state stays intact. The current side
+of the independent corpus loads the actual destination; all original digests and
+27 exact error probes stay unchanged, as does the option-parser compatibility
+corpus. The original reference still loads pinned Git bytes.
+
+Five focused suites pass835tests, and both entire touched logic modules have all
+four coverage metrics100%. Evidence: `/tmp/dadeto-csof-relocated-focused.log`,
+`reports/coverage/impact-commands/coverage-summary.json`. The actual native
+pipeline passes4suites792relatedtests, scoped coverage without uncovered lines or
+branches for both files, and scoped static checks:
+
+`npm run check:impact:run -- --files src/logic/core/local/impact-commands.js src/core/local/checkImpactPlan.js`
+
+Log: `/tmp/dadeto-csof-native-scoped-check.log`. The initial full local aggregate
+failed only an unused test path import left when the constructor suite moved.
+Remove that import rather than suppressing lint. Repaired all11gates pass,
+`/tmp/dadeto-csof-relocated-check-repaired.log`. The original read-only AST probe
+could not spawn Git under default permissions; rerun with process permission,
+not a code change.
+
+Both existing mutation harnesses retain all prior scopes and add the entire new
+core module plus its direct tests. Do not run a second full mutation workload
+while the option-parent gate is live. Full expanded mutation and exact-head CI
+remain required before this source move can land. The broader architecture and
+remaining legacy effect/planning source remain unfinished.

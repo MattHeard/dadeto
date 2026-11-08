@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { createScopedCoverageCommand } from '../core/local/checkImpactPlan.js';
+import { createScopedCoverageCommand } from '../logic/core/local/impact-commands.js';
 import { readScopedCoverage } from './read-impact-coverage.js';
 /** @typedef {import('../../types/allow-effects').AllowEffects} AllowEffects */
 /** @typedef {{status: number | null, stdout?: string, stderr?: string, error?: Error}} CoverageExecution */
