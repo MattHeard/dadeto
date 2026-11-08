@@ -1277,3 +1277,106 @@ describe('createCopyCore copy workflows', () => {
     });
   });
 });
+
+it('keeps content blog data source and published directories paired', () => {
+  expect(
+    createSharedDirectoryEntries({
+      path: posix,
+      srcDir: '/project/src',
+      publicDir: '/project/public',
+    })
+  ).toEqual(
+    expect.arrayContaining([
+      ['srcContentBlogDataDir', '/project/src/content/blog-data'],
+      ['publicContentBlogDataDir', '/project/public/content/blog-data'],
+    ])
+  );
+});
+
+it('copies every browser tree into its independently declared public directory', () => {
+  const dirs = createDirectories();
+  const io = {
+    directoryExists: () => true,
+    createDirectory: jest.fn(),
+    removeDirectory: jest.fn(),
+    copyFile: jest.fn(),
+    readDirEntries: () => [createFileEntry('witness.js')],
+  };
+  const core = createCopyCore({
+    createPathAdapters: () => posix,
+    projectRoot: dirs.projectRoot,
+    srcDir: dirs.srcDir,
+    publicDir: dirs.publicDir,
+  });
+  core.copyBrowserTrees(dirs, {
+    io,
+    messageLogger: { info: jest.fn(), warn: jest.fn() },
+    copyFile: io.copyFile,
+  });
+  expect(io.copyFile.mock.calls).toEqual(
+    [
+      ['srcAdaptersDir', 'publicAdaptersDir'],
+      ['srcBrowserDir', 'publicBrowserDir'],
+      ['srcCoreBrowserDir', 'publicCoreBrowserDir'],
+      ['srcCoreInterpretabilityDir', 'publicCoreInterpretabilityDir'],
+      ['srcCoreCapabilitiesDir', 'publicCoreCapabilitiesDir'],
+      [
+        'srcCoreObjectMinuteRentalSearchDir',
+        'publicCoreObjectMinuteRentalSearchDir',
+      ],
+      ['srcNodeModulesZodV4Dir', 'publicVendorZodV4Dir'],
+    ].map(([source, target]) => [
+      posix.join(dirs[source], 'witness.js'),
+      posix.join(dirs[target], 'witness.js'),
+    ])
+  );
+});
+
+it('executes all seven WGS84 asset copies in the actual site workflow', () => {
+  const dirs = createDirectories();
+  const io = {
+    directoryExists: () => true,
+    createDirectory: jest.fn(),
+    removeDirectory: jest.fn(),
+    copyFile: jest.fn(),
+    readDirEntries: () => [],
+  };
+  const core = createCopyCore({
+    createPathAdapters: () => posix,
+    createFsAdapters: () => io,
+    console: { log: jest.fn(), warn: jest.fn() },
+    projectRoot: dirs.projectRoot,
+    srcDir: dirs.srcDir,
+    publicDir: dirs.publicDir,
+  });
+  core.runCopyWorkflow();
+  expect(io.copyFile.mock.calls).toEqual(
+    expect.arrayContaining([
+      ['/project/src/adapters/wgs84.js', '/project/public/adapters/wgs84.js'],
+      [
+        '/project/src/logic/boundary/wgs84/coordinates.js',
+        '/project/public/logic/boundary/wgs84/coordinates.js',
+      ],
+      [
+        '/project/src/logic/core/wgs84/wgs84.js',
+        '/project/public/logic/core/wgs84/wgs84.js',
+      ],
+      [
+        '/project/src/build/assets/wgs84/root.js.txt',
+        '/project/public/core/wgs84.js',
+      ],
+      [
+        '/project/src/build/assets/wgs84/index.js.txt',
+        '/project/public/core/wgs84/index.js',
+      ],
+      [
+        '/project/src/build/assets/wgs84/math.js.txt',
+        '/project/public/core/wgs84/wgs84.js',
+      ],
+      [
+        '/project/src/build/assets/wgs84/toy.js.txt',
+        '/project/public/core/browser/toys/2026-08-20/wgs84Distance.js',
+      ],
+    ])
+  );
+});

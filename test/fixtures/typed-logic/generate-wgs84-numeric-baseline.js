@@ -40,6 +40,7 @@ for (const value of [
     coordinates[index] = value;
     inputs.push(coordinates);
   }
+inputs.push([16, 0, -15.5, 179.48]);
 const cases = inputs.map(coordinates => ({
   coordinates: coordinates.map(encode),
 }));

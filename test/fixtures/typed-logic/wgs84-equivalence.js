@@ -82,6 +82,7 @@ for (let index = 0; index < 4096; index += 1)
     ((index * 181) % 18001) / 100 - 90,
     ((index * 251) % 36001) / 100 - 180,
   ]);
+compareCoordinates([16, 0, -15.5, 179.48]);
 for (const value of [
   NaN,
   Infinity,

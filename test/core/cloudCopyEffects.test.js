@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { expect, it } from '@jest/globals';
 import { createCopyCloudHandle } from '../../src/core/build/copy-cloud.js';
 import {
@@ -45,7 +46,7 @@ const wgs84Copies = [
   ],
 ];
 
-it.each([0, 1])(
+it.each([0, 1, 2])(
   'preserves the complete immutable deployment effects with only the explicit WGS84 delta, scenario %s',
   async index => {
     expect(baseline.baseline).toBe('bde25b950cf237a1e0b65a4e4a6d2e7ef0f8e2b1');
@@ -65,3 +66,31 @@ it.each([0, 1])(
     expect(summarizeCloudCopyEffects(normalized)).toEqual(scenario.effects);
   }
 );
+
+it('propagates a batch-only rewrite failure while continuing to ignore absent files', async () => {
+  const target =
+    '/repo/infra/cloud-functions/chronoflow-time/chronoflow-time-core.js';
+  const failure = Object.assign(new Error('isolated batch read failure'), {
+    code: 'EACCES',
+  });
+  const run = error =>
+    createCopyCloudHandle({
+      fileURLToPathFn: () => '/repo/src/core/build/copy-cloud.js',
+      dirnameFn: path.posix.dirname,
+      pathModule: path.posix,
+      fsPromisesModule: {
+        readdir: async () => [],
+        mkdir: async () => undefined,
+        copyFile: async () => undefined,
+        writeFile: async () => undefined,
+        readFile: async file => {
+          if (file === target) throw error;
+          return '';
+        },
+      },
+    });
+  await expect(run(failure)).rejects.toBe(failure);
+  await expect(
+    run(Object.assign(new Error('absent'), { code: 'ENOENT' }))
+  ).resolves.toBeUndefined();
+});

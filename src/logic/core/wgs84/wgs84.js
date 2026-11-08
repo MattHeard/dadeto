@@ -15,6 +15,8 @@ const B = (1 - F) * A;
  */
 export const degreesToRadians = degrees => (degrees * Math.PI) / 180;
 
+/** @typedef {{sigma: number, sinSigma: number, cosSigma: number, cosSqAlpha: number, cos2SigmaM: number, next: number}} LongitudeArc */
+
 /**
  * Calculate WGS84 ellipsoid surface distance.
  * @param {number} latitude1 First latitude.
@@ -33,51 +35,98 @@ export function calculateWgs84SurfaceDistance(
     p2 = degreesToRadians(latitude2),
     u1 = Math.atan((1 - F) * Math.tan(p1)),
     u2 = Math.atan((1 - F) * Math.tan(p2));
-  const su1 = Math.sin(u1),
-    cu1 = Math.cos(u1),
-    su2 = Math.sin(u2),
-    cu2 = Math.cos(u2),
-    L = degreesToRadians(longitude2 - longitude1);
+  const L = degreesToRadians(longitude2 - longitude1);
   let lambda = L;
-  let sigma = 0,
-    sinSigma = 0,
-    cosSigma = 1,
-    sinAlpha = 0,
-    cosSqAlpha = 1,
-    cos2SigmaM = 0;
-  for (let i = 0; i < 100; i++) {
-    const sl = Math.sin(lambda),
-      cl = Math.cos(lambda);
-    sinSigma = Math.sqrt((cu2 * sl) ** 2 + (cu1 * su2 - su1 * cu2 * cl) ** 2);
-    if (sinSigma === 0) return 0;
-    cosSigma = su1 * su2 + cu1 * cu2 * cl;
-    sigma = Math.atan2(sinSigma, cosSigma);
-    sinAlpha = (cu1 * cu2 * sl) / sinSigma;
-    cosSqAlpha = 1 - sinAlpha ** 2;
-    cos2SigmaM = cosSqAlpha === 0 ? 0 : cosSigma - (2 * su1 * su2) / cosSqAlpha;
-    const C = (F / 16) * cosSqAlpha * (4 + F * (4 - 3 * cosSqAlpha));
-    const next =
-      L +
-      (1 - C) *
-        F *
-        sinAlpha *
-        (sigma +
-          C *
-            sinSigma *
-            (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM ** 2)));
-    if (Math.abs(next - lambda) < 1e-12) {
-      lambda = next;
-      break;
-    }
-    lambda = next;
-    if (i === 99)
-      return spherical(latitude1, longitude1, latitude2, longitude2);
+  for (let iteration = 0; iteration < 100; iteration += 1) {
+    const outcome = calculateLongitudeStep(lambda, u1, u2, L);
+    if (outcome.kind === 'coincident') return 0;
+    const { arc } = outcome;
+    if (hasLongitudeConverged(lambda, arc.next))
+      return completeEllipsoidDistance(arc);
+    lambda = arc.next;
   }
+  return spherical(latitude1, longitude1, latitude2, longitude2);
+}
+
+/**
+ * Prepare one finite-iteration arc, keeping the coincident singularity explicit.
+ * @param {number} lambda Current longitude estimate.
+ * @param {number} reducedLatitude1 First reduced latitude.
+ * @param {number} reducedLatitude2 Second reduced latitude.
+ * @param {number} L Original longitude difference.
+ * @returns {{kind: 'coincident'} | {kind: 'iteration', arc: LongitudeArc}} Domain state and required arc data.
+ */
+export function calculateLongitudeStep(
+  lambda,
+  reducedLatitude1,
+  reducedLatitude2,
+  L
+) {
+  const su1 = Math.sin(reducedLatitude1),
+    cu1 = Math.cos(reducedLatitude1),
+    su2 = Math.sin(reducedLatitude2),
+    cu2 = Math.cos(reducedLatitude2);
+  const sl = Math.sin(lambda),
+    cl = Math.cos(lambda);
+  const sinSigma = Math.sqrt(
+    (cu2 * sl) ** 2 + (cu1 * su2 - su1 * cu2 * cl) ** 2
+  );
+  if (sinSigma === 0) return { kind: 'coincident' };
+  const cosSigma = su1 * su2 + cu1 * cu2 * cl;
+  const sigma = Math.atan2(sinSigma, cosSigma);
+  const sinAlpha = (cu1 * cu2 * sl) / sinSigma;
+  const cosSqAlpha = 1 - sinAlpha ** 2;
+  const cos2SigmaM =
+    cosSqAlpha === 0 ? 0 : cosSigma - (2 * su1 * su2) / cosSqAlpha;
+  const C = (F / 16) * cosSqAlpha * (4 + F * (4 - 3 * cosSqAlpha));
+  const next =
+    L +
+    (1 - C) *
+      F *
+      sinAlpha *
+      (sigma +
+        C *
+          sinSigma *
+          (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM ** 2)));
+  return {
+    kind: 'iteration',
+    arc: { sigma, sinSigma, cosSigma, cosSqAlpha, cos2SigmaM, next },
+  };
+}
+
+/**
+ * Apply the original strict longitude convergence tolerance.
+ * @param {number} previous Previous longitude estimate.
+ * @param {number} next Next longitude estimate.
+ * @returns {boolean} Whether the numerical domain tolerance is satisfied.
+ */
+export function hasLongitudeConverged(previous, next) {
+  return Math.abs(next - previous) < 1e-12;
+}
+
+/**
+ * Calculate ellipsoid distance only from a converged, non-coincident arc.
+ * @param {LongitudeArc} arc Required iteration measurements.
+ * @returns {number} Distance in meters.
+ */
+function completeEllipsoidDistance(arc) {
+  const { sigma, cosSqAlpha } = arc;
   const uSq = (cosSqAlpha * (A ** 2 - B ** 2)) / B ** 2;
   const ca =
     1 + (uSq / 16384) * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
   const cb = (uSq / 1024) * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
-  const ds =
+  return B * ca * (sigma - calculateArcCorrection(arc, cb));
+}
+
+/**
+ * Calculate the converged arc correction independently of its ellipsoid scale.
+ * @param {LongitudeArc} arc Required angular measurements.
+ * @param {number} cb Ellipsoid correction coefficient.
+ * @returns {number} Correction to the spherical arc.
+ */
+function calculateArcCorrection(arc, cb) {
+  const { sinSigma, cosSigma, cos2SigmaM } = arc;
+  return (
     cb *
     sinSigma *
     (cosSigma -
@@ -86,8 +135,8 @@ export function calculateWgs84SurfaceDistance(
           (cb / 6) *
             cos2SigmaM *
             (-3 + 4 * sinSigma ** 2) *
-            (-3 + 4 * cos2SigmaM ** 2)));
-  return B * ca * (sigma - ds);
+            (-3 + 4 * cos2SigmaM ** 2)))
+  );
 }
 
 /**

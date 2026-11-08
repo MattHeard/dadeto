@@ -65,6 +65,7 @@ const payloads = [
     .sort()
     .map(value => `import '${value}';`)
     .join('\n'),
+  "import '../.../commonCore.js';",
 ];
 const scenarios = [];
 for (const payload of payloads) {

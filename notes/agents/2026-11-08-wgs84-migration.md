@@ -47,8 +47,9 @@ compatibility/packaging evaluators; it does not claim the migration is complete.
 
 ## Actual source migration prepared
 
-The numerical module now lives at `src/logic/core/wgs84/wgs84.js`, byte-identical
-to the original math SHA above. `src/logic/boundary/wgs84/coordinates.js` returns
+The numerical module was first relocated to `src/logic/core/wgs84/wgs84.js`
+with identical bytes. The state repair below subsequently decomposes the solver;
+the original math SHA above remains its independent reference. `src/logic/boundary/wgs84/coordinates.js` returns
 a total success/error outcome from the original four Number conversions in their
 original order. Thin `src/adapters/wgs84.js` composes the result, propagates the
 original failure, and calls trusted calculation. All former WGS84 source modules,
@@ -158,3 +159,52 @@ ends at924tested/501survived. Cause is not established. Preserve
 `/tmp/dadeto-z85m-validated-mutation.log` as interrupted partial evidence only;
 no final score is claimed. A new run is justified by authoritative process absence
 and strengthened references, not merely by an expired observation handle.
+
+## Fourteen-survivor repair
+
+The complete strengthened-reference run finished98.98%, wrapper1:1351Killed,
+14Survived and1Timeout,110static,1366total. Every embedded source matched published
+1b8e304b1a. Preserve `reports/mutation/wgs84.hardened-reference-failed.json`,
+SHA-25623bcd010af063e5bd0591dba56e78d3c91413facf86822ed6f6f1be9b3082ea6,
+and `/tmp/dadeto-z85m-hardened-mutation.log`. This is failed evidence, not acceptance.
+
+Six browser-copy survivors expose missing workflow/destination assertions. Add
+exact content-blog-data directory pairs, all seven browser-tree copy destinations,
+and execution of all seven WGS84 copies in the actual workflow. Three cloud
+survivors expose a masked batch-only error: isolate a single batch read failure
+so another rewrite cannot satisfy the assertion. EACCES propagates unchanged;
+ENOENT remains the existing missing-file policy.
+
+The other two cloud survivors are not universally redundant rewrites. Input
+`../.../commonCore.js` becomes `../../commonCore.js` after the preceding substring
+replacement; the later entry is still required. Preserve the production table and
+add that third independent original-source scenario. New reference SHA-256 is
+b33f1a58f00583cea9524cd39db09a6d35011de7944270147e8b0cfd3bd0c6b5.
+Do not remove a rewrite merely because ordinary fixtures hide it.
+
+The solver's duplicate upper bound and i===99 fallback hide a permissive bound
+mutation. Use one100-iteration owner, then the original spherical fallback.
+Coincident points retain their legitimate early return through an explicit
+coincident-or-iteration outcome with required arc data. Successful convergence
+consumes that actual arc, replacing fabricated intermediate initial values.
+A pure convergence predicate makes the original strict1e-12 boundary explicit.
+The first decomposition hit the arity guard; use four actual angular inputs and
+a separate arc-correction operation rather than packing more scalars into a bag.
+No rule or threshold is exempted.
+
+The valid coordinate witness `[16,0,-15.5,179.48]` converges only on iteration101.
+At iteration100 its delta is1.049826892085548e-12; at101 it is8.36664071357518e-13.
+The original100-bound fallback is19958756.206768177meters; extending convergence
+returns19935759.46217679. Reproduce this diagnostic against pinned original bytes:
+
+`node test/fixtures/typed-logic/wgs84-iteration-probe.js`
+
+All prior cases remain, with this extra vector:405 numeric vectors and24714broad
+outcomes, digest9d190abc62423e219a98f39d0fb1514d535297d4db7a7a26c9c368fa4be52195.
+Seven focused suites pass75tests with all four metrics100 on the four destination /
+adapter modules. Related selection passes37suites384tests. For related discovery,
+use `--roots src test`; `--roots test` omits source graph nodes and selects nothing.
+All eleven repaired local static gates pass. Site/four-public-module checks and
+cloud assembly/27packages711modules1231imports pass on the repaired source.
+New core source SHA-256 is7682d7a2d8e25b95254c33a2297aba2931fb872b2a5d93177e09eaa60ab0faa8.
+Fresh exact CI and a complete mutation run remain required for this source.

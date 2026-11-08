@@ -6,6 +6,8 @@ import {
   calculateWgs84SurfaceDistance,
   spherical,
   degreesToRadians,
+  calculateLongitudeStep,
+  hasLongitudeConverged,
 } from '../../../../src/logic/core/wgs84/wgs84.js';
 
 const oracle = JSON.parse(
@@ -42,7 +44,7 @@ it('preserves exact independent pre-migration numerical outcomes', () => {
   expect(createHash('sha256').update(originalSource).digest('hex')).toBe(
     oracle.sourceSha256
   );
-  expect(oracle.cases).toHaveLength(404);
+  expect(oracle.cases).toHaveLength(405);
   for (const sample of oracle.cases) {
     const coordinates = sample.coordinates.map(value => Number(value));
     expect({
@@ -67,4 +69,32 @@ it('preserves radians including negative zero and non-finite inputs', () => {
   expect(Object.is(degreesToRadians(-0), -0)).toBe(true);
   expect(degreesToRadians(Infinity)).toBe(Infinity);
   expect(degreesToRadians(NaN)).toBeNaN();
+});
+
+it('recognizes coincident geometry before preparing a singular arc', () => {
+  expect(calculateLongitudeStep(0, 0, 0, 0)).toEqual({ kind: 'coincident' });
+  const outcome = calculateLongitudeStep(0.1, 0, 0, 0.1);
+  expect(outcome.kind).toBe('iteration');
+  expect(outcome.arc.sinSigma).toBeGreaterThan(0);
+  expect(Number.isFinite(outcome.arc.next)).toBe(true);
+});
+
+it('preserves the strict convergence boundary and non-finite policy', () => {
+  expect(hasLongitudeConverged(0, 1e-12)).toBe(false);
+  expect(hasLongitudeConverged(0, -1e-12)).toBe(false);
+  expect(hasLongitudeConverged(0, 1e-13)).toBe(true);
+  expect(hasLongitudeConverged(2, 2)).toBe(true);
+  expect(hasLongitudeConverged(2, 3)).toBe(false);
+  expect(hasLongitudeConverged(NaN, 0)).toBe(false);
+  expect(hasLongitudeConverged(Infinity, Infinity)).toBe(false);
+});
+
+it('uses the original spherical fallback at the hundred-iteration boundary', () => {
+  const coordinates = [16, 0, -15.5, 179.48];
+  expect(calculateWgs84SurfaceDistance(...coordinates)).toBe(
+    original.calculateWgs84SurfaceDistance(...coordinates)
+  );
+  expect(calculateWgs84SurfaceDistance(...coordinates)).toBe(
+    original.spherical(...coordinates)
+  );
 });

@@ -65,6 +65,31 @@
           "sha256": "81eb8799b80a94ca0d3218aef4e7cd7e3be01b42398249584dfa60cae9b0c41c"
         }
       }
+    },
+    {
+      "payload": "import '../.../commonCore.js';",
+      "effects": {
+        "copies": {
+          "count": 1180,
+          "sha256": "93969774fc2df16dafa0ad556f047a71e6a700441d0db342d54d80f8f38f3f2e"
+        },
+        "directories": {
+          "count": 192,
+          "sha256": "9881ad43c8112b1d0d20d1275c5217a1402a86f5ae054805c4c0e12dfeae5db9"
+        },
+        "reads": {
+          "count": 276,
+          "sha256": "1c9e5584521193db2b11fc012b6dbcad9f5be7e01798072d16cfdba6ddb349dd"
+        },
+        "writes": {
+          "count": 297,
+          "sha256": "8d364ab1ff0ae03c6cfd3d3b9abbfb938f847c13dc9c6811b74329f4ff772262"
+        },
+        "rewrites": {
+          "count": 270,
+          "sha256": "3d40873d6e734f6b8004287c5af0dc9659becddb1543c5b4ee82c81292a2916f"
+        }
+      }
     }
   ]
 }
