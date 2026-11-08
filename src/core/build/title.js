@@ -5,7 +5,7 @@
 
 /**
  * ASCII art banner for the blog header
- * @type {string}
+ * @returns {string} Header banner HTML.
  */
 export function headerBanner() {
   return `<pre class="header-banner" aria-label="Matt Heard" role="heading" aria-level="1">

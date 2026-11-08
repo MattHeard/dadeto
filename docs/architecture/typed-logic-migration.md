@@ -104,14 +104,17 @@ casts and optional input defaults. See `notes/agents/2026-11-07-typed-report-bou
 for semantics, actual policy false positives and required acceptance evidence.
 This does not complete the impact-consumer hardening or remaining legacy tree.
 
-Deletion-evidence slice `dadeto-0nth` introduces an actual pure total Git
-name/status parser under `src/logic/boundary/local/git-changes.js`. Both report
-and impact entry points consume its typed complete/rejected outcome. Confirmed
-deletions stay visible, missing surviving-file coverage remains a failure signal,
-and local source deletions select all unit tests conservatively. See
-`notes/agents/2026-11-07-git-deletion-evidence.md` for the grammar, restored-file
-handling and exact entrypoint fixture. This does not complete the report's JSON
-evidence parsing, trusted formatting migration or remaining legacy modules.
+The pure Git name/status parser at `src/logic/boundary/local/git-changes.js`
+feeds full-report deletion diagnostics. Confirmed deletions stay visible while
+missing surviving-file coverage remains a failure signal. The report lands
+independently; see
+`notes/agents/2026-11-08-report-independent-landing.md` for source identity and
+all required mutation scopes. Its report slice changes no impact source or test.
+The separate `dadeto-0nth` impact slice consumes the same complete/rejected
+outcome, retains source deletions for conservative all-unit selection, and keeps
+restored files and explicit paths subject to strict current-file coverage.
+See `notes/agents/2026-11-07-git-deletion-evidence.md` for its integration contract.
+Complete impact-consumer hardening remains required before that task closes.
 
 First source slice `dadeto-topt` relocates the report tooling's shared classifier
 to `src/logic/core/local/logic-source-paths.js` with identical bytes and precise
@@ -587,8 +590,11 @@ The current graph exposes163 native edges, zero from logic, with1,042 modules /
 1,983 dependencies and no violations. Source AST census is also zero static native
 imports after the bounded injection slices. All11 split local static gates and
 seven real-fixture/control tests pass. The last UUID child passed exact Full
-Check40767918736 (8,430 tests, global and changed-source metrics100%); the final
-exact policy Full Check is still required before closing this prerequisite. See
+Check40767918736 (8,430 tests, global and changed-source metrics100%). Final
+policy [Full Check40769557406](https://github.com/MattHeard/dadeto/actions/runs/40769557406)
+succeeded at e984e63f1b. Its downloaded artifact12850599870 confirms1,091 suites /
+8,432 tests pass, all four global coverage metrics100%, and no below-threshold
+files. This terminal receipt was verified on7November2026. See
 `notes/agents/2026-10-28-native-dependency-policy.md` for hashes, artifacts and
 failure history. These are native-import policy results; legacy mutation skips,
 ambient/value typing, parser/thin preparation and actual namespace moves remain.
