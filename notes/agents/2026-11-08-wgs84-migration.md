@@ -101,3 +101,14 @@ had omitted. Include those exact files and Babel config in sandbox availability;
 keep the test and complete mutation scope intact. Failed log:
 `/tmp/dadeto-z85m-complete-mutation.log`. This is not a mutation score. A subsequent
 run must prove the initial suite passes before any score can be accepted.
+
+The second bootstrap supplied those files, then exposed a distinct pre-existing
+source-contract limitation: two cloud-browser tests assert exact JavaScript
+manifest formatting. Instrumentation correctly rewrites that representation, so
+the unmutated run fails before mutation execution. Keep the tests; replace their
+raw-source expectations with actual injected copy/read/mkdir effects for admin,
+deep browser modules, common core, express, generate-stats and errors. Retain
+Terraform assertions and generated-file absence negative controls. The repaired
+three-suite contract run passes22 tests. Prove an instrumented initial-only run
+passes before retrying the expensive complete scope. Both failed logs are kept;
+neither has a terminal mutation score.

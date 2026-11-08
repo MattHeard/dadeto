@@ -1,6 +1,36 @@
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { createCopyCloudHandle } from '../../src/core/build/copy-cloud.js';
 
 import { describe, expect, it } from '@jest/globals';
+
+/**
+ * Observe actual source/destination effects without depending on JS formatting.
+ * @returns {Promise<Array<string[]>>} Copy and directory operations.
+ */
+async function observeCloudCopies() {
+  const events = [];
+  await createCopyCloudHandle({
+    fileURLToPathFn: () => '/project/src/core/build/copy-cloud.js',
+    dirnameFn: path.dirname,
+    pathModule: path,
+    fsPromisesModule: {
+      readdir: async source => {
+        events.push(['read', source]);
+        return [];
+      },
+      mkdir: async target => {
+        events.push(['mkdir', target]);
+      },
+      copyFile: async (source, target) => {
+        events.push(['copy', source, target]);
+      },
+      readFile: async () => '',
+      writeFile: async () => undefined,
+    },
+  });
+  return events;
+}
 
 describe('cloud browser entrypoints', () => {
   it('configures the scheduled tree weight function with an HTTP trigger', async () => {
@@ -156,20 +186,20 @@ describe('cloud browser entrypoints', () => {
   });
 
   it('uploads the admin error adapter at its root-relative import path', async () => {
-    const [mainTf, adminHtml, adminJs, effectAdapters, copyCloudJs] =
-      await Promise.all([
-        readFile('infra/main.tf', 'utf8'),
-        readFile('infra/admin.html', 'utf8'),
-        readFile('src/browser/admin.js', 'utf8'),
-        readFile('src/browser/effect-adapters.js', 'utf8'),
-        readFile('src/core/build/copy-cloud.js', 'utf8'),
-      ]);
+    const [mainTf, adminHtml, adminJs, effectAdapters] = await Promise.all([
+      readFile('infra/main.tf', 'utf8'),
+      readFile('infra/admin.html', 'utf8'),
+      readFile('src/browser/admin.js', 'utf8'),
+      readFile('src/browser/effect-adapters.js', 'utf8'),
+    ]);
 
     expect(adminHtml).toContain('src="./admin.js"');
     expect(adminJs).toContain("from './effect-adapters.js'");
-    expect(copyCloudJs).toMatch(
-      /source: planValues\.join\(planValues\.browserDir, 'admin\.js'\),\s*target: planValues\.join\(planValues\.infraDir, 'admin\.js'\)/
-    );
+    expect(await observeCloudCopies()).toContainEqual([
+      'copy',
+      '/project/src/browser/admin.js',
+      '/project/infra/admin.js',
+    ]);
     expect(effectAdapters).toContain("from './storage-adapter.js'");
     expect(mainTf).toContain('name         = "effect-adapters.js"');
     expect(mainTf).toContain(
@@ -221,24 +251,30 @@ describe('cloud browser entrypoints', () => {
       readFile('infra/main.tf', 'utf8'),
       readFile('infra/load-balancer.tf', 'utf8'),
     ]);
-    const copyCloudJs = await readFile('src/core/build/copy-cloud.js', 'utf8');
-
-    expect(copyCloudJs).toContain(
-      "target: planValues.join(planValues.infraDir, 'core', 'browser')"
+    const copies = await observeCloudCopies();
+    expect(copies).toEqual(
+      expect.arrayContaining([
+        ['read', '/project/src/core/browser'],
+        ['mkdir', '/project/infra/core/browser'],
+        [
+          'copy',
+          '/project/src/core/index.js',
+          '/project/infra/core/commonCore.js',
+        ],
+        [
+          'copy',
+          '/project/src/core/express-app.js',
+          '/project/infra/core/express-app.js',
+        ],
+        [
+          'copy',
+          '/project/src/core/express-app.js',
+          '/project/infra/cloud-functions/generate-stats/core/express-app.js',
+        ],
+        ['read', '/project/src/cloud/errors'],
+        ['mkdir', '/project/infra/cloud-functions/errors'],
+      ])
     );
-    expect(copyCloudJs).toContain(
-      "target: planValues.join(planValues.infraDir, 'core', 'commonCore.js')"
-    );
-    expect(copyCloudJs).toContain(
-      "const commonCoreSource = planValues.join(planValues.srcCoreDir, 'index.js');"
-    );
-    expect(copyCloudJs).toContain(
-      "target: planValues.join(planValues.infraDir, 'core', 'express-app.js')"
-    );
-    expect(copyCloudJs).toMatch(
-      /target:\s+planValues\.join\(\s*planValues\.infraFunctionsDir,\s*'generate-stats',\s*'core',\s*'express-app\.js'\s*\)/
-    );
-    expect(copyCloudJs).toContain("    'errors',");
     expect(mainTf).toContain(
       'resource "google_storage_bucket_object" "dendrite_core_files"'
     );
