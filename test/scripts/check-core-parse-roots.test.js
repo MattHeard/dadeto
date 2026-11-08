@@ -97,6 +97,71 @@ test('domain decisions remain valid in both namespaces', () => {
   });
 });
 
+test('nullable domain formatting and boundary value projections are not boolean validators', () => {
+  put(
+    'src/logic/core/format.js',
+    'export function formatCounts(tests) { if (tests.suites === null) return "unavailable"; return `${tests.suites} suites`; }'
+  );
+  put(
+    'src/logic/boundary/property.js',
+    'export function parseField(value) { if (value === null || typeof value !== "object") return undefined; return value.count; }'
+  );
+  put(
+    'src/logic/boundary/entries.js',
+    'export function parseEntries(value) { if (value === null) return null; return Object.fromEntries([["value", value]]); }'
+  );
+  expect(createCheckCoreParseHandle(options())()).toEqual({
+    exitCode: 0,
+    violations: [],
+  });
+  const classified = classifyFunctionsFromSource(
+    'export function format(state) { if (state.count === null) return "unavailable"; return `${state.count}`; }'
+  );
+  expect(classified[0].hasValueReturn).toBe(true);
+  expect(classified[0].labels).toEqual(['validator']);
+});
+
+test.each([
+  [
+    'src/logic/core/boolean.js',
+    'export function invalid(value) { return value !== null; }',
+  ],
+  [
+    'src/logic/core/type.js',
+    'export function invalid(value) { if (typeof value !== "string") return "missing"; return value; }',
+  ],
+  [
+    'src/logic/core/construction.js',
+    'export function invalid(value) { if (typeof value === "number") return {value}; return {value: 0}; }',
+  ],
+  [
+    'src/logic/core/raw.js',
+    'export function invalid(value) { if (value === null) return "missing"; return String(value); }',
+  ],
+  [
+    'src/logic/boundary/boolean.js',
+    'export function invalid(value) { return value !== null; }',
+  ],
+  [
+    'src/logic/boundary/type.js',
+    'export function invalid(value) { return typeof value === "string"; }',
+  ],
+  [
+    'src/logic/boundary/regex.js',
+    'export function invalid(value) { return /word/.test(value); }',
+  ],
+  [
+    'src/logic/boundary/nested.js',
+    'export function invalid(value) { const nested = () => "text"; return typeof value === "number"; }',
+  ],
+])('preserves the rejecting policy for %s', (file, source) => {
+  put(file, source);
+  expect(createCheckCoreParseHandle(options())()).toEqual({
+    exitCode: 1,
+    violations: [{ filePath: file, name: 'invalid' }],
+  });
+});
+
 test('legacy labels still reject comparison and construction heuristics', () => {
   put('src/core/decision.js', domain);
   put(

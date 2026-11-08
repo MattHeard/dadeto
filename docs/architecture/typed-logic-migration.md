@@ -38,7 +38,7 @@ realtime 2, scripts 15, wgs84 2. Matching test files: 697.
 | --- | --- | --- |
 | Coverage | `jest.config.mjs`; `scripts/run-jest-with-coverage.js:listSourceFiles`; `test/coverage-shards.test.js` | Both the Jest glob and serial source enumerator currently select src/core. Include both new logic roots before moving anything; preserve all four 100% thresholds. |
 | Fast impact | `src/core/local/checkImpactPlan.js` and its test; local impact wrappers | Core-parse selection and changed-file coverage explicitly match src/core/. Prove moved files remain measured and missing coverage fails. |
-| Full report | `src/local/write-check-full-report.js` → `src/core/local/checkFullReport.js`; `.github/workflows/check.yml` | Update both changed-file filters and outside-core diagnostic; preserve truthful unavailable/partial reporting. Full Check remains asynchronous and distinct from fast local checks. |
+| Full report | `src/local/write-check-full-report.js` → `src/logic/boundary/local/checkFullReport.js` + `src/logic/core/local/checkFullReport.js`; `.github/workflows/check.yml` | Typed JSON/log parsing is composed by the adapter with trusted coverage/report projection; preserve truthful unavailable/partial reporting and outer error propagation. Full Check remains distinct from fast local checks. |
 | Lint/capabilities | package lint command; `eslint.config.js` and its TypeScript program | Extend command scan arguments and config globs; preserve custom rule imports, complexity/arity, no-inline-config, no-console, restricted globals/imports and capability selections. |
 | JSDoc/checkJs | `tsconfig.jsdoc.json` | Include both roots. There are 16 existing src/core file exclusions: do not copy them onto migrated files. checkJs/noImplicitAny/strictNullChecks are on; not all strict options are enabled. |
 | Mutation | `stryker.config.mjs`; `jest.mutation.config.mjs`; mutation/worktree helpers | Positive mutation glob is src/core only. Include both roots and preserve focused mutation evidence. Existing ignoreStatic/exclusions and inline Stryker directives are limitations to audit against the final spec, not proof every existing line is mutated. Add no new skips. |
@@ -93,6 +93,24 @@ recorded in the owning bead; this preflight does not move any source or complete
 the architecture. Thin-wrapper preparation remains before the first move.
 
 ## Acceptance per implementation slice
+
+Report slice `dadeto-6jvu` supersedes the original import-free move candidate:
+the actual report is split between `src/logic/boundary/local/checkFullReport.js`
+and `src/logic/core/local/checkFullReport.js`. The adapter composes raw JSON
+interpretation, finite normalized evidence and trusted coverage/report projection.
+There is no legacy forwarding source. Independent JSON/Markdown and raw-error
+oracles preserve behavior; correlated count/coverage types replace unchecked core
+casts and optional input defaults. See `notes/agents/2026-11-07-typed-report-boundary.md`
+for semantics, actual policy false positives and required acceptance evidence.
+This does not complete the impact-consumer hardening or remaining legacy tree.
+
+The pure Git name/status parser at `src/logic/boundary/local/git-changes.js`
+feeds full-report deletion diagnostics. Confirmed deletions stay visible while
+missing surviving-file coverage remains a failure signal. Local impact integration
+and its complete consumer hardening remain the separate `dadeto-0nth` task.
+The report lands independently; see
+`notes/agents/2026-11-08-report-independent-landing.md` for source identity and
+all required mutation scopes. No impact source or test is changed by this slice.
 
 First source slice `dadeto-topt` relocates the report tooling's shared classifier
 to `src/logic/core/local/logic-source-paths.js` with identical bytes and precise
