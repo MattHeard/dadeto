@@ -107,3 +107,14 @@ core module plus its direct tests. Do not run a second full mutation workload
 while the option-parent gate is live. Full expanded mutation and exact-head CI
 remain required before this source move can land. The broader architecture and
 remaining legacy effect/planning source remain unfinished.
+
+## Parent integrated; full validation starts
+
+Option-parent PR2822 is merged at
+`c868a8c2c8cf1eff8508c16040517f7b520dc4ef` after clean complete mutation100%
+(1232Killed/10legitimateTimeout,8static,no errors/survivors) and inspected exact
+FullCheck42525142288 success. Rebasing this isolated source onto landed main
+changes no tree bytes relative to prepared `8a4c746b1789aa5ad75eabb9bfe0854e9f9bde6c`
+(`git diff --exit-code` is empty). Parent mutation is terminal before starting
+this expanded eight-module workload; no parallel full mutation run is needed.
+The native/focused/local/build evidence above still describes the same source.

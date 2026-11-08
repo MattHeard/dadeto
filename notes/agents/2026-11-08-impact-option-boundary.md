@@ -90,3 +90,28 @@ seven-module git-deletion evidence harness adds the new actual boundary and its
 category tests, retaining every previous module, threshold100 and static mutants.
 The compact impact harness also includes the new boundary; no selection silently
 loses the relocated parser. Complete mutation, builds and exact CI remain pending.
+
+## Clean mutation acceptance and approved landing
+
+PR2822 merged under standing user approval at
+`c868a8c2c8cf1eff8508c16040517f7b520dc4ef`. Its landed tree equals accepted
+candidate `a9fe5c069edb5bd441df24ca1aea1c011a11d99b`. Complete seven-module
+mutation exits0 at100%:1242mutants comprising1232Killed/10Timeout,8static,
+zero survivors/runtimeerrors/ignored/uncovered, all embedded sources exact.
+Report SHA256 `f54a8b428d3424dac7e9aca0618400a1393a74d92dba09581009874128bbd0a9`;
+`/tmp/dadeto-9i6i-complete-mutation.log`,28m26s.
+
+Four parser timeouts remove/reverse option-loop progress. Six runner timeouts
+reverse partition progress or admit zero/negative shard sizes. The existing
+zero-shard-size regression reaches the guard mutations; accepting zero leaves
+partitioning unbounded. Five outcomes reach execution-hit limits, while the five
+invalid-size guard mutations hit wall timeouts. These are detected non-progress,
+not Killed assertions. Parser61Killed/4Timeout; runner677Killed/6Timeout; report
+109+264, Git52, path68 and line1 allKilled. Every prior scope remains included.
+
+Exact FullCheck42525142288 and Terraform42525142289 pass; inspected artifact
+13635271879 verifies56/56shards1112suites10336unit tests, all4global and both
+changed-module metrics100%,12E2E5.7s and11gates. Tested merge
+`0317a9087206b4209e7ec76935256372553d5010` also equals the candidate.
+Post-main FullCheck42527681587 is separately monitored before closing the task;
+Terraform42527681615 has passed. The broader architecture remains Active/Partial.
