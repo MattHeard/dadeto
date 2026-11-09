@@ -4,6 +4,8 @@ export default {
   ...base,
   plugins: ['@stryker-mutator/jest-runner'],
   mutate: [
+    'src/logic/core/local/test-partitions.js',
+    'src/logic/boundary/local/test-shard-size.js',
     'src/logic/boundary/local/evidence-result.js',
     'src/logic/boundary/local/missed-coverage.js',
     'src/logic/core/local/coverage-records.js',
@@ -21,6 +23,8 @@ export default {
     '!src/core/**',
     '!src/logic/core/**',
     '!src/logic/boundary/**',
+    '!test/logic/core/local/test-partitions.test.js',
+    '!test/logic/boundary/local/test-shard-size.test.js',
     '!test/logic/boundary/local/missed-coverage.test.js',
     '!test/logic/core/local/coverage-records.test.js',
     '!test/logic/core/local/impact-commands.test.js',
@@ -42,6 +46,8 @@ export default {
     ...base.jest,
     config: {
       testMatch: [
+        '<rootDir>/test/logic/core/local/test-partitions.test.js',
+        '<rootDir>/test/logic/boundary/local/test-shard-size.test.js',
         '<rootDir>/test/logic/boundary/local/missed-coverage.test.js',
         '<rootDir>/test/logic/core/local/coverage-records.test.js',
         '<rootDir>/test/logic/core/local/impact-commands.test.js',

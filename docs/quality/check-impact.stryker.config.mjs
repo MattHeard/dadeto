@@ -4,6 +4,8 @@ import combined from './git-deletion-evidence.stryker.config.mjs';
 export default {
   ...combined,
   mutate: [
+    'src/logic/core/local/test-partitions.js',
+    'src/logic/boundary/local/test-shard-size.js',
     'src/logic/boundary/local/evidence-result.js',
     'src/logic/boundary/local/missed-coverage.js',
     'src/logic/core/local/coverage-records.js',

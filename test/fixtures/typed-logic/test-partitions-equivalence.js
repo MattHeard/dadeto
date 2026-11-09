@@ -1,3 +1,4 @@
+import { parseTestShardSize } from '../../../src/logic/boundary/local/test-shard-size.js';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -29,9 +30,10 @@ assert.equal(
 /**
  * Load actual full modules and expose the private shard interpreter/partitioner.
  * @param {string} source Original or current complete module.
+ * @param {boolean} original Whether to expose the original private resolver.
  * @returns {Promise<object>} Native actual functions.
  */
-async function load(source) {
+async function load(source, original = true) {
   const imports = parse(source, { sourceType: 'module' })
     .program.body.filter(node => node.type === 'ImportDeclaration')
     .map(node => node.source)
@@ -41,13 +43,18 @@ async function load(source) {
       source.slice(0, specifier.start) +
       JSON.stringify(new URL(specifier.value, moduleUrl).href) +
       source.slice(specifier.end);
-  source += '\nexport { partitionTests, resolveImpactShardSize };\n';
+  source += original
+    ? '\nexport { partitionTests, resolveImpactShardSize };\n'
+    : '\nexport { partitionTests };\n';
   return import(
     `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
   );
 }
 const original = await load(git.stdout);
-const current = await load(readFileSync(moduleUrl, 'utf8'));
+const current = {
+  ...(await load(readFileSync(moduleUrl, 'utf8'), false)),
+  resolveImpactShardSize: deps => parseTestShardSize(deps.impactShardSize),
+};
 const resolverHash = createHash('sha256');
 let resolverCases = 0;
 const candidates = [
