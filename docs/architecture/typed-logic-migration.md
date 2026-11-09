@@ -683,3 +683,21 @@ The two local parsers share `evidence-result.js` to construct generic success or
 original-error outcomes without duplicating catch wrappers; input interpretation
 stays inside the captured callback. The combined mutation evaluator includes this
 whole helper alongside both parser modules.
+
+### Proven test-partition bounds
+
+`src/logic/boundary/local/test-shard-size.js` interprets an unknown shard-size
+candidate with the established positive-integer/default200 policy. It preserves
+unsafe positive integers and performs no coercion; the effect wrapper still owns
+Number conversion of the environment string. Number.isInteger proves the numeric
+comparison assertion, and the positive predicate/default prove the erased
+PositiveTestShardSize type assertion. No redundant type guard is added.
+
+`src/logic/core/local/test-partitions.js` owns that proof type and the actual
+unchanged serial slicing computation. It accepts a readonly ordered test list and
+an already proven bound, with no argument guards. The legacy runner reads its
+shard dependency once and composes the parser and partitioner directly.
+`types/test-partitions.contract.ts` is included in tsdoc:check: actual parsed bounds
+must compile, while raw positive literals, zero, negatives and arbitrary numbers
+must be rejected. The immutable-source test-partitions-equivalence harness retains
+option, getter, sparse-array, order and complete CLI compatibility evidence.

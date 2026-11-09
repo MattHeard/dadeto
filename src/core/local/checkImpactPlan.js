@@ -1,3 +1,5 @@
+import { partitionTests } from '../../logic/core/local/test-partitions.js';
+import { parseTestShardSize } from '../../logic/boundary/local/test-shard-size.js';
 import { mergeCoverageRecords } from '../../logic/core/local/coverage-records.js';
 import {
   JEST_RUNNER,
@@ -258,7 +260,10 @@ function runImpact(permission, deps, { includeStaticGates = false } = {}) {
  * @returns {Array<{passed: boolean, execution: ScopedCoverageRun}>} Actual outcomes in execution order.
  */
 function runImpactShards(permission, deps, tests, sourceFiles) {
-  const shards = partitionTests(tests, resolveImpactShardSize(deps));
+  const shards = partitionTests(
+    tests,
+    parseTestShardSize(deps.impactShardSize)
+  );
   return shards.map((shard, index) => {
     deps.writeOutput(
       permission,
@@ -470,30 +475,6 @@ function toUnitTestPath(value, deps) {
     relative.split(deps.pathModule.sep).join('/')
   );
   return classifyPath(normalized) === 'test' ? normalized : '';
-}
-
-/**
- * Split test paths into serial process-sized groups.
- * @param {string[]} tests Sorted unit-test paths.
- * @param {number} shardSize Maximum tests in each process.
- * @returns {string[][]} Ordered unit-test shards.
- */
-function partitionTests(tests, shardSize) {
-  const shards = [];
-  for (let index = 0; index < tests.length; index += shardSize) {
-    shards.push(tests.slice(index, index + shardSize));
-  }
-  return shards;
-}
-
-/**
- * Resolve a safe positive bound for local test shards.
- * @param {CheckImpactDependencies} deps Runner dependencies.
- * @returns {number} Test-file count per process.
- */
-function resolveImpactShardSize(deps) {
-  const value = deps.impactShardSize ?? 200;
-  return Number.isInteger(value) && value > 0 ? value : 200;
 }
 
 /**
