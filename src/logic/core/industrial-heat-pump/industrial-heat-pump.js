@@ -1,7 +1,12 @@
+import { calculateIndustrialHeatPumpValues } from './values.js';
+import { buildIndustrialHeatPumpComparison } from './comparison.js';
+
 /**
  * Trusted screening assumptions after the boundary has interpreted all fields.
  * Units and domain ranges retain the existing calculator policy. A number here
  * does not promise that every intermediate arithmetic result will be finite.
+ * Trusted callers maintain those field types while computation reads them; the
+ * public boundary preserves legacy accessors rather than snapshotting them.
  * @typedef {object} HeatPumpAssumptions
  * @property {number} requiredSupplyTemperatureC Required process temperature.
  * @property {number} annualUsefulHeatKwh Annual useful heat demand.
@@ -64,4 +69,52 @@
 /** @typedef {{field: string, code: 'object-required' | 'required' | 'finite-number-required' | 'below-minimum' | 'above-maximum' | 'calculation-not-finite'}} HeatPumpIssue */
 /** @typedef {{valid: false, errors: HeatPumpIssue[]} | {valid: true, comparison: HeatPumpComparison}} HeatPumpResult */
 
-export {};
+/**
+ * Legacy accessors can change values after boundary interpretation. Keep these
+ * externally copied slots explicit and opaque instead of promising numeric data
+ * for every unknown public caller. Arithmetic-derived fields retain their types.
+ * @typedef {Omit<HeatPumpComparison, 'annualUsefulHeatKwh' | 'annualCosts' | 'feasibility'> & {
+ * annualUsefulHeatKwh: unknown,
+ * annualCosts: {incumbentFuel: number, heatPumpElectricity: number, heatPumpMaintenance: unknown, heatPumpTotal: number | string},
+ * feasibility: {
+ * temperature: {status: HeatPumpFeasibility['temperature']['status'], requiredC: unknown, supportedMaximumC: unknown},
+ * electricalPower: {status: HeatPumpFeasibility['electricalPower']['status'], requiredKw: number, availableKw: unknown},
+ * economics: HeatPumpFeasibility['economics'],
+ * targetPayback: {status: HeatPumpFeasibility['targetPayback']['status'], targetYears: unknown}
+ * }
+ * }} HeatPumpPublicComparison
+ */
+/** @typedef {{valid: false, errors: HeatPumpIssue[]} | {valid: true, comparison: HeatPumpPublicComparison}} HeatPumpPublicResult */
+
+/**
+ * Calculate the public screening result from interpreted numeric assumptions.
+ * The finite-result decision applies only to numbers actually displayed/exported.
+ * @param {HeatPumpAssumptions} assumptions Trusted unit-labelled assumptions.
+ * @returns {HeatPumpResult} Comparison or the existing numeric-range failure.
+ */
+export function calculateTrustedIndustrialHeatPump(assumptions) {
+  const values = calculateIndustrialHeatPumpValues(assumptions);
+  const comparison = buildIndustrialHeatPumpComparison(assumptions, values);
+  if (containsNonFiniteNumber(comparison))
+    return {
+      valid: false,
+      errors: [{ field: 'input', code: 'calculation-not-finite' }],
+    };
+  return { valid: true, comparison };
+}
+
+/** @typedef {{[key: string]: number | string | HeatPumpComparisonValues}} HeatPumpComparisonValues */
+
+/**
+ * Preserve the original finite-result traversal of public comparison variants.
+ * Its concrete schema contains numbers, status strings and nested records.
+ * @param {HeatPumpComparisonValues} comparison Computed public domain record.
+ * @returns {boolean} Whether an included number is non-finite.
+ */
+function containsNonFiniteNumber(comparison) {
+  return Object.values(comparison).some(value =>
+    typeof value === 'number'
+      ? !Number.isFinite(value)
+      : typeof value === 'object' && containsNonFiniteNumber(value)
+  );
+}

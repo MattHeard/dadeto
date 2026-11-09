@@ -14,19 +14,21 @@
 For changed-core coverage, use:
 
 ```sh
-npm run check:impact:run -- --files src/core/industrialHeatPumpReadiness.js test/core/industrialHeatPumpReadiness.test.js
+npm run check:impact:run -- --files src/logic/core/industrial-heat-pump/values.js test/core/industrialHeatPumpReadiness.test.js
 ```
 
 For presenter and scenario coverage, run:
 
 ```sh
-node scripts/run-jest.js --runInBand --coverage --collectCoverageFrom=src/core/browser/industrialHeatPump/page.js --collectCoverageFrom=src/core/browser/industrialHeatPump/scenarios.js --coverageReporters=text --runTestsByPath test/browser/industrialHeatPumpPage.test.js test/core/industrialHeatPumpReadiness.test.js
+node scripts/run-jest.js --runInBand --coverage --collectCoverageFrom=src/core/browser/industrialHeatPump/page.js --collectCoverageFrom=src/logic/core/industrial-heat-pump/scenarios.js --coverageReporters=text --runTestsByPath test/browser/industrialHeatPumpPage.test.js test/core/industrialHeatPumpReadiness.test.js
 ```
 
 Run repository acceptance with `npm run check` and `npm run build`.
-The presenter implementation and scenarios live under
-`src/core/browser/industrialHeatPump/`; the matching `src/browser/` files are
-thin adapters. The browser adapter injects the validated calculation and the
+The presenter remains under `src/core/browser/industrialHeatPump/`; screening
+arithmetic, comparison, feasibility, thresholds and presets/exports live under
+`src/logic/core/industrial-heat-pump/`. The total unknown-input parser lives under
+`src/logic/boundary/industrial-heat-pump/`; browser entry files compose these
+operations and browser-only effects. The browser adapter injects the validated calculation and the
 local download/print effects.
 
 ## Static page preview
@@ -63,13 +65,31 @@ The core fixture suite exercises finite values whose combinations overflow
 energy, power, or financial arithmetic. The UI must hide stale output, state
 the numeric-range error, and disable export; resetting restores the example.
 
-For scoped pure-calculator mutation validation, run this separately from the
-unit gate (the isolated mutation worktree runner is also available):
+For whole-domain mutation validation, run separately from other full mutation
+workers on constrained hosts:
 
 ```sh
-npx stryker run --mutate src/core/industrialHeatPumpReadiness.js --reporters json,progress --concurrency 1
+DADETO_STRYKER_MAX_TEST_RUNNER_REUSE=10 npm run mutant:all -- docs/quality/heat-pump.stryker.config.mjs
 ```
 
-The latest run killed all 17 mutants. The report is
-`reports/mutation/mutation.json`; the report applies to the arithmetic file,
-not the entire repository.
+This scope includes every domain module and the complete preceding WGS84/build
+packaging scope, including static mutants, with a 100 threshold and no skips.
+Inspect `reports/mutation/heat-pump.json`: engine score alone does not establish
+success if RuntimeError or other excluded statuses exist. Record a terminal exit
+receipt and compare embedded source with the tested head. The original 17-mutant
+arithmetic-only run is historical evidence, not evidence for this migration.
+
+After `npm run build` and `npm run build:cloud`, run the actual built-module
+closure and native contract harness:
+
+```sh
+node test/fixtures/typed-logic/heat-pump-artifact-equivalence.js public infra/cloud-functions/object-minute-rental-search
+```
+
+It resolves all static imports of nine published entry/compatibility URLs and
+repeats 613 calculations and 19 portable exports against original-only hashes.
+`node test/fixtures/typed-logic/heat-pump-equivalence.js` separately compares the
+immutable original seven-module source graph, getter failures/read order, aliases,
+frozen presets and 360 additional mutable-getter observations. It does not
+regenerate original receipts during ordinary execution. All four changed-logic
+coverage metrics are recorded under `reports/coverage/heat-pump-domain/`.

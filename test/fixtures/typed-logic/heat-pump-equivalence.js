@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { inspect } from 'node:util';
 import { parse } from '@babel/parser';
 import { INDUSTRIAL_HEAT_PUMP_FIXTURE } from '../industrialHeatPumpReadiness.js';
 import { serializeCoverageSemantics as serialize } from './coverage-semantics.js';
@@ -33,7 +34,7 @@ const sourceHashes = {
 const root = new URL('../../../', import.meta.url);
 const calculatorPath = 'src/browser/industrialHeatPumpReadiness.js';
 const scenarioPath = 'src/core/browser/industrialHeatPump/scenarios.js';
-const currentScenarioPath = scenarioPath;
+const currentScenarioPath = 'src/logic/core/industrial-heat-pump/scenarios.js';
 
 /**
  * Load actual native module graphs without copied computation bodies.
@@ -294,6 +295,48 @@ for (const failure of failures) {
     exportErrorCases += 1;
   }
 }
+// Mutable getters retain the old evaluation schedule, including subsequent
+// opaque values. These extra controls do not alter the frozen original receipt.
+let mutableGetterCases = 0;
+for (const field of Object.keys(INDUSTRIAL_HEAT_PUMP_FIXTURE)) {
+  for (const after of [1, 2, 3, 4, 5]) {
+    for (const replacement of [
+      '2',
+      null,
+      undefined,
+      {},
+      Symbol('changed'),
+      false,
+    ]) {
+      const makeInput = () => {
+        let reads = 0;
+        return Object.defineProperty(
+          { ...INDUSTRIAL_HEAT_PUMP_FIXTURE },
+          field,
+          {
+            get: () =>
+              ++reads <= after
+                ? INDUSTRIAL_HEAT_PUMP_FIXTURE[field]
+                : replacement,
+          }
+        );
+      };
+      const expected = observeHeatPump(original[calculate], makeInput());
+      const actual = observeHeatPump(current[calculate], makeInput());
+      assert.deepEqual(
+        actual,
+        expected,
+        `${field}/${after}/${String(replacement)}`
+      );
+      assert.equal(
+        inspect(actual, { depth: null }),
+        inspect(expected, { depth: null })
+      );
+      mutableGetterCases += 1;
+    }
+  }
+}
+assert.equal(mutableGetterCases, 360);
 const receipt = {
   baseline,
   sourceGraphSha256: createHash('sha256')

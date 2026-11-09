@@ -1,0 +1,6 @@
+import { parseIndustrialHeatPumpInput } from '../../logic/boundary/industrial-heat-pump/input.js';
+export function validateIndustrialHeatPumpInput(input) {
+  const parsed = parseIndustrialHeatPumpInput(input);
+  if (!parsed.ok) throw parsed.error;
+  return parsed.evidence.valid ? [] : parsed.evidence.errors;
+}

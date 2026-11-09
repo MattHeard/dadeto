@@ -88,3 +88,45 @@ seven-module harness still matches its original receipt byte-for-byte
 No runtime body changed, so a fresh mutation run for this declaration-only step
 would add no behavioral evidence. Whole-domain mutation remains required after
 relocation. Exact full CI and source/asset migration are still pending.
+
+
+## Actual domain relocation and artifact closure
+
+Moved actual arithmetic, comparison, feasibility, threshold and scenario/export
+bodies into `src/logic/core/industrial-heat-pump/`. The boundary parser is total
+over unknown input and preserves original ordered property reads and thrown
+values via the existing pure evidence-result combinator. Trusted numeric core
+contracts are precise; public directly copied slots remain explicitly unknown
+where a legacy getter can change its value after validation. The public annual
+total can be number or string under that original behavior. Nine negative
+compiler controls distinguish actual public composition from trusted results.
+Do not silently freeze inputs, clone getters, coerce strings or promise numeric
+outputs for those opaque slots. The original recursive comparison-only finite
+traversal is retained; it is a domain-output decision, not an argument guard.
+The original immutable receipt remains unchanged, with 360 extra mutable-getter
+comparisons executed independently without regenerating those original hashes.
+
+Unexpected hurdle: the existing cloud package verifier passed while the native
+heat-pump artifact harness found a missing browser scenario entry. Its 27-package
+walk covers reachable backend modules, not every browser graph in the archive.
+The fix explicitly includes all three browser entries along with eight logic
+modules and six generated compatibility URLs. There are no permanent legacy
+source forwarders. A shared explicit asset-pair projection serves WGS84 and
+heat-pump packaging, and the new mutation configuration retains the complete
+previous WGS84/build scope rather than reducing it. The immutable cloud effects
+fixture remains pinned: tests separately assert and remove only the new heat-pump
+delta before comparing the previous full effect hash.
+
+Native built artifact evidence: public and cloud roots each resolve eighteen
+modules from nine original entry/compatibility paths, identical closure SHA
+`a4139beb777822577aac78e4e4ff74f023dea97a0bbbb945c53d62b2eb5c3216`,
+613 original calculations and 19 original exports
+(`/tmp/dadeto-2jg7-complete-artifact-equivalence.json`). Build, cloud build and
+27-package/711-module/1,231-import verification pass. Nine focused Jest suites
+pass 863 tests with all four metrics at 100% for eleven changed logic modules
+(`reports/coverage/heat-pump-domain/coverage-summary.json`). Initial all-eleven
+static gates passed; repeat after the final closure/type/harness updates is
+recorded in `/tmp/dadeto-2jg7-complete-check.log`. Whole-domain mutation and
+current full CI remain pending. Next time use the native archive graph probe,
+not only the backend verifier. Also avoid comparing accepted Date record identity
+against a plain fixture object in tests; acceptance preserves the actual object.

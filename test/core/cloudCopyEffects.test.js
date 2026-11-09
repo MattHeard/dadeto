@@ -16,6 +16,12 @@ const baseline = JSON.parse(
     'utf8'
   )
 );
+const heatPumpAssets = JSON.parse(
+  readFileSync(
+    new URL('../fixtures/typed-logic/heat-pump-assets.json', import.meta.url),
+    'utf8'
+  )
+);
 const destination =
   '/reference/infra/cloud-functions/object-minute-rental-search/';
 const wgs84Copies = [
@@ -47,7 +53,7 @@ const wgs84Copies = [
 ];
 
 it.each([0, 1, 2])(
-  'preserves the complete immutable deployment effects with only the explicit WGS84 delta, scenario %s',
+  'preserves the complete immutable deployment effects with only the explicit WGS84 and heat-pump deltas, scenario %s',
   async index => {
     expect(baseline.baseline).toBe('bde25b950cf237a1e0b65a4e4a6d2e7ef0f8e2b1');
     expect(baseline.sourceSha256).toBe(
@@ -59,9 +65,19 @@ it.each([0, 1, 2])(
       scenario.payload
     );
     expect(effects.copies.slice(-7)).toEqual(wgs84Copies);
+    const heatPumpCopies = heatPumpAssets.map(([source, target]) => [
+      `/reference/src/${source}`,
+      `${destination}${target}`,
+    ]);
+    expect(effects.copies.slice(-7 - heatPumpCopies.length, -7)).toEqual(
+      heatPumpCopies
+    );
     const normalized = {
       ...effects,
-      copies: [...effects.copies.slice(0, -7), ...baseline.legacyWgs84Copies],
+      copies: [
+        ...effects.copies.slice(0, -7 - heatPumpCopies.length),
+        ...baseline.legacyWgs84Copies,
+      ],
     };
     expect(summarizeCloudCopyEffects(normalized)).toEqual(scenario.effects);
   }

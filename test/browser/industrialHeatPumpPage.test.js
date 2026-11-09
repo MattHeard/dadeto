@@ -3,7 +3,7 @@ import { jest } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import { startIndustrialHeatPumpReadinessPage } from '../../src/browser/industrialHeatPump/page.js';
 import { INDUSTRIAL_HEAT_PUMP_FIXTURE } from '../fixtures/industrialHeatPumpReadiness.js';
-import { createIndustrialHeatPumpScenarioExport } from '../../src/core/browser/industrialHeatPump/scenarios.js';
+import { createIndustrialHeatPumpScenarioExport } from '../../src/logic/core/industrial-heat-pump/scenarios.js';
 import { calculateIndustrialHeatPumpReadiness } from '../../src/browser/industrialHeatPumpReadiness.js';
 
 const PAGE = readFileSync(

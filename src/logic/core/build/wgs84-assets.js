@@ -1,3 +1,6 @@
+import { createAssetCopies } from './asset-copies.js';
+
+/** @type {Array<[string, string]>} */
 const WGS84_ASSETS = [
   ['adapters/wgs84.js', 'adapters/wgs84.js'],
   [
@@ -23,8 +26,5 @@ const WGS84_ASSETS = [
  * @returns {Array<{source: string, target: string}>} Exact module copies.
  */
 export function createWgs84AssetCopies(srcDir, outputDir, join) {
-  return WGS84_ASSETS.map(([source, target]) => ({
-    source: join(srcDir, source),
-    target: join(outputDir, target),
-  }));
+  return createAssetCopies(WGS84_ASSETS, srcDir, outputDir, join);
 }

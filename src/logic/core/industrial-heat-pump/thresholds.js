@@ -1,7 +1,7 @@
 /**
  * Convert raw threshold arithmetic into available/unavailable results.
- * @param {Record<string, number>} values Pure core calculation values.
- * @returns {Record<string, any>} Explicit threshold states.
+ * @param {import('./industrial-heat-pump.js').HeatPumpValues} values Pure core calculation values.
+ * @returns {import('./industrial-heat-pump.js').HeatPumpThresholds} Explicit threshold states.
  */
 export function buildIndustrialHeatPumpThresholds(values) {
   return {

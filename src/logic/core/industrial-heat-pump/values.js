@@ -1,7 +1,7 @@
 /**
  * Calculate raw screening arithmetic from validated inputs.
- * @param {import('../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpAssumptions} input Validated unit-labelled assumptions.
- * @returns {import('../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpValues} Pure energy, power, cost and threshold values.
+ * @param {import('./industrial-heat-pump.js').HeatPumpAssumptions} input Validated unit-labelled assumptions.
+ * @returns {import('./industrial-heat-pump.js').HeatPumpValues} Pure energy, power, cost and threshold values.
  */
 export function calculateIndustrialHeatPumpValues(input) {
   const incumbentFuelKwh =
