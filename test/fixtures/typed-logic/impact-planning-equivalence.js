@@ -47,6 +47,14 @@ async function load(source) {
 }
 const original = await load(git.stdout);
 const current = await load(readFileSync(moduleUrl, 'utf8'));
+assert.equal(
+  current.createCheckImpactPlan.length,
+  original.createCheckImpactPlan.length
+);
+assert.equal(
+  current.createCheckImpactPlan.name,
+  original.createCheckImpactPlan.name
+);
 
 /**
  * Observe returned plan or native failure category, preserving opaque reason identity.

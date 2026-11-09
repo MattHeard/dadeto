@@ -51,3 +51,55 @@ negative type controls against actual exports before claiming this contract exis
 A total boundary should capture original destructuring/default/path operations in
 read order; trusted core should retain none/fallback/selected domain decisions,
 ordered test deduplication and command construction over the parsed fields.
+
+## Source split and diagnosis
+
+Actual normalization/classification/default operations moved to the total
+impact-plan-inputs boundary; the legacy factory unwraps/rethrows and delegates to
+trusted impact-plan computation. Parsed change and discovery states are coherent
+domain records. Core operations select explicit fallback/selected state and build
+no-change/fallback/selected plans; input type guards stay at the boundary.
+A generic Reason flows through actual boundary/core/public output, retaining opaque
+payloads by identity. types/impact-plan.contract.ts is included in tsdoc:check and
+requires truthful opaque typing, typed trusted input and result narrowing.
+
+Unexpected hurdles and fixes:
+- New command-preview tests guessed a direct Jest binary/unquoted paths. The actual
+  established preview uses scripts/run-jest.js and quoted paths; correct tests,
+  not runtime. The independently pinned native corpus never changed.
+- Inline template/typedef comments were not recognized by JSDoc lint. Use separate
+  multiline tags for generic typedefs.
+- Seven destructured inputs violated the repo's effective-arity gate. Decompose
+  domain operations over cohesive change/discovery records, rather than disguising
+  independent parameters. Separate state selection and plan constructors are used.
+- ReturnType of the public generic yielded unknown evidence in CLI static results.
+  Caller inspection proves CLI failures are strings; instantiate the existing
+  CheckImpactPlan alias there. Preserve generic types at the public API.
+- An identifier-only reason helper triggered nullish validation classification.
+  The actual domain operation now returns explicit fallback/selected values. The
+  classifier and exemptions are unchanged; domain state is visible in the result.
+- Changed test fields and an overescaped path fixture caused follow-up failures.
+  Update expectations to the parsed domain record. Use set -e so a passing later
+  native command never hides a failed focused Jest command.
+
+Focused evidence: five suites /858tests pass with all4metrics100 for allthree
+changed modules; /tmp/dadeto-oy3p-focused-domain.log,
+reports/coverage/impact-planning/coverage-summary.json. Pinned native report remains
+identical (/tmp/dadeto-oy3p-relocated-domain.json). Both core-parse gates pass
+(/tmp/dadeto-oy3p-domain-core-parse.log). Harness and Jest check original public
+function name/arity; keep the optional default parameter when composing.
+Full aggregate, packaging, exactCI and complete15modulemutation remain required.
+
+Final local acceptance: npm run check -- --skip-tests passes all11gates, zero
+clones/audit0 and actual API type controls (/tmp/dadeto-oy3p-final-check.log).
+Native scopedCLI/sitebuild/cloudbuild/importverification all exit0;27packages,
+711modules,1231imports; /tmp/dadeto-oy3p-{native-scoped-check,site-build,cloud-build,cloud-imports}.log.
+Removing the four expected-error directives from actual production imports gives
+exactly TS2322 twice, TS2353 and TS2339, compiler exit2;
+/tmp/dadeto-oy3p-actual-type-negative.log. The temporary negative config extends
+the repository compiler settings and checks the real imports, not a modeled API.
+
+An automatic approval-review usage failure left the first final-doc/check command
+unexecuted. After user resume, revalidated host/worktree state and approval review,
+then retried the actual unexecuted command. Do not bypass approval review or infer
+that a command ran from an earlier request. Full CI/mutation remain pending.

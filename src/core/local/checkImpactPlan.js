@@ -1,9 +1,10 @@
+import { createTrustedCheckImpactPlan } from '../../logic/core/local/impact-plan.js';
+import { parseImpactPlanInputs } from '../../logic/boundary/local/impact-plan-inputs.js';
 import { partitionTests } from '../../logic/core/local/test-partitions.js';
 import { parseTestShardSize } from '../../logic/boundary/local/test-shard-size.js';
 import { mergeCoverageRecords } from '../../logic/core/local/coverage-records.js';
 import {
   JEST_RUNNER,
-  quotePath,
   commandOptions,
 } from '../../logic/core/local/impact-commands.js';
 import { parseImpactArguments } from '../../logic/boundary/local/impact-arguments.js';
@@ -13,7 +14,6 @@ import { parseMissedCoverage } from '../../logic/boundary/local/missed-coverage.
 import {
   normalizeImpactPath as normalizePath,
   classifyImpactPath as classifyPath,
-  parseRelatedImpactPaths,
 } from '../../logic/boundary/local/impact-paths.js';
 
 /** @typedef {import('../../../types/allow-effects').AllowEffects} AllowEffects */
@@ -24,85 +24,18 @@ import {
 
 const SELECTOR_TIMEOUT_MS = 45_000;
 
-/** @typedef {{changedPaths: string[], tests: string[], testSelection: 'none' | 'related' | 'direct' | 'all-unit', staticGates: string[], commands: string[], authoritative: string}} CheckImpactPlanBase */
-/** @typedef {CheckImpactPlanBase & {mode: 'none' | 'fallback', reason: string}} FallbackCheckImpactPlan */
-/** @typedef {CheckImpactPlanBase & {mode: 'selected', reason?: undefined}} SelectedCheckImpactPlan */
-/** @typedef {FallbackCheckImpactPlan | SelectedCheckImpactPlan} CheckImpactPlan */
+/** @typedef {import('../../logic/core/local/impact-plan.js').CheckImpactPlan} CheckImpactPlan */
 
 /**
- * Build a deterministic plan for affected or fallback unit tests.
- * @param {{ changedPaths?: unknown[], relatedTestPaths?: unknown[], relatedTestsResolved?: boolean, collectionError?: string }} options Plan inputs.
- * @returns {CheckImpactPlan} Impact plan.
+ * Compose typed candidate interpretation and trusted deterministic planning.
+ * @template [Reason=string]
+ * @param {import('../../logic/boundary/local/impact-plan-inputs.js').ImpactPlanOptions<Reason>} [options] Unparsed options.
+ * @returns {import('../../logic/core/local/impact-plan.js').CheckImpactPlan<Reason>} Plan with original reason payload type.
  */
-export function createCheckImpactPlan({
-  changedPaths = [],
-  relatedTestPaths,
-  relatedTestsResolved = false,
-  collectionError = '',
-} = {}) {
-  const changed = [...new Set(changedPaths.map(normalizePath))].sort();
-  const invalid = changed.find(path => !classifyPath(path));
-  const sourceChanges = changed.filter(path => classifyPath(path) === 'source');
-  const directTests = changed.filter(path => classifyPath(path) === 'test');
-  const parsedRelated = parseRelatedImpactPaths(relatedTestPaths);
-  if (!parsedRelated.ok) throw parsedRelated.error;
-  const related = parsedRelated.paths;
-  let reason = collectionError;
-
-  if (!reason && changed.length === 0)
-    return {
-      mode: 'none',
-      changedPaths: [],
-      tests: [],
-      testSelection: 'none',
-      staticGates: [],
-      commands: [],
-      reason: 'No changed source or unit-test paths were found.',
-      authoritative: 'npm run check:full',
-    };
-  if (!reason && invalid !== undefined)
-    reason = `Unsupported or unsafe changed path: ${invalid || '(empty)'}.`;
-  if (!reason && sourceChanges.length > 0 && !relatedTestsResolved)
-    reason = 'Jest related-test discovery did not complete successfully.';
-  if (!reason && sourceChanges.length > 0 && related.length === 0)
-    reason = 'Jest did not identify related unit tests for changed source.';
-
-  if (reason) {
-    return {
-      mode: 'fallback',
-      changedPaths: changed,
-      tests: [],
-      testSelection: 'all-unit',
-      staticGates: [],
-      commands: [
-        `node ${JEST_RUNNER} --runInBand --runTestsByPath <unit-test files in bounded shards>`,
-      ],
-      reason,
-      authoritative: 'npm run check:full',
-    };
-  }
-
-  const tests = [...new Set([...directTests, ...related])].sort();
-  const testSelection = sourceChanges.length > 0 ? 'related' : 'direct';
-  const commands = [
-    `node ${JEST_RUNNER} --runInBand --runTestsByPath ${tests.map(quotePath).join(' ')}`,
-  ];
-  const staticGates = ['eslint'];
-  if (sourceChanges.some(isLogicJavaScriptPath)) {
-    staticGates.push('core-parse');
-    commands.push('npm run core-parse');
-    staticGates.push('duplication');
-    commands.push('npm run duplication');
-  }
-  return {
-    mode: 'selected',
-    changedPaths: changed,
-    tests,
-    testSelection,
-    staticGates,
-    commands,
-    authoritative: 'npm run check:full',
-  };
+export function createCheckImpactPlan(options = {}) {
+  const parsed = parseImpactPlanInputs(options);
+  if (!parsed.ok) throw parsed.error;
+  return createTrustedCheckImpactPlan(parsed.evidence);
 }
 
 /**
@@ -328,7 +261,7 @@ function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
  * Run only static gates whose scope is supported by the impact plan.
  * @param {AllowEffects} permission Permission for process and output effects.
  * @param {CheckImpactDependencies} deps CLI effects.
- * @param {ReturnType<typeof createCheckImpactPlan>} plan Prepared impact plan.
+ * @param {CheckImpactPlan} plan Prepared impact plan.
  * @returns {Array<{name: string, command: string[], result: 'passed' | 'failed' | 'not-run', exitStatus: number | null, reason?: string}>} Static-gate outcomes.
  */
 function runScopedStaticGates(permission, deps, plan) {
@@ -519,7 +452,7 @@ function runJestCommand(permission, deps, args, timeoutMs) {
  * Collect changes and, when needed, ask Jest for related unit tests.
  * @param {AllowEffects} permission Permission for process effects.
  * @param {CheckImpactDependencies} deps CLI and effect dependencies.
- * @returns {{plan: ReturnType<typeof createCheckImpactPlan>, selectorFailure: string, deletedPaths?: string[]}} Prepared test plan.
+ * @returns {{plan: CheckImpactPlan, selectorFailure: string, deletedPaths?: string[]}} Prepared test plan.
  */
 function preparePlan(permission, deps) {
   const parsed = parseImpactArguments(deps.argv, deps.defaultBaseRef);

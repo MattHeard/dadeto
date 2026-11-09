@@ -1,6 +1,9 @@
 import { createCheckImpactPlan } from '../../../src/core/local/checkImpactPlan.js';
 
 describe('createCheckImpactPlan', () => {
+  it('retains the original optional-argument public arity', () => {
+    expect(createCheckImpactPlan).toHaveLength(0);
+  });
   it('propagates the established structural error for sparse related candidates', () => {
     expect(() =>
       createCheckImpactPlan({
