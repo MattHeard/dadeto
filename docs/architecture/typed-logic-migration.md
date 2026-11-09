@@ -644,3 +644,19 @@ runtime AST and no argument guards. See
 actual native scoped coverage and pending expanded mutation/CI. This slice is
 prepared independently; option-parser integration precedes its landing. The
 remaining legacy effect runner and broader source migration remain open.
+
+
+## Coverage-record folding source prepared — 9 November 2026
+
+`dadeto-nssq` relocates actual ordered Istanbul record folding, first-record
+cloning, keyed counter addition and branch-arm addition into
+`src/logic/core/local/coverage-records.js`, with shared typedef ownership. The
+legacy reporter imports the actual public fold; former implementations are removed.
+Runtime AST and immutable-original outputs remain unchanged, including meaningful
+absence/missing-count state and original errors. See
+`notes/agents/2026-11-09-coverage-record-core.md` for baseline, native scoped
+coverage and pending full mutation/CI acceptance. Raw JSON/path/location
+interpretation remains outside this core. Existing inherited-key numeric-contract
+behavior is explicitly retained and tracked as `dadeto-ef2o`; raw reader typing
+and this gap must not be counted as completed boundary validation. The broader
+architecture remains Active/Partial.

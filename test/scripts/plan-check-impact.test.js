@@ -1097,7 +1097,7 @@ describe('composed scoped impact diagnostics', () => {
 describe('test impact runner fallback execution', () => {
   it('runs fallback unit tests in bounded no-coverage shards', () => {
     const files = [1, 2, 3, 4, 5].map(index =>
-      path.resolve(`test/core/fallback-${index}.test.js`)
+      path.resolve(`test/core/coverage-fallback-${index}.test.js`)
     );
     const commands = [];
     const { result, output } = runHandle({
@@ -1127,7 +1127,9 @@ describe('test impact runner fallback execution', () => {
         args => args.slice(args.indexOf('--runTestsByPath') + 1).length
       )
     ).toEqual([2, 2, 1]);
-    expect(JSON.stringify(shardCommands)).not.toMatch(/coverage/);
+    expect(
+      shardCommands.flatMap(args => args).filter(arg => arg.startsWith('--'))
+    ).not.toEqual(expect.arrayContaining([expect.stringMatching(/coverage/i)]));
     expect(output.report()).toMatchObject({
       selectedTests: files.map(file =>
         path.relative(process.cwd(), file).split(path.sep).join('/')
