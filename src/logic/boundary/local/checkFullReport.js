@@ -1,3 +1,4 @@
+import { captureEvidenceResult } from './evidence-result.js';
 import { COVERAGE_METRICS } from '../../core/local/checkFullReport.js';
 
 /** @typedef {import('../../core/local/checkFullReport.js').MetricValues} MetricValues */
@@ -20,7 +21,7 @@ export function parseCheckFullReportEvidence({
   coverageSummaryText,
   failureLog,
 }) {
-  try {
+  return captureEvidenceResult(() => {
     const coverage = parseCoverage(parseJsonText(coverageSummaryText));
     const run = parseJsonText(coverageRunText);
     const counts = { tests: parseTestCounts(run), runPresent: Boolean(run) };
@@ -28,10 +29,8 @@ export function parseCheckFullReportEvidence({
     const evidence = coverage
       ? { ...counts, coverage, failure: null }
       : { ...counts, coverage: null, failure: parseFailure(run, failureLog) };
-    return { ok: true, evidence };
-  } catch (error) {
-    return { ok: false, error };
-  }
+    return evidence;
+  });
 }
 
 /**

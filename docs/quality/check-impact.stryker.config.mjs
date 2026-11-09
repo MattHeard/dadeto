@@ -4,6 +4,8 @@ import combined from './git-deletion-evidence.stryker.config.mjs';
 export default {
   ...combined,
   mutate: [
+    'src/logic/boundary/local/evidence-result.js',
+    'src/logic/boundary/local/missed-coverage.js',
     'src/logic/core/local/coverage-records.js',
     'src/logic/core/local/impact-commands.js',
     'src/logic/boundary/local/impact-arguments.js',

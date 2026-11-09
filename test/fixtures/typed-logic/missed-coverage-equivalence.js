@@ -30,9 +30,15 @@ assert.equal(
 /**
  * Load immutable/current actual interpretation and full report without copying bodies.
  * @param {string} source Complete module.
+ * @param {string} exports Private names exposed for comparison.
+ * @param {URL} url Actual source import base.
  * @returns {Promise<object>} Actual exports plus private observers.
  */
-async function load(source) {
+async function load(
+  source,
+  exports = 'listUncoveredLines, listUncoveredBranches, createScopedCoverageReport',
+  url = moduleUrl
+) {
   const imports = parse(source, { sourceType: 'module' })
     .program.body.filter(node => node.type === 'ImportDeclaration')
     .map(node => node.source)
@@ -40,10 +46,9 @@ async function load(source) {
   for (const specifier of imports)
     source =
       source.slice(0, specifier.start) +
-      JSON.stringify(new URL(specifier.value, moduleUrl).href) +
+      JSON.stringify(new URL(specifier.value, url).href) +
       source.slice(specifier.end);
-  source +=
-    '\nexport { listUncoveredLines, listUncoveredBranches, createScopedCoverageReport };\n';
+  source += `\nexport { ${exports} };\n`;
   return import(
     `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
   );
@@ -68,7 +73,21 @@ function outcome(callback) {
 }
 
 const original = await load(git.stdout);
-const current = await load(readFileSync(moduleUrl, 'utf8'));
+const boundaryUrl = new URL(
+  '../../../src/logic/boundary/local/missed-coverage.js',
+  import.meta.url
+);
+const current = {
+  ...(await load(
+    readFileSync(moduleUrl, 'utf8'),
+    'createScopedCoverageReport'
+  )),
+  ...(await load(
+    readFileSync(boundaryUrl, 'utf8'),
+    'listUncoveredLines, listUncoveredBranches',
+    boundaryUrl
+  )),
+};
 const interpretationHash = createHash('sha256');
 const reportHash = createHash('sha256');
 let interpretationCases = 0;

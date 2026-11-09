@@ -34,3 +34,33 @@ this baseline before advancing the branch onto accepted main.
 
 This characterization does not validate the complete raw JSON schema or repair
 prototype-named counter addition (dadeto-ef2o). The architecture spec remains partial.
+
+The actual two private helper bodies now live in
+src/logic/boundary/local/missed-coverage.js. The legacy per-file projection unwraps
+its explicit result and rethrows the exact error. No source coercion or fallback
+rule changed. A named typed evidence value avoids a small result-construction
+clone with the existing WGS84 parser; no suppression was added.
+
+Focused ESM Jest passes four suites / 829 tests, with all four metrics 100% for
+both changed modules: reports/coverage/missed-coverage/coverage-summary.json,
+/tmp/dadeto-je16-focused-repaired.log. Initial test setup omitted
+NODE_OPTIONS=--experimental-vm-modules; use that setting for direct Jest calls.
+A test initially expected Set to preserve -0, whereas the immutable behavior
+canonicalizes it to +0; correct the expectation, not runtime code. A malformed-arm
+integration test now proves the effect composition rethrows the original error.
+Build, cloud packaging and cloud imports pass (27 packages, 711 modules, 1231
+imports), logs /tmp/dadeto-je16-{site-build,cloud-build,cloud-imports}.log.
+The expanded eleven-module mutation evaluator retains every prior module, threshold
+100 and static evaluation, adding the new complete boundary and its direct tests.
+Full mutation and authoritative CI remain mandatory before acceptance.
+
+The second clone report identified the actual repeated success/error constructor
+shared with checkFullReport. Both local parsers now use evidence-result.js, with
+no input reads moved outside capture. The complete eleven-module mutation scope
+includes that helper. All eleven aggregate gates pass in
+/tmp/dadeto-je16-shared-result-check.log; duplication reports zero clones and audit
+reports zero vulnerabilities. Final focused six suites / 1,686 tests pass with all
+four metrics100 across all four changed modules, including the existing report
+boundary and shared helper: /tmp/dadeto-je16-shared-result-tests-final.log.
+The actual legacy-json compatibility suite is checkFullReport.legacy-json.test.js;
+do not guess a new filename when constructing explicit Jest arguments.

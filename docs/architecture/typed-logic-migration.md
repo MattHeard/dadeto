@@ -660,3 +660,26 @@ interpretation remains outside this core. Existing inherited-key numeric-contrac
 behavior is explicitly retained and tracked as `dadeto-ef2o`; raw reader typing
 and this gap must not be counted as completed boundary validation. The broader
 architecture remains Active/Partial.
+
+### Missed coverage interpretation boundary
+
+`src/logic/boundary/local/missed-coverage.js` owns the actual statement-line and
+branch-arm interpretation formerly inside `checkImpactPlan.js`. Its input shape
+keeps unparsed count and line candidates `unknown`; it does not pretend that the
+raw JSON reader establishes a complete Istanbul schema. Explicit success carries
+collected/uncollected evidence; failure carries the exact original thrown value.
+The legacy requested-file composition only unwraps this result, rethrows failure,
+and adds the filename. Trusted counter folding remains a separate core operation.
+
+The move retains strict numeric-zero counts, numeric sorting and deduplication of
+statement lines, native branch order and sparse holes, one-based arm indices and
+nullish per-arm line fallback. It deliberately retains every integer accepted by
+the existing line parser. The immutable-source harness
+`test/fixtures/typed-logic/missed-coverage-equivalence.js` compares actual helper
+bodies and whole report projection, including malformed values and getter failures.
+Full raw JSON validation and prototype-named counter semantics remain unfinished.
+
+The two local parsers share `evidence-result.js` to construct generic success or
+original-error outcomes without duplicating catch wrappers; input interpretation
+stays inside the captured callback. The combined mutation evaluator includes this
+whole helper alongside both parser modules.
