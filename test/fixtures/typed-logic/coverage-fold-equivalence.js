@@ -1,3 +1,4 @@
+import * as currentEffects from '../../../src/core/local/checkImpactPlan.js';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
@@ -28,9 +29,20 @@ assert.equal(
 /**
  * Expose actual private fold helpers without copying their implementation.
  * @param {string} text Complete source.
+ * @param {URL} [location] Actual source location for import resolution.
+ * @param {string[]} [exposed] Private helpers to expose without copying bodies.
  * @returns {Promise<object>} Native module exports.
  */
-async function load(text) {
+async function load(
+  text,
+  location = moduleUrl,
+  exposed = [
+    'mergeCoverageRecords',
+    'mergeCoverageRecord',
+    'addCoverageCounters',
+    'addCoverageBranches',
+  ]
+) {
   const tree = parse(text, { sourceType: 'module' });
   const imports = tree.program.body
     .filter(node => node.type === 'ImportDeclaration')
@@ -39,10 +51,9 @@ async function load(text) {
   for (const specifier of imports)
     text =
       text.slice(0, specifier.start) +
-      JSON.stringify(new URL(specifier.value, moduleUrl).href) +
+      JSON.stringify(new URL(specifier.value, location).href) +
       text.slice(specifier.end);
-  text +=
-    '\nexport { mergeCoverageRecords, mergeCoverageRecord, addCoverageCounters, addCoverageBranches };\n';
+  text += `\nexport { ${exposed.join(', ')} };\n`;
   return import(
     `data:text/javascript;base64,${Buffer.from(text).toString('base64')}`
   );
@@ -130,7 +141,15 @@ for (const [left, right] of [
   assert.notEqual(serialize(left), serialize(right));
 
 const original = await load(source.stdout);
-const current = await load(readFileSync(moduleUrl, 'utf8'));
+const currentUrl = new URL(
+  '../../../src/logic/core/local/coverage-records.js',
+  import.meta.url
+);
+const current = await load(readFileSync(currentUrl, 'utf8'), currentUrl, [
+  'mergeCoverageRecord',
+  'addCoverageCounters',
+  'addCoverageBranches',
+]);
 const variants = [
   {},
   { s: {}, f: {}, b: {} },
@@ -273,7 +292,7 @@ const publicHash = createHash('sha256');
 let publicCases = 0;
 for (const input of impactContractCases()) {
   const expected = observeImpactContract(original, input);
-  assert.deepEqual(observeImpactContract(current, input), expected);
+  assert.deepEqual(observeImpactContract(currentEffects, input), expected);
   publicHash.update(`${JSON.stringify(expected)}\n`);
   publicCases += 1;
 }

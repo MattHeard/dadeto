@@ -83,3 +83,50 @@ cases and nine semantic distinction controls. Repaired774contract tests pass.
 `/tmp/dadeto-nssq-baseline-check-final.log`. `git diff --exit-code -- src`
 confirms no production source changed. Both nssq and becy remain open for the
 subsequent actual source extraction and exact full CI before closure.
+
+## Actual trusted source prepared
+
+All four actual helpers and Istanbul typedef ownership now live in
+`src/logic/core/local/coverage-records.js`. Only the public fold is exported; the
+legacy reporter imports it and removes former implementations and local duplicate
+types. Optional keyed counter inputs use Partial<Record<...>> to describe actual
+missing-key state. No runtime guard, coercion, default or cast was added. All four
+function parameter/body runtime ASTs equal the immutable original.
+
+The current-side native corpus exposes actual destination helpers without copying
+their bodies, and observes public CLI factories separately. Its complete canonical
+report remains byte-identical:2955fold/128helper/10error/576CLI cases. Four focused
+suites pass794tests with all four metrics100% on both entire changed modules:
+`/tmp/dadeto-nssq-relocated-focused-repaired.log`,
+`reports/coverage/coverage-records/coverage-summary.json`. The actual native scoped
+command passes with both requested files collected and no coverage gaps:
+
+`npm run check:impact:run -- --files src/logic/core/local/coverage-records.js src/core/local/checkImpactPlan.js`
+
+Log: `/tmp/dadeto-nssq-native-scoped-check.log`. All11 local gates pass in
+`/tmp/dadeto-nssq-relocated-check.log`. Both complete/compact mutation harnesses
+retain their prior scopes and include the entire new module and its direct tests.
+Complete nine-module mutation/static100 and exact full CI remain pending.
+
+## Existing inherited-key contract gap is not fixed here
+
+One new expectation incorrectly assumed prototype-named counters were numeric.
+The immutable original and relocated code both read inherited right-side defaults:
+merging own __proto__:2 against a map lacking that key produces the string
+2[object Object]; constructor:3 similarly concatenates native Object function
+text. Preserve this observed behavior in the source move. Bug `dadeto-ef2o` owns
+explicit own-key/domain semantics, caller/input-boundary trace and accurate types.
+No prototype mutation or security exploit is claimed. The generic numeric Record
+contract is not established for arbitrary prototype-named raw IDs; neither this
+move nor passing coverage proves whole-pipeline input validation. The raw JSON
+reader and this contract gap remain unfinished architecture work.
+
+Correct only the expectation, not production behavior. Initial failed proof:
+`/tmp/dadeto-nssq-relocated-focused.log` (793pass/1wrong expectation); the repaired
+suite and independent corpus both preserve the original outcomes exactly.
+
+Site/cloud assembly and27package/711module/1231import verification pass:
+`/tmp/dadeto-nssq-{site-build,cloud-build,cloud-imports}.log`. The fresh complete
+mutation launch writes `/tmp/dadeto-nssq-mutation.exit` as well as its log, so a
+later process-handle reset does not require guessing the wrapper status. Inspect
+that receipt and the complete report statuses/source bytes before acceptance.
