@@ -1,3 +1,4 @@
+import { parseTestShardSize } from '../../src/logic/boundary/local/test-shard-size.js';
 import { jest } from '@jest/globals';
 import path from 'node:path';
 import {
@@ -1227,6 +1228,8 @@ describe('test impact runner fallback execution', () => {
   });
 
   it('normalizes absolute fallback paths and rejects an invalid shard size', () => {
+    // Prove the progress bound before exercising the real synchronous loop.
+    expect(parseTestShardSize(0)).toBe(200);
     const absolutePath = path.resolve('test/core/absolute-fallback.test.js');
     const { result, output, runCommand } = runHandle({
       argv: ['--unsupported'],

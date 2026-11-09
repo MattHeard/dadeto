@@ -102,3 +102,26 @@ matches the immutable original (/tmp/dadeto-awvd-partition-ast.log). Native scop
 CLI, site/cloud builds and import verification all exit0, logs
 /tmp/dadeto-awvd-{native-scoped-check,site-build,cloud-build,cloud-imports}.log;
 27packages,711modules,1231imports. Full CI/mutation acceptance remain pending.
+
+## Mutation evaluator correction
+
+A complete thirteen-module retry exited0 and printed score100, but the JSON report
+contained three excluded RuntimeErrors (mutants900,901,902 in test-shard-size),
+1235Killed and8Timeout. This is rejected evidence, retained at
+/tmp/dadeto-awvd-runtime-rejected-report.json, SHA256
+4316d4c884140016e0f4777bf12f3c002b923913c43e4eb38932a9989bd79050.
+Those invalid-bound mutants return0; an existing zero-size integration case entered
+the synchronous partition loop before checking the parsed default, exhausting its
+worker. The existing case now asserts the actual parseTestShardSize(0) result200
+before invoking the real handler. This is the established input policy and a
+bounded evaluator; production source, thresholds, scope and static evaluation stay
+unchanged. No exclusions or new runtime argument guards were introduced.
+
+The whole two-module diagnostic passes16mutants: all7parser mutants Killed,
+partitioner7Killed plus2legitimate non-progress Timeouts (index>=length on empty
+input, and decreasing index). No RuntimeError/CompileError/survivor/skips; both
+embedded sources equal current source. reports/mutation/awvd-bounded-diagnostic.json,
+/tmp/dadeto-awvd-bounded-diagnostic.log. Focused813tests and all4changed metrics100
+pass (/tmp/dadeto-awvd-bounded-focused.log), and the local aggregate passes all11
+gates (/tmp/dadeto-awvd-bounded-check.log). Complete13module rerun and new exact-head
+CI are required after this test change; the diagnostic alone is not acceptance.
