@@ -725,3 +725,17 @@ using parsed evidence. CLI preparation/static-gate helpers instantiate the gener
 plan with string evidence because their actual callers construct error messages.
 The immutable impact-planning-equivalence fixture pins9,011complete outcomes,
 32getter failures, read order, reason identity, public name/arity and576CLI cases.
+
+
+### Heat-pump domain contracts (partial, November 9)
+
+The actual screening arithmetic now requires all twelve named numeric assumptions
+and returns the fourteen named raw values instead of numeric index signatures.
+`types/industrial-heat-pump.contract.ts` enforces the actual function's accepted
+input and distinguishes raw arithmetic from public status unions. Native baseline
+receipts remain unchanged; 59 calculator/page tests and all eleven local gates
+pass. This is a contract foundation: boundary parsing, computation/scenario
+relocation, published asset closure and whole-domain mutation are still pending
+in `dadeto-2jg7`. Public comparison declarations are not yet a type guarantee on
+the old browser function. See the November 9 heat-pump agent note for evidence
+and the reason valid public results may omit non-finite intermediates.

@@ -55,3 +55,36 @@ and toy documentation contracts covered; no local Playwright execution.
 Baseline npm run check -- --skip-tests passes all11gates, zero clones and audit0;
 /tmp/dadeto-2jg7-baseline-check.log. Cold lint took175s. Runtime/typing/packaging and
 whole-domain/static mutation, exactCI and post-main acceptance still follow.
+
+
+## Actual arithmetic contracts, before relocation
+
+The first production step applies named twelve-field `HeatPumpAssumptions` and
+fourteen-field `HeatPumpValues` contracts to the actual legacy arithmetic function.
+The coherent domain module is
+`src/logic/core/industrial-heat-pump/industrial-heat-pump.js`; its public comparison
+contracts describe existing payback/threshold/status unions for the forthcoming
+move. Those public unions are not yet applied to the browser pipeline. This step
+does not claim that parsing or scenario computation has moved.
+
+The hurdle was the old `Record<string, number>` signature: it accepted incomplete
+records and described raw arithmetic and public states too loosely. The new
+`types/industrial-heat-pump.contract.ts` is included in `tsdoc:check`, so the actual
+function rejects sparse assumptions and numeric strings. Removing its six
+`@ts-expect-error` controls independently produced one TS2345, one TS2322 and four
+TS2339 diagnostics: missing assumptions, string COP, public feasibility on raw
+values, years on inapplicable payback, value on unachievable thresholds, and a
+comparison on invalid results. Keep those controls against actual functions as
+the remaining composition moves. No finite-number brand is claimed for raw
+intermediate arithmetic.
+
+Validation: `npm run tsdoc:check` passed; focused calculator/page Jest passed
+59 tests, repeated with all four arithmetic coverage metrics at 100%
+(`reports/coverage/heat-pump-contract/coverage-summary.json`). The native immutable
+seven-module harness still matches its original receipt byte-for-byte
+(`/tmp/dadeto-2jg7-typed-contract-equivalence.json`).
+`npm run check -- --skip-tests` passed all eleven gates after the focused tests
+(`/tmp/dadeto-2jg7-contract-check.log`), including zero clones and audit zero.
+No runtime body changed, so a fresh mutation run for this declaration-only step
+would add no behavioral evidence. Whole-domain mutation remains required after
+relocation. Exact full CI and source/asset migration are still pending.
