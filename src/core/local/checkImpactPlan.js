@@ -7,7 +7,7 @@ import {
 import { parseImpactArguments } from '../../logic/boundary/local/impact-arguments.js';
 import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
 import { parseGitChanges } from '../../logic/boundary/local/git-changes.js';
-import { parseCoverageLine } from '../../logic/boundary/local/coverage-line.js';
+import { parseMissedCoverage } from '../../logic/boundary/local/missed-coverage.js';
 import {
   normalizeImpactPath as normalizePath,
   classifyImpactPath as classifyPath,
@@ -306,19 +306,9 @@ function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
     const record = mergeCoverageRecords(
       entries.filter(entry => entry.file === file).map(entry => entry.record)
     );
-    if (!record)
-      return {
-        file,
-        collected: false,
-        uncoveredLines: [],
-        uncoveredBranches: [],
-      };
-    return {
-      file,
-      collected: true,
-      uncoveredLines: listUncoveredLines(record),
-      uncoveredBranches: listUncoveredBranches(record),
-    };
+    const parsed = parseMissedCoverage(record);
+    if (!parsed.ok) throw parsed.error;
+    return { file, ...parsed.evidence };
   });
   return {
     scope: 'changed-core-files',
@@ -327,46 +317,6 @@ function createScopedCoverageReport(sourceFiles, coverageRuns, deps) {
     errors,
     authoritative: 'npm run check:full',
   };
-}
-
-/**
- * Find uncovered source statement lines in one Istanbul record.
- * @param {IstanbulCoverageRecord} record Istanbul file coverage record.
- * @returns {number[]} Sorted unique line numbers.
- */
-function listUncoveredLines(record) {
-  const locations = record.statementMap ?? {};
-  const counters = record.s ?? {};
-  return [
-    ...new Set(
-      Object.entries(counters)
-        .filter(([, count]) => count === 0)
-        .flatMap(([key]) => {
-          const line = parseCoverageLine(locations[key]?.start?.line);
-          return line === null ? [] : [line];
-        })
-    ),
-  ].sort((left, right) => left - right);
-}
-
-/**
- * Find uncovered branch arms in one Istanbul record.
- * @param {IstanbulCoverageRecord} record Istanbul file coverage record.
- * @returns {Array<{line: number, arm: number}>} Missed branch locations.
- */
-function listUncoveredBranches(record) {
-  const locations = record.branchMap ?? {};
-  const branches = record.b ?? {};
-  return Object.entries(branches).flatMap(([key, counts]) =>
-    counts.flatMap((count, index) => {
-      if (count !== 0) return [];
-      const branch = locations[key];
-      const line = parseCoverageLine(
-        branch?.locations?.[index]?.start?.line ?? branch?.line
-      );
-      return line === null ? [] : [{ line, arm: index + 1 }];
-    })
-  );
 }
 
 /**

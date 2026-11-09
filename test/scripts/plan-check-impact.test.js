@@ -848,6 +848,25 @@ describe('scoped static-check impact executor', () => {
     });
   });
 
+  it('propagates the original malformed coverage-arm error from the boundary', () => {
+    expect(() =>
+      runHandle({
+        createHandle: createRunScopedCheckImpactHandle,
+        argv: ['--files', 'src/core/example.js'],
+        coverageImpl: () => ({
+          status: 0,
+          coverage: { 'src/core/example.js': { b: { a: 1 } } },
+        }),
+        runImpl: (_command, args) => ({
+          status: 0,
+          stdout: args.includes('--findRelatedTests')
+            ? 'test/core/related.test.js\n'
+            : '',
+        }),
+      })
+    ).toThrow('counts.flatMap is not a function');
+  });
+
   it('handles an empty Istanbul record as a collected file with no locations', () => {
     const changedFile = path.resolve('src/core/example.js');
     const { output } = runHandle({
