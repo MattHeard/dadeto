@@ -33,21 +33,18 @@ export function createTrustedCheckImpactPlan({
 }) {
   if (!collectionError && changes.paths.length === 0)
     return createNoChangesPlan();
-  const selection = selectPlanState(changes, discovery, collectionError);
-  if (selection.mode === 'fallback')
-    return createFallbackPlan(changes.paths, selection.reason);
-  return createSelectedPlan(changes, discovery.paths);
+  return createChangedPlan(changes, discovery, collectionError);
 }
 
 /**
- * Select explicit fallback/selected domain state in the original precedence.
+ * Build the changed-path plan in the original fallback precedence.
  * @template [Reason=string]
  * @param {ImpactChanges} changes Interpreted changed-path state.
  * @param {RelatedImpactDiscovery} discovery Interpreted related-test state.
  * @param {Reason | string} collectionError Original collection evidence.
- * @returns {{mode: 'fallback', reason: Reason | string} | {mode: 'selected'}} Resolved selection state.
+ * @returns {FallbackImpactPlan<Reason> | SelectedImpactPlan} Complete changed-path plan.
  */
-function selectPlanState(changes, discovery, collectionError) {
+function createChangedPlan(changes, discovery, collectionError) {
   let reason = collectionError;
   if (!reason && changes.invalid !== undefined)
     reason = `Unsupported or unsafe changed path: ${changes.invalid || '(empty)'}.`;
@@ -55,8 +52,20 @@ function selectPlanState(changes, discovery, collectionError) {
     reason = 'Jest related-test discovery did not complete successfully.';
   if (!reason && changes.sources.length > 0 && discovery.paths.length === 0)
     reason = 'Jest did not identify related unit tests for changed source.';
-  if (reason) return { mode: 'fallback', reason };
-  return { mode: 'selected' };
+  if (reason)
+    return {
+      mode: 'fallback',
+      changedPaths: changes.paths,
+      tests: [],
+      testSelection: 'all-unit',
+      staticGates: [],
+      commands: [
+        `node ${JEST_RUNNER} --runInBand --runTestsByPath <unit-test files in bounded shards>`,
+      ],
+      reason,
+      authoritative: 'npm run check:full',
+    };
+  return createSelectedPlan(changes, discovery.paths);
 }
 
 /**
@@ -72,28 +81,6 @@ function createNoChangesPlan() {
     staticGates: [],
     commands: [],
     reason: 'No changed source or unit-test paths were found.',
-    authoritative: 'npm run check:full',
-  };
-}
-
-/**
- * Construct conservative selection retaining the exact reason payload.
- * @template [Reason=string]
- * @param {string[]} changedPaths Interpreted changed paths.
- * @param {Reason | string} reason Original opaque evidence or policy text.
- * @returns {FallbackImpactPlan<Reason>} Conservative plan.
- */
-function createFallbackPlan(changedPaths, reason) {
-  return {
-    mode: 'fallback',
-    changedPaths,
-    tests: [],
-    testSelection: 'all-unit',
-    staticGates: [],
-    commands: [
-      `node ${JEST_RUNNER} --runInBand --runTestsByPath <unit-test files in bounded shards>`,
-    ],
-    reason,
     authoritative: 'npm run check:full',
   };
 }

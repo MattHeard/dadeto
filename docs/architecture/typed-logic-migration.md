@@ -712,7 +712,7 @@ a boolean without coercing objects. Collection-error payloads remain generic and
 retain identity, including non-text values accepted by the public planner.
 
 `src/logic/core/local/impact-plan.js` constructs no-change, fallback and selected
-plans from that evidence. It resolves explicit domain selection state, preserves
+plans from that evidence. It constructs the actual changed-path plan, preserves
 fallback precedence, combines/sorts selected tests and creates ordered commands
 and supported gates. Each operation has a bounded parameter surface; classification
 and structural input guards stay at the boundary. The legacy public factory is

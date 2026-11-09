@@ -103,3 +103,46 @@ An automatic approval-review usage failure left the first final-doc/check comman
 unexecuted. After user resume, revalidated host/worktree state and approval review,
 then retried the actual unexecuted command. Do not bypass approval review or infer
 that a command ran from an earlier request. Full CI/mutation remain pending.
+
+
+## Complete mutation exposed an unconsumed domain state
+
+The first complete fifteen-module run completed in 30m29s but failed: 1,260
+Killed, seven Timeouts, two Survived, eight static mutants; no other statuses.
+All fifteen embedded sources matched the published head. Rejected report SHA
+`2afec2ebfa92074a715bcf43a56fd2ae7ea3a33e5efa0f836d6658d8f3fbe5e5`,
+retained at `/tmp/dadeto-oy3p-selection-rejected-report.json`; terminal exit1
+in `/tmp/dadeto-oy3p-mutation.exit`.
+
+Both survivors replaced the internal selected-state record: `{mode:'selected'}`
+could become `{}` or its tag could become an empty string without affecting any
+public result because the consumer checked only fallback then treated everything
+else as selected. Testing that private tag would assert an unused implementation
+detail. The changed-path operation now computes the actual complete plan instead
+of wrapping an intermediate tag that the consumer does not need. It resolves
+fallback precedence then constructs the complete fallback output or delegates
+selected test/command construction. The single-use fallback factory was removed. This
+retains cohesive three-argument domain operations without an identifier-only
+validation helper, unreachable default branch, extra argument guard, public
+behavior change, mutation skip or classifier exemption. The top-level constructor
+handles no-change and delegates changed-path construction. Re-run whole-module
+diagnosis and then the entire unchanged fifteen-module scope before accepting
+mutation evidence.
+
+
+The first changed-plan organization killed all87coremutants in the whole-core
+diagnostic, but the static classifier intentionally does not recognize arbitrary
+constructor calls as concrete value production. Therefore the single-use
+fallback output construction now belongs directly in the changed-plan operation;
+there is no extra wrapper state or unused tag. Re-run diagnosis after this final
+organization, and retain the earlier diagnostic only as historical evidence.
+
+
+Final direct-plan organization passes the unchanged core-parse gates and all
+eleven aggregate gates, including zero clones and audit zero
+(`/tmp/dadeto-oy3p-plan-construction-check.log`). Native pinned equivalence remains
+byte-identical; five focused suites /858tests pass again with all four metrics
+at100 for the three changed modules
+(`/tmp/dadeto-oy3p-plan-construction-coverage.log`,
+`reports/coverage/impact-planning/coverage-summary.json`). Final whole-core
+diagnosis and complete fifteen-module rerun remain required before acceptance.
