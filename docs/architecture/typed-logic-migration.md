@@ -629,3 +629,18 @@ because it composes boundary parsing and injected effects. There is no forwardin
 parser in the old module. See `notes/agents/2026-11-08-impact-option-boundary.md`
 for immutable-original behavior and full acceptance status. The remaining planning
 and orchestration source is still legacy; this is not the completed architecture.
+
+
+## Trusted impact command source prepared — 8 November 2026
+
+`dadeto-csof` moves actual path quoting, bounded process options, scoped Jest
+command construction and their shared runner constant to
+`src/logic/core/local/impact-commands.js`. The legacy effect runner imports those
+operations; native coverage composition imports the actual constructor directly.
+Former implementations and forwarding exports are removed. Portable precise
+JSDoc describes only consumed path operations and process fields, with unchanged
+runtime AST and no argument guards. See
+`notes/agents/2026-11-08-impact-command-core.md` for independent old-source parity,
+actual native scoped coverage and pending expanded mutation/CI. This slice is
+prepared independently; option-parser integration precedes its landing. The
+remaining legacy effect runner and broader source migration remain open.

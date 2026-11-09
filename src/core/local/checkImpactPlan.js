@@ -1,3 +1,8 @@
+import {
+  JEST_RUNNER,
+  quotePath,
+  commandOptions,
+} from '../../logic/core/local/impact-commands.js';
 import { parseImpactArguments } from '../../logic/boundary/local/impact-arguments.js';
 import { isLogicJavaScriptPath } from '../../logic/core/local/logic-source-paths.js';
 import { parseGitChanges } from '../../logic/boundary/local/git-changes.js';
@@ -17,22 +22,11 @@ import {
 /** @typedef {{status: number | null, stdout?: string, stderr?: string, error?: Error, coverage?: IstanbulCoverageMap, command?: string, coverageError?: string}} ScopedCoverageRun */
 
 const SELECTOR_TIMEOUT_MS = 45_000;
-const JEST_RUNNER = 'scripts/run-jest.js';
 
 /** @typedef {{changedPaths: string[], tests: string[], testSelection: 'none' | 'related' | 'direct' | 'all-unit', staticGates: string[], commands: string[], authoritative: string}} CheckImpactPlanBase */
 /** @typedef {CheckImpactPlanBase & {mode: 'none' | 'fallback', reason: string}} FallbackCheckImpactPlan */
 /** @typedef {CheckImpactPlanBase & {mode: 'selected', reason?: undefined}} SelectedCheckImpactPlan */
 /** @typedef {FallbackCheckImpactPlan | SelectedCheckImpactPlan} CheckImpactPlan */
-
-/**
- * Quote one path for a human-readable POSIX command preview.
- * Execution uses argument arrays and never evaluates this string in a shell.
- * @param {string} value Path to quote.
- * @returns {string} Single-quoted shell token.
- */
-function quotePath(value) {
-  return `'${value.replaceAll("'", "'\\''")}'`;
-}
 
 /**
  * Build a deterministic plan for affected or fallback unit tests.
@@ -108,48 +102,6 @@ export function createCheckImpactPlan({
     commands,
     authoritative: 'npm run check:full',
   };
-}
-
-/**
- * Build a Jest command whose coverage scope is limited to changed core files.
- * @param {{paths: {rootDir: string, pathModule: typeof import('node:path')}, coverageDirectory: string, selection: {tests: string[], sourceFiles: string[]}, environment: Record<string, string | undefined>}} options Command inputs.
- * @returns {{args: string[], command: string, options: import('node:child_process').SpawnSyncOptionsWithStringEncoding}} Executable arguments and a reproduction command.
- */
-export function createScopedCoverageCommand({
-  paths,
-  coverageDirectory,
-  selection,
-  environment,
-}) {
-  const { rootDir, pathModule } = paths;
-  const { tests, sourceFiles } = selection;
-  const threshold = JSON.stringify({
-    global: { branches: 0, functions: 0, lines: 0, statements: 0 },
-  });
-  const args = [
-    pathModule.join(rootDir, JEST_RUNNER),
-    '--runInBand',
-    '--coverage',
-    '--coverageReporters=json',
-    `--coverageThreshold=${threshold}`,
-    '--coverageDirectory',
-    coverageDirectory,
-    ...sourceFiles.map(file => `--collectCoverageFrom=${file}`),
-    '--runTestsByPath',
-    ...tests,
-  ];
-  const displayArgs = [
-    'node',
-    JEST_RUNNER,
-    ...args
-      .slice(1)
-      .map(argument =>
-        argument === coverageDirectory ? '<temporary-coverage-dir>' : argument
-      ),
-  ];
-  const options = commandOptions(rootDir, 120 * 60 * 1000, true);
-  options.env = { ...environment, DADETO_COVERAGE_SHARD: '1' };
-  return { args, command: displayArgs.map(quotePath).join(' '), options };
 }
 
 /**
@@ -903,23 +855,4 @@ function failedChangeCollection(paths, error) {
  */
 function splitGitPaths(output) {
   return output.split('\0').filter(Boolean);
-}
-
-/**
- * Build bounded process options for Git and Jest discovery/execution.
- * @param {string} rootDir Working directory.
- * @param {number} timeoutMs Process timeout.
- * @param {boolean} [streamOutput] Whether to inherit child output streams.
- * @returns {import('node:child_process').SpawnSyncOptionsWithStringEncoding} Child process options.
- */
-function commandOptions(rootDir, timeoutMs, streamOutput = false) {
-  /** @type {import('node:child_process').SpawnSyncOptionsWithStringEncoding} */
-  const options = {
-    cwd: rootDir,
-    encoding: 'utf8',
-    timeout: timeoutMs,
-    maxBuffer: 16 * 1024 * 1024,
-  };
-  if (streamOutput) options.stdio = 'inherit';
-  return options;
 }
