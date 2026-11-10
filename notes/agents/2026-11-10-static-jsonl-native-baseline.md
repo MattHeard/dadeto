@@ -77,7 +77,7 @@ lives after the actual non-null/object/non-array check in the boundary.
 Run the complete retained domain scope with
 `DADETO_STRYKER_MAX_TEST_RUNNER_REUSE=10 node --experimental-vm-modules node_modules/.bin/stryker run docs/quality/static-jsonl-table.stryker.config.mjs`
 when the existing full worker has finished. It retains all three original domain
-modules, all five extracted boundary/core modules and shared outcome capture, with static mutants
+modules, all six extracted boundary/core modules and shared outcome capture, with static mutants
 included, one worker and 100 thresholds. This run is queued, not passed.
 
 
@@ -126,3 +126,30 @@ Reports: `reports/static-jsonl-definition-tests.log`,
 now has nine modules, including every original domain module, with no static
 exclusions or lower thresholds. It is queued, not accepted. Sorting, rendering
 assembly and source/DOM integration remain outstanding.
+
+
+## Trusted markup step
+
+Actual header/cell/row/table markup and authored expansion-state computation now
+live in `src/logic/core/static-jsonl-table/markup.js`. The integration prepares
+all four independently escaped header slots in the original order. It keeps
+native map/join operations and computes expansion state before header evaluation,
+so no raw coercion/getter is moved across a previous failure point. Core functions
+accept precisely named prepared string slots and the exact two expansion
+fragments, with no repeated raw-value guards.
+
+The three original behavior ledgers remain unchanged. Focused validation passes
+170 tests in ten suites with all four metrics at 100% across six extracted
+modules. Reports use the `reports/static-jsonl-markup-` prefix and
+`reports/coverage/static-jsonl-markup/`. The actual type fixture has nineteen
+negative controls. The mutation configuration retains all three original modules,
+all six extracted modules and shared capture, ten files total; it is queued, not
+passed. Sorting and source/DOM integration still require migration.
+
+Type-fixture hurdle: Prettier expanded a negative object argument, so a directive
+before the call no longer suppressed the error on its `open` property. The normal
+type gate and the independent unsuppressed probe both rejected this. Keep the
+expected-error marker directly above the invalid property. After that correction,
+all nineteen expected diagnostics occur only in the unsuppressed probe, and the
+normal eleven-gate check passes. Do not count a probe as valid if the ordinary
+fixture contributes unrelated diagnostics.

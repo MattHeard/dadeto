@@ -12,6 +12,7 @@ export default {
     'src/logic/boundary/static-jsonl-table/cell.js',
     'src/logic/boundary/static-jsonl-table/text.js',
     'src/logic/core/static-jsonl-table/escaping.js',
+    'src/logic/core/static-jsonl-table/markup.js',
     'src/logic/boundary/local/evidence-result.js',
   ],
   ignorePatterns: [

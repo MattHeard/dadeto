@@ -56,3 +56,26 @@ if (definition.ok) {
   // @ts-expect-error Path decisions are supplied as operations preserving lookup timing.
   parseStaticJsonlConfinement(definition.evidence, false);
 }
+
+import {
+  describeStaticJsonlOpen,
+  renderStaticJsonlHeader,
+  renderStaticJsonlCell,
+  renderStaticJsonlRow,
+  renderStaticJsonlTableMarkup,
+} from '../src/logic/core/static-jsonl-table/markup.js';
+// @ts-expect-error Expansion state is interpreted before entering trusted core.
+describeStaticJsonlOpen('yes');
+// @ts-expect-error Every independently prepared header slot is required.
+renderStaticJsonlHeader({ sortAttribute: '', labelAttribute: '', text: '' });
+// @ts-expect-error Cell text has already been interpreted and escaped.
+renderStaticJsonlCell(2);
+// @ts-expect-error Row contents are prepared markup, not raw cell arrays.
+renderStaticJsonlRow([]);
+renderStaticJsonlTableMarkup({
+  payload: '{}',
+  // @ts-expect-error Only the two real authored expansion fragments are accepted.
+  open: 'closed',
+  headers: '',
+  body: '',
+});

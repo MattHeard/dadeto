@@ -1,4 +1,11 @@
 import {
+  describeStaticJsonlOpen,
+  renderStaticJsonlHeader,
+  renderStaticJsonlCell,
+  renderStaticJsonlRow,
+  renderStaticJsonlTableMarkup,
+} from '../../logic/core/static-jsonl-table/markup.js';
+import {
   parseStaticJsonlDefinition,
   parseStaticJsonlConfinement,
 } from '../../logic/boundary/static-jsonl-table/definition.js';
@@ -149,20 +156,29 @@ export function createStaticJsonlTable(dependencies) {
   function renderStaticJsonlTable(entry, options = {}) {
     const table = parseStaticJsonlTable(entry, options);
     const payload = JSON.stringify(table).replace(/</g, '\\u003c');
-    const open = table.collapsed ? '' : ' open';
+    const open = describeStaticJsonlOpen(table.collapsed);
     const headers = table.columns
-      .map(
-        column =>
-          `<th scope="col"><button type="button" data-static-table-sort="${escapeAttribute(column)}" aria-label="Sort by ${escapeAttribute(column)}">${escapeText(column)} <span data-static-table-indicator="${escapeAttribute(column)}"></span></button></th>`
+      .map(column =>
+        renderStaticJsonlHeader({
+          sortAttribute: escapeAttribute(column),
+          labelAttribute: escapeAttribute(column),
+          text: escapeText(column),
+          indicatorAttribute: escapeAttribute(column),
+        })
       )
       .join('');
     const body = table.rows
-      .map(
-        row =>
-          `<tr>${table.columns.map(column => `<td>${escapeText(row.values[column])}</td>`).join('')}</tr>`
+      .map(row =>
+        renderStaticJsonlRow(
+          table.columns
+            .map(column =>
+              renderStaticJsonlCell(escapeText(row.values[column]))
+            )
+            .join('')
+        )
       )
       .join('');
-    return `<details class="static-jsonl-table" data-static-jsonl-table${open}><summary>Table</summary><table><thead><tr>${headers}</tr></thead><tbody>${body}</tbody></table><script type="application/json" data-static-table-data>${payload}</script></details>`;
+    return renderStaticJsonlTableMarkup({ payload, open, headers, body });
   }
 
   return { parseStaticJsonlTable, renderStaticJsonlTable, validateDefinition };
