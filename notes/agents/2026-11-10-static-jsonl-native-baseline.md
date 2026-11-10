@@ -30,10 +30,31 @@ The build and browser acceptance policies differ. Build validation rereads raw
 entry properties and keeps the columns array alias. Browser initialization trusts
 parsed JSON without schema validation, computes rows before replacing the body,
 and updates indicators afterward; click callbacks read button data at click time.
-The browser source is frozen, but native DOM outcomes and descriptor getter/error
-traces still need independent characterization before the production extraction.
-This initial build/comparator baseline does not establish exhaustive acceptance,
-100% coverage, mutation success or completion of the migration.
+The browser baseline now exercises 45 independent scenarios and 271 snapshots,
+including real click dispatch, late dataset reads, malformed payloads, missing
+nodes, repeated/new initialization, multiple tables and injected DOM failures.
+Run `node test/fixtures/typed-logic/static-jsonl-browser-equivalence.js`.
+Original observation SHA256:
+`09db175099a84e3206695dc4f17bf5169b85ef077cca3983ca7d57e905441a8c`.
+
+Run `node test/fixtures/typed-logic/static-jsonl-getter-equivalence.js` for 768
+ordered getter/failure cases and 13,027 property reads. It includes failures at
+each read position, changing descriptor/options values, capability receiver
+identity and wrapped-cause identity. Original observation SHA256:
+`b05fb37d8ebca2ba278fc09dd5ac4db87d7add6a91c92bc8ec48cd3b2359cd39`.
+The older 900/100 ledger remains unchanged. A shared source-graph loader verifies
+each embedded module hash before relinking relative imports; native module
+implementations remain intact. `test/core/staticJsonlNativeContracts.test.js`
+runs all three CLIs as part of the ordinary Jest suite with positive corpus-count
+assertions and explicit child failure handling.
+
+These baselines pin observed behavior before extraction. They do not prove
+exhaustive acceptance, 100% logic coverage, mutation success or migration
+completion. The next implementation must put raw interpretation in total pure
+boundary parsers, trusted comparison/sorting/render projection in typed core,
+and keep source/DOM capabilities in thin adapters while retaining the recorded
+failure/effect sequence. Do not move platform capabilities into logic merely to
+make an existing baseline pass.
 
 Keep one complete mutation worker on this host. The existing heat-pump evaluator
 runs independently; do not launch a second full mutation process for this bead.

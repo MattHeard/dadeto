@@ -4,12 +4,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { serializeCoverageSemantics as serialize } from './coverage-semantics.js';
+import {
+  loadStaticJsonlOriginal,
+  staticJsonlOriginal as fixture,
+} from './static-jsonl-native-graph.js';
 
-const fixtureUrl = new URL(
-  './static-jsonl-legacy-source.json',
-  import.meta.url
-);
-const fixture = JSON.parse(readFileSync(fixtureUrl, 'utf8'));
 const tablePath = 'src/core/tableCore.js';
 const buildPath = 'src/core/build/staticJsonlTable.js';
 const observationsUrl = new URL(
@@ -31,13 +30,10 @@ function digest(value) {
  * @returns {Promise<object>} Original comparator and factory exports.
  */
 async function original() {
-  for (const entry of Object.values(fixture.modules))
-    assert.equal(digest(entry.source), entry.sha256);
-  const tableUrl = `data:text/javascript;base64,${Buffer.from(fixture.modules[tablePath].source).toString('base64')}`;
-  const source = fixture.modules[buildPath].source;
-  assert.equal(source.split("'../tableCore.js'").length, 2);
-  const buildUrl = `data:text/javascript;base64,${Buffer.from(source.replace("'../tableCore.js'", JSON.stringify(tableUrl))).toString('base64')}`;
-  return { ...(await import(tableUrl)), ...(await import(buildUrl)) };
+  return {
+    ...(await loadStaticJsonlOriginal(tablePath)),
+    ...(await loadStaticJsonlOriginal(buildPath)),
+  };
 }
 
 /**
