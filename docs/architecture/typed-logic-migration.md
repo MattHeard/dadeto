@@ -778,6 +778,15 @@ workflow still require migration. The independent original three-module graph,
 900 comparator/100 build cases, 45 browser scenarios/271 snapshots and 768 getter
 cases/13,027 reads are enforced by ordinary Jest tests. No ledger was regenerated
 for the extraction. Actual parser type controls and focused coverage are recorded
-in dadeto-hk0y; authoritative current CI and the retained five-module domain
+in dadeto-hk0y; authoritative current CI and the retained eight-module domain
 mutation scope remain required. The existing heat-pump mutation evaluator keeps
 its separate complete scope; no parallel full worker is started for this domain.
+
+
+The subsequent scalar/escaping step moves own-cell acceptance and native String
+coercion into total boundary parsers. Actual attribute/text escaping now takes
+trusted strings in `src/logic/core/static-jsonl-table/escaping.js`; it does not
+repeat raw-value guards. Plain-object row projection and the original getter and
+coercion order remain unchanged. Ten actual negative controls enforce the
+boundary/core distinction. Descriptor validation, sorting, markup assembly and
+source/DOM integration remain in the migration backlog owned by dadeto-hk0y.

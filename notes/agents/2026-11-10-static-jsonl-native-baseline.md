@@ -77,5 +77,26 @@ lives after the actual non-null/object/non-array check in the boundary.
 Run the complete retained domain scope with
 `DADETO_STRYKER_MAX_TEST_RUNNER_REUSE=10 node --experimental-vm-modules node_modules/.bin/stryker run docs/quality/static-jsonl-table.stryker.config.mjs`
 when the existing full worker has finished. It retains all three original domain
-modules plus the new parser and shared outcome capture, with static mutants
+modules, all four extracted boundary/core modules and shared outcome capture, with static mutants
 included, one worker and 100 thresholds. This run is queued, not passed.
+
+
+## Scalar and HTML escaping step
+
+The actual own-key/finite-number/string cell policy is now a total boundary
+parser. Plain-object projection stays in its original place, preserving the
+reserved `__proto__` behavior. Native String conversion is a separate total
+boundary operation. Both HTML escaping algorithms now live in trusted core with
+string-only actual function contracts and no redundant input guards. Existing
+attribute/text interpolation and coercion order are unchanged.
+
+All four extracted modules have 100% lines, statements, functions and branches
+in `reports/coverage/static-jsonl-scalars/coverage-summary.json`. The focused
+run passes 121 tests in eight suites, including the three independent original
+ledgers. The actual function type fixture now has ten negative controls; its
+unsuppressed probe is `reports/static-jsonl-scalars-negative-types.log`.
+
+The retained domain mutation configuration now includes eight files and keeps all
+three original source modules. It remains queued behind the sole existing full
+worker. No full mutation result is claimed. Descriptor validation, sorting,
+render assembly and source/DOM integration still need the remaining migration.

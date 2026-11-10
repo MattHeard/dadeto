@@ -1,3 +1,9 @@
+import { parseStaticJsonlCell } from '../../logic/boundary/static-jsonl-table/cell.js';
+import { parseStaticJsonlText } from '../../logic/boundary/static-jsonl-table/text.js';
+import {
+  escapeStaticJsonlAttribute,
+  escapeStaticJsonlText,
+} from '../../logic/core/static-jsonl-table/escaping.js';
 import { parseStaticJsonlLine } from '../../logic/boundary/static-jsonl-table/record.js';
 import { compareTableValues as compareValues } from '../tableCore.js';
 
@@ -38,13 +44,9 @@ function compareRows(left, right, columns, types) {
  * @returns {string} Escaped attribute.
  */
 function escapeAttribute(value) {
-  const entities = /** @type {Record<string, string>} */ ({
-    '&': '&amp;',
-    '"': '&quot;',
-    '<': '&lt;',
-    '>': '&gt;',
-  });
-  return String(value).replace(/[&"<>]/g, character => entities[character]);
+  const parsed = parseStaticJsonlText(value);
+  if (!parsed.ok) throw parsed.error;
+  return escapeStaticJsonlAttribute(parsed.evidence);
 }
 /**
  * Escape text for an HTML text node.
@@ -52,10 +54,9 @@ function escapeAttribute(value) {
  * @returns {string} Escaped text.
  */
 function escapeText(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  const parsed = parseStaticJsonlText(value);
+  if (!parsed.ok) throw parsed.error;
+  return escapeStaticJsonlText(parsed.evidence);
 }
 
 export { compareValues, compareRows };
@@ -117,17 +118,9 @@ export function createStaticJsonlTable(dependencies) {
       /** @type {Record<string, string|number>} */
       const projected = {};
       entry.columns.forEach(column => {
-        if (!Object.prototype.hasOwnProperty.call(record, column))
-          fail(`line ${lineIndex + 1} is missing column ${column}`);
-        const cell = record[column];
-        if (
-          (typeof cell !== 'number' && typeof cell !== 'string') ||
-          (typeof cell === 'number' && !Number.isFinite(cell))
-        )
-          fail(
-            `column ${column} contains an unsupported value on line ${lineIndex + 1}`
-          );
-        projected[column] = cell;
+        const cell = parseStaticJsonlCell(record, column, lineIndex);
+        if (!cell.ok) throw cell.error;
+        projected[column] = cell.evidence;
       });
       rows.push({ index: rows.length, values: projected });
     });

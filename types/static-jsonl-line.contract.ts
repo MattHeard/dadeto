@@ -16,3 +16,26 @@ if (parsed.ok) {
     void cell;
   }
 }
+
+import { parseStaticJsonlCell } from '../src/logic/boundary/static-jsonl-table/cell.js';
+import { parseStaticJsonlText } from '../src/logic/boundary/static-jsonl-table/text.js';
+import {
+  escapeStaticJsonlAttribute,
+  escapeStaticJsonlText,
+} from '../src/logic/core/static-jsonl-table/escaping.js';
+
+const cell = parseStaticJsonlCell({ a: 2 }, 'a', 0);
+// @ts-expect-error Column keys are authored strings.
+parseStaticJsonlCell({}, 2, 0);
+// @ts-expect-error Trusted attribute escaping does not accept raw numeric values.
+escapeStaticJsonlAttribute(2);
+// @ts-expect-error Trusted text escaping does not accept opaque input.
+escapeStaticJsonlText({});
+if (cell.ok) {
+  // @ts-expect-error Accepted numeric cells still require text interpretation.
+  escapeStaticJsonlText(cell.evidence);
+  const text = parseStaticJsonlText(cell.evidence);
+  if (text.ok) escapeStaticJsonlText(text.evidence);
+  // @ts-expect-error Raw text evidence requires explicit error handling.
+  escapeStaticJsonlText(text.evidence);
+}
