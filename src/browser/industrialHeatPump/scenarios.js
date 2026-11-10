@@ -1,1 +1,1 @@
-export * from '../../core/browser/industrialHeatPump/scenarios.js';
+export * from '../../logic/core/industrial-heat-pump/scenarios.js';

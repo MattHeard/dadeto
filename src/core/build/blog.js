@@ -1,3 +1,4 @@
+import { createHeatPumpAssetCopies } from '../../logic/core/build/heat-pump-assets.js';
 import { createWgs84AssetCopies } from '../../logic/core/build/wgs84-assets.js';
 import {
   buildCopyLogMessage,
@@ -844,11 +845,10 @@ export function createCopyCore(options) {
     const copyContext = { io, messageLogger, copyFile };
     copyBrowserTrees(dirs, copyContext);
     copyCoreRootFiles(dirs, copyContext);
-    for (const asset of createWgs84AssetCopies(
-      dirs.srcDir,
-      dirs.publicDir,
-      join
-    )) {
+    for (const asset of [
+      ...createWgs84AssetCopies(dirs.srcDir, dirs.publicDir, join),
+      ...createHeatPumpAssetCopies(dirs.srcDir, dirs.publicDir, join),
+    ]) {
       copyFile(asset.source, asset.target);
     }
     copyCoreConstants(dirs, { io, messageLogger, copyFile });

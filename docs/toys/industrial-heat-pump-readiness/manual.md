@@ -41,7 +41,7 @@ The base synthetic fixture is:
 
 The input boundary is `calculateIndustrialHeatPumpReadiness` in
 `src/browser/industrialHeatPumpReadiness.js`; its pure arithmetic is in
-`src/core/industrialHeatPumpReadiness.js`. The interactive presenter and
+`src/logic/core/industrial-heat-pump/values.js`. The interactive presenter and
 scenario presets are in `src/core/browser/industrialHeatPump/`; a small
 `src/browser/` adapter supplies the calculation and local browser effects.
 

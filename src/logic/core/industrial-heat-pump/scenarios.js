@@ -1,5 +1,5 @@
 /** @typedef {{sector?:string,process?:string,inputs?:string[],outputs?:string[]}} IndustrialHeatPumpEntityReferences */
-/** @typedef {{label:string,description:string,inputs:Readonly<Record<string,number>>,industryGraphReferences?:IndustrialHeatPumpEntityReferences}} HeatPumpScenario */
+/** @typedef {{label:string,description:string,inputs:Readonly<import('./industrial-heat-pump.js').HeatPumpAssumptions>,industryGraphReferences?:IndustrialHeatPumpEntityReferences}} HeatPumpScenario */
 
 const BASE_INPUTS = Object.freeze({
   requiredSupplyTemperatureC: 120,
@@ -54,10 +54,19 @@ export const INDUSTRIAL_HEAT_PUMP_SCENARIOS = Object.freeze({
 });
 
 /**
+ * Original field order derived from authoritative assumptions, not a projected preset.
+ * @type {Readonly<Array<keyof import('./industrial-heat-pump.js').HeatPumpAssumptions>>}
+ */
+export const HEAT_PUMP_FIELD_NAMES =
+  /** @type {Array<keyof import('./industrial-heat-pump.js').HeatPumpAssumptions>} */ (
+    Object.keys(BASE_INPUTS)
+  );
+
+/**
  * Merge a sensitivity case with the shared synthetic process assumptions.
  * @param {string} label Short visible preset name.
  * @param {string} description Context shown after preset selection.
- * @param {Record<string,number>} [overrides] Assumptions changed by the preset.
+ * @param {Partial<import('./industrial-heat-pump.js').HeatPumpAssumptions>} [overrides] Assumptions changed by the preset.
  * @returns {HeatPumpScenario} Frozen scenario definition.
  */
 function createScenario(label, description, overrides = {}) {
@@ -71,8 +80,9 @@ function createScenario(label, description, overrides = {}) {
 /**
  * Build a portable screening scenario from trusted assumptions and results.
  * Graph references are optional opaque entity IDs and do not affect arithmetic.
- * @param {{scenarioName:string,assumptions:Record<string,number>,result:Record<string,any>,industryGraphReferences?:IndustrialHeatPumpEntityReferences}} scenario Validated scenario with optional graph links.
- * @returns {Record<string,unknown>} Version-one portable screening record.
+ * @template Name, Assumptions, Result, References
+ * @param {{scenarioName:Name,assumptions:Assumptions,result:Result,industryGraphReferences?:References}} scenario Trusted scenario slots with optional opaque graph links.
+ * @returns {{schemaVersion: number, scenarioName: Name, assumptions: Assumptions, result: Result, industryGraphReferences?: References, disclosure: string}} Version-one portable screening record retaining aliases.
  */
 export function createIndustrialHeatPumpScenarioExport(scenario) {
   return {

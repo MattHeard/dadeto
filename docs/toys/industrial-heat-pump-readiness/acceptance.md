@@ -16,7 +16,7 @@
 - [x] COP and maximum installed-cost thresholds are available only when their
   formulas have a positive feasible denominator; otherwise the result says
   that the target cannot be achieved from the supplied assumptions.
-- [x] The calculator lives in `src/core`, stays deterministic and service-free,
+- [x] The calculator lives in typed `src/logic/core`, stays deterministic and service-free,
   and passes 100% statement/branch/function/line coverage for changed core.
 - [x] `npm run check`, `npm run build`, focused lint, and `git diff --check` pass.
 
@@ -36,7 +36,7 @@
 
 ### Evidence Collection
 
-- Core: `src/core/industrialHeatPumpReadiness.js`.
+- Current core: `src/logic/core/industrial-heat-pump/values.js` (the earlier evidence below names its historical source).
 - Fixture/regressions: `test/core/industrialHeatPumpReadiness.test.js`.
 - Loop command and outcomes: owning Bead `dadeto-2j89`.
 
@@ -52,7 +52,8 @@
 - [x] Portable JSON export and print output preserve the scenario and caveats.
 - [x] The responsive page loads through the static site and has no account,
   remote API, backend, or browser-storage dependency.
-- [x] The presenter and scenario definitions live in `src/core/browser`; the
+- [x] The presenter remains in `src/core/browser`; scenario definitions live in
+  `src/logic/core/industrial-heat-pump`; the
   `src/browser` adapter injects calculation and browser-only effects and passes
   the non-core thin-file gate.
 
@@ -99,3 +100,23 @@ closing the feature. Record local checks/build and authoritative CI evidence
 separately. Any unrelated global failure must retain an owning quality Bead
 and triage note; the overarching quality issue stays open until Full Check
 passes.
+
+
+## Typed domain migration — November 9 (validation pending)
+
+The actual calculation, comparison, feasibility, threshold, preset and export
+bodies now live in typed boundary/core. The browser calculator composes a total
+parser and trusted computation. All ordered diagnostics, getter failures, native
+read order, original aliases and frozen examples are retained; no numeric-string
+coercion or new constructor policy was introduced. Public mutable-accessor
+projection slots are explicitly opaque, while the trusted numeric core has exact
+input/output contracts. Nine independent negative compiler controls pass.
+
+Local evidence: nine focused suites / 863 tests, all four metrics at 100% for
+eleven changed logic modules; original 613-case/19-export receipt unchanged plus
+360 mutable-getter comparisons. Actual site and cloud artifacts each resolve
+eighteen modules from nine entry/compatibility URLs and repeat all 613
+calculations and 19 exports. The 27-package cloud verifier also passes.
+Whole-domain mutation, exact current full CI and post-main validation remain
+required in `dadeto-2jg7`; this section does not close that task. Presenter-only
+pure formatting/summary helpers remain legacy follow-up work.

@@ -1,3 +1,4 @@
+import { createHeatPumpAssetCopies } from '../../logic/core/build/heat-pump-assets.js';
 import { createWgs84AssetCopies } from '../../logic/core/build/wgs84-assets.js';
 import { createCopyToInfraCore } from './copy.js';
 import {
@@ -2046,6 +2047,11 @@ function createCopyCloudPlan(deps) {
     ),
   });
   individualFileCopies.push(
+    ...createHeatPumpAssetCopies(
+      srcDir,
+      join(infraFunctionsDir, 'object-minute-rental-search'),
+      join
+    ),
     ...createWgs84AssetCopies(
       srcDir,
       join(infraFunctionsDir, 'object-minute-rental-search'),

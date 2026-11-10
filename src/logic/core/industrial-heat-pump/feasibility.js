@@ -1,8 +1,8 @@
 /**
  * Report independent engineering-limit and operating-cost statuses.
- * @param {Record<string, number>} input Validated assumptions.
- * @param {Record<string, number>} values Pure core calculation values.
- * @returns {Record<string, any>} Separated feasibility results.
+ * @param {import('./industrial-heat-pump.js').HeatPumpAssumptions} input Validated assumptions.
+ * @param {import('./industrial-heat-pump.js').HeatPumpValues} values Pure core calculation values.
+ * @returns {import('./industrial-heat-pump.js').HeatPumpFeasibility} Separated feasibility results.
  */
 export function buildIndustrialHeatPumpFeasibility(input, values) {
   const hasPositiveSavings = values.annualOperatingSavings > 0;
@@ -32,6 +32,13 @@ export function buildIndustrialHeatPumpFeasibility(input, values) {
   };
 }
 
+/**
+ * Keep the target-payback assessment separate from engineering capacity.
+ * @param {import('./industrial-heat-pump.js').HeatPumpAssumptions} input Trusted assumptions.
+ * @param {import('./industrial-heat-pump.js').HeatPumpValues} values Raw arithmetic values.
+ * @param {boolean} positiveSavings Whether operating savings are positive.
+ * @returns {import('./industrial-heat-pump.js').HeatPumpFeasibility['targetPayback']} Target status.
+ */
 function buildTargetPayback(input, values, positiveSavings) {
   return {
     status: !positiveSavings
