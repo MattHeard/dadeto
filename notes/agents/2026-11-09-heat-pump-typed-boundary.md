@@ -144,3 +144,37 @@ in the sandbox. This expands fixture availability only: all seventeen whole
 source modules, previous WGS84/build scope, static mutants and100threshold remain
 unchanged. Do not remove the presenter test or accept a dry-run failure as mutation
 evidence. Use the new retry log/receipt for the next complete attempt.
+
+
+## Rejected full report and targeted repair
+
+The complete17-module retry ended exit1 after37m03s:1,658Killed,3Survived,
+3Timeout and3RuntimeError,205static. All embedded sources matched head8109;
+rejected SHA00ecd007bf991fc45064506f918cc54099a992ca2b482087c5dfc0b3c581f51b,
+retained /tmp/dadeto-2jg7-rejected-report.json. Score99.82 excludes RuntimeError;
+none are acceptable. The three survivors expose missing tests for repeated
+untrusted getter reads, unnecessary reads when the maximum is undefined, and
+exact electrical-capacity equality. Keep original boundary guards: despite
+stable-value equivalence their read schedule is observable. Add changing-getter
+and full-read-order controls plus the hand-worked40kW inclusive boundary.
+
+Runtime errors came from deriving field keys from a projected preset at module
+load and from generating test cases by reading subject presets during test-module
+setup. Derive shared field metadata from authoritative frozen BASE_INPUTS, not
+its projected preset. Keep preset case names independent in the original fixture
+and read subject inputs inside test callbacks. This removes early dependency
+coupling without guards/defaults or hidden programming errors, and turns broken
+preset mutations into normal assertion failures. No mutation scope/static/threshold
+change. Run whole-module diagnostics, then the entire17-module scope again.
+
+
+The affected three whole-module diagnostic now kills all150mutants, including
+43static, with no survivors/errors/timeouts/skips/uncovered. Every embedded source
+matches the repaired files; reportSHA
+36d8ecb616ee2c95dc65d628b0cdb10fe01e1d1a0aa7ddcda9666982bc10501f,
+retained `/tmp/dadeto-2jg7-survivor-diagnostic-report.json`. The child exit receipt
+is0 and terminal engine log completes normally; the expired tool handle reported
+1, so retain that observation discrepancy rather than infer full acceptance.
+The complete17-module rerun with an explicit status-capturing wrapper remains
+required. Native original receipt is unchanged,824focused tests and all11local
+gates pass (`/tmp/dadeto-2jg7-survivor-fix-{equivalence.json,focused.log,check.log}`).

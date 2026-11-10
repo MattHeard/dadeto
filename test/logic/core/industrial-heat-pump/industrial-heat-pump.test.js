@@ -5,6 +5,7 @@ import { calculateIndustrialHeatPumpValues } from '../../../../src/logic/core/in
 import { calculateTrustedIndustrialHeatPump } from '../../../../src/logic/core/industrial-heat-pump/industrial-heat-pump.js';
 import {
   INDUSTRIAL_HEAT_PUMP_SCENARIOS,
+  HEAT_PUMP_FIELD_NAMES,
   createIndustrialHeatPumpScenarioExport,
 } from '../../../../src/logic/core/industrial-heat-pump/scenarios.js';
 import { INDUSTRIAL_HEAT_PUMP_FIXTURE } from '../../../fixtures/industrialHeatPumpReadiness.js';
@@ -35,17 +36,24 @@ const fingerprint = value =>
   createHash('sha256').update(serializeCoverageSemantics(value)).digest('hex');
 const cases = [
   ...heatPumpCalculationCases(),
-  ...Object.entries(INDUSTRIAL_HEAT_PUMP_SCENARIOS).map(([name, scenario]) => ({
-    name: `preset-${name}`,
-    input: scenario.inputs,
-  })),
+  ...baseline.calculations
+    .filter(entry => entry.name.startsWith('preset-'))
+    .map(entry => ({
+      name: entry.name,
+      preset: entry.name.slice('preset-'.length),
+    })),
 ];
 
 test.each(cases)(
   'matches the independently pinned original calculation: $name',
-  ({ name, input }) => {
+  ({ name, input, preset }) => {
+    const candidate = preset
+      ? INDUSTRIAL_HEAT_PUMP_SCENARIOS[preset].inputs
+      : input;
     expect(
-      fingerprint(observeHeatPump(calculateIndustrialHeatPumpReadiness, input))
+      fingerprint(
+        observeHeatPump(calculateIndustrialHeatPumpReadiness, candidate)
+      )
     ).toBe(calculations.get(name));
   }
 );
@@ -108,3 +116,26 @@ test('keeps hidden nonfinite arithmetic when its public domain state omits it', 
   );
   expect(calculateTrustedIndustrialHeatPump(tiny).valid).toBe(true);
 });
+
+test('publishes the original field ordering without projecting a preset during import', () => {
+  expect(HEAT_PUMP_FIELD_NAMES).toEqual(
+    Object.keys(INDUSTRIAL_HEAT_PUMP_FIXTURE)
+  );
+});
+
+test.each([
+  [40, 'within-limit'],
+  [39.999, 'insufficient-site-capacity'],
+  [40.001, 'within-limit'],
+])(
+  'includes exact electrical capacity at the hand-worked40kW boundary: %p',
+  (availableElectricalPowerKw, status) => {
+    const result = calculateTrustedIndustrialHeatPump({
+      ...INDUSTRIAL_HEAT_PUMP_FIXTURE,
+      availableElectricalPowerKw,
+    });
+    expect(result.valid).toBe(true);
+    expect(result.comparison.requiredElectricalPowerKw).toBe(40);
+    expect(result.comparison.feasibility.electricalPower.status).toBe(status);
+  }
+);

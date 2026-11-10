@@ -54,7 +54,7 @@ export const INDUSTRIAL_HEAT_PUMP_SCENARIOS = Object.freeze({
 });
 
 /**
- * Original ordered assumption metadata shared by form bindings and presentation.
+ * Original field order derived from authoritative assumptions, not a projected preset.
  * @type {Readonly<Array<keyof import('./industrial-heat-pump.js').HeatPumpAssumptions>>}
  */
 export const HEAT_PUMP_FIELD_NAMES =
