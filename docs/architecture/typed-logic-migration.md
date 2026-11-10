@@ -799,3 +799,22 @@ full CI and post-main evidence remain pending in `dadeto-kvq9`. The legacy DOM
 controller is now integration; its physical routing/minimal adapter decomposition
 remains part of the larger migration. Other legacy logic and recorded typing
 follow-ups also remain.
+
+
+### Heat-pump workflow state separated (integration routing pending)
+
+`logic/core/industrial-heat-pump/page-workflow.js` now owns the actual private
+current-result state and input/preset/reset/export/initialization workflow. It
+consumes precise field values, explicit calculation results and genuine view /
+download capabilities. Raw selector parsing stays at the integration read point;
+core shares scenario-name projection directly and never imports a boundary.
+Meaningful validity/current-result decisions remain; effect failures propagate.
+
+The first source step preserves385original cases/5378snapshots and passes132
+focused/packaging tests with all four changed-module metrics at100, twelve
+independent compiler-negative controls and all11local gates. Both actual artifacts
+resolve21modules and repeat the original domain and presenter corpora. The
+21whole-module mutation scope retains all20parent modules/static100 and is queued
+behind the live parent run. Physical DOM adapter decomposition/removal of the
+legacy integration implementation remains in dadeto-tgrl, together with current
+full CI, mutation and post-main acceptance. This does not complete rank11.

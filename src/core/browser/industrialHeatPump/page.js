@@ -1,13 +1,10 @@
+import { createHeatPumpPageWorkflow } from '../../../logic/core/industrial-heat-pump/page-workflow.js';
 import {
   parseHeatPumpFieldValue,
   parseHeatPumpScenario,
 } from '../../../logic/boundary/industrial-heat-pump/presentation-input.js';
 import { createHeatPumpPresentation } from '../../../logic/core/industrial-heat-pump/presentation.js';
-import {
-  INDUSTRIAL_HEAT_PUMP_SCENARIOS,
-  HEAT_PUMP_FIELD_NAMES as FIELD_NAMES,
-  createIndustrialHeatPumpScenarioExport,
-} from '../../../logic/core/industrial-heat-pump/scenarios.js';
+import { HEAT_PUMP_FIELD_NAMES as FIELD_NAMES } from '../../../logic/core/industrial-heat-pump/scenarios.js';
 
 const FORMAT_NUMBER = new Intl.NumberFormat('de-DE', {
   maximumFractionDigits: 1,
@@ -84,8 +81,6 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
   const activeResetButton = /** @type {HTMLButtonElement} */ (resetButton);
   const activePrintButton = /** @type {HTMLButtonElement} */ (printButton);
   const formInputs = collectFormInputs(activeForm);
-  /** @type {{inputs:HeatPumpAssumptions,comparison:HeatPumpPublicComparison}|null} */
-  let currentResult = null;
 
   /**
    * @param {Readonly<HeatPumpAssumptions>} inputs Assumption values to display.
@@ -192,108 +187,53 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
     );
   }
 
-  /**
-   * @returns {void}
-   */
-  function calculateAndRender() {
-    const inputs = readInputs();
-    const result = calculateIndustrialHeatPumpReadiness(inputs);
-    renderErrors(result.valid ? [] : result.errors);
-    if (!result.valid) {
-      currentResult = null;
-      activeResults.hidden = false;
-      activePageStatus.textContent =
-        'Correct the highlighted assumptions to see an updated comparison.';
-      activeExportButton.disabled = true;
-      return;
-    }
-    currentResult = { inputs, comparison: result.comparison };
-    renderComparison(inputs, result.comparison);
-    activeExportButton.disabled = false;
-    activePageStatus.textContent =
-      'Results updated from the current assumptions.';
-  }
-
-  /**
-   * @returns {void}
-   */
-  function handleInput() {
-    activeScenarioSelect.value = 'custom';
-    calculateAndRender();
-  }
-
-  /**
-   * @returns {void}
-   */
-  function handleScenarioChange() {
-    const scenario = parseHeatPumpScenario(activeScenarioSelect.value);
-    if (!scenario) return;
-    setInputs(scenario.inputs);
-    calculateAndRender();
-    activePageStatus.textContent = scenario.description;
-  }
-
-  /**
-   * @returns {void}
-   */
-  function handleReset() {
-    activeScenarioSelect.value = 'base';
-    setInputs(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs);
-    calculateAndRender();
-    activePageStatus.textContent = 'The base example has been restored.';
-  }
-
-  /**
-   * @returns {void}
-   */
-  function handleExport() {
-    if (!currentResult) {
-      activePageStatus.textContent =
-        'Correct the scenario before exporting it.';
-      return;
-    }
-    const selectedScenario = parseHeatPumpScenario(activeScenarioSelect.value);
-    const scenarioName = presentation.scenarioName(selectedScenario);
-    downloadJson(
-      createIndustrialHeatPumpScenarioExport({
-        scenarioName,
-        assumptions: currentResult.inputs,
-        result: currentResult.comparison,
-        industryGraphReferences: selectedScenario?.industryGraphReferences,
-      }),
-      'industrial-heat-pump-screening.json'
-    );
-    setText(
-      '#export-status',
-      'Exported the current assumptions and screening result as JSON.'
-    );
-  }
+  const workflow = createHeatPumpPageWorkflow({
+    calculateIndustrialHeatPumpReadiness,
+    downloadJson,
+    view: {
+      readInputs,
+      setInputs,
+      renderErrors,
+      renderComparison,
+      showResults: () => {
+        activeResults.hidden = false;
+      },
+      disableExport: value => {
+        activeExportButton.disabled = value;
+      },
+      selectedScenario: () => parseHeatPumpScenario(activeScenarioSelect.value),
+      selectScenario: value => {
+        activeScenarioSelect.value = value;
+      },
+      status: value => {
+        activePageStatus.textContent = value;
+      },
+      exportStatus: value => setText('#export-status', value),
+    },
+  });
 
   /**
    * @param {SubmitEvent} event Form submission.
    * @returns {void}
    */
   const handleSubmit = event => event.preventDefault();
-  activeForm.addEventListener('input', handleInput);
-  activeForm.addEventListener('change', handleInput);
+  activeForm.addEventListener('input', workflow.handleInput);
+  activeForm.addEventListener('change', workflow.handleInput);
   activeForm.addEventListener('submit', handleSubmit);
-  activeScenarioSelect.addEventListener('change', handleScenarioChange);
-  activeResetButton.addEventListener('click', handleReset);
-  activeExportButton.addEventListener('click', handleExport);
+  activeScenarioSelect.addEventListener('change', workflow.handleScenarioChange);
+  activeResetButton.addEventListener('click', workflow.handleReset);
+  activeExportButton.addEventListener('click', workflow.handleExport);
   activePrintButton.addEventListener('click', printPage);
 
-  setInputs(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs);
-  calculateAndRender();
-  activePageStatus.textContent =
-    INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.description;
+  workflow.initialize();
 
   return () => {
-    activeForm.removeEventListener('input', handleInput);
-    activeForm.removeEventListener('change', handleInput);
+    activeForm.removeEventListener('input', workflow.handleInput);
+    activeForm.removeEventListener('change', workflow.handleInput);
     activeForm.removeEventListener('submit', handleSubmit);
-    activeScenarioSelect.removeEventListener('change', handleScenarioChange);
-    activeResetButton.removeEventListener('click', handleReset);
-    activeExportButton.removeEventListener('click', handleExport);
+    activeScenarioSelect.removeEventListener('change', workflow.handleScenarioChange);
+    activeResetButton.removeEventListener('click', workflow.handleReset);
+    activeExportButton.removeEventListener('click', workflow.handleExport);
     activePrintButton.removeEventListener('click', printPage);
   };
 }

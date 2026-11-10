@@ -36,3 +36,19 @@ void message;
 // @ts-expect-error Missing legacy message entries are explicitly optional.
 const guaranteedMessage: string = presentation.fieldError('heatPumpCop', []).message();
 void guaranteedMessage;
+
+import { createHeatPumpPageWorkflow } from '../src/logic/core/industrial-heat-pump/page-workflow.js';
+declare const pageDependencies: Parameters<typeof createHeatPumpPageWorkflow>[0];
+const workflow = createHeatPumpPageWorkflow(pageDependencies);
+workflow.handleInput();
+// @ts-expect-error Trusted workflow consumes parsed scenarios, not raw selector strings.
+pageDependencies.view.selectedScenario = () => 'base';
+// @ts-expect-error Calculation ports must return the explicit public result union.
+pageDependencies.calculateIndustrialHeatPumpReadiness = () => 'valid';
+// @ts-expect-error Availability writes require booleans, not text coercion.
+pageDependencies.view.disableExport('false');
+// @ts-expect-error Workflow actions do not accept unrelated argument bags.
+workflow.handleReset({});
+
+// @ts-expect-error A view must provide the twelve numeric fields, not opaque raw evidence.
+pageDependencies.view.readInputs = () => unknownInput;
