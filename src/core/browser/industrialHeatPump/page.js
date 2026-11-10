@@ -1,9 +1,9 @@
 import {
   INDUSTRIAL_HEAT_PUMP_SCENARIOS,
+  HEAT_PUMP_FIELD_NAMES as FIELD_NAMES,
   createIndustrialHeatPumpScenarioExport,
 } from '../../../logic/core/industrial-heat-pump/scenarios.js';
 
-const FIELD_NAMES = Object.keys(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs);
 const FORMAT_NUMBER = new Intl.NumberFormat('de-DE', {
   maximumFractionDigits: 1,
 });

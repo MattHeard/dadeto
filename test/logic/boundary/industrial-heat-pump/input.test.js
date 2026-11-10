@@ -97,3 +97,46 @@ test('captures proxy presence failures without replacing the thrown value', () =
   );
   expect(parseIndustrialHeatPumpInput(input)).toEqual({ ok: false, error });
 });
+
+test.each(Object.keys(base))(
+  'checks each repeated untrusted read of %s before range interpretation',
+  field => {
+    let reads = 0;
+    const input = { ...base };
+    Object.defineProperty(input, field, {
+      get: () => (++reads === 1 ? base[field] : String(base[field])),
+    });
+    expect(parseIndustrialHeatPumpInput(input)).toEqual({
+      ok: true,
+      evidence: {
+        valid: false,
+        errors: [{ field, code: 'finite-number-required' }],
+      },
+    });
+    expect(reads).toBe(2);
+  }
+);
+
+test('retains exact field-read order and never reads an unbounded maximum candidate', () => {
+  const trace = [];
+  const input = {};
+  for (const field of Object.keys(base))
+    Object.defineProperty(input, field, {
+      get: () => {
+        trace.push(field);
+        return base[field];
+      },
+    });
+  expect(parseIndustrialHeatPumpInput(input).evidence.valid).toBe(true);
+  const upperBounded = new Set([
+    'requiredSupplyTemperatureC',
+    'annualOperatingHours',
+    'incumbentEfficiency',
+    'heatPumpMaxTemperatureC',
+  ]);
+  expect(trace).toEqual(
+    Object.keys(base).flatMap(field =>
+      Array(upperBounded.has(field) ? 4 : 3).fill(field)
+    )
+  );
+});
