@@ -2,6 +2,8 @@ import domain from './heat-pump.stryker.config.mjs';
 
 export default {
   ...domain,
+  reporters: ['progress', 'json', 'event-recorder'],
+  eventReporter: {baseDir: 'reports/mutation/heat-pump-presentation-events'},
   mutate: [
     ...domain.mutate,
     'src/logic/boundary/industrial-heat-pump/presentation-input.js',

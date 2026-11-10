@@ -145,3 +145,37 @@ behind the repaired domain17run. Exact full CI and post-main validation are stil
 required. The remaining legacy DOM integration location/wiring is a distinct
 overarching-layout follow-up; do not infer final whole-tree completion from this
 source slice. Keep the bead open pending complete mutation and authoritative CI.
+
+
+## Interrupted evaluator and persistent event evidence
+
+After the usage-limit interruption, the old observation handle was missing and
+an approved host process check confirmed PID1118196 and all Stryker workers were
+absent. The log stopped at1325/2049 with3provisional survivors/2timeouts; there was
+no final JSON report, terminal receipt or exit status. This is an interrupted,
+unaccepted run, not a passing result. Preserve its original log/pid files under
+/tmp/dadeto-kvq9-complete-mutation.*. Do not infer that an expired observation
+handle alone means a process stopped; this restart follows authoritative absence.
+
+The existing complete20module config now also enables Stryker's built-in
+`event-recorder`, with reports/mutation/heat-pump-presentation-events as its own
+output directory. Installed reporter code writes the plan and every completed
+mutant event while running, instead of waiting for final JSON. Keep progress and
+JSON reporters too. Scope, sources, static mutation, one-worker concurrency and
+100thresholds are unchanged. Before any subsequent rerun archive the event folder:
+the built-in recorder cleans its own output directory at startup.
+
+Launch the next supervisor in a detached process group with standard streams
+redirected to task-owned files. Its child-close handler records child/supervisor
+PIDs, code, signal, timestamps and config explicitly. Keep log and receipts in
+worktree reports/mutation on disk, rather than the nearly full /tmp tmpfs. Set
+TMPDIR and NODE_COMPILE_CACHE to worktree-local .tmp directories and keep
+DADETO_STRYKER_MAX_TEST_RUNNER_REUSE=10. The generic worktree runner uses inherited
+stdio and a new directory-target config; retain this existing complete domain
+config instead of changing selection just to use that runner.
+
+Per-mutant event records are diagnosis evidence, not whole-scope acceptance.
+Final acceptance still requires a terminal zero exit, complete report, exact
+configured source set/embedded bytes, and review of every status and static
+mutant. Survived/runtime-error/skipped/no-coverage outcomes cannot be accepted.
+Do not edit the live source or start a second full mutation worker.
