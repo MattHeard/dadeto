@@ -36,3 +36,39 @@ void message;
 // @ts-expect-error Missing legacy message entries are explicitly optional.
 const guaranteedMessage: string = presentation.fieldError('heatPumpCop', []).message();
 void guaranteedMessage;
+
+import { createHeatPumpPageWorkflow } from '../src/logic/core/industrial-heat-pump/page-workflow.js';
+declare const pageDependencies: Parameters<typeof createHeatPumpPageWorkflow>[0];
+const workflow = createHeatPumpPageWorkflow(pageDependencies);
+workflow.handleInput();
+// @ts-expect-error Trusted workflow consumes parsed scenarios, not raw selector strings.
+pageDependencies.view.selectedScenario = () => 'base';
+// @ts-expect-error Calculation ports must return the explicit public result union.
+pageDependencies.calculateIndustrialHeatPumpReadiness = () => 'valid';
+// @ts-expect-error Availability writes require booleans, not text coercion.
+pageDependencies.view.disableExport('false');
+// @ts-expect-error Workflow actions do not accept unrelated argument bags.
+workflow.handleReset({});
+
+// @ts-expect-error A view must provide the twelve numeric fields, not opaque raw evidence.
+pageDependencies.view.readInputs = () => unknownInput;
+
+import { getHeatPumpPageElements } from '../src/adapters/industrial-heat-pump/elements.js';
+import { readHeatPumpPageNodes } from '../src/adapters/industrial-heat-pump/nodes.js';
+import { createHeatPumpFieldEffects } from '../src/adapters/industrial-heat-pump/fields.js';
+import { createHeatPumpPageView } from '../src/adapters/industrial-heat-pump/view.js';
+declare const browserDocument: Document;
+const pageElements = getHeatPumpPageElements(browserDocument);
+if (pageElements) {
+  const fields = createHeatPumpFieldEffects(pageElements.form);
+  const view = createHeatPumpPageView(browserDocument, pageElements, fields);
+  const selected = view.selectedScenario();
+  void selected;
+  // @ts-expect-error Raw nullable nodes cannot enter the mounted view capability.
+  createHeatPumpPageView(browserDocument, readHeatPumpPageNodes(browserDocument), fields);
+}
+// @ts-expect-error Missing-page availability must be narrowed before using form receivers.
+const guaranteedForm = pageElements.form;
+void guaranteedForm;
+// @ts-expect-error Field capture requires a form receiver, not a whole document.
+createHeatPumpFieldEffects(browserDocument);

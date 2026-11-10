@@ -277,7 +277,7 @@ function describeErrors(errors) {
  * @param {{label: string} | null} scenario Parsed preset label or custom state.
  * @returns {string} Original export-facing name.
  */
-function describeScenarioName(scenario) {
+export function describeScenarioName(scenario) {
   if (scenario === null) return 'Custom assumptions';
   return scenario.label;
 }

@@ -75,7 +75,12 @@ const cases = [
   ...heatPumpPresenterWriteCases(),
   ...heatPumpPresenterEventCases(),
 ];
-for (const candidate of process.argv.slice(2)) {
+const candidates = process.argv.slice(2);
+assert.ok(
+  candidates.length,
+  'Provide at least one actual built artifact root.'
+);
+for (const candidate of candidates) {
   const artifactRoot = path.resolve(candidate);
   const publishedHtml = path.join(
     artifactRoot,

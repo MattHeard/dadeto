@@ -1,5 +1,61 @@
 [
   [
+    "adapters/industrial-heat-pump/comparison.js",
+    "adapters/industrial-heat-pump/comparison.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/display.js",
+    "adapters/industrial-heat-pump/display.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/elements.js",
+    "adapters/industrial-heat-pump/elements.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/field-errors.js",
+    "adapters/industrial-heat-pump/field-errors.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/fields.js",
+    "adapters/industrial-heat-pump/fields.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/formatters.js",
+    "adapters/industrial-heat-pump/formatters.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/listeners.js",
+    "adapters/industrial-heat-pump/listeners.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/nodes.js",
+    "adapters/industrial-heat-pump/nodes.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/page.js",
+    "adapters/industrial-heat-pump/page.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/summary.js",
+    "adapters/industrial-heat-pump/summary.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/view.js",
+    "adapters/industrial-heat-pump/view.js"
+  ],
+  [
+    "adapters/industrial-heat-pump/write-text.js",
+    "adapters/industrial-heat-pump/write-text.js"
+  ],
+  [
+    "build/assets/industrial-heat-pump/page.js.txt",
+    "core/browser/industrialHeatPump/page.js"
+  ],
+  [
+    "logic/core/industrial-heat-pump/page-workflow.js",
+    "logic/core/industrial-heat-pump/page-workflow.js"
+  ],
+  [
     "logic/boundary/industrial-heat-pump/presentation-input.js",
     "logic/boundary/industrial-heat-pump/presentation-input.js"
   ],

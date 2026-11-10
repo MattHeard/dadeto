@@ -799,3 +799,44 @@ full CI and post-main evidence remain pending in `dadeto-kvq9`. The legacy DOM
 controller is now integration; its physical routing/minimal adapter decomposition
 remains part of the larger migration. Other legacy logic and recorded typing
 follow-ups also remain.
+
+
+### Heat-pump workflow state separated (integration routing pending)
+
+`logic/core/industrial-heat-pump/page-workflow.js` now owns the actual private
+current-result state and input/preset/reset/export/initialization workflow. It
+consumes precise field values, explicit calculation results and genuine view /
+download capabilities. Raw selector parsing stays at the integration read point;
+core shares scenario-name projection directly and never imports a boundary.
+Meaningful validity/current-result decisions remain; effect failures propagate.
+
+The first source step preserves385original cases/5378snapshots and passes132
+focused/packaging tests with all four changed-module metrics at100, twelve
+independent compiler-negative controls and all11local gates. Both actual artifacts
+resolve21modules and repeat the original domain and presenter corpora. The
+21whole-module mutation scope retains all20parent modules/static100 and is queued
+behind the live parent run. Physical DOM adapter decomposition/removal of the
+legacy integration implementation remains in dadeto-tgrl, together with current
+full CI, mutation and post-main acceptance. This does not complete rank11.
+
+
+### Heat-pump page native integration routed (validation pending)
+
+The actual legacy DOM implementation is removed. The browser facade now imports
+the small page adapter, which composes typed workflow with explicit field,
+selector, display, validation, comparison and listener capabilities. Native Intl
+construction remains module-scoped in integration; ordered lazy core projections
+retain original formatting/failure/write timing. Each platform module is below
+the existing50line limit, with no new exemptions. Required-node availability is
+an integration condition; core does not import DOM or boundary modules.
+
+The old core-page published URL is generated compatibility output only. Both
+actual site/cloud graphs prove export identity, every expected asset's source
+bytes and all385original cases/5378snapshots.132focused tests give all four metrics
+at100 for workflow/all12adapters; affected asset tests also measure all four at100.
+Fifteen actual composition-negative controls and all11local gates pass. The new
+32whole-module mutation scope retains every nondeleted parent source, all relocated
+adapters and workflow, static enabled/threshold100. Current CI, complete mutation
+and post-main acceptance remain pending in dadeto-tgrl. This supersedes only the
+physical-routing status in the preceding source-step entry; the broader legacy
+migration and rank11 completion remain open.
