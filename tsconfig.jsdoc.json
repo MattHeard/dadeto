@@ -23,7 +23,17 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/core/**/*.js", "src/logic/core/**/*.js", "src/logic/boundary/**/*.js", "src/adapters/**/*.js", "types/allow-effects-adapters.contract.ts", "types/test-partitions.contract.ts", "types/impact-plan.contract.ts", "types/industrial-heat-pump.contract.ts"],
+  "include": [
+    "src/core/**/*.js",
+    "src/logic/core/**/*.js",
+    "src/logic/boundary/**/*.js",
+    "src/adapters/**/*.js",
+    "types/allow-effects-adapters.contract.ts",
+    "types/test-partitions.contract.ts",
+    "types/impact-plan.contract.ts",
+    "types/industrial-heat-pump.contract.ts",
+    "types/static-jsonl-line.contract.ts"
+  ],
   "exclude": [
     "node_modules",
     "public",

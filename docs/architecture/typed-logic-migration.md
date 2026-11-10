@@ -762,3 +762,49 @@ static-mutant relaxation. Mutation/current full CI/post-main evidence is pending
 in `dadeto-2jg7`; pure presenter summary/formatting work and the rest of the legacy
 tree remain outstanding. This section supersedes only the preparatory status in
 the preceding contract-foundation entry, not the historical baseline evidence.
+
+### Static JSONL line interpretation (partial, November 10)
+
+The build table reader now delegates its actual blank-line, native JSON decoding
+and root-record acceptance to the total `parseStaticJsonlLine` boundary parser.
+Its explicit evidence distinguishes blank lines, records with opaque JSON fields,
+and original errors. Malformed JSON retains the same physical line diagnostic and
+native cause; unsupported record shapes retain the existing TypeError. Scalar
+cell acceptance remains a separate policy, so a decoded record is not presented
+to callers as a validated scalar table.
+
+The source reader, repeated descriptor/column reads, projection and browser DOM
+workflow still require migration. The independent original three-module graph,
+900 comparator/100 build cases, 45 browser scenarios/271 snapshots and 768 getter
+cases/13,027 reads are enforced by ordinary Jest tests. No ledger was regenerated
+for the extraction. Actual parser type controls and focused coverage are recorded
+in dadeto-hk0y; authoritative current CI and the retained ten-module domain
+mutation scope remain required. The existing heat-pump mutation evaluator keeps
+its separate complete scope; no parallel full worker is started for this domain.
+
+
+The subsequent scalar/escaping step moves own-cell acceptance and native String
+coercion into total boundary parsers. Actual attribute/text escaping now takes
+trusted strings in `src/logic/core/static-jsonl-table/escaping.js`; it does not
+repeat raw-value guards. Plain-object row projection and the original getter and
+coercion order remain unchanged. Ten actual negative controls enforce the
+boundary/core distinction. Descriptor validation, sorting, markup assembly and
+source/DOM integration remain in the migration backlog owned by dadeto-hk0y.
+
+
+Descriptor shape/uniqueness and source confinement are now total boundary
+interpretations as well. Their accepted evidence retains the original descriptor
+with opaque slots rather than claiming stable fields from repeated getters. The
+integration closure preserves the exact receiver/method/source lookup order of
+the injected pure absolute-path decision. Logic code imports no path platform or
+source reader. Fourteen actual type controls protect this contract; sorting,
+markup assembly and source/DOM integration remain outstanding in dadeto-hk0y.
+
+
+Actual header/cell/row/table assembly and authored expansion-state computation
+now live in the trusted markup core. Named prepared string slots retain the four
+original header conversions; the exact expansion fragments are a literal union.
+Integration keeps native map/join and original getter/coercion timing. Nineteen
+actual type controls protect the growing boundary/core API. Sorting and
+source/DOM integration remain outstanding; the ten-module mutation scope is
+queued and the complete rank-11 migration is not claimed.
