@@ -1,5 +1,5 @@
 import { calculateIndustrialHeatPumpReadiness } from '../industrialHeatPumpReadiness.js';
-import { startIndustrialHeatPumpReadinessPage as startCore } from '../../core/browser/industrialHeatPump/page.js';
+import { startIndustrialHeatPumpReadinessPage as startPage } from '../../adapters/industrial-heat-pump/page.js';
 
 /**
  * Bind the industrial heat-pump presenter to its calculation boundary.
@@ -7,7 +7,7 @@ import { startIndustrialHeatPumpReadinessPage as startCore } from '../../core/br
  * @returns {() => void} Removes page listeners.
  */
 export function startIndustrialHeatPumpReadinessPage(environment) {
-  return startCore({
+  return startPage({
     documentObj: environment.documentObj,
     calculateIndustrialHeatPumpReadiness,
     downloadJson:

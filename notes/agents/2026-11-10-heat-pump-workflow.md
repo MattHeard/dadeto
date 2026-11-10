@@ -12,10 +12,10 @@ trusted core never imports a boundary module. The existing pure scenario-name
 operation is shared directly by workflow and presentation. Keep result validity
 and current-result checks: these represent domain/state decisions.
 
-The legacy page currently composes those workflow actions with the original DOM
-operations and listener lifecycle. Physical adapter decomposition/removal of that
-legacy implementation remains in this bead. Do not describe this first source
-step as completion. Preserve the original ordering: register all listeners, write
+At first-source commit84671eabfa, the legacy page composed those workflow actions
+with the original DOM operations and listener lifecycle. Adapter decomposition
+and removal of that implementation remained for the following source step.
+That first source step alone did not complete routing. Preserve the original ordering: register all listeners, write
 base fields, calculate/render, then write base feedback. Propagate effect and
 programming failures without fallbacks. Actions retain their actual callable
 identity when registered and removed.
@@ -59,3 +59,45 @@ with exit1. Real acceptance uses explicit roots public and
 infra/cloud-functions/object-minute-rental-search. Do not equate a zero exit with
 a nonempty artifact receipt. Cloud remains a module-only archive exercised with
 the immutable original HTML fixture; site uses its actually published HTML.
+
+
+## Native integration routed; complete validation pending
+
+The legacy page implementation is now deleted. The real browser entry imports
+`adapters/industrial-heat-pump/page.js`. Twelve platform modules each remain9-45
+lines after Prettier and explicit adapter ESLint, without new exemptions. They
+own required-node queries/availability, captured field reads/writes, native Intl
+construction, text/list effects, field and summary effects, comparison dispatch,
+view wiring, and listener lifecycle. Core owns all workflow and presentation
+choices; boundary owns raw field and selector interpretation. Keep the exact
+query, formatting, write, registration, initialization and disposal sequence.
+
+The old published core/browser/industrialHeatPump/page.js URL is generated from
+build/assets/industrial-heat-pump/page.js.txt; it is not a permanent source
+forwarder. Both actual artifacts prove its export is the identical function as
+the real adapter. The independent asset ledger also proves every expected module
+or compatibility output matches its actual source bytes. Each real artifact
+resolves33modules through10entry/compatibility roots, repeats613calculations /
+19exports and all385presenter cases/5378snapshots with unchanged original hashes.
+
+Four focused suites pass132tests with all four metrics100 on all12adapters and
+workflow core. Separate affected packaging tests pass4tests/all4metrics100 on the
+changed asset projection. Actual type contracts now have15independent negative
+controls: TS2322x5, TS2339x3, TS2345x5, TS2554x1 and TS18047x1. They also prove
+required-node availability must be narrowed and that actual forms, not documents
+or nullable node bags, enter mounted capabilities. All11local gates pass; explicit
+adapter ESLint passes. Evidence: reports/workflow-adapters-* and corresponding
+coverage directories. Current authoritative CI/post-main and complete mutation
+remain required in dadeto-tgrl, not established by these local results.
+
+The retained whole mutation scope is32modules: all19nondeleted parent sources,
+twelve relocated adapters and the new workflow. No static exclusions or threshold
+changes. Execution stays queued until the live parent20module run terminates.
+That parent has provisional survivors and cannot be merged on its CI result alone.
+
+Harness hurdle: a broad replacement accidentally added page compatibility to the
+scenario-export assertion loop as well as its intended closure/identity checks.
+The real page export-identity check passed, then the wrong scenario assertion
+failed. Scope edits to the exact expected list, assert the replacement target,
+retain the existing scenario checks and repeat the real artifact probe. This was
+not a production module failure or permission to weaken a comparison.

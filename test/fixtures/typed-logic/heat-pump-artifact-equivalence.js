@@ -12,6 +12,10 @@ import {
 } from './heat-pump-contract.js';
 import { serializeCoverageSemantics } from './coverage-semantics.js';
 
+const assetPairs = JSON.parse(
+  readFileSync(new URL('./heat-pump-assets.json', import.meta.url), 'utf8')
+);
+
 const baseline = JSON.parse(
   readFileSync(
     new URL('./heat-pump-legacy-contracts.json', import.meta.url),
@@ -36,6 +40,7 @@ const entries = [
   'browser/industrialHeatPump/thresholds.js',
   'core/industrialHeatPumpReadiness.js',
   'core/browser/industrialHeatPump/scenarios.js',
+  'core/browser/industrialHeatPump/page.js',
 ];
 
 /**
@@ -74,6 +79,34 @@ assert.ok(
 );
 for (const candidate of candidates) {
   const artifactRoot = path.resolve(candidate);
+  for (const [source, target] of assetPairs) {
+    assert.equal(
+      readFileSync(path.join(artifactRoot, target), 'utf8'),
+      readFileSync(new URL(`../../../src/${source}`, import.meta.url), 'utf8'),
+      `${candidate}: exact asset ${target}`
+    );
+  }
+  const pageEntry = await import(
+    pathToFileURL(path.join(artifactRoot, 'browser/industrialHeatPump/page.js'))
+  );
+  const legacyPage = await import(
+    pathToFileURL(
+      path.join(artifactRoot, 'core/browser/industrialHeatPump/page.js')
+    )
+  );
+  const adapterPage = await import(
+    pathToFileURL(
+      path.join(artifactRoot, 'adapters/industrial-heat-pump/page.js')
+    )
+  );
+  assert.equal(
+    legacyPage.startIndustrialHeatPumpReadinessPage,
+    adapterPage.startIndustrialHeatPumpReadinessPage
+  );
+  assert.equal(
+    typeof pageEntry.startIndustrialHeatPumpReadinessPage,
+    'function'
+  );
   const modules = inspectClosure(artifactRoot);
   const load = entry =>
     import(pathToFileURL(path.join(artifactRoot, entry)).href);

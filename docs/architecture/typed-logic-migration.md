@@ -818,3 +818,25 @@ resolve21modules and repeat the original domain and presenter corpora. The
 behind the live parent run. Physical DOM adapter decomposition/removal of the
 legacy integration implementation remains in dadeto-tgrl, together with current
 full CI, mutation and post-main acceptance. This does not complete rank11.
+
+
+### Heat-pump page native integration routed (validation pending)
+
+The actual legacy DOM implementation is removed. The browser facade now imports
+the small page adapter, which composes typed workflow with explicit field,
+selector, display, validation, comparison and listener capabilities. Native Intl
+construction remains module-scoped in integration; ordered lazy core projections
+retain original formatting/failure/write timing. Each platform module is below
+the existing50line limit, with no new exemptions. Required-node availability is
+an integration condition; core does not import DOM or boundary modules.
+
+The old core-page published URL is generated compatibility output only. Both
+actual site/cloud graphs prove export identity, every expected asset's source
+bytes and all385original cases/5378snapshots.132focused tests give all four metrics
+at100 for workflow/all12adapters; affected asset tests also measure all four at100.
+Fifteen actual composition-negative controls and all11local gates pass. The new
+32whole-module mutation scope retains every nondeleted parent source, all relocated
+adapters and workflow, static enabled/threshold100. Current CI, complete mutation
+and post-main acceptance remain pending in dadeto-tgrl. This supersedes only the
+physical-routing status in the preceding source-step entry; the broader legacy
+migration and rank11 completion remain open.
