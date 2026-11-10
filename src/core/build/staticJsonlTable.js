@@ -1,3 +1,7 @@
+import {
+  parseStaticJsonlDefinition,
+  parseStaticJsonlConfinement,
+} from '../../logic/boundary/static-jsonl-table/definition.js';
 import { parseStaticJsonlCell } from '../../logic/boundary/static-jsonl-table/cell.js';
 import { parseStaticJsonlText } from '../../logic/boundary/static-jsonl-table/text.js';
 import {
@@ -73,20 +77,12 @@ export function createStaticJsonlTable(dependencies) {
    * @returns {void} Throws for an invalid definition.
    */
   function validateDefinition(entry) {
-    if (!entry || typeof entry !== 'object') fail('entry must be an object');
-    if (typeof entry.source !== 'string' || !entry.source.trim())
-      fail('source must be a non-empty string');
-    if (!Array.isArray(entry.columns) || entry.columns.length === 0)
-      fail('columns must be a non-empty array');
-    if (entry.columns.some(column => typeof column !== 'string' || !column))
-      fail('columns must contain non-empty strings');
-    if (new Set(entry.columns).size !== entry.columns.length)
-      fail('columns must be unique');
-    if (
-      dependencies.paths.isAbsolute(entry.source) ||
-      entry.source.split(/[\\/]/).includes('..')
-    )
-      fail('source must stay inside the static data directory');
+    const parsed = parseStaticJsonlDefinition(entry);
+    if (!parsed.ok) throw parsed.error;
+    const confined = parseStaticJsonlConfinement(parsed.evidence, () =>
+      dependencies.paths.isAbsolute(entry.source)
+    );
+    if (!confined.ok) throw confined.error;
   }
 
   /**

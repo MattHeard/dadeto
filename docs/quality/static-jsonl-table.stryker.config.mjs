@@ -8,6 +8,7 @@ export default {
     'src/core/build/staticJsonlTable.js',
     'src/core/browser/staticJsonlTable.js',
     'src/logic/boundary/static-jsonl-table/record.js',
+    'src/logic/boundary/static-jsonl-table/definition.js',
     'src/logic/boundary/static-jsonl-table/cell.js',
     'src/logic/boundary/static-jsonl-table/text.js',
     'src/logic/core/static-jsonl-table/escaping.js',

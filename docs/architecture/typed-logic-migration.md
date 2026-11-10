@@ -778,7 +778,7 @@ workflow still require migration. The independent original three-module graph,
 900 comparator/100 build cases, 45 browser scenarios/271 snapshots and 768 getter
 cases/13,027 reads are enforced by ordinary Jest tests. No ledger was regenerated
 for the extraction. Actual parser type controls and focused coverage are recorded
-in dadeto-hk0y; authoritative current CI and the retained eight-module domain
+in dadeto-hk0y; authoritative current CI and the retained nine-module domain
 mutation scope remain required. The existing heat-pump mutation evaluator keeps
 its separate complete scope; no parallel full worker is started for this domain.
 
@@ -790,3 +790,12 @@ repeat raw-value guards. Plain-object row projection and the original getter and
 coercion order remain unchanged. Ten actual negative controls enforce the
 boundary/core distinction. Descriptor validation, sorting, markup assembly and
 source/DOM integration remain in the migration backlog owned by dadeto-hk0y.
+
+
+Descriptor shape/uniqueness and source confinement are now total boundary
+interpretations as well. Their accepted evidence retains the original descriptor
+with opaque slots rather than claiming stable fields from repeated getters. The
+integration closure preserves the exact receiver/method/source lookup order of
+the injected pure absolute-path decision. Logic code imports no path platform or
+source reader. Fourteen actual type controls protect this contract; sorting,
+markup assembly and source/DOM integration remain outstanding in dadeto-hk0y.

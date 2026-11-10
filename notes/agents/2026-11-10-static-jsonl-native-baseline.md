@@ -77,7 +77,7 @@ lives after the actual non-null/object/non-array check in the boundary.
 Run the complete retained domain scope with
 `DADETO_STRYKER_MAX_TEST_RUNNER_REUSE=10 node --experimental-vm-modules node_modules/.bin/stryker run docs/quality/static-jsonl-table.stryker.config.mjs`
 when the existing full worker has finished. It retains all three original domain
-modules, all four extracted boundary/core modules and shared outcome capture, with static mutants
+modules, all five extracted boundary/core modules and shared outcome capture, with static mutants
 included, one worker and 100 thresholds. This run is queued, not passed.
 
 
@@ -100,3 +100,29 @@ The retained domain mutation configuration now includes eight files and keeps al
 three original source modules. It remains queued behind the sole existing full
 worker. No full mutation result is claimed. Descriptor validation, sorting,
 render assembly and source/DOM integration still need the remaining migration.
+
+
+## Descriptor interpretation step
+
+Structural descriptor acceptance and source confinement now live in total
+boundary parsers. Accepted descriptor evidence retains the original reference
+with unknown slots: repeated getters can still change source/columns, so success
+must not be advertised as stable string/array field evidence. Fourteen actual
+negative controls now enforce this distinction alongside the scalar/text rules.
+
+An important integration detail is the order of the absolute-path decision:
+`dependencies.paths.isAbsolute(entry.source)` first resolves the path receiver
+and method, then reads source, then calls the method with its original receiver.
+Passing a pre-read source to an adapter would change that order. The adapter
+therefore passes the complete original pure decision as a closure; the boundary
+performs the subsequent source-segment check only if that result is falsey.
+Boundary code imports no platform module or source reader.
+
+All original native ledgers remain unchanged. The focused suite now passes 165
+tests in nine suites, and all four metrics are 100% across five extracted modules.
+Reports: `reports/static-jsonl-definition-tests.log`,
+`reports/coverage/static-jsonl-definition/coverage-summary.json`, and
+`reports/static-jsonl-definition-negative-types.log`. The retained mutation scope
+now has nine modules, including every original domain module, with no static
+exclusions or lower thresholds. It is queued, not accepted. Sorting, rendering
+assembly and source/DOM integration remain outstanding.

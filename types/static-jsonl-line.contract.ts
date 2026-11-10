@@ -39,3 +39,20 @@ if (cell.ok) {
   // @ts-expect-error Raw text evidence requires explicit error handling.
   escapeStaticJsonlText(text.evidence);
 }
+
+import {
+  parseStaticJsonlDefinition,
+  parseStaticJsonlConfinement,
+} from '../src/logic/boundary/static-jsonl-table/definition.js';
+const definition = parseStaticJsonlDefinition({ source: 'a', columns: ['x'] });
+// @ts-expect-error Accepted evidence still needs explicit error handling.
+definition.evidence;
+if (definition.ok) {
+  // @ts-expect-error Mutable descriptor slots are opaque, not stable string guarantees.
+  const source: string = definition.evidence.source;
+  void source;
+  // @ts-expect-error The original pure path decision is required.
+  parseStaticJsonlConfinement(definition.evidence);
+  // @ts-expect-error Path decisions are supplied as operations preserving lookup timing.
+  parseStaticJsonlConfinement(definition.evidence, false);
+}
