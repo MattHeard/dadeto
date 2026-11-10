@@ -701,3 +701,27 @@ shard dependency once and composes the parser and partitioner directly.
 must compile, while raw positive literals, zero, negatives and arbitrary numbers
 must be rejected. The immutable-source test-partitions-equivalence harness retains
 option, getter, sparse-array, order and complete CLI compatibility evidence.
+
+### Parsed impact input and trusted planning
+
+`src/logic/boundary/local/impact-plan-inputs.js` owns actual option defaults, ordered
+property reads, path normalization/classification and related-test interpretation.
+It returns explicit parsed evidence or the original structural error. Parsed change
+state and discovery state are coherent domain records; discovery truthiness becomes
+a boolean without coercing objects. Collection-error payloads remain generic and
+retain identity, including non-text values accepted by the public planner.
+
+`src/logic/core/local/impact-plan.js` constructs no-change, fallback and selected
+plans from that evidence. It constructs the actual changed-path plan, preserves
+fallback precedence, combines/sorts selected tests and creates ordered commands
+and supported gates. Each operation has a bounded parameter surface; classification
+and structural input guards stay at the boundary. The legacy public factory is
+thin composition and preserves its optional-argument function arity.
+
+`types/impact-plan.contract.ts` is part of tsdoc:check: opaque fallback payloads
+cannot be declared strings, public composition retains inferred payload types, raw
+options cannot enter trusted planning, and failure results must be narrowed before
+using parsed evidence. CLI preparation/static-gate helpers instantiate the generic
+plan with string evidence because their actual callers construct error messages.
+The immutable impact-planning-equivalence fixture pins9,011complete outcomes,
+32getter failures, read order, reason identity, public name/arity and576CLI cases.
