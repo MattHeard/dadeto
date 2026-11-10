@@ -130,3 +130,17 @@ recorded in `/tmp/dadeto-2jg7-complete-check.log`. Whole-domain mutation and
 current full CI remain pending. Next time use the native archive graph probe,
 not only the backend verifier. Also avoid comparing accepted Date record identity
 against a plain fixture object in tests; acceptance preserves the actual object.
+
+
+## Whole mutation sandbox requires actual page fixtures
+
+The first whole seventeen-module mutation attempt instrumented1,667mutants but
+failed its initial tests (exit1) before testing mutants: the native presenter
+test reads the real page HTML and app entry, which the selective sandbox omitted.
+The exact failure is ENOENT for src/content/pages/industrial-heat-pump-readiness/index.html
+in `/tmp/dadeto-2jg7-complete-mutation.log`; terminal receipt
+`/tmp/dadeto-2jg7-mutation.exit`. Include that HTML and its app.js fixture explicitly
+in the sandbox. This expands fixture availability only: all seventeen whole
+source modules, previous WGS84/build scope, static mutants and100threshold remain
+unchanged. Do not remove the presenter test or accept a dry-run failure as mutation
+evidence. Use the new retry log/receipt for the next complete attempt.

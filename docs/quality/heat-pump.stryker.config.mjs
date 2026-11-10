@@ -20,6 +20,8 @@ export default {
     '!test/logic/boundary/industrial-heat-pump/**',
     '!test/core/industrialHeatPumpReadiness.test.js',
     '!test/browser/industrialHeatPumpPage.test.js',
+    '!src/content/pages/industrial-heat-pump-readiness/index.html',
+    '!src/content/pages/industrial-heat-pump-readiness/app.js',
     '!test/fixtures/industrialHeatPumpReadiness.js',
     '!test/fixtures/typed-logic/**',
   ],
