@@ -194,3 +194,30 @@ export function heatPumpPresenterWriteCases() {
     observeWrites: true,
   }));
 }
+
+/**
+ * Pin native change dispatch and disposal against the original public page.
+ * @returns {object[]} Independent event-channel interactions.
+ */
+export function heatPumpPresenterEventCases() {
+  return [
+    {
+      name: 'native-event-field-change',
+      operations: [{ kind: 'change', field: 'heatPumpCop', value: '3' }],
+    },
+    {
+      name: 'native-event-disposed-field-change',
+      operations: [
+        { kind: 'dispose' },
+        { kind: 'change', field: 'heatPumpCop', value: '3' },
+      ],
+    },
+    {
+      name: 'native-event-disposed-preset-change',
+      operations: [
+        { kind: 'dispose' },
+        { kind: 'preset', value: 'optimistic' },
+      ],
+    },
+  ];
+}

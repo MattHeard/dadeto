@@ -8,6 +8,7 @@ import {
   heatPumpPresenterCases,
   heatPumpPresenterFormatCases,
   heatPumpPresenterWriteCases,
+  heatPumpPresenterEventCases,
 } from './heat-pump-presenter-cases.js';
 import { observeHeatPumpPresenter } from './heat-pump-presenter-driver.js';
 import { serializeCoverageSemantics } from './coverage-semantics.js';
@@ -36,11 +37,21 @@ const writes = JSON.parse(
     'utf8'
   )
 );
+const events = JSON.parse(
+  readFileSync(
+    new URL(
+      './heat-pump-presenter-event-legacy-contracts.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+);
 const expected = new Map(
   [
     ...original.observations,
     ...formats.observations,
     ...writes.observations,
+    ...events.observations,
   ].map(entry => [entry.name, entry.snapshots])
 );
 const sourceRoot = new URL('../../../', import.meta.url);
@@ -62,6 +73,7 @@ const cases = [
   ...heatPumpPresenterCases(),
   ...heatPumpPresenterFormatCases(),
   ...heatPumpPresenterWriteCases(),
+  ...heatPumpPresenterEventCases(),
 ];
 for (const candidate of process.argv.slice(2)) {
   const artifactRoot = path.resolve(candidate);
