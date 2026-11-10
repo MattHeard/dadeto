@@ -1,0 +1,49 @@
+import base from '../../stryker.config.mjs';
+
+export default {
+  ...base,
+  plugins: ['@stryker-mutator/jest-runner'],
+  mutate: [
+    'src/core/tableCore.js',
+    'src/core/build/staticJsonlTable.js',
+    'src/core/browser/staticJsonlTable.js',
+    'src/logic/boundary/static-jsonl-table/record.js',
+    'src/logic/boundary/local/evidence-result.js',
+  ],
+  ignorePatterns: [
+    '**',
+    '!src/core/tableCore.js',
+    '!src/core/build/staticJsonlTable.js',
+    '!src/core/browser/staticJsonlTable.js',
+    '!src/logic/boundary/static-jsonl-table/**',
+    '!src/logic/boundary/local/evidence-result.js',
+    '!test/core/tableCore.test.js',
+    '!test/core/browser/staticJsonlTable.test.js',
+    '!test/core/staticJsonlNativeContracts.test.js',
+    '!test/generator/staticJsonlTable*.test.js',
+    '!test/logic/boundary/static-jsonl-table/**',
+    '!test/fixtures/typed-logic/**',
+    '!jest.config.mjs',
+    '!jest.mutation.config.mjs',
+    '!package.json',
+    '!babel.config.cjs',
+  ],
+  jest: {
+    ...base.jest,
+    config: {
+      testMatch: [
+        '<rootDir>/test/core/tableCore.test.js',
+        '<rootDir>/test/core/browser/staticJsonlTable.test.js',
+        '<rootDir>/test/core/staticJsonlNativeContracts.test.js',
+        '<rootDir>/test/generator/staticJsonlTable*.test.js',
+        '<rootDir>/test/logic/boundary/static-jsonl-table/**/*.test.js',
+      ],
+    },
+  },
+  reporters: ['progress', 'json', 'event-recorder'],
+  eventReporter: { baseDir: 'reports/mutation/static-jsonl-table-events' },
+  jsonReporter: { fileName: 'reports/mutation/static-jsonl-table.json' },
+  thresholds: { break: 100, high: 100, low: 100 },
+  ignoreStatic: false,
+  tempDirName: '.tmp/static-jsonl-table-stryker',
+};

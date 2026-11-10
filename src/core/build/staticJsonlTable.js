@@ -1,3 +1,4 @@
+import { parseStaticJsonlLine } from '../../logic/boundary/static-jsonl-table/record.js';
 import { compareTableValues as compareValues } from '../tableCore.js';
 
 /** @typedef {{index: number, values: Record<string, string|number>}} StaticTableRow */
@@ -109,19 +110,10 @@ export function createStaticJsonlTable(dependencies) {
     /** @type {StaticTableRow[]} */
     const rows = [];
     source.split(/\r?\n/).forEach((line, lineIndex) => {
-      if (!line.trim()) return;
-      let value;
-      try {
-        value = JSON.parse(line);
-      } catch (error) {
-        throw new Error(
-          `Invalid static JSONL table: malformed JSON on line ${lineIndex + 1}`,
-          { cause: error }
-        );
-      }
-      if (!value || typeof value !== 'object' || Array.isArray(value))
-        fail(`line ${lineIndex + 1} must contain a JSON object`);
-      const record = /** @type {Record<string, unknown>} */ (value);
+      const parsed = parseStaticJsonlLine(line, lineIndex);
+      if (!parsed.ok) throw parsed.error;
+      if (parsed.evidence.kind === 'blank') return;
+      const record = parsed.evidence.record;
       /** @type {Record<string, string|number>} */
       const projected = {};
       entry.columns.forEach(column => {

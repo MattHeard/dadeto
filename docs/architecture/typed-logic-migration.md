@@ -762,3 +762,22 @@ static-mutant relaxation. Mutation/current full CI/post-main evidence is pending
 in `dadeto-2jg7`; pure presenter summary/formatting work and the rest of the legacy
 tree remain outstanding. This section supersedes only the preparatory status in
 the preceding contract-foundation entry, not the historical baseline evidence.
+
+### Static JSONL line interpretation (partial, November 10)
+
+The build table reader now delegates its actual blank-line, native JSON decoding
+and root-record acceptance to the total `parseStaticJsonlLine` boundary parser.
+Its explicit evidence distinguishes blank lines, records with opaque JSON fields,
+and original errors. Malformed JSON retains the same physical line diagnostic and
+native cause; unsupported record shapes retain the existing TypeError. Scalar
+cell acceptance remains a separate policy, so a decoded record is not presented
+to callers as a validated scalar table.
+
+The source reader, repeated descriptor/column reads, projection and browser DOM
+workflow still require migration. The independent original three-module graph,
+900 comparator/100 build cases, 45 browser scenarios/271 snapshots and 768 getter
+cases/13,027 reads are enforced by ordinary Jest tests. No ledger was regenerated
+for the extraction. Actual parser type controls and focused coverage are recorded
+in dadeto-hk0y; authoritative current CI and the retained five-module domain
+mutation scope remain required. The existing heat-pump mutation evaluator keeps
+its separate complete scope; no parallel full worker is started for this domain.

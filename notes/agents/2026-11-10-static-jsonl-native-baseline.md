@@ -58,3 +58,24 @@ make an existing baseline pass.
 
 Keep one complete mutation worker on this host. The existing heat-pump evaluator
 runs independently; do not launch a second full mutation process for this bead.
+
+## First production boundary step
+
+The build reader now calls `parseStaticJsonlLine` for its existing per-line guard
+group. It rethrows captured failures unchanged and keeps all source/columns reads
+at their original positions. Accepted record fields remain unknown until scalar
+cell interpretation; a record containing an overflowing JSON number is accepted
+by this stage and is rejected later by the existing cell policy.
+
+Focused tests: 72 tests in five suites; new parser lines/statements/functions/
+branches all 100%. `types/static-jsonl-line.contract.ts` has five actual negative
+controls. Removing their annotations yields exactly TS2554, TS2345, TS2339 twice
+and TS2322, with no unrelated errors. The first type run correctly rejected a
+missing index-signature annotation on the accepted object; the assertion now
+lives after the actual non-null/object/non-array check in the boundary.
+
+Run the complete retained domain scope with
+`DADETO_STRYKER_MAX_TEST_RUNNER_REUSE=10 node --experimental-vm-modules node_modules/.bin/stryker run docs/quality/static-jsonl-table.stryker.config.mjs`
+when the existing full worker has finished. It retains all three original domain
+modules plus the new parser and shared outcome capture, with static mutants
+included, one worker and 100 thresholds. This run is queued, not passed.
