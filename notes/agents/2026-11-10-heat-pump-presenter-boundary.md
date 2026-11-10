@@ -57,3 +57,45 @@ a differently observed formatter. Preserve form-value trim/Number semantics and
 preset own-key interpretation at typed total boundaries. The source move,
 changed-logic coverage/mutation, real artifact closure and exact CI/post-main
 evidence remain required; this baseline does not complete the presenter task.
+
+
+## Comparison/detail/brief projection source moved
+
+Actual comparison status/detail strings, localized energy/cost/payback/threshold
+formatting, constraint summary, vendor brief and static briefing lists now live in
+`src/logic/core/industrial-heat-pump/presentation.js`. It returns ordered text/list
+operations with lazy text evaluation; the DOM integration dispatches both closed
+tags explicitly, so no unused internal tag can become an equivalent mutation as
+in the earlier planner. Locale constructors remain in the legacy DOM integration,
+not the logic namespace. Its format ports delegate each real native method through
+Reflect.apply, preserving opaque legacy projections and native failures without
+unchecked numeric casts. The core has precise assumptions/public comparison,
+format capability and text/list union types. Four independent negative compiler
+controls reject invalid operations, raw assumptions and numeric-only format ports.
+
+One exact jscpd clone appeared between the two threshold-state formatting branches.
+A shared operation over HeatPumpThreshold removes it while retaining each bound
+formatter lazily. No suppression, threshold adjustment or source exclusion was
+used. Four focused suites pass60tests, including17independent original UI traces
+and20native formatter-failure cases; all four metrics are100 for both changed
+modules. All eleven local gates pass with zero clones/audit zero
+(`/tmp/dadeto-kvq9-dispatch-{coverage,check}.log`). Type-negative proof is
+`/tmp/dadeto-kvq9-projection-negative.log` (TS2339twice, TS2345, TS2322).
+
+Current site/cloud builds and27-package import verification pass. Each real
+artifact resolves the new nineteen-module domain graph and retains613 original
+calculations/19exports. The actual built browser entry also passes all348original
+UI/formatting cases and4,860snapshots in each root, including exact lazy failure
+state; combined outcome SHA
+`4f63ee37247c9e1bfd07c7cced0dd1cd352bfda168cd35412463a2706b8b8cf0`.
+The pure projection bytes equal current source. Site checks use the actual
+published HTML; the cloud archive contains the module graph and is exercised
+against the immutable original HTML fixture, not a claim of a shipped cloud page.
+`/tmp/dadeto-kvq9-final-presenter-artifact-equivalence.json` records both receipts.
+
+The new19module mutation configuration retains every prior17module, static mutants
+and100threshold. Whole execution is queued behind the domain run. Field-input
+interpretation, preset-key interpretation and field/error-summary projection still
+need their remaining typed boundary/core move in this bead. DOM-only routing also
+remains legacy integration work for the overarching migration. Do not close this
+bead or claim full presenter migration from the comparison/brief step alone.

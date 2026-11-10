@@ -762,3 +762,22 @@ static-mutant relaxation. Mutation/current full CI/post-main evidence is pending
 in `dadeto-2jg7`; pure presenter summary/formatting work and the rest of the legacy
 tree remain outstanding. This section supersedes only the preparatory status in
 the preceding contract-foundation entry, not the historical baseline evidence.
+
+
+### Heat-pump comparison/brief projection moved (validation ongoing)
+
+`src/logic/core/industrial-heat-pump/presentation.js` owns the actual comparison
+text/status/list and vendor-brief computation. It produces typed ordered lazy
+text/list operations; integration invokes each formatter immediately before the
+corresponding DOM effect, preserving native formatting failures and partial state.
+Locale construction stays in integration. Named assumptions, public comparison
+slots, format capabilities and the closed update union replace broad records at
+the moved computation boundary; four actual compiler-negative controls apply.
+
+Sixty focused tests pass, with all four metrics at100 for both changed modules
+and all eleven local gates. Both actual site/cloud module artifacts pass the full
+348-case/4,860-state original presenter corpus and19-module import closure.
+Whole19module mutation (including every prior domain/WGS84/build module), exact
+full CI and post-main validation remain required. The remaining form/preset/error
+interpretation stays owned by `dadeto-kvq9`; this is not full feature or whole-tree
+migration completion. See the November10presenter agent note and fixture harness.

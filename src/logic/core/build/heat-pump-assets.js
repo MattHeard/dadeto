@@ -3,6 +3,10 @@ import { createAssetCopies } from './asset-copies.js';
 /** @type {Array<[string, string]>} */
 const HEAT_PUMP_ASSETS = [
   [
+    'logic/core/industrial-heat-pump/presentation.js',
+    'logic/core/industrial-heat-pump/presentation.js',
+  ],
+  [
     'browser/industrialHeatPumpReadiness.js',
     'browser/industrialHeatPumpReadiness.js',
   ],

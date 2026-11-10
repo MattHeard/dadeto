@@ -1,9 +1,12 @@
+import { createHeatPumpPresentation } from '../../../logic/core/industrial-heat-pump/presentation.js';
 import {
   INDUSTRIAL_HEAT_PUMP_SCENARIOS,
   createIndustrialHeatPumpScenarioExport,
 } from '../../../logic/core/industrial-heat-pump/scenarios.js';
 
-const FIELD_NAMES = Object.keys(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs);
+const FIELD_NAMES = /** @type {Array<keyof HeatPumpAssumptions>} */ (
+  Object.keys(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs)
+);
 const FORMAT_NUMBER = new Intl.NumberFormat('de-DE', {
   maximumFractionDigits: 1,
 });
@@ -23,24 +26,18 @@ const ERROR_MESSAGES = {
   'above-maximum': 'This value exceeds the supported range.',
 };
 
-const MEASUREMENTS_TO_CONFIRM = [
-  'A measured supply and return temperature profile across a representative operating period.',
-  'Hourly or daily process heat demand, including seasonal and production changes.',
-  'Fuel invoices and the incumbent system efficiency or measured fuel-to-heat performance.',
-  'Available electrical connection capacity and expected peak demand.',
-  'Space, integration, maintenance, downtime, and backup-heat requirements.',
-];
-
-const INSTALLER_QUESTIONS = [
-  'What site measurements and process shutdown windows are needed before a design can be assessed?',
-  'How would the proposed system meet the required temperature across the measured load profile?',
-  'What electrical upgrades, backup heat, controls, and commissioning tests might be required?',
-  'Which performance values are measured at comparable operating conditions, and which are estimates?',
-];
+/** @typedef {import('../../../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpAssumptions} HeatPumpAssumptions */
+/** @typedef {import('../../../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpPublicComparison} HeatPumpPublicComparison */
+/** @typedef {import('../../../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpPublicResult} HeatPumpPublicResult */
+const presentation = createHeatPumpPresentation({
+  number: value => Reflect.apply(FORMAT_NUMBER.format, FORMAT_NUMBER, [value]),
+  currency: value =>
+    Reflect.apply(FORMAT_CURRENCY.format, FORMAT_CURRENCY, [value]),
+});
 
 /**
  * Start the client-only interactive screening page.
- * @param {{documentObj:Document,calculateIndustrialHeatPumpReadiness:(input:unknown)=>Record<string,any>,downloadJson:(payload:Record<string,unknown>,filename:string)=>void,printPage:()=>void}} environment Browser document, calculation, and effect adapters.
+ * @param {{documentObj:Document,calculateIndustrialHeatPumpReadiness:(input:unknown)=>HeatPumpPublicResult,downloadJson:(payload:Record<string,unknown>,filename:string)=>void,printPage:()=>void}} environment Browser document, calculation, and effect adapters.
  * @returns {()=>void} Removes listeners created by the page.
  */
 export function startIndustrialHeatPumpReadinessPage(environment) {
@@ -95,11 +92,11 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
   const activeResetButton = /** @type {HTMLButtonElement} */ (resetButton);
   const activePrintButton = /** @type {HTMLButtonElement} */ (printButton);
   const formInputs = collectFormInputs(activeForm);
-  /** @type {{inputs:Record<string,number>,comparison:Record<string,any>}|null} */
+  /** @type {{inputs:HeatPumpAssumptions,comparison:HeatPumpPublicComparison}|null} */
   let currentResult = null;
 
   /**
-   * @param {Readonly<Record<string,number>>} inputs Assumption values to display.
+   * @param {Readonly<HeatPumpAssumptions>} inputs Assumption values to display.
    * @returns {void}
    */
   function setInputs(inputs) {
@@ -110,14 +107,19 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
   }
 
   /**
-   * @returns {Record<string,number>} Current form values as numeric inputs.
+   * @returns {HeatPumpAssumptions} Current form values as numeric inputs.
    */
   function readInputs() {
-    return Object.fromEntries(
-      FIELD_NAMES.map(field => {
-        const input = formInputs.get(field);
-        return [field, input?.value.trim() ? Number(input.value) : Number.NaN];
-      })
+    return /** @type {HeatPumpAssumptions} */ (
+      Object.fromEntries(
+        FIELD_NAMES.map(field => {
+          const input = formInputs.get(field);
+          return [
+            field,
+            input?.value.trim() ? Number(input.value) : Number.NaN,
+          ];
+        })
+      )
     );
   }
 
@@ -160,90 +162,21 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
   }
 
   /**
-   * @param {Record<string,number>} inputs Current valid assumptions.
-   * @param {Record<string,any>} comparison Calculated screen result.
+   * @param {HeatPumpAssumptions} inputs Current valid assumptions.
+   * @param {HeatPumpPublicComparison} comparison Calculated screen result.
    * @returns {void}
    */
   function renderComparison(inputs, comparison) {
-    setText('#overall-status', summarizeComparison(comparison));
-    setText(
-      '#temperature-status',
-      comparison.feasibility.temperature.status === 'within-limit'
-        ? 'Within assumed limit'
-        : 'Above assumed limit'
-    );
-    setText(
-      '#temperature-detail',
-      `${FORMAT_NUMBER.format(inputs.requiredSupplyTemperatureC)} °C required · ${FORMAT_NUMBER.format(inputs.heatPumpMaxTemperatureC)} °C assumed maximum`
-    );
-    setText(
-      '#power-status',
-      comparison.feasibility.electricalPower.status === 'within-limit'
-        ? 'Within assumed capacity'
-        : 'Capacity may be short'
-    );
-    setText(
-      '#power-detail',
-      `${FORMAT_NUMBER.format(comparison.requiredElectricalPowerKw)} kW average required · ${FORMAT_NUMBER.format(inputs.availableElectricalPowerKw)} kW available`
-    );
-    setText(
-      '#economics-status',
-      comparison.feasibility.economics.status === 'positive-operating-savings'
-        ? 'Positive annual savings'
-        : 'No positive annual savings'
-    );
-    setText(
-      '#economics-detail',
-      `Target payback: ${comparison.feasibility.targetPayback.status === 'meets-target' ? 'met in this arithmetic' : comparison.feasibility.targetPayback.status === 'exceeds-target' ? 'not met in this arithmetic' : 'not applicable'}`
-    );
-
-    setText('#fuel-input', `${formatEnergy(comparison.incumbentFuelKwh)} kWh`);
-    setText(
-      '#electricity-input',
-      `${formatEnergy(comparison.heatPumpElectricityKwh)} kWh`
-    );
-    setText(
-      '#fuel-cost',
-      FORMAT_CURRENCY.format(comparison.annualCosts.incumbentFuel)
-    );
-    setText(
-      '#electricity-cost',
-      FORMAT_CURRENCY.format(comparison.annualCosts.heatPumpElectricity)
-    );
-    setText(
-      '#maintenance-cost',
-      FORMAT_CURRENCY.format(comparison.annualCosts.heatPumpMaintenance)
-    );
-    setText(
-      '#annual-savings',
-      FORMAT_CURRENCY.format(comparison.annualOperatingSavings)
-    );
-    setText(
-      '#simple-payback',
-      comparison.simplePayback.status === 'available'
-        ? `${FORMAT_NUMBER.format(comparison.simplePayback.years)} years`
-        : 'Not applicable — no positive operating savings'
-    );
-    setText(
-      '#minimum-cop',
-      comparison.thresholds.minimumCopForTargetPayback.status === 'available'
-        ? FORMAT_NUMBER.format(
-            comparison.thresholds.minimumCopForTargetPayback.value
-          )
-        : 'Not achievable from these assumptions'
-    );
-    setText(
-      '#maximum-installed-cost',
-      comparison.thresholds.maximumInstalledCostForTargetPayback.status ===
-        'available'
-        ? FORMAT_CURRENCY.format(
-            comparison.thresholds.maximumInstalledCostForTargetPayback.value
-          )
-        : 'Not achievable from these assumptions'
-    );
-    setText('#brief-summary', buildBriefSummary(inputs, comparison));
-    renderList('#missing-measurements', MEASUREMENTS_TO_CONFIRM);
-    renderList('#commissioning-questions', INSTALLER_QUESTIONS);
+    for (const update of presentation.comparisonUpdates(inputs, comparison)) {
+      switch (update.kind) {
+        case 'text':
+          setText(update.selector, update.value());
+          break;
+        case 'list':
+          renderList(update.selector, update.items);
+          break;
+      }
+    }
     activeValidationSummary.hidden = true;
     activeResults.hidden = false;
   }
@@ -401,35 +334,17 @@ function collectFormInputs(form) {
  * @param {Record<string,any>} comparison Current comparison.
  * @returns {string} Plain-language first-screen result.
  */
-function summarizeComparison(comparison) {
-  const constraints = [];
-  if (comparison.feasibility.temperature.status !== 'within-limit')
-    constraints.push('temperature exceeds the assumed limit');
-  if (comparison.feasibility.electricalPower.status !== 'within-limit')
-    constraints.push('electrical capacity may be insufficient');
-  if (comparison.feasibility.economics.status !== 'positive-operating-savings')
-    constraints.push('the assumptions show no positive operating savings');
-  return constraints.length
-    ? `Review needed: ${constraints.join('; ')}.`
-    : 'The current assumptions pass these three screening checks. This does not establish site or equipment suitability.';
-}
 
 /**
  * @param {Record<string,number>} inputs Current assumptions.
  * @param {Record<string,any>} comparison Current comparison.
  * @returns {string} User-facing vendor conversation summary.
  */
-function buildBriefSummary(inputs, comparison) {
-  return `Hypothetical food-process screen: ${FORMAT_NUMBER.format(inputs.annualUsefulHeatKwh)} kWh/year of useful heat at ${FORMAT_NUMBER.format(inputs.requiredSupplyTemperatureC)} °C, using assumed COP ${FORMAT_NUMBER.format(inputs.heatPumpCop)} and ${FORMAT_NUMBER.format(inputs.electricityPricePerKwh)} €/kWh electricity. The comparison estimates ${FORMAT_CURRENCY.format(comparison.annualOperatingSavings)} annual operating savings under these assumptions; simple payback is ${comparison.simplePayback.status === 'available' ? `${FORMAT_NUMBER.format(comparison.simplePayback.years)} years` : 'not applicable'}.`;
-}
 
 /**
  * @param {number} value Annual energy amount.
  * @returns {string} Localized whole-kWh display.
  */
-function formatEnergy(value) {
-  return FORMAT_NUMBER.format(value);
-}
 
 /**
  * @param {string} value Selected preset key.
