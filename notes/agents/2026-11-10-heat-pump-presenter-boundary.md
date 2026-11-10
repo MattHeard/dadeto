@@ -179,3 +179,51 @@ Final acceptance still requires a terminal zero exit, complete report, exact
 configured source set/embedded bytes, and review of every status and static
 mutant. Survived/runtime-error/skipped/no-coverage outcomes cannot be accepted.
 Do not edit the live source or start a second full mutation worker.
+
+
+## Native change-event regression controls
+
+The event recorder identified exact survivors131/139/141: empty event names at
+field-change registration, field-change cleanup and preset-change cleanup. These
+are legitimate native event channels, not removable redundant work. Existing
+line/branch coverage did not prove that event/disposal matrix. The driver already
+supported field change events; add independent mounted-change, disposed-field-
+change and disposed-preset-change cases rather than modifying production code.
+
+A separate original-native ledger at the unchanged6d2a626b graph pins3cases /
+44snapshots, repeated byte-identical, outcomeSHA
+8c3c7ed847931b5ddbd88d8b206616a5394427633ed4e3f71d0bd8ffa8e84006.
+The original328normal+20format+37write ledgers are unchanged and all replay again.
+Actual built site/cloud each now preserve388cases/5422snapshots, combinedSHA
+e720c551cc1af9a168add99e069202fabdf61eb03f7970cecce7da5b994a1294,
+through the same20module domain closure,613calculations and19exports. Builds and
+27package/711module/1231import verification pass. Six focused suites pass188tests,
+all four metrics100 for the parser, pure presentation, DOM controller and asset
+projection. All11local gates pass with zero clones/audit zero. Evidence is under
+reports/presenter-event-* and reports/coverage/heat-pump-presenter-events.
+
+The already failing supervised run was deliberately stopped with SIGINT after
+preserving exact failures; child-close receipt records code130. Its474results
+(470Killed,1Timeout,3Survived) are diagnostic only. Archive
+reports/mutation/presentation-diagnostic-events-20261110.tar.gz hasSHA
+331bcc5029033201a8e6691249caf7688487f7dd2a5df0ac38615380e0e0e75c.
+This deliberate fail-fast diagnostic differs from an observation timeout and
+cannot establish complete mutation acceptance. A fresh complete20module run is
+still mandatory, retaining all2049mutants/static evaluation/100thresholds.
+
+Focused verification must audit the selected mutants. The first range probe
+selected zero mutants because CLI columns are zero-based and report columns are
+one-based; its NaN/zero-exit result was rejected and retained separately. The next
+probe detected all three listener changes, but its wrapper-guard comparison lacked
+the existing boundary getter-failure caller suite. Add that actual suite when
+reviewing the wrapper's earlier timeout. The final six-mutant probe kills all six,
+with exact source bytes and every expected location/replacement checked; no skips,
+errors or timeouts. ReportSHA
+bf0097154d1fcc14875084cd195cbee13f89c0bb3ebe878d72ef8826e67bc2e2.
+That corroborates the wrapper mutation using real thrown-value assertions; do not
+call the earlier wall timeout a nonprogress result or misreport it as Killed.
+
+Only tests, fixture controls and this guidance changed in this fix; production,
+contracts and the old goldens remain byte-unchanged. Full current-head CI and the
+fresh complete mutation report/source/status audit are still required before
+merge. The adapter/workflow follow-up must inherit these same event controls.

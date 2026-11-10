@@ -6,6 +6,7 @@ import {
   heatPumpPresenterCases,
   heatPumpPresenterFormatCases,
   heatPumpPresenterWriteCases,
+  heatPumpPresenterEventCases,
 } from '../../../fixtures/typed-logic/heat-pump-presenter-cases.js';
 import { observeHeatPumpPresenter } from '../../../fixtures/typed-logic/heat-pump-presenter-driver.js';
 import { serializeCoverageSemantics } from '../../../fixtures/typed-logic/coverage-semantics.js';
@@ -52,11 +53,21 @@ const writes = JSON.parse(
     'utf8'
   )
 );
+const events = JSON.parse(
+  readFileSync(
+    new URL(
+      '../../../fixtures/typed-logic/heat-pump-presenter-event-legacy-contracts.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+);
 const expected = new Map(
   [
     ...original.observations,
     ...formats.observations,
     ...writes.observations,
+    ...events.observations,
   ].map(entry => [entry.name, entry.snapshots])
 );
 const names = new Set([
@@ -76,6 +87,7 @@ const cases = [
   ),
   ...heatPumpPresenterFormatCases(),
   ...heatPumpPresenterWriteCases(),
+  ...heatPumpPresenterEventCases(),
 ];
 
 test.each(cases)(
