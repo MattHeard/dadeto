@@ -1,5 +1,9 @@
 [
   [
+    "logic/boundary/industrial-heat-pump/presentation-input.js",
+    "logic/boundary/industrial-heat-pump/presentation-input.js"
+  ],
+  [
     "logic/core/industrial-heat-pump/presentation.js",
     "logic/core/industrial-heat-pump/presentation.js"
   ],

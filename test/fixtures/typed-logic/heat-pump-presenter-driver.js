@@ -21,6 +21,26 @@ export function observeHeatPumpPresenter(start, html, scenario) {
   const downloads = [];
   const effects = [];
   const snapshots = [];
+  const observer = scenario.observeWrites
+    ? new dom.window.MutationObserver(() => {})
+    : null;
+
+  /**
+   * Retain stable node identity/content without retaining a live DOM graph.
+   * @param {Node} node Actual mutation target or child.
+   * @returns {object} Serializable node evidence.
+   */
+  function describeNode(node) {
+    return {
+      type: node.nodeType,
+      name: node.nodeName,
+      id: node.id,
+      field: node.getAttribute?.('name'),
+      errorFor: node.getAttribute?.('data-error-for'),
+      text: node.textContent,
+    };
+  }
+
   const formats = [];
   const formatDescriptor = Object.getOwnPropertyDescriptor(
     Intl.NumberFormat.prototype,
@@ -71,6 +91,18 @@ export function observeHeatPumpPresenter(start, html, scenario) {
       })),
       effects: [...effects],
       errors: [...errors],
+      ...(observer
+        ? {
+            writes: observer.takeRecords().map(record => ({
+              type: record.type,
+              target: describeNode(record.target),
+              attribute: record.attributeName,
+              oldValue: record.oldValue,
+              added: [...record.addedNodes].map(describeNode),
+              removed: [...record.removedNodes].map(describeNode),
+            })),
+          }
+        : {}),
       ...(scenario.observeFormats ? { formats: [...formats] } : {}),
     });
   }
@@ -125,6 +157,14 @@ export function observeHeatPumpPresenter(start, html, scenario) {
   try {
     for (const selector of scenario.missing ?? [])
       document.querySelector(selector)?.remove();
+    observer?.observe(document.body, {
+      subtree: true,
+      attributes: true,
+      characterData: true,
+      childList: true,
+      attributeOldValue: true,
+      characterDataOldValue: true,
+    });
     try {
       stop = start({
         documentObj: document,
@@ -163,6 +203,7 @@ export function observeHeatPumpPresenter(start, html, scenario) {
         'format',
         formatDescriptor
       );
+    observer?.disconnect();
     dom.window.close();
   }
 }

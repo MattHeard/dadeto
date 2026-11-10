@@ -4,6 +4,7 @@ export default {
   ...domain,
   mutate: [
     ...domain.mutate,
+    'src/logic/boundary/industrial-heat-pump/presentation-input.js',
     'src/logic/core/industrial-heat-pump/presentation.js',
     'src/core/browser/industrialHeatPump/page.js',
   ],

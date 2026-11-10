@@ -54,6 +54,15 @@ export const INDUSTRIAL_HEAT_PUMP_SCENARIOS = Object.freeze({
 });
 
 /**
+ * Original ordered assumption metadata shared by form bindings and presentation.
+ * @type {Readonly<Array<keyof import('./industrial-heat-pump.js').HeatPumpAssumptions>>}
+ */
+export const HEAT_PUMP_FIELD_NAMES =
+  /** @type {Array<keyof import('./industrial-heat-pump.js').HeatPumpAssumptions>} */ (
+    Object.keys(BASE_INPUTS)
+  );
+
+/**
  * Merge a sensitivity case with the shared synthetic process assumptions.
  * @param {string} label Short visible preset name.
  * @param {string} description Context shown after preset selection.

@@ -781,3 +781,21 @@ Whole19module mutation (including every prior domain/WGS84/build module), exact
 full CI and post-main validation remain required. The remaining form/preset/error
 interpretation stays owned by `dadeto-kvq9`; this is not full feature or whole-tree
 migration completion. See the November10presenter agent note and fixture harness.
+
+
+### Heat-pump form/error boundary and projection source completed (validation pending)
+
+Nullable form text interpretation and exact preset-key parsing are now total typed
+operations in `src/logic/boundary/industrial-heat-pump/presentation-input.js`.
+Ordered field metadata comes from authoritative core assumptions. First-field
+messages, validation summaries/visibility and custom/preset export naming are
+precise lazy core projections. Original getter reads, optional messages, native
+DOM-write failures and formatter/write order are preserved, not defaulted away.
+
+All385original normal/format/write cases and5,378states pass in each real built
+module artifact. Six focused suites/185tests pass, with all four changed-file
+metrics at100 and all11local gates passing. Whole20module mutation, exact current
+full CI and post-main evidence remain pending in `dadeto-kvq9`. The legacy DOM
+controller is now integration; its physical routing/minimal adapter decomposition
+remains part of the larger migration. Other legacy logic and recorded typing
+follow-ups also remain.

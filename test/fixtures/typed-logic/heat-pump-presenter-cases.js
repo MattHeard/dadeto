@@ -166,3 +166,31 @@ export function heatPumpPresenterFormatCases() {
     })),
   ];
 }
+
+/**
+ * Preserve observable DOM mutation batches as well as final rendered states.
+ * @returns {object[]} Independent write-order controls.
+ */
+export function heatPumpPresenterWriteCases() {
+  const names = new Set([
+    'base',
+    'preset-conservative',
+    'preset-optimistic',
+    'preset-__proto__',
+    'multiple-errors',
+    'zero-savings-hidden-nan',
+    'heatPumpCop/0',
+    'heatPumpCop/',
+    'payback-100',
+  ]);
+  return [
+    ...heatPumpPresenterCases().filter(
+      entry => names.has(entry.name) || entry.name.startsWith('constraints-')
+    ),
+    ...heatPumpPresenterFormatCases(),
+  ].map(entry => ({
+    ...entry,
+    name: `writes/${entry.name}`,
+    observeWrites: true,
+  }));
+}

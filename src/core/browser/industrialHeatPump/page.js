@@ -1,12 +1,14 @@
+import {
+  parseHeatPumpFieldValue,
+  parseHeatPumpScenario,
+} from '../../../logic/boundary/industrial-heat-pump/presentation-input.js';
 import { createHeatPumpPresentation } from '../../../logic/core/industrial-heat-pump/presentation.js';
 import {
   INDUSTRIAL_HEAT_PUMP_SCENARIOS,
+  HEAT_PUMP_FIELD_NAMES as FIELD_NAMES,
   createIndustrialHeatPumpScenarioExport,
 } from '../../../logic/core/industrial-heat-pump/scenarios.js';
 
-const FIELD_NAMES = /** @type {Array<keyof HeatPumpAssumptions>} */ (
-  Object.keys(INDUSTRIAL_HEAT_PUMP_SCENARIOS.base.inputs)
-);
 const FORMAT_NUMBER = new Intl.NumberFormat('de-DE', {
   maximumFractionDigits: 1,
 });
@@ -15,16 +17,6 @@ const FORMAT_CURRENCY = new Intl.NumberFormat('de-DE', {
   currency: 'EUR',
   maximumFractionDigits: 0,
 });
-
-/** @type {Record<string,string>} */
-const ERROR_MESSAGES = {
-  required: 'Enter a value.',
-  'calculation-not-finite':
-    'These assumptions exceed the supported numeric range. Reduce the extreme values to calculate a screening result.',
-  'finite-number-required': 'Enter a finite number.',
-  'below-minimum': 'Use a value above the required minimum.',
-  'above-maximum': 'This value exceeds the supported range.',
-};
 
 /** @typedef {import('../../../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpAssumptions} HeatPumpAssumptions */
 /** @typedef {import('../../../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpPublicComparison} HeatPumpPublicComparison */
@@ -114,17 +106,16 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
       Object.fromEntries(
         FIELD_NAMES.map(field => {
           const input = formInputs.get(field);
-          return [
-            field,
-            input?.value.trim() ? Number(input.value) : Number.NaN,
-          ];
+          const parsed = parseHeatPumpFieldValue(input);
+          if (!parsed.ok) throw parsed.error;
+          return [field, parsed.evidence];
         })
       )
     );
   }
 
   /**
-   * @param {Array<{field:string,code:string}>} errors Input validation errors.
+   * @param {import('../../../logic/core/industrial-heat-pump/industrial-heat-pump.js').HeatPumpIssue[]} errors Input validation errors.
    * @returns {void}
    */
   function renderErrors(errors) {
@@ -133,22 +124,15 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
       const error = /** @type {HTMLElement|null} */ (
         documentObj.querySelector(`[data-error-for="${field}"]`)
       );
-      const issue = errors.find(item => item.field === field);
-      if (input) input.setAttribute('aria-invalid', String(Boolean(issue)));
-      if (error) error.textContent = issue ? ERROR_MESSAGES[issue.code] : '';
+      const issue = presentation.fieldError(field, errors);
+      if (input) input.setAttribute('aria-invalid', String(issue.invalid));
+      if (error) writeText(error, issue.message());
     }
-    activeValidationSummary.hidden = errors.length === 0;
-    const calculationIssue = errors.find(issue => issue.field === 'input');
-    activeValidationSummary.textContent = calculationIssue
-      ? ERROR_MESSAGES[calculationIssue.code]
-      : errors.length
-        ? `${errors.length} assumption${errors.length === 1 ? '' : 's'} need attention. Results are hidden until corrected.`
-        : '';
-    if (errors.length > 0)
-      setText(
-        '#overall-status',
-        'Results are hidden until assumptions are corrected.'
-      );
+    const summary = presentation.errorSummary(errors);
+    activeValidationSummary.hidden = summary.hidden();
+    writeText(activeValidationSummary, summary.text());
+    const overallStatus = summary.overallStatus();
+    if (overallStatus !== null) setText('#overall-status', overallStatus);
     for (const selector of [
       '.feasibility-grid',
       '.comparison-grid',
@@ -157,7 +141,7 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
       const section = /** @type {HTMLElement|null} */ (
         documentObj.querySelector(selector)
       );
-      if (section) section.hidden = errors.length > 0;
+      if (section) section.hidden = summary.sectionHidden();
     }
   }
 
@@ -188,7 +172,7 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
    */
   function setText(selector, value) {
     const element = documentObj.querySelector(selector);
-    if (element) element.textContent = value;
+    if (element) writeText(element, value);
   }
 
   /**
@@ -242,7 +226,7 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
    * @returns {void}
    */
   function handleScenarioChange() {
-    const scenario = getScenario(activeScenarioSelect.value);
+    const scenario = parseHeatPumpScenario(activeScenarioSelect.value);
     if (!scenario) return;
     setInputs(scenario.inputs);
     calculateAndRender();
@@ -268,8 +252,8 @@ export function startIndustrialHeatPumpReadinessPage(environment) {
         'Correct the scenario before exporting it.';
       return;
     }
-    const selectedScenario = getScenario(activeScenarioSelect.value);
-    const scenarioName = selectedScenario?.label ?? 'Custom assumptions';
+    const selectedScenario = parseHeatPumpScenario(activeScenarioSelect.value);
+    const scenarioName = presentation.scenarioName(selectedScenario);
     downloadJson(
       createIndustrialHeatPumpScenarioExport({
         scenarioName,
@@ -331,29 +315,12 @@ function collectFormInputs(form) {
 }
 
 /**
- * @param {Record<string,any>} comparison Current comparison.
- * @returns {string} Plain-language first-screen result.
+ * Preserve native textContent conversion and throwing assignment semantics.
+ * Object.assign uses Set with Throw, including for an undefined message value.
+ * @param {Element} element Actual DOM receiver.
+ * @param {string | undefined} value Original message payload.
+ * @returns {void}
  */
-
-/**
- * @param {Record<string,number>} inputs Current assumptions.
- * @param {Record<string,any>} comparison Current comparison.
- * @returns {string} User-facing vendor conversation summary.
- */
-
-/**
- * @param {number} value Annual energy amount.
- * @returns {string} Localized whole-kWh display.
- */
-
-/**
- * @param {string} value Selected preset key.
- * @returns {Record<string,any>|null} Preset definition or null for custom input.
- */
-function getScenario(value) {
-  return Object.hasOwn(INDUSTRIAL_HEAT_PUMP_SCENARIOS, value)
-    ? INDUSTRIAL_HEAT_PUMP_SCENARIOS[
-        /** @type {'base'|'conservative'|'optimistic'} */ (value)
-      ]
-    : null;
+function writeText(element, value) {
+  Object.assign(element, { textContent: value });
 }

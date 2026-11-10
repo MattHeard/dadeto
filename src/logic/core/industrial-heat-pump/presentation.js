@@ -1,3 +1,16 @@
+/** @typedef {import('./industrial-heat-pump.js').HeatPumpIssue} HeatPumpIssue */
+/** @typedef {{invalid: boolean, message: () => string | undefined}} HeatPumpFieldError */
+/** @typedef {{hidden: () => boolean, text: () => string | undefined, overallStatus: () => string | null, sectionHidden: () => boolean}} HeatPumpErrorSummary */
+/** @type {Partial<Record<import('./industrial-heat-pump.js').HeatPumpIssue['code'], string>>} */
+const ERROR_MESSAGES = {
+  required: 'Enter a value.',
+  'calculation-not-finite':
+    'These assumptions exceed the supported numeric range. Reduce the extreme values to calculate a screening result.',
+  'finite-number-required': 'Enter a finite number.',
+  'below-minimum': 'Use a value above the required minimum.',
+  'above-maximum': 'This value exceeds the supported range.',
+};
+
 /** @typedef {import('./industrial-heat-pump.js').HeatPumpAssumptions} HeatPumpAssumptions */
 /** @typedef {import('./industrial-heat-pump.js').HeatPumpPublicComparison} HeatPumpPublicComparison */
 /** @typedef {{number: (value: unknown) => string, currency: (value: unknown) => string}} HeatPumpPresentationFormats */
@@ -21,7 +34,7 @@ const INSTALLER_QUESTIONS = [
 /**
  * Build ordered lazy text/list projections without DOM operations.
  * @param {HeatPumpPresentationFormats} formatters Injected native locale formatting ports.
- * @returns {{comparisonUpdates: (inputs: HeatPumpAssumptions, comparison: HeatPumpPublicComparison) => HeatPumpPresentationUpdate[]}} Build ordered lazy text/list projections without DOM operations.
+ * @returns {{comparisonUpdates: (inputs: HeatPumpAssumptions, comparison: HeatPumpPublicComparison) => HeatPumpPresentationUpdate[], fieldError: (field: keyof HeatPumpAssumptions, errors: readonly HeatPumpIssue[]) => HeatPumpFieldError, errorSummary: (errors: readonly HeatPumpIssue[]) => HeatPumpErrorSummary, scenarioName: (scenario: {label: string} | null) => string}} Build ordered lazy text/list projections without DOM operations.
  */
 export function createHeatPumpPresentation(formatters) {
   /**
@@ -125,7 +138,7 @@ export function createHeatPumpPresentation(formatters) {
         selector: '#minimum-cop',
         value: () =>
           formatThreshold(
-            comparison.thresholds.minimumCopForTargetPayback,
+            () => comparison.thresholds.minimumCopForTargetPayback,
             value => formatters.number(value)
           ),
       },
@@ -134,7 +147,7 @@ export function createHeatPumpPresentation(formatters) {
         selector: '#maximum-installed-cost',
         value: () =>
           formatThreshold(
-            comparison.thresholds.maximumInstalledCostForTargetPayback,
+            () => comparison.thresholds.maximumInstalledCostForTargetPayback,
             value => formatters.currency(value)
           ),
       },
@@ -174,7 +187,12 @@ export function createHeatPumpPresentation(formatters) {
   function formatEnergy(value) {
     return formatters.number(value);
   }
-  return { comparisonUpdates };
+  return {
+    comparisonUpdates,
+    fieldError: createFieldError,
+    errorSummary: createErrorSummary,
+    scenarioName: describeScenarioName,
+  };
 }
 
 /**
@@ -197,12 +215,69 @@ function summarizeComparison(comparison) {
 
 /**
  * Format the shared available/unachievable threshold domain state.
- * @param {import('./industrial-heat-pump.js').HeatPumpThreshold} threshold Computed threshold state.
- * @param {(value: number) => string} formatValue Bound locale formatting operation.
+ * @param {() => {status: import('./industrial-heat-pump.js').HeatPumpThreshold['status'], value?: number}} readThreshold Original repeated threshold observation.
+ * @param {(value: number | undefined) => string} formatValue Bound locale formatting operation.
  * @returns {string} Original available value or unavailable message.
  */
-function formatThreshold(threshold, formatValue) {
-  return threshold.status === 'available'
-    ? formatValue(threshold.value)
+function formatThreshold(readThreshold, formatValue) {
+  return readThreshold().status === 'available'
+    ? formatValue(readThreshold().value)
     : 'Not achievable from these assumptions';
+}
+
+/**
+ * Retain the first ordered field issue and defer its message until the DOM write.
+ * @param {keyof HeatPumpAssumptions} field Known assumption field.
+ * @param {readonly HeatPumpIssue[]} errors Ordered issues from calculation.
+ * @returns {HeatPumpFieldError} Invalid state and lazy original message.
+ */
+function createFieldError(field, errors) {
+  const issue = errors.find(item => item.field === field);
+  return {
+    invalid: issue !== undefined,
+    message: () => {
+      if (issue) return ERROR_MESSAGES[issue.code];
+      return '';
+    },
+  };
+}
+
+/**
+ * Project each summary decision at its original consumer evaluation point.
+ * @param {readonly HeatPumpIssue[]} errors Ordered calculation issues.
+ * @returns {HeatPumpErrorSummary} Lazy visibility, message and overall status.
+ */
+function createErrorSummary(errors) {
+  return {
+    hidden: () => errors.length === 0,
+    text: () => describeErrors(errors),
+    overallStatus: () =>
+      errors.length > 0
+        ? 'Results are hidden until assumptions are corrected.'
+        : null,
+    sectionHidden: () => errors.length > 0,
+  };
+}
+
+/**
+ * Preserve global input errors before the original singular/plural summary.
+ * @param {readonly HeatPumpIssue[]} errors Ordered calculation issues.
+ * @returns {string | undefined} Native message lookup or original summary.
+ */
+function describeErrors(errors) {
+  const calculationIssue = errors.find(issue => issue.field === 'input');
+  if (calculationIssue) return ERROR_MESSAGES[calculationIssue.code];
+  if (!errors.length) return '';
+  return `${errors.length} assumption${errors.length === 1 ? '' : 's'} need attention. Results are hidden until corrected.`;
+}
+
+/**
+ * Name a parsed preset or the explicit custom-selection state without defaults
+ * for malformed trusted labels.
+ * @param {{label: string} | null} scenario Parsed preset label or custom state.
+ * @returns {string} Original export-facing name.
+ */
+function describeScenarioName(scenario) {
+  if (scenario === null) return 'Custom assumptions';
+  return scenario.label;
 }

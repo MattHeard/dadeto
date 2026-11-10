@@ -99,3 +99,49 @@ interpretation, preset-key interpretation and field/error-summary projection sti
 need their remaining typed boundary/core move in this bead. DOM-only routing also
 remains legacy integration work for the overarching migration. Do not close this
 bead or claim full presenter migration from the comparison/brief step alone.
+
+
+## Remaining form/preset/error presentation source moved
+
+The nullable string-valued form-slot interpreter and exact preset selector lookup
+now live in the pure total presentation-input boundary. First blank/missing text
+maps to NaN; a nonblank branch re-reads the slot for native Number conversion,
+including its original getter failures. Preset keys are exact own keys, without
+trim/case conversion; accepted values retain the original frozen preset aliases.
+Original ordered field metadata is shared from authoritative BASE_INPUTS.
+
+Core now projects the first ordered field issue, optional legacy message, lazy
+validation-summary/visibility decisions and explicit preset/custom export name.
+The DOM adapter consumes every value at the original point. A first attempt using
+Reflect.set could ignore a refused write; native Object.assign Set-with-Throw
+preserves undefined textContent conversion and propagates a read-only DOM failure.
+Real DOM getter tests also prove the exact thrown value crosses the parser/rethrow
+path. Changing threshold getters are observed twice, including an available to
+unavailable transition; do not snapshot the first observation.
+
+A separate original-only DOM-mutation corpus adds37cases/518snapshots without
+rewriting the earlier328normal or20format controls. Its SHA is
+23eea72446c0da63d4ed9fc972fd66e3eb9a4ca88a0e004fb400da7215367225.
+Together both actual built entries now pass385cases/5,378snapshots each; combined
+SHA01b75e50cb57a6bd42843a2cd422c713d0319390358c348939c83eeab2f7cd89
+(`/tmp/dadeto-kvq9-presenter-final-artifacts.json`). Site uses published HTML;
+module-only cloud uses the immutable original HTML fixture. Both roots have a
+complete20module graph (SHA583fc16ce670c3cedb0960390ef869b29a5d388caef4d4160c07e4d8959d7d82)
+and retain613original calculations/19exports. Build/cloud/27-package verification
+pass. The projection bytes equal source.
+
+Six focused suites pass185tests with all four metrics at100 for boundary, core
+presentation and legacy integration. All11local gates pass with zero clones and
+audit zero (`/tmp/dadeto-kvq9-presenter-final-{coverage,check}.log`). Seven actual
+API negative controls prove result narrowing, exact selector input, optional
+messages, trusted assumptions and closed operation variants. Subject imports
+now occur inside beforeAll hooks: mutated static Intl construction must fail
+registered tests rather than abort test-module evaluation. Production constructor
+timing/reuse is unchanged.
+
+The complete20module mutation scope retains every preceding19module, static
+mutants and100threshold, including the new boundary. Its execution is queued
+behind the repaired domain17run. Exact full CI and post-main validation are still
+required. The remaining legacy DOM integration location/wiring is a distinct
+overarching-layout follow-up; do not infer final whole-tree completion from this
+source slice. Keep the bead open pending complete mutation and authoritative CI.

@@ -8,6 +8,7 @@ import { parse } from '@babel/parser';
 import {
   heatPumpPresenterCases,
   heatPumpPresenterFormatCases,
+  heatPumpPresenterWriteCases,
 } from './heat-pump-presenter-cases.js';
 import { observeHeatPumpPresenter } from './heat-pump-presenter-driver.js';
 import { serializeCoverageSemantics } from './coverage-semantics.js';
@@ -17,10 +18,13 @@ const root = new URL('../../../', import.meta.url);
 const entry = 'src/browser/industrialHeatPump/page.js';
 const page = 'src/content/pages/industrial-heat-pump-readiness/index.html';
 const formatControls = process.argv.includes('--format-controls');
+const writeControls = process.argv.includes('--write-controls');
 const evidenceFile = new URL(
-  formatControls
-    ? './heat-pump-presenter-format-legacy-contracts.json'
-    : './heat-pump-presenter-legacy-contracts.json',
+  writeControls
+    ? './heat-pump-presenter-write-legacy-contracts.json'
+    : formatControls
+      ? './heat-pump-presenter-format-legacy-contracts.json'
+      : './heat-pump-presenter-legacy-contracts.json',
   import.meta.url
 );
 const fingerprint = value =>
@@ -91,9 +95,11 @@ assert.equal(current[name].name, original[name].name);
 assert.equal(current[name].length, original[name].length);
 const observations = [];
 let snapshotCount = 0;
-for (const scenario of formatControls
-  ? heatPumpPresenterFormatCases()
-  : heatPumpPresenterCases()) {
+for (const scenario of writeControls
+  ? heatPumpPresenterWriteCases()
+  : formatControls
+    ? heatPumpPresenterFormatCases()
+    : heatPumpPresenterCases()) {
   const expected = observeHeatPumpPresenter(
     original[name],
     originalPage,
@@ -119,7 +125,11 @@ for (const scenario of formatControls
   await yieldEventLoop();
 }
 const receipt = {
-  ...(formatControls ? { controlKind: 'format-effects' } : {}),
+  ...(writeControls
+    ? { controlKind: 'dom-writes' }
+    : formatControls
+      ? { controlKind: 'format-effects' }
+      : {}),
   baseline,
   sourceFiles: Object.keys(sourceHashes).length,
   sourceGraphSha256: fingerprint(sourceHashes),

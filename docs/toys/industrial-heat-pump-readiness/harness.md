@@ -116,3 +116,16 @@ for the projection and legacy controller as well as every earlier domain/build
 module, use `docs/quality/heat-pump-presentation.stryker.config.mjs` separately from
 other full mutation workers. This step remains open until that whole run and
 current authoritative CI succeed.
+
+
+The presenter parser/error move adds an independent original DOM-write corpus:
+
+```sh
+node --max-old-space-size=512 test/fixtures/typed-logic/heat-pump-presenter-equivalence.js --write-controls
+```
+
+The artifact harness now includes385normal/format/write cases and5,378states per
+root. Its twenty-module mutation configuration includes the complete prior domain
+and build scope plus the new typed presentation boundary. Preserve the actual
+HTML/app fixtures and defer browser subject imports into test hooks so static
+constructor failures are assertions, not excluded runtime-error mutants.

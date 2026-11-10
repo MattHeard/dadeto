@@ -7,6 +7,7 @@ import { setImmediate as yieldEventLoop } from 'node:timers/promises';
 import {
   heatPumpPresenterCases,
   heatPumpPresenterFormatCases,
+  heatPumpPresenterWriteCases,
 } from './heat-pump-presenter-cases.js';
 import { observeHeatPumpPresenter } from './heat-pump-presenter-driver.js';
 import { serializeCoverageSemantics } from './coverage-semantics.js';
@@ -26,11 +27,21 @@ const formats = JSON.parse(
     'utf8'
   )
 );
+const writes = JSON.parse(
+  readFileSync(
+    new URL(
+      './heat-pump-presenter-write-legacy-contracts.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+);
 const expected = new Map(
-  [...original.observations, ...formats.observations].map(entry => [
-    entry.name,
-    entry.snapshots,
-  ])
+  [
+    ...original.observations,
+    ...formats.observations,
+    ...writes.observations,
+  ].map(entry => [entry.name, entry.snapshots])
 );
 const sourceRoot = new URL('../../../', import.meta.url);
 const fixtureHtml = readFileSync(
@@ -47,7 +58,11 @@ assert.equal(
     'src/content/pages/industrial-heat-pump-readiness/index.html'
   ]
 );
-const cases = [...heatPumpPresenterCases(), ...heatPumpPresenterFormatCases()];
+const cases = [
+  ...heatPumpPresenterCases(),
+  ...heatPumpPresenterFormatCases(),
+  ...heatPumpPresenterWriteCases(),
+];
 for (const candidate of process.argv.slice(2)) {
   const artifactRoot = path.resolve(candidate);
   const publishedHtml = path.join(
