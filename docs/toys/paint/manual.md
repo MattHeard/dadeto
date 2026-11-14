@@ -2,7 +2,9 @@
 
 Submit to open a blank drawing canvas. Draw with your finger, stylus, or mouse. Use Color and Brush size to change the brush. Check Eraser to erase; uncheck it to paint again. Clear removes the drawing.
 
-Full screen fills the browser viewport. Exit full screen or Escape returns to the blog. The drawing survives toggling and screen rotation. Browser chrome remains visible.
+All painting tools are in the **Controls** panel. Tap its heading to collapse or reopen it.
+
+Full screen fills the browser viewport, with the canvas using all the space below Controls. Collapse Controls for more drawing room. Exit full screen or Escape returns to the blog. The drawing survives toggling and screen rotation. Browser chrome remains visible.
 
 Input is ignored. Submit and Auto preserve the drawing and tool selections. Changing output or reloading discards the drawing; this version does not save it.
 

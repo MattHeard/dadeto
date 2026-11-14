@@ -11,6 +11,13 @@ export function createPaintElement(_input, dom) {
   root.style.cssText = 'background:#eee;padding:12px;box-sizing:border-box;';
   root.setAttribute('data-paint-surface', '');
   root.style.color = '#202020';
+  const controls = dom.createElement('details');
+  controls.setAttribute('open', '');
+  controls.style.cssText = 'background:#ddd;padding:8px;margin-bottom:8px;';
+  const summary = dom.createElement('summary');
+  summary.textContent = 'Controls';
+  summary.style.cssText = 'cursor:pointer;min-height:44px;';
+  dom.appendChild(controls, summary);
   const toolbar = dom.createElement('div');
   toolbar.style.cssText =
     'display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px;';
@@ -42,8 +49,9 @@ export function createPaintElement(_input, dom) {
     context?.clearRect(0, 0, canvas.width, canvas.height)
   );
   const fullscreen = addButton(toolbar, 'Full screen', dom);
-  wireFullscreen(root, fullscreen);
-  dom.appendChild(root, toolbar);
+  wireFullscreen(root, fullscreen, canvas);
+  dom.appendChild(controls, toolbar);
+  dom.appendChild(root, controls);
   dom.appendChild(root, canvas);
   if (context) wireDrawing(canvas, context, { color, size, eraser });
   return root;
@@ -83,16 +91,22 @@ function addButton(toolbar, text, dom) {
  * Toggle a viewport-filling panel, including on mobile browsers without Fullscreen API.
  * @param {HTMLElement} root Paint panel.
  * @param {HTMLButtonElement} button Toggle.
+ * @param {HTMLCanvasElement} canvas Drawing surface.
  */
-function wireFullscreen(root, button) {
+function wireFullscreen(root, button, canvas) {
   let expanded = false;
   const original = root.style.cssText;
+  const originalCanvas = canvas.style.cssText;
   const toggle = () => {
     expanded = !expanded;
     root.style.cssText = original;
-    if (expanded)
+    canvas.style.cssText = originalCanvas;
+    if (expanded) {
       root.style.cssText +=
-        'position:fixed;inset:0;z-index:2147483647;overflow:auto;overscroll-behavior:contain;';
+        'position:fixed;inset:0;z-index:2147483647;overflow:auto;overscroll-behavior:contain;display:grid;grid-template-rows:auto minmax(0,1fr);';
+      canvas.style.cssText +=
+        'height:100%;max-height:none;min-height:0;min-width:0;';
+    }
     button.textContent = ['Full screen', 'Exit full screen'][Number(expanded)];
     button.setAttribute('aria-pressed', String(expanded));
   };
