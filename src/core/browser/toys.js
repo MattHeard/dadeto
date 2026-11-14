@@ -15,6 +15,7 @@ import {
   objectMinuteAssetHandler,
   possessionRequestHandler,
 } from './inputHandlers/objectMinuteForms.js';
+import { createPaintElement } from './presenters/paint.js';
 import { createCanvasDoodleElement } from './presenters/canvasDoodle.js';
 import { createGraphPlotElement } from './presenters/graphPlot.js';
 import { createParagraphElement } from './presenters/paragraph.js';
@@ -523,6 +524,7 @@ const presentersMap = {
   pre: createPreElement,
   'copy-to-clipboard': createCopyToClipboardButtonElement,
   'canvas-2d': createCanvasDoodleElement,
+  paint: createPaintElement,
   'graph-2d': createGraphPlotElement,
   'ledger-ingest': createLedgerIngestReportElement,
   'real-hourly-wage': createRealHourlyWageReportElement,

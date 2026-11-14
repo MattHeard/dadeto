@@ -1953,6 +1953,27 @@
       "tags": ["toy", "graph", "canvas", "math", "html"]
     },
     {
+      "key": "PAIN1",
+      "title": "Paint",
+      "publicationDate": "2026-11-14",
+      "content": [
+        "Draw with your finger, pen, or mouse. Choose a color and brush size, erase, or clear the canvas. Toggle Full screen for more room without losing your drawing.",
+        {
+          "type": "manual",
+          "id": "PAIN1-manual",
+          "title": "User manual",
+          "src": "/manuals/paint.md"
+        }
+      ],
+      "toy": {
+        "modulePath": "/core/browser/toys/2026-11-14/paint.js",
+        "functionName": "paint",
+        "defaultInputMethod": "textarea",
+        "defaultOutputMethod": "paint"
+      },
+      "tags": ["toy", "canvas", "drawing", "touch"]
+    },
+    {
       "key": "CANV1",
       "title": "Canvas Doodle",
       "publicationDate": "2026-06-12",
