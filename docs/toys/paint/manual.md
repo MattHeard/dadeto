@@ -4,7 +4,7 @@ Submit to open a blank drawing canvas. Draw with your finger, stylus, or mouse. 
 
 Full screen fills the browser viewport. Exit full screen or Escape returns to the blog. The drawing survives toggling and screen rotation. Browser chrome remains visible.
 
-Input is ignored. Submitting again, changing output, or reloading discards the drawing; this version does not save it.
+Input is ignored. Submit and Auto preserve the drawing and tool selections. Changing output or reloading discards the drawing; this version does not save it.
 
 ## What this toy does
 

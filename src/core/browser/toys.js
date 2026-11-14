@@ -543,12 +543,26 @@ const presentersMap = {
  * @returns {HTMLElement} The rendered child element.
  */
 function setTextContent(output, dom, parent) {
+  const existing = findPaintSurface(output.presenterKey, dom, parent);
+  if (existing) return existing;
   dom.removeAllChildren(parent);
   const presenter = presentersMap[output.presenterKey];
   const child = presenter(output.content, dom);
   dom.appendChild(parent, child);
   return child;
 }
+/**
+ * Keep the live Paint canvas mounted across submit and Auto updates.
+ * @param {string} presenterKey Selected output mode.
+ * @param {object} dom DOM utilities.
+ * @param {HTMLElement} parent Output container.
+ * @returns {HTMLElement | null} Existing paint surface, if selected.
+ */
+function findPaintSurface(presenterKey, dom, parent) {
+  if (presenterKey !== 'paint') return null;
+  return dom.querySelector(parent, '[data-paint-surface]');
+}
+
 /**
  * Creates an error handler for module loading errors.
  * @param {string} modulePath - Path to the module that failed to load.

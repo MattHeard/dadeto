@@ -9,6 +9,8 @@
 export function createPaintElement(_input, dom) {
   const root = dom.createElement('div');
   root.style.cssText = 'background:#eee;padding:12px;box-sizing:border-box;';
+  root.setAttribute('data-paint-surface', '');
+  root.style.color = '#202020';
   const toolbar = dom.createElement('div');
   toolbar.style.cssText =
     'display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px;';
