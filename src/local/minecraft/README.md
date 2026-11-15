@@ -106,6 +106,13 @@ Wi-Fi. The observed Switch 2 client is Minecraft 1.26.62. The direct discovery
 candidate reached authenticated Java admission; successful world entry and
 persistence must still be verified separately.
 
+After a server restart, the observed Switch 2 client returned
+InitialConnection-146 before any new Geyser login. Fully closing Minecraft from
+HOME (highlight Minecraft → X → Close), reopening it, and selecting Dadeto LAN
+restored access. Refresh the client this way if a cached LAN entry fails after a
+restart; the exact internal cause is unproven. The user verified a placed block
+survived this restart/rejoin. Inventory persistence was not tested.
+
 ## Allowlisting and profile lookup
 
 ```bash

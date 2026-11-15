@@ -102,3 +102,21 @@ Build commands and installation/rollback are in src/local/minecraft/README.md.
 The final local and full-CI results must be recorded for the final pushed head;
 prior CI does not cover later builder/probe changes. World persistence acceptance
 is being checked after a clean stop, consistent backup, and restart.
+
+## Final acceptance
+
+After the clean server restart, Switch 2 returned InitialConnection-146 with no
+new server login event. Fully closing Minecraft from HOME/X/Close, reopening, and
+selecting Dadeto LAN restored the connection. This supports a stale client LAN
+session hypothesis but does not prove the internal cause. Document the observed
+client refresh as the restart workaround. The user confirmed the placed block
+survived. They did not perform an inventory test; do not claim one. The saved
+player file also matched the stopped-world backup byte-for-byte. Paper26.3 uses
+world/players/data rather than the old world/playerdata directory.
+
+The final runtime-code head01efa0b3fb passed npm run check (explicit exit0) and
+authoritative check-full: https://github.com/MattHeard/dadeto/actions/runs/43707981432.
+The runtime probe is removed, only Geyser/Floodgate are loaded, and the user account
+remains allowlisted by the locally observed UUID. No phone helper, external relay,
+router forwarding, or console DNS change is needed. This final documentation
+records the client-refresh workaround and the precise acceptance scope.
