@@ -176,3 +176,9 @@ allows 120 seconds for saving; avoid forced termination.
 - [Geyser setup](https://geysermc.org/wiki/geyser/setup/)
 - [LAN discovery issue 6853](https://github.com/GeyserMC/Geyser/issues/6853)
 - [Floodgate allowlisting](https://geysermc.org/wiki/floodgate/features/)
+
+## Noble's House tabletop
+
+See [tabletop/README.md](tabletop/README.md) for the ground-floor scene at two
+Minecraft blocks per five-foot-square side, the eight overhead camera presets,
+controller hotbar controls, and safe return to survival.
