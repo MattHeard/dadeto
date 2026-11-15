@@ -10,6 +10,17 @@ two ticks and removes or relocates him if he would exceed 16 blocks. Teleports a
 world changes resynchronize him. No owner online means no entity or model calls.
 There is no combat automation.
 
+Talk to him in Minecraft chat:
+
+- `Iron Man, what should we build here?` starts a private conversation.
+- `/ironman chat could you suggest a castle entrance?` does the same through a command.
+
+He responds with an inventive, confident, dryly witty Iron Man-inspired voice and
+remembers the last six exchanges across controller restarts. Replies are short
+for handheld reading. Conversation works during previews/builds; chat never changes
+blocks. Only the assigned owner can use natural addressed chat; ordinary messages
+stay ordinary server chat. Use the explicit building commands to apply a plan.
+
 Point at an empty worksite and use Minecraft chat:
 
 - `/ironman preview build a small oak archway` asks for a holographic blueprint.
@@ -75,7 +86,7 @@ billing fallback is configured. Apps, plugins, browsing and shell tools are disa
 model output is constrained JSON and validated again by the server.
 
 The controller thinks on owner arrival, at most once every two minutes when idle,
-and on explicit build requests. Deterministic local following continues between
+and on explicit building or conversation requests. Deterministic local following continues between
 model calls. Errors pause model retries for five minutes. Diagnostics and the last
 six intentions/results are private files under `plugins/DadetoIronMan/`. Building
 plans are intentions, not evidence of completion; `results/` records application.

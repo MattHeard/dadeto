@@ -7,4 +7,4 @@ description: A nearby Iron Man building companion with bounded subscription-back
 commands:
   ironman:
     description: Ask Iron Man to build, preview, follow, cancel or undo.
-    usage: /ironman [build <request>|preview <request>|undo|cancel|status|on|off]
+    usage: /ironman [chat <message>|build <request>|preview <request>|undo|cancel|status|on|off]

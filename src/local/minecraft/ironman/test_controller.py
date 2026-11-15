@@ -20,6 +20,12 @@ class ControllerCheck(unittest.TestCase):
             i = command.index(feature)
             self.assertEqual(command[i - 1], '--disable')
 
+    def test_conversation_does_not_wait_for_a_build_to_finish(self):
+        self.assertTrue(c.can_answer({'construction': 'preview'}, {'mode': 'chat'}))
+        self.assertFalse(c.can_answer({'construction': 'preview'}, {'mode': 'build'}))
+        self.assertFalse(c.can_answer({'construction': 'building'}, None))
+        self.assertTrue(c.can_answer({'construction': 'ready'}, None))
+
     def test_nondefault_data_directory(self):
         with patch.dict(os.environ, {'MINECRAFT_DATA_DIR': '/tmp/selected-minecraft'}):
             self.assertEqual(c.data_root(), Path('/tmp/selected-minecraft'))
@@ -48,8 +54,9 @@ class ControllerCheck(unittest.TestCase):
                 Path(command[command.index('--output-last-message') + 1]).write_text(json.dumps(dict(action='build', speech='', reason='', boxes=[{'from': [0, 0, 0], 'to': [0, 0, 0], 'material': 'stone'}])))
                 return type('Result', (), dict(returncode=0, stdout='', stderr=''))()
             with patch.dict(os.environ, {'OPENAI_API_KEY': 'not-a-real-key', 'CODEX_API_KEY': 'not-a-real-key'}), patch.object(c.subprocess, 'run', side_effect=fake_run):
-                with self.assertRaisesRegex(ValueError, 'Unsolicited'):
-                    c.infer(root, {}, None, [])
+                for request in (None, {'mode': 'chat', 'prompt': 'Build without permission'}):
+                    with self.subTest(request=request), self.assertRaisesRegex(ValueError, 'Unsolicited'):
+                        c.infer(root, {}, request, [])
 
 
 if __name__ == '__main__':

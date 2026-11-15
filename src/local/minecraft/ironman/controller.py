@@ -76,8 +76,8 @@ def infer(root, context, request, memory):
     if completed.returncode or not output.exists():
         raise ValueError("Requested GPT-6-Luna/low ChatGPT session failed; inspect private model diagnostics")
     value = validate(json.loads(output.read_text()))
-    if request is None and value["action"] in ("build", "preview"):
-        raise ValueError("Unsolicited construction rejected")
+    if (request is None or request.get("mode") == "chat") and value["action"] in ("build", "preview"):
+        raise ValueError("Unsolicited construction rejected; chat cannot place blocks")
     return value
 
 
@@ -86,6 +86,10 @@ def fresh(root):
     if time.time() * 1000 - context["updatedAt"] > 10000:
         raise ValueError("Waiting for fresh server context")
     return context
+
+
+def can_answer(context, request):
+    return context.get("construction") == "ready" or (request is not None and request.get("mode") == "chat")
 
 
 def run(root):
@@ -119,7 +123,7 @@ def run(root):
         if time.time() < failed_until or (request is None and online and time.time() - last_thought < 120):
             time.sleep(2)
             continue
-        if context.get("construction") != "ready":
+        if not can_answer(context, request):
             time.sleep(2)
             continue
         online = True
@@ -144,7 +148,7 @@ def run(root):
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=("run", "probe"))
+    parser.add_argument("mode", choices=("run", "probe", "probe-chat"))
     parser.add_argument("--root", type=Path)
     args = parser.parse_args()
     root = args.root or data_root() / "plugins/DadetoIronMan"
@@ -154,6 +158,8 @@ def main():
     else:
         context = {"ownerOnline": True, "position": [0, 64, 0], "palette": ["oak_planks", "stone", "glass"], "radius": 16, "maxBlocks": 1024}
         request = {"prompt": "Build a simple three-block-wide, three-block-high oak wall, one block thick.", "mode": "build", "origin": [4, 64, 0], "ownerPosition": [0, 64, 0]}
+        if args.mode == "probe-chat":
+            request = {"mode": "chat", "prompt": "Hey Iron Man. Introduce yourself, with a little personality, and tell me how you can help me build."}
         result = infer(root, context, request, [])
         print(json.dumps(result))
 

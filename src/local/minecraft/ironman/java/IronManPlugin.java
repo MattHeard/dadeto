@@ -1,6 +1,8 @@
 package net.mattheard.ironman;
 
 import com.google.gson.*;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import java.awt.image.BufferedImage;
@@ -191,21 +193,27 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     if(Files.exists(root.resolve("results/"+id+".json")))return;
     Player p=owner();if(p==null||p.isDead()||!enabled)throw new IllegalArgumentException("Owner is offline or companion disabled");
     BuildPlan.Decision decision=BuildPlan.parse(envelope.get("decision").toString());
+    JsonObject request=null;
+    if(Files.exists(root.resolve("requests/"+id+".json"))) {
+      request=read("requests/"+id+".json",JsonObject.class);
+      if(!ownerId.toString().equals(request.get("owner").getAsString())||System.currentTimeMillis()-request.get("createdAt").getAsLong()>300000)throw new IllegalArgumentException("Request expired; please ask again");
+    } else if(!id.startsWith("think-"))throw new IllegalArgumentException("Request was cancelled");
+    boolean conversation=request!=null&&request.get("mode").getAsString().equals("chat");
     if(Set.of("build","preview").contains(decision.action())) {
-      JsonObject request=read("requests/"+id+".json",JsonObject.class);
-      if(!ownerId.toString().equals(request.get("owner").getAsString())||System.currentTimeMillis()-request.get("createdAt").getAsLong()>300000)throw new IllegalArgumentException("Request expired; point and ask again");
+      if(request==null||conversation)throw new IllegalArgumentException("Conversation cannot change blocks; use a building command");
       construction.start(id,p,request,decision);result(id,"accepted","Preview/construction accepted");
-    } else {mode=decision.action();result(id,"completed","Companion intent accepted");}
+    } else {if(!conversation)mode=decision.action();result(id,"completed",conversation?"Conversation reply delivered":"Companion intent accepted");}
     if(!decision.speech().isBlank())p.sendMessage("Iron Man: "+decision.speech());
   }
   private void request(Player p,String mode,String prompt) throws IOException {
+    if(!enabled)throw new IllegalArgumentException("I am parked. Use /ironman on to bring me back.");
     if(!ready)throw new IllegalArgumentException("Builder is waiting for recovery; check the server log");
     if(prompt.isBlank()||prompt.length()>1000)throw new IllegalArgumentException("Use a building request up to1000 characters");
-    if(construction.busy())throw new IllegalArgumentException("Finish, confirm or cancel the current blueprint first");
+    if(!mode.equals("chat")&&construction.busy())throw new IllegalArgumentException("Finish, confirm or cancel the current blueprint first");
     Block target=p.getTargetBlockExact(12);Location origin;
     if(target==null){var direction=p.getLocation().getDirection().setY(0);if(direction.lengthSquared()<0.001){double a=Math.toRadians(p.getYaw());direction=new org.bukkit.util.Vector(-Math.sin(a),0,Math.cos(a));}origin=p.getLocation().add(direction.normalize().multiply(4));}else origin=target.getLocation().add(0,1,0);
-    String id="build-"+UUID.randomUUID();JsonObject req=new JsonObject();req.addProperty("version",1);req.addProperty("id",id);req.addProperty("owner",ownerId.toString());req.addProperty("mode",mode);req.addProperty("prompt",prompt);req.addProperty("createdAt",System.currentTimeMillis());req.addProperty("world",p.getWorld().getUID().toString());req.add("origin",BuildPlan.JSON.toJsonTree(List.of(origin.getBlockX(),origin.getBlockY(),origin.getBlockZ())));req.add("ownerPosition",BuildPlan.JSON.toJsonTree(List.of(p.getX(),p.getY(),p.getZ())));
-    String data=BuildPlan.JSON.toJson(req);io(()->write("requests/"+id+".json",data),()->p.sendMessage("Iron Man: planning your "+mode+" request with GPT-6-Luna. I will protect existing blocks."));
+    String id=(mode.equals("chat")?"chat-":"build-")+UUID.randomUUID();JsonObject req=new JsonObject();req.addProperty("version",1);req.addProperty("id",id);req.addProperty("owner",ownerId.toString());req.addProperty("mode",mode);req.addProperty("prompt",prompt);req.addProperty("createdAt",System.currentTimeMillis());req.addProperty("world",p.getWorld().getUID().toString());req.add("origin",BuildPlan.JSON.toJsonTree(List.of(origin.getBlockX(),origin.getBlockY(),origin.getBlockZ())));req.add("ownerPosition",BuildPlan.JSON.toJsonTree(List.of(p.getX(),p.getY(),p.getZ())));
+    String data=BuildPlan.JSON.toJson(req);io(()->write("requests/"+id+".json",data),()->p.sendMessage(mode.equals("chat")?"Iron Man: give me a moment.":"Iron Man: planning your "+mode+" request. Existing builds stay protected."));
   }
   @Override public boolean onCommand(CommandSender sender,Command command,String label,String[] args) {
     Player p=sender instanceof Player?(Player)sender:null;
@@ -213,17 +221,24 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     String action=args.length==0?"status":args[0].toLowerCase(Locale.ROOT);
     try {
       switch(action) {
-        case "build","preview","revise"->{if(p==null)throw new IllegalArgumentException("A player must point at the worksite");request(p,action,String.join(" ",Arrays.copyOfRange(args,1,args.length)));}
+        case "build","preview","revise","chat"->{if(p==null)throw new IllegalArgumentException("A player must point at the worksite");request(p,action,String.join(" ",Arrays.copyOfRange(args,1,args.length)));}
         case "confirm"->construction.confirm();
         case "cancel"->{if(construction.busy())construction.cancel();try(DirectoryStream<Path> paths=Files.newDirectoryStream(root.resolve("requests"),"*.json")){for(Path path:paths)Files.delete(path);}sender.sendMessage("Iron Man: pending requests cancelled; completed edits will be restored if needed.");}
         case "undo"->{if(p==null)throw new IllegalArgumentException("Return to the worksite in game to undo");construction.undo(p);}
         case "on","off"->{enabled=action.equals("on");getConfig().set("enabled",enabled);saveConfig();if(!enabled)remove();sender.sendMessage("Iron Man "+(enabled?"enabled":"parked"));}
         case "follow"->{mode="follow";enabled=true;sender.sendMessage("Iron Man: staying near you.");}
-        case "selftest"->{if(p!=null&&!p.isOp())throw new IllegalArgumentException("DM control");BuildPlanCheck.main(new String[0]);FollowPosition.check();followerCheck();ConstructionCheck.run(this);sender.sendMessage("Iron Man integration check started; see server log for terminal result.");}
-        default->sender.sendMessage("Iron Man: "+(enabled?"enabled":"parked")+"; "+(construction==null?"not ready":construction.phase())+"; skin deliveries "+skinPackets.get()+". /ironman build <request> | preview | confirm | cancel | undo");
+        case "selftest"->{if(p!=null&&!p.isOp())throw new IllegalArgumentException("DM control");BuildPlanCheck.main(new String[0]);FollowPosition.check();Conversation.check();followerCheck();ConstructionCheck.run(this);sender.sendMessage("Iron Man integration check started; see server log for terminal result.");}
+        default->sender.sendMessage("Iron Man: "+(enabled?"enabled":"parked")+"; "+(construction==null?"not ready":construction.phase())+"; skin deliveries "+skinPackets.get()+". /ironman chat <message> | build <request> | preview | confirm | cancel | undo");
       }
     }catch(Exception e){sender.sendMessage("Iron Man: "+e.getMessage());}
     return true;
+  }
+  @EventHandler(ignoreCancelled=true) public void onChat(AsyncChatEvent event) {
+    if(!event.getPlayer().getUniqueId().equals(ownerId))return;
+    String text=Conversation.message(PlainTextComponentSerializer.plainText().serialize(event.message()));
+    if(text==null)return;
+    event.setCancelled(true);
+    Bukkit.getScheduler().runTask(this,()->{Player p=owner();if(p==null)return;try{request(p,"chat",text);}catch(Exception error){p.sendMessage("Iron Man: "+error.getMessage());}});
   }
   @EventHandler public void onQuit(PlayerQuitEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))remove();}
   @EventHandler public void onTeleport(PlayerTeleportEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))Bukkit.getScheduler().runTask(this,()->{Player p=owner();if(p!=null&&enabled)ensure(p);});}
