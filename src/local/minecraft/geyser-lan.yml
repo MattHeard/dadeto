@@ -1,0 +1,20 @@
+bedrock:
+  address: '@LAN_IP@'
+  port: 19132
+  transport: nethernet
+  signaling:
+    mode: builtin
+    advertise-addresses:
+      - '@LAN_IP@:19132'
+    stun-discovery: false
+    lan-discovery:
+      enabled: true
+      address: 0.0.0.0
+      ice-port: 19134
+java:
+  auth-type: floodgate
+gameplay:
+  server-name: Dadeto LAN
+advanced:
+  bedrock:
+    validate-bedrock-login: true

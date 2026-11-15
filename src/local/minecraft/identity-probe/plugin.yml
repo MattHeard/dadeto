@@ -1,0 +1,5 @@
+name: DadetoIdentityProbe
+version: '1.0'
+main: net.mattheard.minecraft.IdentityProbe
+api-version: '1.21'
+description: Logs profile UUIDs before admission without changing access decisions.

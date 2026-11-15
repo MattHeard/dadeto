@@ -49,11 +49,23 @@ PY
   echo "Prepared $DATA. Run $0 start."
 }
 
+geyser_checksum() {
+  if [[ ! -f "$DATA/geyser-lan-build.json" ]]; then printf '%s' "$GEYSER_SHA256"; return; fi
+  python3 - "$DATA/geyser-lan-build.json" "$GEYSER_LAN_COMMIT" <<'PYTHON'
+import json, re, sys
+with open(sys.argv[1]) as source:
+    record = json.load(source)
+if record.get('commit') != sys.argv[2] or not re.fullmatch('[0-9a-f]{64}', record.get('sha256', '')):
+    sys.exit('Invalid or unrecognized experimental Geyser build record')
+print(record['sha256'])
+PYTHON
+}
+
 start() {
   if running; then echo "$NAME is already running"; return; fi
   [[ -f "$DATA/eula.txt" && -f "$DATA/server.properties" ]] || { echo 'Run setup first' >&2; exit 1; }
   printf '%s  %s\n' "$PAPER_SHA256" "$DATA/paper.jar" \
-    "$GEYSER_SHA256" "$DATA/plugins/Geyser-Spigot.jar" \
+    "$(geyser_checksum)" "$DATA/plugins/Geyser-Spigot.jar" \
     "$FLOODGATE_SHA256" "$DATA/plugins/floodgate-spigot.jar" | sha256sum --check
   if podman container exists "$NAME"; then podman start "$NAME"; return; fi
   podman run -di --name "$NAME" --network=host --cgroups=disabled \
