@@ -45,7 +45,7 @@ final class SceneModel {
     new Cell(p[0], p[1], p[2]).check(); return p;
   }
   record ObjectSpec(String id, String title, String explanation, String kind, List<String> relatesTo, Map<String, String> blocks) {}
-  record Request(String id, int revision, String action, ObjectSpec object) {}
+  record Request(String id, int revision, String action, ObjectSpec object, JsonObject payload) {}
   static Request parse(String input) {
     if (input.length() > 65536) throw new IllegalArgumentException("Request exceeds 64 KiB");
     JsonObject root = JsonParser.parseString(input).getAsJsonObject();
@@ -53,7 +53,7 @@ final class SceneModel {
     String id = id(root, "id"), action = text(root, "action", 10);
     int revision = integer(root.get("revision"));
     if (revision < 0) throw new IllegalArgumentException("Negative revision");
-    if (action.equals("undo")) return new Request(id, revision, action, null);
+    if (Set.of("undo", "configure", "act", "batch").contains(action)) return new Request(id, revision, action, null, root);
     if (!action.equals("put")) throw new IllegalArgumentException("Use put or undo");
     JsonObject object = root.getAsJsonObject("object");
     String objectId = id(object, "id"), title = text(object, "title", 100), explanation = text(object, "explanation", 1200), kind = text(object, "kind", 30);
@@ -81,18 +81,24 @@ final class SceneModel {
         if (blocks.putIfAbsent(key, "minecraft:" + material) != null) throw new IllegalArgumentException("Overlapping boxes");
       }
     }
-    return new Request(id, revision, action, new ObjectSpec(objectId, title, explanation, kind, links, blocks));
+    return new Request(id, revision, action, new ObjectSpec(objectId, title, explanation, kind, links, blocks), root);
   }
   static final class State {
     int version = 1;
     int revision;
     String lastJob = "";
     Map<String, ObjectSpec> objects = new LinkedHashMap<>();
+    Map<String,Integer> variables = new LinkedHashMap<>();
+    Map<String,SceneRules.Rule> rules = new LinkedHashMap<>();
+    Map<String,SceneRules.Guide> guides = new LinkedHashMap<>();
+    Map<String,String> provenance = new LinkedHashMap<>();
+    String lastActor = "operator";
   }
   record Journal(String id, State before, State after, Map<String,String> oldBlocks, Map<String,String> newBlocks) {}
   static State copy(State state) { return JSON.fromJson(JSON.toJson(state), State.class); }
   static void check(State state) {
     if (state == null || state.version != 1 || state.revision < 0 || state.objects == null || state.objects.size() > 64) throw new IllegalArgumentException("Invalid saved scene state");
+    SceneRules.check(state);
     Set<String> cells = new HashSet<>();
     for (var entry : state.objects.entrySet()) {
       ObjectSpec o = entry.getValue();
@@ -107,7 +113,7 @@ final class SceneModel {
   static State next(State state, Request request) {
     check(state);
     if (request.revision() != state.revision) throw new IllegalArgumentException("Stale revision; read context.json again");
-    if (!request.action().equals("put")) throw new IllegalArgumentException("Undo requires a completed journal");
+    if (!request.action().equals("put")) return SceneRules.next(state, request);
     State after = copy(state); after.revision++; after.lastJob = request.id();
     after.objects.put(request.object().id(), request.object());
     check(after);

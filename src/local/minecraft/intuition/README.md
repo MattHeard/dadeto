@@ -1,15 +1,17 @@
-# Intuition Engine: first live collaboration slice
+# Intuition Engine: live semantic thought experiments
 
 Canonical [behavioral specification](https://app.notion.com/p/419700afc30181f18928c598cb9653bc).
 [Source snapshot](spec.md) records the requirements inspected on 15 November 2026.
-Notion remains canonical. Implementation task: `dadeto-nnwt`; existing house:
+Notion remains canonical. Tasks: `dadeto-nnwt` (bridge), `dadeto-86l4` (interactions/Theseus),
+`dadeto-e5rj` (transfer), `dadeto-y15j` (remaining NPC depth); existing house:
 `dadeto-g37s`.
 
 This adds generic, live, named objects to the existing Paper plugin. Codex turns
 a conversation into a JSON scene request on Lorandil; the plugin applies it while
 players remain connected. There is no topic whitelist, model API, new service,
-client mod, resource-pack download or cloud simulation. This is a foundation for
-the specification, not the complete Ship of Theseus experience.
+client mod, resource-pack download or cloud simulation. Generic interactions now support the two authored experiments below. Server
+acceptance is automated; the specification still needs actual connected-user
+Switch observation and deeper NPC behavior.
 
 ## Player controls
 
@@ -149,18 +151,176 @@ cancels a large partial edit. Do not reset a populated scene to rerun it. Consol
 mismatches across 33,672 house placements. Recorded results belong in Beads and
 the agent note; local fast checks do not establish full CI coverage.
 
-Requirement coverage for this slice:
+Requirement coverage after the interaction and transfer milestones:
 
-| Specification outcome          | Implementation / remaining evidence                                                                                                               |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live collaboration             | Generic request inbox, spatial context, live revisions; actual Switch connected-session observation required                                      |
-| Persistent meaning             | Stable IDs, explanations, epistemic categories, relationships, inspection, restart recovery                                                       |
-| Meaningful player intervention | Inspection available; generic state/action rules and consequence tracking remain a following slice                                                |
-| Theseus end-to-end             | Harbor/ship can be authored as ordinary objects; plank replacement, reconstruction, guide and identity challenge acceptance remain                |
-| Novel concept transfer         | No topic-specific engine code; a second unfamiliar interactive experience still needs implementation and demonstration                            |
-| Rich NPCs/multiplayer          | Shared objects and messages available; NPC goals/routines/dialogue, richer collaboration and child-facing evaluation remain                       |
-| Correctability/resilience      | Revision checks, ownership, progress, cancellation, reversible last edit and journal recovery; occupied-session responsiveness remains to observe |
+| Specification outcome     | Implementation / remaining evidence                                                                                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Live collaboration        | Generic request inbox, spatial context, live revisions; actual connected Switch observation remains pending                                                                                                  |
+| Persistent meaning        | Stable IDs, explanations, epistemic categories, relationships, counters, provenance and guides survive restart                                                                                               |
+| Meaningful intervention   | Conditional ordinary block interactions atomically change counters, materials and reconstructed objects; controller behavior still needs observation                                                         |
+| Theseus                   | Eight replaceable modeled components, originals reconstruction, state-aware fictional guide, contrasting live representation and restoration tested on the server; actual user end-to-end acceptance pending |
+| Novel transfer            | Coordination payoff exhibit authored after Theseus, with unchanged Java engine; all outcomes/orderings and reward revision tested; human novel-prompt and Switch acceptance remain pending                   |
+| NPCs/multiplayer          | Shared atomic rules and guide roles/topics work; physical autonomous NPC goals/routines, unrestricted NPC conversation, actual multiplayer and child-facing usability remain to develop/evaluate             |
+| Correctability/resilience | Revision/ownership guards, progress, cancel, undo of geometry plus interaction state and recovery; occupied-session performance remains unmeasured                                                           |
 
-Keep the canonical spec **Partial / Active** until the full behavioral outcomes
-are demonstrated. A recognizable ship alone does not satisfy the thought
-experiment or generality acceptance criteria.
+Keep the canonical spec **Partial / Active**. Passing server tests does not satisfy
+the specification's explicit requirement for an actual connected player to
+complete and revise an understandable experience.
+
+## Ready-to-play experiments
+
+Enter with `/intuition`. Fly down to the ship. Point at a wooden deck panel and
+use your empty hand once to inspect it; use it again within ten seconds to
+perform its named replacement action. Duplicate packets within half a second
+are ignored. Each of eight panels is replaceable once. A spruce replacement
+stays on Ship A and the removed original oak component appears on Ship B,
+sixteen blocks south. Progress, flags and original-material provenance persist.
+The eight panels stand in for all modeled material parts; black outlines, gray
+masts and white sails are explicitly decorative diagram furniture.
+
+The gold guide near the pier offers `/intuition ask identity`, `materials`,
+`continuity`, `function`, `compare` and (after all eight replacements)
+`all-replaced`. Keep pointing at the guide within twelve blocks. It is an
+invented interpreter, not a simulation of a historical person. Its topics
+contrast criteria without declaring a disputed question settled. Other questions
+can be brought to Codex for a live scene/topic revision; there is no unattended
+frontier-model dialogue service.
+
+West of the harbor is a coordination payoff exhibit. Its four gray choice tiles
+let party A and party B each choose cooperation or a safer option. Touch a tile
+twice to commit that choice. The resulting green columns show the stipulated
+rewards. One player can explore both roles or players can agree who controls
+which role. Choices are sequential and visible: this illustrates a payoff
+structure rather than a controlled simultaneous-choice experiment. Its gold
+guide offers `choices`, `outcome`, `risk`, `assumptions`, and `limits`.
+
+For background on the coordination-game framing, see the primary research paper
+[Ferreira, Santos and Pequito (2021)](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009167).
+The Minecraft table is our explicitly stipulated example, not that paper's model
+or a claim to predict people. No actual hunting or animal harm is depicted.
+
+Authoring tools generate ordinary generic requests, not server-side scenario
+code or a fixed allowed-topic list:
+
+```bash
+python3 src/local/minecraft/intuition/theseus.py deploy --preview
+python3 src/local/minecraft/intuition/theseus.py contrast
+python3 src/local/minecraft/intuition/stag_hunt.py --preview
+python3 src/local/minecraft/intuition/stag_hunt.py --mutual-reward 6 --preview
+```
+
+Deployment tools refuse to silently reset existing choices/progress. Preview
+before authoring a deliberate counterfactual reset. Earlier `examples/` files
+are historical first-deployment fixtures at revisions3..9, not replayable commands
+for the current populated world. New request IDs and current revisions are
+required. There is no player reset button that can erase another player's run;
+Codex can author an explicit revision or the DM can undo the latest transaction.
+
+## Generic interaction protocol
+
+`batch` adds/revises 1..32 objects and optional `configuration` in one transaction.
+All boxes together are limited to4,096 expanded cells; intermediate ownership
+transfers are not exposed. `configure` merges the supplied counters, rules and
+guides by ID. It does not silently delete unrelated definitions.
+
+```json
+{
+  "version": 1,
+  "id": "configure-example",
+  "revision": 1,
+  "action": "configure",
+  "configuration": {
+    "variables": { "changed": 0 },
+    "rules": [
+      {
+        "id": "replace-idea",
+        "trigger": "idea",
+        "label": "Replace the component",
+        "requires": { "changed": 0 },
+        "increments": { "changed": 1 },
+        "effects": [
+          {
+            "source": "idea",
+            "target": "recovered-idea",
+            "offset": [0, 0, 8],
+            "title": "Recovered original",
+            "explanation": "Original material moved into a comparison representation.",
+            "kind": "assumption"
+          },
+          {
+            "source": "idea",
+            "target": "idea",
+            "offset": [0, 0, 0],
+            "material": "spruce_planks",
+            "title": "Replacement",
+            "explanation": "A new material occupies the old role.",
+            "kind": "assumption"
+          }
+        ],
+        "message": "Changed {changed} component; this is not a verdict about identity."
+      }
+    ],
+    "guides": [
+      {
+        "object": "idea",
+        "role": "A hypothetical interpreter",
+        "disclaimer": "An interpretation, not a historical quotation.",
+        "topics": {
+          "compare": {
+            "kind": "speculation",
+            "text": "{changed} component changed. Which identity criterion are you applying?",
+            "requires": { "changed": 1 }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+Prerequisites are exact counter matches; increments may be positive or negative,
+but every resulting counter must stay within0..1,000,000. Maximums are128
+counters,128 rules,16 effects per rule,16 guides and32 topics per guide. A rule's
+effects together may read at most4,096 source cells. Effects use the pre-action
+state regardless of order. A copy can shift the source by an integer offset and
+optionally override its material; it retains source provenance and relationships.
+Sources must already exist, effect target IDs must be unique, final coordinates
+must stay in the lab, and final object ownership cannot overlap. An invalid
+transition changes neither counters nor blocks.
+
+A private operator request can execute a rule:
+`{"version":1,"id":"unique-action","revision":N,"action":"act","rule":"replace-idea","actor":"operator"}`.
+Actual player requests are constructed on the server with that player's UUID,
+require a lab visit and aiming at the rule's trigger object, and obey the same
+revision, precondition, persistence and ownership checks. Operator-authored actor
+labels are trusted local metadata, not proof that a player participated.
+
+When one action is available, the first empty-hand use explains it and arms it;
+the next confirms it. When several actions are available, the client lists
+`/intuition act <id>` choices instead of guessing. Changes are serialized and
+shared; a second player with a stale confirmation must inspect again. Guides
+substitute counter values in `{counter-id}` placeholders and gate topics on
+prerequisites. No arbitrary script or command evaluation is allowed.
+
+The same journal/undo transaction contains objects, counters, rules, guides,
+provenance and actor metadata. Existing saved scenes without interaction fields
+load with empty defaults. Context now exports counters, rules, guides and
+provenance alongside geometry meanings and player spatial cues.
+
+## Extended acceptance harnesses
+
+```bash
+python3 src/local/minecraft/intuition/check_interactions.py
+python3 src/local/minecraft/intuition/check_transfer.py
+```
+
+Both are opt-in tests, require no online players and refuse to overwrite an
+existing player's choices. They restore the tested exhibits' starting state.
+The first requires Theseus progress0, exercises all eight replacements,
+128 reconstructed blocks, once-only actions, counter/provenance undo/redo and a
+contrasting revision. The second requires undecided coordination roles,
+exercises every payoff outcome in both choice orders, checks a reward4→6 revision,
+keeps the other exhibit unchanged and verifies Java engine hashes never change
+during transfer. Restart verification compares the entire saved semantic state.
+Real controller interactions, simultaneous users, child-facing readability and
+occupied-session responsiveness remain separate manual acceptance.

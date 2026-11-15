@@ -29,6 +29,10 @@ final class SceneEngine implements Listener, CommandExecutor {
   private int cursor;
   private boolean rollback;
   private String rollbackReason;
+  private String actionMessage;
+  private record Armed(String object,int revision,long at) {}
+  private final Map<UUID,Armed> armed = new HashMap<>();
+  private final Map<UUID,Long> lastUse = new HashMap<>();
   private final Map<UUID,ViewerState> visitors = new HashMap<>();
 
   SceneEngine(TabletopPlugin plugin) {
@@ -138,6 +142,7 @@ final class SceneEngine implements Listener, CommandExecutor {
   private void prepare(SceneModel.Request request) {
     try {
       if (request.revision() != state.revision) throw new IllegalArgumentException("Stale revision; read context.json again");
+      actionMessage = null;
       SceneModel.State after;
       Map<String,String> old = new LinkedHashMap<>(), next = new LinkedHashMap<>();
       if (request.action().equals("undo")) {
@@ -151,14 +156,23 @@ final class SceneEngine implements Listener, CommandExecutor {
         }
       } else {
         after = SceneModel.next(state, request);
-        SceneModel.ObjectSpec previous = state.objects.get(request.object().id());
+        if (request.action().equals("act")) actionMessage = SceneRules.explain(after,state.rules.get(SceneModel.id(request.payload(),"rule")).message());
+        Set<String> touched = new LinkedHashSet<>();
+        Set<String> ids = new LinkedHashSet<>(state.objects.keySet()); ids.addAll(after.objects.keySet());
+        for (String id : ids) if (!Objects.equals(state.objects.get(id),after.objects.get(id))) touched.add(id);
+        if (request.action().equals("act")) for (var effect : state.rules.get(SceneModel.id(request.payload(),"rule")).effects()) touched.add(effect.source());
         Set<String> keys = new LinkedHashSet<>();
-        if (previous != null) keys.addAll(previous.blocks().keySet());
-        keys.addAll(request.object().blocks().keySet());
+        for (String id : touched) {
+          if (state.objects.containsKey(id)) keys.addAll(state.objects.get(id).blocks().keySet());
+          if (after.objects.containsKey(id)) keys.addAll(after.objects.get(id).blocks().keySet());
+        }
+        Map<String,String> beforeBlocks = new HashMap<>(), afterBlocks = new HashMap<>();
+        for (var o : state.objects.values()) beforeBlocks.putAll(o.blocks());
+        for (var o : after.objects.values()) afterBlocks.putAll(o.blocks());
         for (String key : keys) {
-          String expected = previous == null ? "minecraft:air" : previous.blocks().getOrDefault(key, "minecraft:air");
+          String expected = beforeBlocks.getOrDefault(key,"minecraft:air");
           if (!actual(key).equals(expected)) throw new IllegalArgumentException("Existing creation or external edit at " + key + "; nothing changed");
-          old.put(key, expected); next.put(key, request.object().blocks().getOrDefault(key, "minecraft:air"));
+          old.put(key,expected); next.put(key,afterBlocks.getOrDefault(key,"minecraft:air"));
         }
       }
       active = new SceneModel.Journal(request.id(), SceneModel.copy(state), after, old, next);
@@ -200,10 +214,10 @@ final class SceneEngine implements Listener, CommandExecutor {
     boolean cancelled = rollback;
     SceneModel.State target = cancelled ? journal.before() : journal.after();
     String saved = SceneModel.JSON.toJson(target), history = SceneModel.JSON.toJson(journal);
-    String message = cancelled ? rollbackReason : "Live edit complete; revision " + target.revision;
+    String message = cancelled ? rollbackReason : actionMessage == null ? "Live edit complete; revision " + target.revision : actionMessage;
     String output = result(journal.id(), cancelled ? "cancelled" : "completed", message, cells.size());
     // Save chunks before marking the semantic transaction committed. This runs only at a bounded job boundary.
-    world.save();
+    if (!cells.isEmpty()) world.save();
     io(() -> {
       if (!cancelled) write("history/" + journal.id() + ".json", history);
       write("state.json", saved); write("results/" + journal.id() + ".json", output);
@@ -228,6 +242,7 @@ final class SceneEngine implements Listener, CommandExecutor {
     context.put("activeJob", active == null ? "" : active.id()); context.put("progress", cursor); context.put("total", cells.size());
     Map<String,Object> meanings = new LinkedHashMap<>();
     for (var o : state.objects.values()) meanings.put(o.id(), Map.of("title", o.title(), "explanation", o.explanation(), "kind", o.kind(), "relatesTo", o.relatesTo(), "blockCount", o.blocks().size()));
+    context.put("variables",state.variables); context.put("rules",state.rules); context.put("guides",state.guides); context.put("provenance",state.provenance);
     context.put("world", world.getKey().toString()); context.put("players", players); context.put("objects", meanings);
     String output = SceneModel.JSON.toJson(context);
     contextPending = true;
@@ -260,11 +275,14 @@ final class SceneEngine implements Listener, CommandExecutor {
     if (saved == null) { saved = snapshot(player).exists() ? ViewerState.load(snapshot(player)) : ViewerState.capture(player); saved.save(snapshot(player)); visitors.put(player.getUniqueId(), saved); }
     player.getInventory().clear(); player.setGameMode(GameMode.ADVENTURE); player.setAllowFlight(true); player.setFlying(true); player.setGravity(true);
     if (!player.teleport(new Location(world, 128.5, 85, 32.5, 180, 45))) throw new IOException("Lab teleport refused");
-    player.sendMessage("Intuition lab: fly with the normal controls. Point and use an empty hand to inspect meanings. /intuition leave returns with your inventory.");
+    player.sendMessage("Intuition lab: fly with the normal controls. Point and use an empty hand to inspect. Use a component again to perform its action; point at a guide and /intuition ask <topic>. /intuition leave returns with your inventory.");
   }
   @Override public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
     String action = args.length == 0 ? "visit" : args[0];
     try {
+      if(sender instanceof Player player && (action.equals("act") || action.equals("ask")) && args.length==2) {
+        if(action.equals("act")) act(player,args[1]); else ask(player,args[1]); return true;
+      }
       if (sender instanceof Player player && Set.of("visit", "leave", "inspect").contains(action) && args.length <= 1) {
         switch (action) { case "visit" -> visit(player); case "leave" -> leave(player); case "inspect" -> inspect(player); }
         return true;
@@ -294,13 +312,57 @@ final class SceneEngine implements Listener, CommandExecutor {
     return true;
   }
   @EventHandler public void onUse(PlayerInteractEvent event) {
-    if (visitors.containsKey(event.getPlayer().getUniqueId())) { event.setCancelled(true); if (event.getHand() == org.bukkit.inventory.EquipmentSlot.HAND) inspect(event.getPlayer()); }
+    Player player=event.getPlayer();
+    if (!visitors.containsKey(player.getUniqueId())) return;
+    event.setCancelled(true);
+    if (event.getHand()!=org.bukkit.inventory.EquipmentSlot.HAND) return;
+    long now=System.currentTimeMillis();
+    if (now-lastUse.getOrDefault(player.getUniqueId(),0L)<500) return;
+    lastUse.put(player.getUniqueId(),now);
+    Block target=player.getTargetBlockExact(12);
+    Optional<SceneModel.ObjectSpec> object=target==null?Optional.empty():objectAt(target);
+    if(object.isEmpty()) { inspect(player); return; }
+    List<SceneRules.Rule> choices=choices(object.get().id());
+    Armed previous=armed.remove(player.getUniqueId());
+    if(choices.size()==1 && previous!=null && previous.object().equals(object.get().id()) && previous.revision()==state.revision && now-previous.at()<10000) {
+      act(player,choices.getFirst().id()); return;
+    }
+    inspect(player);
+    if(choices.size()==1) {
+      armed.put(player.getUniqueId(),new Armed(object.get().id(),state.revision,now));
+      player.sendMessage("Use again within 10 seconds: "+choices.getFirst().label());
+    } else if(!choices.isEmpty()) player.sendMessage("Choose /intuition act "+String.join(" | ",choices.stream().map(SceneRules.Rule::id).toList()));
+    if(state.guides.containsKey(object.get().id())) player.sendMessage("Guide topics: "+String.join(", ",state.guides.get(object.get().id()).topics().keySet())+". Use /intuition ask <topic> while pointing here.");
+  }
+  private List<SceneRules.Rule> choices(String object) {
+    return state.rules.values().stream().filter(r -> r.trigger().equals(object) && SceneRules.available(state,r.requires())).toList();
+  }
+  private void act(Player player,String ruleId) {
+    if(busy || failed) { player.sendMessage("An edit is finishing. Inspect and try again shortly."); return; }
+    Block target=player.getTargetBlockExact(12);
+    Optional<SceneModel.ObjectSpec> object=target==null?Optional.empty():objectAt(target);
+    SceneRules.Rule rule=state.rules.get(ruleId);
+    if(!visitors.containsKey(player.getUniqueId()) || rule==null || object.isEmpty() || !object.get().id().equals(rule.trigger())) { player.sendMessage("Point at the action's object in the lab first."); return; }
+    JsonObject request=new JsonObject(); request.addProperty("version",1); request.addProperty("id","use-"+UUID.randomUUID()); request.addProperty("revision",state.revision); request.addProperty("action","act"); request.addProperty("rule",ruleId); request.addProperty("actor",player.getUniqueId().toString());
+    busy=true;
+    prepare(SceneModel.parse(request.toString()));
+  }
+  private void ask(Player player,String topicId) {
+    Block target=player.getTargetBlockExact(12);
+    Optional<SceneModel.ObjectSpec> object=target==null?Optional.empty():objectAt(target);
+    if(object.isEmpty() || !state.guides.containsKey(object.get().id())) { player.sendMessage("Point at an interactive guide within 12 blocks first."); return; }
+    SceneRules.Guide guide=state.guides.get(object.get().id());
+    SceneRules.Topic topic=guide.topics().get(topicId);
+    if(topic==null) { player.sendMessage("Available guide topics: "+String.join(", ",guide.topics().keySet())+". Bring other questions to Codex for a live revision."); return; }
+    if(!SceneRules.available(state,topic.requires())) { player.sendMessage("That comparison needs a different experiment state. Inspect the remaining components first."); return; }
+    player.sendMessage(guide.role()+": "+guide.disclaimer());
+    player.sendMessage("["+topic.kind()+"] "+SceneRules.explain(state,topic.text()));
   }
   @EventHandler public void onJoin(PlayerJoinEvent event) {
     Player player = event.getPlayer();
     if (snapshot(player).exists()) Bukkit.getScheduler().runTaskLater(plugin, () -> { if (player.isOnline()) try { visit(player); } catch (Exception e) { player.sendMessage("Lab return snapshot retained: " + e.getMessage()); } }, 40);
   }
-  @EventHandler public void onQuit(PlayerQuitEvent event) { visitors.remove(event.getPlayer().getUniqueId()); }
+  @EventHandler public void onQuit(PlayerQuitEvent event) { visitors.remove(event.getPlayer().getUniqueId()); armed.remove(event.getPlayer().getUniqueId()); lastUse.remove(event.getPlayer().getUniqueId()); }
   @EventHandler public void onDamage(org.bukkit.event.entity.EntityDamageEvent event) { if (visitors.containsKey(event.getEntity().getUniqueId())) event.setCancelled(true); }
   void close() { closing = true; disk.shutdown(); try { disk.awaitTermination(10, TimeUnit.SECONDS); } catch (InterruptedException e) { Thread.currentThread().interrupt(); } }
 }
