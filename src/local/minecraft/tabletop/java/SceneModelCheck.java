@@ -17,6 +17,8 @@ final class SceneModelCheck {
     rejects(() -> SceneModel.parse(VALID.replace("100,64,10", "0,64,10")));
     rejects(() -> SceneModel.parse(VALID.replace("101,64,11", "159,95,63")));
     rejects(() -> SceneModel.parse(VALID.replace("oak_planks", "tnt")));
+    rejects(() -> SceneModel.parse(VALID.replace("oak_planks", "copper_block")));
+    require(SceneModel.parse(VALID.replace("oak_planks", "waxed_copper_block")).object().blocks().size() == 4);
     rejects(() -> SceneModel.parse(VALID.replace("\"metaphor\"", "\"proven-truth\"")));
     rejects(() -> SceneModel.parse(VALID.replace("[100,64,10]", "[100.5,64,10]")));
     rejects(() -> SceneModel.parse(VALID.replace("\"test-one\"", "\"../escape\"")));

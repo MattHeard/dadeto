@@ -8,7 +8,7 @@ final class SceneModel {
   static final Gson JSON = new GsonBuilder().setPrettyPrinting().create();
   static final int LIMIT = 4096;
   static final Set<String> KINDS = Set.of("metaphor", "assumption", "simulation", "historical-claim", "speculation");
-  static final Set<String> MATERIALS = Set.of("air", "stone", "stone_bricks", "smooth_stone", "oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "white_concrete", "black_concrete", "red_concrete", "blue_concrete", "green_concrete", "yellow_concrete", "orange_concrete", "purple_concrete", "light_blue_concrete", "gray_concrete", "glass", "sea_lantern", "sandstone", "quartz_block", "gold_block", "iron_block", "copper_block", "packed_ice");
+  static final Set<String> MATERIALS = Set.of("air", "stone", "stone_bricks", "smooth_stone", "oak_planks", "spruce_planks", "birch_planks", "dark_oak_planks", "white_concrete", "black_concrete", "red_concrete", "blue_concrete", "green_concrete", "yellow_concrete", "orange_concrete", "purple_concrete", "light_blue_concrete", "gray_concrete", "glass", "sea_lantern", "sandstone", "quartz_block", "gold_block", "iron_block", "waxed_copper_block", "packed_ice");
   record Cell(int x, int y, int z) {
     String key() { return x + "," + y + "," + z; }
     static Cell parse(String key) {

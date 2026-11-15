@@ -67,6 +67,8 @@ Use a persistent console and detach with Ctrl-P/Ctrl-Q; do not pipe commands.
 The required installation restart was done with zero online players and a
 whole-data backup; scene generation itself uses no restart.
 
+Use waxed copper in the inert palette: ordinary copper oxidizes and would eventually diverge from recorded ownership without a player edit. The parser check preserves this guard.
+
 Paper warns about manual world saves with autosave enabled. Keeping a save before
 semantic commit favors restart consistency for this slice; measure occupied
 sessions and improve this boundary if delays are visible. Do not remove the
