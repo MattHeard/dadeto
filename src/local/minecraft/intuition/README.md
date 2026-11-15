@@ -324,3 +324,65 @@ keeps the other exhibit unchanged and verifies Java engine hashes never change
 during transfer. Restart verification compares the entire saved semantic state.
 Real controller interactions, simultaneous users, child-facing readability and
 occupied-session responsiveness remain separate manual acceptance.
+
+## Visible local guide characters
+
+Two vanilla villagers now represent the harbor philosopher and coordination
+guide. Their persisted semantic objects record their roles, goals, dispositions
+and relationships. Knowledge and state-aware dialogue remain in the linked gold
+guide markers: **use the gold marker for `/intuition ask <topic>`**, rather than
+opening a villager trading interface. These are fictional guide avatars with
+simple local pacing/facing routines, not free-form reasoning agents or historical
+personality simulations. No model calls, client packs or new cloud services are
+involved.
+
+The small Python projection runs on Lorandil as the rootless user service
+`dadeto-intuition-npcs.service`. It creates only tagged invulnerable villagers in
+the lab, gives them a non-colliding team, and checks that stations have a floor
+and clear feet/head space. Routes pause when no player is within32 blocks.
+At most3 NPCs,8 stations each, and periods of5..60 seconds are allowed. The
+worker polls at5-second intervals; this is a basic station routine, not natural
+pathfinding or a frame-rate guarantee. Two chunks are kept loaded for the current
+routes so saved tagged villagers can be found without duplication.
+
+```bash
+python3 src/local/minecraft/intuition/npc_guides.py deploy
+python3 src/local/minecraft/intuition/install_npcs.py
+python3 src/local/minecraft/intuition/npc_guides.py status
+python3 src/local/minecraft/intuition/npc_guides.py stop
+python3 src/local/minecraft/intuition/npc_guides.py start
+python3 -m unittest discover -s src/local/minecraft/intuition -p 'test_*.py' -v
+python3 src/local/minecraft/intuition/verify_npcs.py
+```
+
+The installer verifies its unit before enabling it, refuses an unrelated unit at
+the same name, and copies the worker/transport into the private Minecraft data
+folder. The service survives source-worktree removal and has configured10% CPU
+and128MB memory caps. Its actual observed resident memory was about16MB with
+negligible CPU. Lorandil already has user lingering enabled. On a server restart,
+the service retries every5 seconds until fresh plugin context is available;
+brief `activating` status during that delay is expected.
+
+`npcs.json` describes routes and links to existing semantic guide objects. The
+worker reloads it and current semantic state. Removing an NPC's semantic object
+suspends its projection and removes only that tagged entity; restoring it permits
+reconciliation. Copies of configuration/runtime and NPC entity data are included
+in existing whole-data backups. The user service unit lives outside that backup;
+rerun the installer to regenerate it. Semantic role changes and route changes
+should be authored together deliberately. Existing experimental progress is not
+reset by deployment.
+
+Stopping the worker leaves the passive NPCs and forced chunks intact. If removing
+the feature, first inspect `npcs.json`, entity tags and force-load ownership; do
+not remove other entities or another system's chunk tickets. Generic scene undo
+covers semantic/geometry changes; the separate NPC route configuration must also
+be restored explicitly when undoing an intentional route change.
+
+The private adapter writes bounded command lines into the existing Java stdin
+pipe, while its original container writer stays open. It verifies the container
+PID, `paper.jar` and pipe type, and accepts no arbitrary command input from scene
+data. A real Linux child-pipe regression test proves independent writes do not
+close the reader. This avoids the `podman attach` EOF failure described above.
+Physical NPC spawning, UUID persistence, one-per-tag counts, route probes and
+service recovery have been checked on the server. Actual Switch rendering and
+readability of these new guide characters remain to observe.
