@@ -92,6 +92,17 @@ def can_answer(context, request):
     return context.get("construction") == "ready" or (request is not None and request.get("mode") == "chat")
 
 
+def pending_request(root, context):
+    paths = sorted((root / "requests").glob("*.json"), key=lambda p: p.stat().st_mtime)
+    for path in paths:
+        if (root / "results" / path.name).exists() or (root / "decisions" / path.name).exists():
+            continue
+        request = json.loads(path.read_text())
+        if can_answer(context, request):
+            return request
+    return None
+
+
 def run(root):
     lock = (root / "controller.lock").open("a+")
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -118,8 +129,7 @@ def run(root):
             atomic(root / "brain-status.json", {"phase": "paused", "message": "Owner offline or companion parked; no model calls", "model": MODEL, "effort": "low"})
             time.sleep(3)
             continue
-        requests = [p for p in sorted((root / "requests").glob("*.json"), key=lambda p: p.stat().st_mtime) if not (root / "results" / p.name).exists() and not (root / "decisions" / p.name).exists()]
-        request = json.loads(requests[0].read_text()) if requests else None
+        request = pending_request(root, context)
         if time.time() < failed_until or (request is None and online and time.time() - last_thought < 120):
             time.sleep(2)
             continue

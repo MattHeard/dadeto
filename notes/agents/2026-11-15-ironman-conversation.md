@@ -24,8 +24,8 @@ Native apply now validates ownership, age and cancellation for all request repli
 not just construction, preventing late replies from a removed request. Parked
 companions explain how to turn them on rather than silently queueing new requests.
 
-Six Python checks pass, including chat/build separation under an attempted model
-construction output and chat scheduling while the construction engine is busy.
+Seven Python checks pass, including chat/build separation under an attempted model
+construction output and chat scheduling while the construction engine is busy, including skipping an earlier queued build so it cannot starve conversation.
 Native compile runs Conversation and FollowPosition pure checks. FollowPosition
 keeps a station ahead/right, holding world position while the player turns; the
 native integration adds a stationary-turn assertion. Prior skin failure is fixed

@@ -26,6 +26,20 @@ class ControllerCheck(unittest.TestCase):
         self.assertFalse(c.can_answer({'construction': 'building'}, None))
         self.assertTrue(c.can_answer({'construction': 'ready'}, None))
 
+    def test_queued_build_cannot_block_conversation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for folder in ('requests', 'decisions', 'results'):
+                (root / folder).mkdir()
+            for name, mode, age in (('first', 'build', 1), ('second', 'chat', 2)):
+                path = root / 'requests' / (name + '.json')
+                c.atomic(path, {'id': name, 'mode': mode})
+                os.utime(path, (age, age))
+            self.assertEqual(c.pending_request(root, {'construction': 'preview'})['id'], 'second')
+            self.assertEqual(c.pending_request(root, {'construction': 'ready'})['id'], 'first')
+            c.atomic(root / 'results' / 'second.json', {'status': 'completed'})
+            self.assertIsNone(c.pending_request(root, {'construction': 'preview'}))
+
     def test_nondefault_data_directory(self):
         with patch.dict(os.environ, {'MINECRAFT_DATA_DIR': '/tmp/selected-minecraft'}):
             self.assertEqual(c.data_root(), Path('/tmp/selected-minecraft'))
