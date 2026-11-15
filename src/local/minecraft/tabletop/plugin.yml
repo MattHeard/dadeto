@@ -1,9 +1,12 @@
 name: DadetoTabletop
-version: '1.0'
+version: '1.1'
 main: net.mattheard.tabletop.TabletopPlugin
 api-version: '1.21'
 description: Roofless noble house with controller-friendly bird's-eye cameras.
 commands:
+  intuition:
+    description: Explore live semantic scenes or return to survival.
+    usage: /intuition [visit|leave|inspect]
   tabletop:
     description: Visit the noble house tabletop or return to survival.
     usage: /tabletop [leave|view]

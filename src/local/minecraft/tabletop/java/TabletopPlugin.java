@@ -24,12 +24,14 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
   private static final String WORLD = "dadeto_tabletop";
   private final Map<UUID, ViewerState> viewers = new HashMap<>();
   private HousePlan plan;
+  private SceneEngine scenes;
   private World world;
   private boolean ready;
   private int built;
 
   @Override public void onEnable() {
     saveDefaultConfig();
+    scenes = new SceneEngine(this);
     try { plan = new HousePlan(getResource("house.tsv"), getResource("views.tsv")); }
     catch (Exception e) { getLogger().log(Level.SEVERE, "Invalid tabletop plan; nothing changed", e); getServer().getPluginManager().disablePlugin(this); return; }
     Objects.requireNonNull(getCommand("tabletop")).setExecutor(this);
@@ -59,7 +61,8 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
       world.setTime(6000); world.setStorm(false); world.setThundering(false);
       world.setDifficulty(Difficulty.PEACEFUL); world.setPVP(false);
       world.setSpawnLocation(22, 65, 24);
-      world.getWorldBorder().setCenter(22, 26); world.getWorldBorder().setSize(88);
+      world.getWorldBorder().setCenter(72, 26); world.getWorldBorder().setSize(200);
+      scenes.start(world);
       Path version = new File(getDataFolder(), "built.sha256").toPath();
       if (previouslyOwned && Files.exists(version) && Files.readString(version).trim().equals(plan.hash)) {
         built = plan.placements.size(); ready = true;
@@ -101,6 +104,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
   private File snapshot(Player player) { return new File(getDataFolder(), "viewers/" + player.getUniqueId() + ".yml"); }
 
   private boolean enter(Player player) {
+    try { scenes.leave(player); } catch (IOException e) { player.sendMessage("Lab return failed; snapshot retained."); return false; }
     if (!ready) { player.sendMessage("The house is still being prepared. Try again shortly."); return false; }
     try {
       ViewerState state = viewers.get(player.getUniqueId());
@@ -134,6 +138,13 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
     if (!player.teleport(state.camera)) throw new IOException("Camera teleport refused");
     player.sendActionBar(Component.text(plan.views.get(index).name() + " | 5 ft = 2 x 2 blocks"));
   }
+
+  void leaveTabletop(Player player) throws IOException {
+    leave(player);
+    if (snapshot(player).exists()) throw new IOException("Tabletop return failed; snapshot retained");
+  }
+
+  @Override public void onDisable() { if (scenes != null) scenes.close(); }
 
   private void leave(Player player) {
     ViewerState state = viewers.remove(player.getUniqueId());

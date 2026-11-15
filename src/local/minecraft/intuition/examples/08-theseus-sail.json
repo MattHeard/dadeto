@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "harbor-demo-8",
+  "revision": 8,
+  "action": "put",
+  "object": {
+    "id": "theseus-sail",
+    "title": "Continuity of appearance",
+    "kind": "assumption",
+    "explanation": "Suppose the ship keeps the same recognizable shape while materials change. Does continuous appearance matter more than its original material? That is a question, not a simulated conclusion.",
+    "relatesTo": ["theseus-hull", "theseus-mast"],
+    "boxes": [
+      {
+        "from": [129, 70, 31],
+        "to": [134, 74, 31],
+        "material": "white_concrete"
+      }
+    ]
+  }
+}

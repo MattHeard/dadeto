@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "id": "harbor-demo-6",
+  "revision": 6,
+  "action": "put",
+  "object": {
+    "id": "theseus-hull",
+    "title": "A ship to question",
+    "kind": "metaphor",
+    "explanation": "This recognizable wooden ship is the first live scene scaffold. Material replacement and a second reconstruction can illustrate competing identity criteria; appearance alone settles neither.",
+    "relatesTo": ["harbor-pier"],
+    "boxes": [
+      {
+        "from": [120, 66, 28],
+        "to": [137, 66, 35],
+        "material": "oak_planks"
+      },
+      {
+        "from": [138, 66, 30],
+        "to": [139, 66, 33],
+        "material": "oak_planks"
+      },
+      {
+        "from": [118, 66, 30],
+        "to": [119, 66, 33],
+        "material": "oak_planks"
+      }
+    ]
+  }
+}

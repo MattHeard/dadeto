@@ -182,3 +182,13 @@ allows 120 seconds for saving; avoid forced termination.
 See [tabletop/README.md](tabletop/README.md) for the ground-floor scene at two
 Minecraft blocks per five-foot-square side, the eight overhead camera presets,
 controller hotbar controls, and safe return to survival.
+
+## Live semantic scenes
+
+The existing tabletop plugin also provides the first
+[Intuition Engine live collaboration slice](intuition/README.md): generic
+Pi-local scene requests, persistent object meanings, player spatial context,
+cancellation and reversible edits. Players use `/intuition` to fly around the
+lab beside the house and `/intuition leave` to return. Existing `/tabletop`
+overhead house controls remain available. See the linked runbook for installation,
+protocol limits, recovery and the remaining thought-experiment acceptance.

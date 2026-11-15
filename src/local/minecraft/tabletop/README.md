@@ -115,3 +115,11 @@ The SVG is a block-layout preview, not a Minecraft screenshot. Live acceptance
 requires zero mismatches from `tabletop verify`, a passing `tabletop selftest`,
 and an actual Switch check of overhead framing, hotbar camera selection and
 return to survival. Keep exact results in bead dadeto-g37s.
+
+## Live exploration
+
+The same plugin now includes the [Intuition Engine](../intuition/README.md).
+`/intuition` restores any current tabletop visit first, then opens a separate
+walk/fly lab beside the house with its own durable return snapshot. `/tabletop`
+returns from the lab before entering the overhead display. The scene bridge
+cannot edit the house footprint or the survival dimension.
