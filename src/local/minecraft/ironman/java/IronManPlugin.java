@@ -89,9 +89,10 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   private Player owner() {return Bukkit.getPlayer(ownerId);}
   private void remove() {if(npc!=null)npc.remove();npc=null;npcId=null;}
   private Location clearPosition(Player p) {
-    float yaw=p.getYaw();double a=Math.toRadians(yaw);
-    for(double height:new double[]{1.2,2.5,0.2,4})for(double angle:new double[]{a,a+Math.PI/2,a-Math.PI/2,a+Math.PI}) {
-      Location l=p.getLocation().add(Math.sin(angle)*3,height,-Math.cos(angle)*3);
+    float yaw=p.getYaw();
+    for(double height:new double[]{0.25,1.2,2.5,4})for(double side:new double[]{Math.PI/8,-Math.PI/8,0,Math.PI/2,-Math.PI/2,Math.PI}) {
+      var offset=FollowPosition.ahead(yaw,side);
+      Location l=p.getLocation().add(offset.x(),height,offset.z());
       if(l.getBlockY()<p.getWorld().getMinHeight()||l.getBlockY()+1>=p.getWorld().getMaxHeight()||!p.getWorld().isChunkLoaded(l.getBlockX()>>4,l.getBlockZ()>>4))continue;
       Block feet=l.getBlock(),head=p.getWorld().getBlockAt(l.getBlockX(),l.getBlockY()+1,l.getBlockZ());
       if(feet.isPassable()&&!feet.isLiquid()&&head.isPassable()&&!head.isLiquid())return l;
@@ -100,8 +101,17 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   }
   private void ensure(Player p) {
     if(npc!=null && (npc.isDead()||!npc.isValid()))remove();
-    Location target=clearPosition(p);
-    if(target==null){remove();return;}
+    boolean same=npc!=null&&npc.getWorld().equals(p.getWorld());
+    double previousDistance=same?npc.getLocation().distance(p.getLocation()):Double.POSITIVE_INFINITY;
+    boolean blocked=false;
+    if(same&&previousDistance<=5.5) {
+      Location current=npc.getLocation();
+      blocked=!p.getWorld().isChunkLoaded(current.getBlockX()>>4,current.getBlockZ()>>4);
+      if(!blocked)blocked=!current.getBlock().isPassable()||!p.getWorld().getBlockAt(current.getBlockX(),current.getBlockY()+1,current.getBlockZ()).isPassable();
+    }
+    boolean relocate=npc==null||FollowPosition.relocate(same,previousDistance,blocked);
+    Location target=relocate?clearPosition(p):null;
+    if(relocate&&target==null){remove();return;}
     if(npc==null) {
       npc=p.getWorld().spawn(target,Mannequin.class,entity->{
         npcId=entity.getUniqueId();
@@ -111,8 +121,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
         profile.setProperty(new ProfileProperty("textures",Base64.getEncoder().encodeToString(profileTextures.getBytes(StandardCharsets.UTF_8))));entity.setProfile(ResolvableProfile.resolvableProfile(profile));
       });npcId=npc.getUniqueId();
     }
-    double distance=npc.getWorld().equals(p.getWorld())?npc.getLocation().distance(p.getLocation()):Double.POSITIVE_INFINITY;
-    if(distance>6 || !npc.getWorld().equals(p.getWorld()) || ticks%10==0)npc.teleport(target);
+    if(relocate)npc.teleport(target);
     if(!npc.getWorld().equals(p.getWorld()) || npc.getLocation().distanceSquared(p.getLocation())>256){remove();return;}
     maxObservedDistance=Math.max(maxObservedDistance,npc.getLocation().distance(p.getLocation()));
     Location face=p.getEyeLocation().subtract(npc.getEyeLocation());
@@ -141,8 +150,10 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
         position.set(location);location.getWorld().getChunkAt(location.getBlockX()>>4,location.getBlockZ()>>4);ensure(fixture);
         if(npc==null||!npc.getWorld().equals(location.getWorld())||npc.getLocation().distance(location)>16)throw new IllegalStateException("Native follower guard failed at "+location+"; entity="+(npc==null?"absent":npc.getLocation()));
       }
+      Location station=npc.getLocation();Location turned=position.get().clone();turned.setYaw(turned.getYaw()+90);position.set(turned);ensure(fixture);
+      if(npc==null||npc.getLocation().distance(station)>0.001)throw new IllegalStateException("Turning the camera moved the companion station");
       Mannequin previous=npc;remove();if(previous.isValid()||npc!=null||npcId!=null)throw new IllegalStateException("Offline removal failed");
-      getLogger().info("PASS IronMan native follower: spawn, 20-block owner teleport, world change, 16-block bound, offline removal");
+      getLogger().info("PASS IronMan native follower: spawn, 20-block owner teleport, world change, 16-block bound, stable station while turning, offline removal");
     } finally {remove();maxObservedDistance=observed;}
   }
   private void tick() {
@@ -208,7 +219,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
         case "undo"->{if(p==null)throw new IllegalArgumentException("Return to the worksite in game to undo");construction.undo(p);}
         case "on","off"->{enabled=action.equals("on");getConfig().set("enabled",enabled);saveConfig();if(!enabled)remove();sender.sendMessage("Iron Man "+(enabled?"enabled":"parked"));}
         case "follow"->{mode="follow";enabled=true;sender.sendMessage("Iron Man: staying near you.");}
-        case "selftest"->{if(p!=null&&!p.isOp())throw new IllegalArgumentException("DM control");BuildPlanCheck.main(new String[0]);followerCheck();ConstructionCheck.run(this);sender.sendMessage("Iron Man integration check started; see server log for terminal result.");}
+        case "selftest"->{if(p!=null&&!p.isOp())throw new IllegalArgumentException("DM control");BuildPlanCheck.main(new String[0]);FollowPosition.check();followerCheck();ConstructionCheck.run(this);sender.sendMessage("Iron Man integration check started; see server log for terminal result.");}
         default->sender.sendMessage("Iron Man: "+(enabled?"enabled":"parked")+"; "+(construction==null?"not ready":construction.phase())+"; skin deliveries "+skinPackets.get()+". /ironman build <request> | preview | confirm | cancel | undo");
       }
     }catch(Exception e){sender.sendMessage("Iron Man: "+e.getMessage());}

@@ -2,7 +2,10 @@
 
 Iron Man follows `.VocableRecord50` on Lorandil. He is a native Paper mannequin
 with a bundled red/gold skin delivered to Bedrock through Geyser, hovering
-thrusters, a survey beam and a construction beam. His local follower checks every
+thrusters, a survey beam and a construction beam. He settles about 3.5 blocks
+ahead and to your right, and holds that station when you turn to inspect him.
+He relocates if you move more than 5.5 blocks away, come within 1.5 blocks,
+change worlds or obstruct his space. His local follower checks every
 two ticks and removes or relocates him if he would exceed 16 blocks. Teleports and
 world changes resynchronize him. No owner online means no entity or model calls.
 There is no combat automation.

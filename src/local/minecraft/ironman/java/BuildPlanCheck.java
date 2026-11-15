@@ -5,6 +5,7 @@ final class BuildPlanCheck {
   static void require(boolean value) { if(!value) throw new AssertionError("Blueprint guard failed"); }
   static void rejects(Runnable fn) { try {fn.run();} catch(IllegalArgumentException|IllegalStateException e) {return;} throw new AssertionError("Unsafe blueprint accepted"); }
   public static void main(String[] args) {
+    FollowPosition.check();
     require(BuildPlan.parse(PLAN).blocks().size()==9);
     rejects(()->BuildPlan.parse(PLAN.replace("oak_planks","tnt")));
     rejects(()->BuildPlan.parse(PLAN.replace("oak_planks","chest")));

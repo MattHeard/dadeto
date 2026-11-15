@@ -40,3 +40,12 @@ the bundled pixels onto classic wide Minecraft cuboids, producing front and
 three-quarter views in reports/ironman/iron-man-preview.png. Pillow/DejaVu Sans
 are optional preview-only dependencies; the game/controller runtime does not
 require them. The generated image was visually inspected and shown in chat.
+
+After reconnect, the server logged the first custom override (previously zero)
+and the user confirmed the red/gold body is visible. The user then reported the
+original follower kept relocating behind their camera. FollowPosition now chooses
+a 3.5-block station 22.5 degrees ahead/right and holds world position while the
+owner only turns. Range/proximity, obstruction and world changes trigger a new
+station; the hard 16-block guard remains. Pure tests check forward placement and
+relocation conditions; native selftest additionally checks camera-turn stability.
+The user explicitly saved/left and authorized the brief installation restart.
