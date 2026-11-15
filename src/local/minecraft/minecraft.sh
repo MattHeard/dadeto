@@ -51,12 +51,14 @@ PY
 
 geyser_checksum() {
   if [[ ! -f "$DATA/geyser-lan-build.json" ]]; then printf '%s' "$GEYSER_SHA256"; return; fi
-  python3 - "$DATA/geyser-lan-build.json" "$GEYSER_LAN_COMMIT" <<'PYTHON'
-import json, re, sys
+  python3 - "$DATA/geyser-lan-build.json" "$GEYSER_LAN_COMMIT" "$HERE/geyser-combat.patch" <<'PYTHON'
+import hashlib, json, pathlib, re, sys
 with open(sys.argv[1]) as source:
     record = json.load(source)
 if record.get('commit') != sys.argv[2] or not re.fullmatch('[0-9a-f]{64}', record.get('sha256', '')):
     sys.exit('Invalid or unrecognized experimental Geyser build record')
+if 'patchSha256' in record and record['patchSha256'] != hashlib.sha256(pathlib.Path(sys.argv[3]).read_bytes()).hexdigest():
+    sys.exit('Experimental Geyser patch does not match the reviewed source')
 print(record['sha256'])
 PYTHON
 }

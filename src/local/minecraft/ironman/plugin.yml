@@ -1,0 +1,10 @@
+name: DadetoIronMan
+version: '1.0'
+main: net.mattheard.ironman.IronManPlugin
+api-version: '1.21'
+softdepend: [Geyser-Spigot]
+description: A nearby Iron Man building companion with bounded subscription-backed decisions.
+commands:
+  ironman:
+    description: Ask Iron Man to build, preview, follow, cancel or undo.
+    usage: /ironman [build <request>|preview <request>|undo|cancel|status|on|off]

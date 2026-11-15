@@ -1,0 +1,65 @@
+diff --git a/core/src/main/java/org/geysermc/geyser/session/GeyserSession.java b/core/src/main/java/org/geysermc/geyser/session/GeyserSession.java
+index fb8eaae..1c462e3 100644
+--- a/core/src/main/java/org/geysermc/geyser/session/GeyserSession.java
++++ b/core/src/main/java/org/geysermc/geyser/session/GeyserSession.java
+@@ -2383,6 +2383,8 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource, Jav
+         }
+ 
+         // Default stuff we have to fill in
++        abilities.add(Ability.ATTACK_MOBS);
++        abilities.add(Ability.ATTACK_PLAYERS);
+         abilities.add(Ability.BUILD);
+         abilities.add(Ability.MINE);
+         // Needed so you can drop items
+--- /dev/null
++++ b/core/src/test/java/org/geysermc/geyser/session/CombatAbilitiesTest.java
+@@ -0,0 +1,49 @@
++package org.geysermc.geyser.session;
++
++import java.lang.reflect.Field;
++import java.util.List;
++import org.cloudburstmc.protocol.bedrock.data.Ability;
++import org.cloudburstmc.protocol.bedrock.data.AbilityLayer;
++import org.cloudburstmc.protocol.bedrock.packet.BedrockPacket;
++import org.cloudburstmc.protocol.bedrock.packet.UpdateAbilitiesPacket;
++import org.geysermc.geyser.entity.type.player.SessionPlayerEntity;
++import org.geysermc.mcprotocollib.protocol.data.game.entity.player.GameMode;
++import org.junit.jupiter.api.Test;
++import org.mockito.ArgumentCaptor;
++import static org.junit.jupiter.api.Assertions.*;
++import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.Mockito.*;
++
++class CombatAbilitiesTest {
++    private void field(Object target, String name, Object value) throws Exception {
++        Field field = GeyserSession.class.getDeclaredField(name);
++        field.setAccessible(true); field.set(target, value);
++    }
++    private UpdateAbilitiesPacket packet(GameMode mode) throws Exception {
++        GeyserSession session = mock(GeyserSession.class, CALLS_REAL_METHODS);
++        SessionPlayerEntity player = mock(SessionPlayerEntity.class);
++        field(session, "playerEntity", player); field(session, "gameMode", mode);
++        if (mode == GameMode.SPECTATOR) field(session, "flying", true);
++        doNothing().when(session).sendUpstreamPacket(any(BedrockPacket.class));
++        session.sendAdventureSettings();
++        ArgumentCaptor<BedrockPacket> packets = ArgumentCaptor.forClass(BedrockPacket.class);
++        verify(session, atLeastOnce()).sendUpstreamPacket(packets.capture());
++        return packets.getAllValues().stream().filter(UpdateAbilitiesPacket.class::isInstance)
++                .map(UpdateAbilitiesPacket.class::cast).findFirst().orElseThrow();
++    }
++    @Test void normalModesPermitMobAttacks() throws Exception {
++        for (GameMode mode : List.of(GameMode.SURVIVAL, GameMode.ADVENTURE, GameMode.CREATIVE)) {
++            AbilityLayer base = packet(mode).getAbilityLayers().stream()
++                    .filter(layer -> layer.getLayerType() == AbilityLayer.Type.BASE).findFirst().orElseThrow();
++            assertTrue(base.getAbilitiesSet().contains(Ability.ATTACK_MOBS));
++            assertTrue(base.getAbilityValues().contains(Ability.ATTACK_MOBS), mode + " must permit attacking mobs");
++        }
++    }
++    @Test void spectatorStillMasksCombat() throws Exception {
++        AbilityLayer spectator = packet(GameMode.SPECTATOR).getAbilityLayers().stream()
++                .filter(layer -> layer.getLayerType() == AbilityLayer.Type.SPECTATOR).findFirst().orElseThrow();
++        assertTrue(spectator.getAbilitiesSet().contains(Ability.ATTACK_MOBS));
++        assertFalse(spectator.getAbilityValues().contains(Ability.ATTACK_MOBS));
++        assertFalse(spectator.getAbilityValues().contains(Ability.ATTACK_PLAYERS));
++    }
++}

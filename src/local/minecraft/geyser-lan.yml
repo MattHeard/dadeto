@@ -14,7 +14,11 @@ bedrock:
 java:
   auth-type: floodgate
 gameplay:
-  server-name: Dadeto LAN
+  server-name: lorandil
 advanced:
   bedrock:
     validate-bedrock-login: true
+motd:
+  primary-motd: lorandil
+  secondary-motd: "dadeto's world"
+  passthrough-motd: false

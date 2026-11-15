@@ -192,3 +192,17 @@ cancellation and reversible edits. Players use `/intuition` to fly around the
 lab beside the house and `/intuition leave` to return. Existing `/tabletop`
 overhead house controls remain available. See the linked runbook for installation,
 protocol limits, recovery and the remaining thought-experiment acceptance.
+
+## Building companion and Bedrock combat
+
+[Iron Man](ironman/README.md) is the automatic GPT-6-Luna/low building companion.
+Use `/ironman preview <request>` while pointing at an empty worksite, then
+`/ironman confirm`. He follows within 16 blocks and supports cancel and undo.
+
+The configured LAN labels are `lorandil` and `dadeto's world`. The reviewed
+`geyser-combat.patch` restores the missing base attack ability flags in the pinned
+LAN fork, preserving spectator restrictions. `build-lan-geyser.sh` applies it and
+runs actual-packet Survival/Adventure/Creative/Spectator regression checks before
+packaging; the build manifest records the patch hash. This addresses Bedrock ZR
+attacks being disabled even after returning to Survival. Rejoin to receive updated
+abilities. Actual Switch combat confirmation remains a separate client check.
