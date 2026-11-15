@@ -44,6 +44,7 @@ The build uses the existing pinned JDK container and existing Paper/Geyser jars:
 ```sh
 bash src/local/minecraft/build-ironman.sh
 python3 -m unittest discover -s src/local/minecraft/ironman -p 'test_*.py'
+bash src/local/minecraft/ironman/check-skin.sh
 ```
 
 While no players are connected: stop with `minecraft.sh stop`, take a
@@ -93,3 +94,20 @@ confirm/undo. `context.json` records skin deliveries and maximum observed follow
 distance. Java clients currently use a vanilla profile fallback; the custom texture
 is injected specifically for Bedrock clients. Skin art is compiled deterministically
 from classic Minecraft UV face grids in `make_skin.py`.
+
+The skin compatibility check requires the existing pinned Geyser build checkout
+and cached dependencies from build-lan-geyser.sh. It exercises Geyser's real
+profile gate with the bundled profile.json, confirms the reserved Floodgate
+placeholder is rejected, and checks opaque base UV regions. The old placeholder
+was reachable over HTTP but deliberately bypassed SessionSkinApplyEvent. Do not
+reuse it as a mannequin bootstrap. The first matching custom-skin hook application
+is logged; context.json's skinPackets counts overrides, not client rendering.
+
+To reproduce the exact server skin preview (optional Pillow and DejaVu Sans):
+
+```sh
+python3 src/local/minecraft/ironman/render_skin.py src/local/minecraft/ironman/build/ironman.png reports/ironman/iron-man-preview.png
+```
+
+This projects the actual UV pixels onto a wide Minecraft model, with front and
+three-quarter views. It does not synthesize or repaint the skin.

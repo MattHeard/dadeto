@@ -33,6 +33,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   private volatile UUID npcId;
   private Mannequin npc;
   private Path root;
+  private String profileTextures;
   private Construction construction;
   private final ExecutorService disk=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"ironman-disk");t.setDaemon(true);return t;});
   private final AtomicInteger skinPackets=new AtomicInteger();
@@ -66,12 +67,13 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     ownerId=UUID.fromString(getConfig().getString("owner"));enabled=getConfig().getBoolean("enabled",true);
     try {
       for(String folder:List.of("requests","decisions","results"))Files.createDirectories(root.resolve(folder));
+      try(InputStream profile=Objects.requireNonNull(getResource("profile.json"))){profileTextures=new String(profile.readAllBytes(),StandardCharsets.UTF_8);}
       BufferedImage image=ImageIO.read(Objects.requireNonNull(getResource("ironman.png")));
       if(image.getWidth()!=64||image.getHeight()!=64)throw new IOException("Skin must be64x64");
       byte[] rgba=new byte[64*64*4];int i=0;
       for(int y=0;y<64;y++)for(int x=0;x<64;x++){int c=image.getRGB(x,y);rgba[i++]=(byte)(c>>16);rgba[i++]=(byte)(c>>8);rgba[i++]=(byte)c;rgba[i++]=(byte)(c>>24);}
       Skin skin=new Skin("dadeto-ironman-v1",rgba);
-      GeyserApi.api().eventBus().subscribe(this,SessionSkinApplyEvent.class,event->{if(event.uuid().equals(npcId)||event.uuid().equals(PROFILE)){event.skin(skin);event.geometry(SkinGeometry.WIDE);skinPackets.incrementAndGet();}});
+      GeyserApi.api().eventBus().subscribe(this,SessionSkinApplyEvent.class,event->{if(event.uuid().equals(npcId)||event.uuid().equals(PROFILE)){event.skin(skin);event.geometry(SkinGeometry.WIDE);if(skinPackets.incrementAndGet()==1)getLogger().info("Custom Iron Man skin override applied for Bedrock avatar "+event.uuid());}});
       getLogger().info("Iron Man custom64x64 skin hook ready");
       construction=new Construction(this,root);
       Bukkit.getPluginManager().registerEvents(this,this);Objects.requireNonNull(getCommand("ironman")).setExecutor(this);
@@ -102,11 +104,11 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     if(target==null){remove();return;}
     if(npc==null) {
       npc=p.getWorld().spawn(target,Mannequin.class,entity->{
+        npcId=entity.getUniqueId();
         entity.getPersistentDataContainer().set(marker,PersistentDataType.STRING,ownerId.toString());entity.setPersistent(false);entity.setRemoveWhenFarAway(false);entity.setInvulnerable(true);entity.setGravity(false);entity.setCollidable(false);entity.setSilent(true);entity.setImmovable(true);
         entity.customName(Component.text("Iron Man"));entity.setCustomNameVisible(true);entity.setDescription(Component.text("Your building assistant"));
         var profile=Bukkit.createProfile(PROFILE,"IronMan");
-        String textures="{\"textures\":{\"SKIN\":{\"url\":\"https://textures.minecraft.net/texture/31f477eb1a7beee631c2ca64d06f8f68fa93a3386d04452ab27f43acdf1b60cb\"}}}";
-        profile.setProperty(new ProfileProperty("textures",Base64.getEncoder().encodeToString(textures.getBytes(StandardCharsets.UTF_8))));entity.setProfile(ResolvableProfile.resolvableProfile(profile));
+        profile.setProperty(new ProfileProperty("textures",Base64.getEncoder().encodeToString(profileTextures.getBytes(StandardCharsets.UTF_8))));entity.setProfile(ResolvableProfile.resolvableProfile(profile));
       });npcId=npc.getUniqueId();
     }
     double distance=npc.getWorld().equals(p.getWorld())?npc.getLocation().distance(p.getLocation()):Double.POSITIVE_INFINITY;
