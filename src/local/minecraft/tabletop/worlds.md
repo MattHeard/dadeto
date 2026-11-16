@@ -51,7 +51,7 @@ recovery succeeds. Rejoining recovers pending state before hub arrival. Never de
 an unresolved journal to bypass a failure. Source/target profile group and world
 must match; malformed files are retained and rejected.
 
-Creative/hub portals cannot enter the shared survival dimensions; use the travel
+Creative/hub portals cannot carry players, dropped items or vehicles into the shared survival dimensions; use the travel
 commands. Other direct cross-group teleports are refused so they cannot bypass
 inventory separation. Operators can still modify the server deliberately; this
 is state separation for normal play, not an anti-cheat system for trusted operators.
