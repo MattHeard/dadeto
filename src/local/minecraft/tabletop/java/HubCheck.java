@@ -70,7 +70,7 @@ final class HubCheck {
     HubWorlds restarted=new HubWorlds(live.plugin,route.root);restarted.worlds.putAll(route.worlds);restarted.ready=true;restarted.recover(player);assertSurvival(player,data,meta.displayName());require(!Files.exists(route.pending(player)),"restart recovery");
     var blocked=new PlayerTeleportEvent(player,route.worlds.get("build").getSpawnLocation(),survival.getSpawnLocation(),PlayerTeleportEvent.TeleportCause.COMMAND);route.onTeleport(blocked);require(blocked.isCancelled(),"creative escape blocked");
     World nether=Bukkit.getWorlds().stream().filter(w->w.getKey().toString().equals("minecraft:the_nether")).findFirst().orElseThrow();
-    require(route.blockPortal(route.worlds.get("build"))&&route.blockPortal(route.worlds.get("hub"))&&!route.blockPortal(survival)&&!route.blockPortal(nether),"player/item/vehicle portal boundary");
+    require(route.blockPortal(route.worlds.get("build"))&&(!route.worlds.containsKey("hub")||route.blockPortal(route.worlds.get("hub")))&&!route.blockPortal(survival)&&!route.blockPortal(nether),"player/item/vehicle portal boundary");
     var vanilla=new PlayerTeleportEvent(player,survival.getSpawnLocation(),nether.getSpawnLocation(),PlayerTeleportEvent.TeleportCause.NETHER_PORTAL);route.onTeleport(vanilla);require(!vanilla.isCancelled()&&route.group(nether).equals("survival"),"vanilla Nether shares survival");
     route.joining.add(player.getUniqueId());require(route.protectedFromDamage(player)==live.plugin.getConfig().getBoolean("hub-on-join",true),"configured arrival protection");
     route.joining.remove(player.getUniqueId());require(!route.protectedFromDamage(player),"ordinary survival damage remains enabled");
