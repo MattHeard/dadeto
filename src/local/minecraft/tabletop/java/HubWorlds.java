@@ -125,20 +125,26 @@ final class HubWorlds implements Listener,CommandExecutor,TabCompleter {
   private void joinHub(Player p) {
     if(!p.isOnline()||p.isDead())return;
     try{recover(p);if(plugin.getConfig().getBoolean("hub-on-join",true))travel(p,"hub");joining.remove(p.getUniqueId());}
-    catch(Exception e){failed.add(p.getUniqueId());p.sendMessage("Your saved journey needs recovery; state retained.");plugin.getLogger().log(java.util.logging.Level.SEVERE,"Hub join recovery failed",e);}
+    catch(Exception e){joining.remove(p.getUniqueId());if(Files.exists(pending(p)))failed.add(p.getUniqueId());p.sendMessage("Hub arrival needs attention; your saved state is retained.");plugin.getLogger().log(java.util.logging.Level.SEVERE,"Hub join recovery failed",e);}
   }
-  @EventHandler public void onJoin(PlayerJoinEvent event){Player p=event.getPlayer();joining.add(p.getUniqueId());Bukkit.getScheduler().runTaskLater(plugin,()->joinHub(p),60);}
+  @EventHandler public void onJoin(PlayerJoinEvent event){
+    Player p=event.getPlayer();joining.add(p.getUniqueId());if(Files.exists(pending(p)))failed.add(p.getUniqueId());
+    Path folder=plugin.getDataFolder().toPath();String id=p.getUniqueId()+".yml";
+    boolean returning=Files.exists(folder.resolve("viewers").resolve(id))||Files.exists(folder.resolve("intuition/visitors").resolve(id))||plugin.getConfig().getStringList("queued-visits").contains(p.getName());
+    Bukkit.getScheduler().runTaskLater(plugin,()->joinHub(p),returning?60:1);
+  }
+  private boolean arriving(Player p){return joining.contains(p.getUniqueId())&&plugin.getConfig().getBoolean("hub-on-join",true);}
   @EventHandler public void onQuit(PlayerQuitEvent event){Player p=event.getPlayer();joining.remove(p.getUniqueId());String group=group(p.getWorld());if(group!=null&&!p.isDead()&&!failed.contains(p.getUniqueId())&&!Files.exists(pending(p)))try{WorldProfile.capture(p,group).save(profile(p,group));}catch(Exception e){plugin.getLogger().log(java.util.logging.Level.SEVERE,"World profile save failed; player data preserved",e);}}
   @EventHandler(priority=EventPriority.HIGHEST,ignoreCancelled=true) public void onTeleport(PlayerTeleportEvent event){String from=group(event.getFrom().getWorld()),to=group(event.getTo().getWorld());if(from!=null&&to!=null&&!from.equals(to)&&!moving.contains(event.getPlayer().getUniqueId())){event.setCancelled(true);event.getPlayer().sendMessage("Use /hub or /world to keep your inventories separate.");}}
   @EventHandler(ignoreCancelled=true) public void onPortal(PlayerPortalEvent event){String source=group(event.getFrom().getWorld());if(source!=null&&!source.equals("survival")){event.setCancelled(true);event.getPlayer().sendMessage("Use /survival for the vanilla Nether and End.");}}
   @EventHandler public void onRespawn(PlayerRespawnEvent event){String source=group(event.getPlayer().getWorld());if(source!=null&&!source.equals("survival"))event.setRespawnLocation(worlds.get(source).getSpawnLocation().add(0.5,0,0.5));if(joining.contains(event.getPlayer().getUniqueId()))Bukkit.getScheduler().runTaskLater(plugin,()->joinHub(event.getPlayer()),2);}
-  @EventHandler(ignoreCancelled=true) public void onDamage(EntityDamageEvent event){if(event.getEntity() instanceof Player p&&(failed.contains(p.getUniqueId())||p.getWorld().equals(worlds.get("hub")))){event.setCancelled(true);if(event.getCause()==EntityDamageEvent.DamageCause.VOID&&p.getWorld().equals(worlds.get("hub")))p.teleport(worlds.get("hub").getSpawnLocation().add(0.5,0,0.5));}}
+  @EventHandler(ignoreCancelled=true) public void onDamage(EntityDamageEvent event){if(event.getEntity() instanceof Player p&&(failed.contains(p.getUniqueId())||arriving(p)||p.getWorld().equals(worlds.get("hub")))){event.setCancelled(true);if(event.getCause()==EntityDamageEvent.DamageCause.VOID&&p.getWorld().equals(worlds.get("hub")))p.teleport(worlds.get("hub").getSpawnLocation().add(0.5,0,0.5));}}
   @EventHandler public void onBreak(BlockBreakEvent event){if(failed.contains(event.getPlayer().getUniqueId())||event.getBlock().getWorld().equals(worlds.get("hub")))event.setCancelled(true);}
   @EventHandler public void onPlace(BlockPlaceEvent event){if(failed.contains(event.getPlayer().getUniqueId())||event.getBlock().getWorld().equals(worlds.get("hub")))event.setCancelled(true);}
-  @EventHandler public void onAttack(EntityDamageByEntityEvent event){if(event.getDamager() instanceof Player p&&failed.contains(p.getUniqueId()))event.setCancelled(true);}
-  @EventHandler public void onFood(FoodLevelChangeEvent event){if(event.getEntity().getWorld().equals(worlds.get("hub")))event.setCancelled(true);}
+  @EventHandler public void onAttack(EntityDamageByEntityEvent event){if(event.getDamager() instanceof Player p&&(failed.contains(p.getUniqueId())||arriving(p)))event.setCancelled(true);}
+  @EventHandler public void onFood(FoodLevelChangeEvent event){if(event.getEntity().getWorld().equals(worlds.get("hub"))||(event.getEntity() instanceof Player p&&(failed.contains(p.getUniqueId())||arriving(p))))event.setCancelled(true);}
   @EventHandler public void onDrop(PlayerDropItemEvent event){if(failed.contains(event.getPlayer().getUniqueId())||event.getPlayer().getWorld().equals(worlds.get("hub")))event.setCancelled(true);}
-  @EventHandler public void onPickup(EntityPickupItemEvent event){if(event.getEntity() instanceof Player p&&(failed.contains(p.getUniqueId())||p.getWorld().equals(worlds.get("hub"))))event.setCancelled(true);}
+  @EventHandler public void onPickup(EntityPickupItemEvent event){if(event.getEntity() instanceof Player p&&(failed.contains(p.getUniqueId())||arriving(p)||p.getWorld().equals(worlds.get("hub"))))event.setCancelled(true);}
   @EventHandler(ignoreCancelled=true) public void onUse(PlayerInteractEvent event){
     Player p=event.getPlayer();if(failed.contains(p.getUniqueId())){event.setCancelled(true);return;}
     if(!p.getWorld().equals(worlds.get("hub"))||event.getAction()!=Action.RIGHT_CLICK_BLOCK||event.getClickedBlock()==null||!(event.getClickedBlock().getState() instanceof Sign sign))return;

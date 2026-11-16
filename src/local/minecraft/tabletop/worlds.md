@@ -99,7 +99,9 @@ scene progress to make acceptance pass. `MINECRAFT_DATA_DIR` selects nondefault 
 Once acceptance passes, console `worlds join on` enables default hub arrival;
 `worlds join off` disables that automatic arrival. Both require operator permission.
 They preserve other configuration and do not move an already connected player.
-Pending viewer returns are resolved before the hub's delayed join transition.
+Normal joins move to the hub on the next tick with transient damage/hunger
+protection. Existing viewer returns get a protected delay so their scheduled
+recovery finishes before hub travel. Dead players finish respawning first.
 
 The native test is evidence of server state behavior, not a substitute for seeing
 Switch world rendering. On a real visit, try `/hub` → `/survival` → `/world build`

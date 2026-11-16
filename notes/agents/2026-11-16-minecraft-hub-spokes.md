@@ -41,3 +41,10 @@ Next time: test both activities' return snapshots, not just the new router. Do
 not assume old Paper save paths or treat native player proxies as client rendering
 proof. Use the native verifier with an actual pre-update archive, then perform a
 real Switch round trip when the user is available. Keep transport freezes separate.
+
+Final arrival check: normal joins use next-tick hub transfer with transient damage/
+hunger protection, avoiding exposure at an old hostile survival location. Only
+existing viewer returns wait for their30/40-tick recovery callbacks; that delay
+is also protected. A pre-existing pending journey blocks player interaction until
+recovery. Hub initialization errors without a journal do not freeze untouched
+survival players.
