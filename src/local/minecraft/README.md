@@ -206,3 +206,12 @@ runs actual-packet Survival/Adventure/Creative/Spectator regression checks befor
 packaging; the build manifest records the patch hash. This addresses Bedrock ZR
 attacks being disabled even after returning to Survival. Rejoin to receive updated
 abilities. Actual Switch combat confirmation remains a separate client check.
+
+## Hub and connected worlds
+
+Join into a safe hub and use `/survival`, `/world build`, `/world tabletop` or
+`/world lab` without disconnecting. `/hub` returns to the hub and `/worlds` lists
+destinations. Existing survival/Nether/End stay together; the workshop is creative
+and has a separate inventory/XP profile. Iron Man is available in the workshop
+and tabletop/lab, keeping survival and the hub free of companion activity.
+See [the world-travel runbook](tabletop/worlds.md).

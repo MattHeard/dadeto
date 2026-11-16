@@ -29,6 +29,12 @@ public final class ViewerState {
     return new ViewerState(yaml);
   }
 
+  public static ViewerState captureFull(Player player) {
+    if(player.isDead())throw new IllegalArgumentException("Respawn before travelling");
+    player.closeInventory();
+    ViewerState state=capture(player);WorldProfile.captureExtras(state.original,player);return state;
+  }
+
   public static ViewerState load(File file) throws IOException {
     YamlConfiguration yaml = new YamlConfiguration();
     try { yaml.load(file); } catch (Exception e) { throw new IOException("Cannot read return snapshot", e); }
@@ -49,6 +55,8 @@ public final class ViewerState {
   }
 
   public void restore(Player player) throws IOException {
+    boolean full=original.contains("player-state-version");
+    if(full)WorldProfile.validateExtras(original);
     Location back = original.getLocation("return");
     if (back == null || back.getWorld() == null) throw new IOException("Return world is unavailable; snapshot retained");
     List<?> values = original.getList("inventory");
@@ -67,6 +75,7 @@ public final class ViewerState {
     player.getInventory().setContents(items);
     player.getInventory().setHeldItemSlot(original.getInt("held-slot"));
     if (!player.teleport(back)) throw new IOException("Return teleport refused; snapshot retained");
+    if(full)try{WorldProfile.applyExtras(original,player);}catch(Exception e){throw new IOException("Full player-state restore failed; snapshot retained",e);}
     player.saveData();
   }
 }

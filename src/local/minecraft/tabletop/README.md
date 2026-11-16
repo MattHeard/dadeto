@@ -14,7 +14,7 @@ floor or roof.
 ## Viewing on Switch 2
 
 Join Dadeto LAN. Use `/tabletop` to enter, or have the DM queue a visit from the
-server console. Your survival position, mode, inventory, selected slot, flight
+server console. Your previous position, mode, inventory, selected slot, flight
 and gravity settings are saved before switching to the read-only overhead view.
 
 Choose hotbar items with the controller to switch cameras:
@@ -29,7 +29,7 @@ Choose hotbar items with the controller to switch cameras:
 | 6    | Bedrooms               |
 | 7    | Kitchen                |
 | 8    | Dining room            |
-| 9    | Return to survival     |
+| 9    | Return to previous world|
 
 You can also use `/tabletop view 1` through `8`, or `/tabletop leave`. The viewpoint
 is fixed looking straight down; selecting a room gives a closer view for handheld
@@ -114,7 +114,7 @@ python3 src/local/minecraft/tabletop/compile-map.py reports/nobles-house
 The SVG is a block-layout preview, not a Minecraft screenshot. Live acceptance
 requires zero mismatches from `tabletop verify`, a passing `tabletop selftest`,
 and an actual Switch check of overhead framing, hotbar camera selection and
-return to survival. Keep exact results in bead dadeto-g37s.
+return to the previous world. Keep exact results in bead dadeto-g37s.
 
 ## Live exploration
 
@@ -123,3 +123,11 @@ The same plugin now includes the [Intuition Engine](../intuition/README.md).
 walk/fly lab beside the house with its own durable return snapshot. `/tabletop`
 returns from the lab before entering the overhead display. The scene bridge
 cannot edit the house footprint or the survival dimension.
+
+## Hub and connected worlds
+
+See [worlds.md](worlds.md) for `/hub`, `/survival`, `/world build`, `/world tabletop`
+and `/world lab`, separate survival/workshop profiles, default hub arrivals and
+the offline native recovery/preservation check. New viewer snapshots also preserve
+ender storage, XP, health, food, active effects and respawn position. Older snapshots
+remain readable; fields that were never captured cannot be invented retroactively.

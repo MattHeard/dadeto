@@ -27,6 +27,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
   private SceneEngine scenes;
   private World world;
   private boolean ready;
+  private HubWorlds hub;
   private int built;
 
   @Override public void onEnable() {
@@ -37,6 +38,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
     Objects.requireNonNull(getCommand("tabletop")).setExecutor(this);
     getServer().getPluginManager().registerEvents(this, this);
     getServer().getScheduler().runTask(this, this::prepareWorld);
+    hub=new HubWorlds(this,getDataFolder().toPath().resolve("worlds"));hub.start();
   }
 
   private void prepareWorld() {
@@ -109,7 +111,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
     try {
       ViewerState state = viewers.get(player.getUniqueId());
       if (state == null) {
-        state = snapshot(player).exists() ? ViewerState.load(snapshot(player)) : ViewerState.capture(player);
+        state = snapshot(player).exists() ? ViewerState.load(snapshot(player)) : ViewerState.captureFull(player);
         state.save(snapshot(player));
         viewers.put(player.getUniqueId(), state);
       }
@@ -118,10 +120,10 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
       Material[] icons = {Material.COMPASS, Material.BOOK, Material.OAK_STAIRS, Material.RED_DYE,
           Material.OAK_PLANKS, Material.BROWN_BED, Material.FURNACE, Material.GOLDEN_APPLE};
       for (int i = 0; i < plan.views.size(); i++) player.getInventory().setItem(i, icon(icons[i], plan.views.get(i).name()));
-      player.getInventory().setItem(8, icon(Material.BARRIER, "Return to survival"));
+      player.getInventory().setItem(8, icon(Material.BARRIER, "Return to previous world"));
       player.getInventory().setHeldItemSlot(state.view);
       show(player, state.view);
-      player.sendMessage("Noble's House: select a hotbar item for a bird's-eye view. Last item returns to survival.");
+      player.sendMessage("Noble's House: select a hotbar item for a bird's-eye view. Last item returns to your previous world.");
       return true;
     } catch (Exception e) { getLogger().log(Level.SEVERE, "Could not enter tabletop; return snapshot retained", e); player.sendMessage("Tabletop entry failed; your return snapshot has been retained."); return false; }
   }
@@ -139,6 +141,8 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
     player.sendActionBar(Component.text(plan.views.get(index).name() + " | 5 ft = 2 x 2 blocks"));
   }
 
+  void leaveViews(Player player) throws IOException {scenes.leave(player);leaveTabletop(player);}
+
   void leaveTabletop(Player player) throws IOException {
     leave(player);
     if (snapshot(player).exists()) throw new IOException("Tabletop return failed; snapshot retained");
@@ -153,7 +157,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
       if (state == null) return;
       state.restore(player);
       Files.delete(snapshot(player).toPath());
-      player.sendMessage("Returned to survival with your saved inventory and position.");
+      player.sendMessage("Returned with your saved inventory and position.");
     } catch (Exception e) { getLogger().log(Level.SEVERE, "Return failed; snapshot retained", e); player.sendMessage("Return needs attention; your saved snapshot is retained."); }
   }
 

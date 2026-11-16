@@ -32,6 +32,7 @@ import net.kyori.adventure.text.Component;
 public final class IronManPlugin extends JavaPlugin implements Listener,CommandExecutor,EventRegistrar {
   static final UUID PROFILE=UUID.fromString("daded000-1a01-2000-8000-000000000001");
   private UUID ownerId;
+  private Set<String> allowedWorlds=Set.of();
   private volatile UUID npcId;
   private Mannequin npc;
   private Path root;
@@ -66,6 +67,8 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   }
   @Override public void onEnable() {
     saveDefaultConfig();root=getDataFolder().toPath();marker=new NamespacedKey(this,"companion");
+    if(!getConfig().contains("allowed-worlds",true)){getConfig().set("allowed-worlds",WorldScope.DEFAULT);saveConfig();}
+    allowedWorlds=Set.copyOf(getConfig().getStringList("allowed-worlds"));
     ownerId=UUID.fromString(getConfig().getString("owner"));enabled=getConfig().getBoolean("enabled",true);
     try {
       for(String folder:List.of("requests","decisions","results"))Files.createDirectories(root.resolve(folder));
@@ -88,6 +91,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   private void cleanup() {
     for(World world:Bukkit.getWorlds())for(Mannequin m:world.getEntitiesByClass(Mannequin.class))if(m.getPersistentDataContainer().has(marker,PersistentDataType.STRING))m.remove();
   }
+  private boolean permitted(Player p){return p!=null&&WorldScope.allowed(p.getWorld().getKey().toString(),allowedWorlds);}
   private Player owner() {return Bukkit.getPlayer(ownerId);}
   private void remove() {if(npc!=null)npc.remove();npc=null;npcId=null;}
   private Location clearPosition(Player p) {
@@ -160,12 +164,12 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   }
   private void tick() {
     ticks+=2;Player p=owner();
-    if(!enabled||p==null||p.isDead()){remove();}else{ensure(p);if(ready)construction.tick(p,ticks);}
+    if(!enabled||p==null||p.isDead()||!permitted(p)){remove();}else{ensure(p);if(ready)construction.tick(p,ticks);}
     if(ticks%20==0){context(p);if(ready)poll(p);}
   }
   private void context(Player p) {
     if(contextBusy)return;contextBusy=true;
-    Map<String,Object> value=new LinkedHashMap<>();value.put("version",1);value.put("updatedAt",System.currentTimeMillis());value.put("ownerOnline",p!=null&&!p.isDead());value.put("enabled",enabled);value.put("owner",ownerId.toString());value.put("palette",BuildPlan.PALETTE);value.put("radius",16);value.put("maxBlocks",1024);value.put("mode",mode);value.put("skinPackets",skinPackets.get());value.put("maxObservedDistance",maxObservedDistance);
+    Map<String,Object> value=new LinkedHashMap<>();value.put("version",1);value.put("updatedAt",System.currentTimeMillis());value.put("ownerOnline",p!=null&&!p.isDead());value.put("enabled",enabled&&permitted(p));value.put("owner",ownerId.toString());value.put("palette",BuildPlan.PALETTE);value.put("radius",16);value.put("maxBlocks",1024);value.put("mode",mode);value.put("skinPackets",skinPackets.get());value.put("maxObservedDistance",maxObservedDistance);
     value.put("construction",construction==null?"unavailable":construction.phase());value.put("progress",construction==null?0:construction.progress());value.put("total",construction==null?0:construction.total());
     if(p!=null){value.put("world",p.getWorld().getUID().toString());value.put("worldKey",p.getWorld().getKey().toString());value.put("position",List.of(p.getX(),p.getY(),p.getZ()));value.put("yaw",p.getYaw());Block b=p.getTargetBlockExact(12);if(b!=null)value.put("target",List.of(b.getX(),b.getY(),b.getZ(),b.getType().name()));}
     if(npc!=null){value.put("npc",npc.getUniqueId().toString());value.put("npcPosition",List.of(npc.getX(),npc.getY(),npc.getZ()));value.put("distance",p==null?-1:npc.getLocation().distance(p.getLocation()));}
@@ -191,7 +195,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   }
   private void apply(String id,JsonObject envelope) throws Exception {
     if(Files.exists(root.resolve("results/"+id+".json")))return;
-    Player p=owner();if(p==null||p.isDead()||!enabled)throw new IllegalArgumentException("Owner is offline or companion disabled");
+    Player p=owner();if(p==null||p.isDead()||!enabled||!permitted(p))throw new IllegalArgumentException("Owner is offline or companion disabled");
     BuildPlan.Decision decision=BuildPlan.parse(envelope.get("decision").toString());
     JsonObject request=null;
     if(Files.exists(root.resolve("requests/"+id+".json"))) {
@@ -206,6 +210,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     if(!decision.speech().isBlank())p.sendMessage("Iron Man: "+decision.speech());
   }
   private void request(Player p,String mode,String prompt) throws IOException {
+    if(!permitted(p))throw new IllegalArgumentException("Meet me in the workshop: /world build (or the tabletop/lab).");
     if(!enabled)throw new IllegalArgumentException("I am parked. Use /ironman on to bring me back.");
     if(!ready)throw new IllegalArgumentException("Builder is waiting for recovery; check the server log");
     if(prompt.isBlank()||prompt.length()>1000)throw new IllegalArgumentException("Use a building request up to1000 characters");
@@ -227,8 +232,8 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
         case "undo"->{if(p==null)throw new IllegalArgumentException("Return to the worksite in game to undo");construction.undo(p);}
         case "on","off"->{enabled=action.equals("on");getConfig().set("enabled",enabled);saveConfig();if(!enabled)remove();sender.sendMessage("Iron Man "+(enabled?"enabled":"parked"));}
         case "follow"->{mode="follow";enabled=true;sender.sendMessage("Iron Man: staying near you.");}
-        case "selftest"->{if(p!=null&&!p.isOp())throw new IllegalArgumentException("DM control");BuildPlanCheck.main(new String[0]);FollowPosition.check();Conversation.check();followerCheck();ConstructionCheck.run(this);sender.sendMessage("Iron Man integration check started; see server log for terminal result.");}
-        default->sender.sendMessage("Iron Man: "+(enabled?"enabled":"parked")+"; "+(construction==null?"not ready":construction.phase())+"; skin deliveries "+skinPackets.get()+". /ironman chat <message> | build <request> | preview | confirm | cancel | undo");
+        case "selftest"->{if(p!=null&&!p.isOp())throw new IllegalArgumentException("DM control");BuildPlanCheck.main(new String[0]);FollowPosition.check();Conversation.check();WorldScope.check();followerCheck();ConstructionCheck.run(this);sender.sendMessage("Iron Man integration check started; see server log for terminal result.");}
+        default->sender.sendMessage("Iron Man: "+(enabled?(p!=null&&!permitted(p)?"available in workshop/tabletop only":"enabled"):"parked")+"; "+(construction==null?"not ready":construction.phase())+"; skin deliveries "+skinPackets.get()+". /ironman chat <message> | build <request> | preview | confirm | cancel | undo");
       }
     }catch(Exception e){sender.sendMessage("Iron Man: "+e.getMessage());}
     return true;
@@ -241,6 +246,6 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     Bukkit.getScheduler().runTask(this,()->{Player p=owner();if(p==null)return;try{request(p,"chat",text);}catch(Exception error){p.sendMessage("Iron Man: "+error.getMessage());}});
   }
   @EventHandler public void onQuit(PlayerQuitEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))remove();}
-  @EventHandler public void onTeleport(PlayerTeleportEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))Bukkit.getScheduler().runTask(this,()->{Player p=owner();if(p!=null&&enabled)ensure(p);});}
+  @EventHandler public void onTeleport(PlayerTeleportEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))Bukkit.getScheduler().runTask(this,()->{Player p=owner();if(p!=null&&enabled&&permitted(p))ensure(p);else remove();});}
   @Override public void onDisable(){closing=true;remove();try{GeyserApi.api().eventBus().unregisterAll(this);}catch(Exception ignored){}disk.shutdown();try{disk.awaitTermination(10,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}}
 }

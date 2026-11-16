@@ -272,7 +272,7 @@ final class SceneEngine implements Listener, CommandExecutor {
     if (failed || world == null) throw new IOException("Lab is not ready");
     plugin.leaveTabletop(player);
     ViewerState saved = visitors.get(player.getUniqueId());
-    if (saved == null) { saved = snapshot(player).exists() ? ViewerState.load(snapshot(player)) : ViewerState.capture(player); saved.save(snapshot(player)); visitors.put(player.getUniqueId(), saved); }
+    if (saved == null) { saved = snapshot(player).exists() ? ViewerState.load(snapshot(player)) : ViewerState.captureFull(player); saved.save(snapshot(player)); visitors.put(player.getUniqueId(), saved); }
     player.getInventory().clear(); player.setGameMode(GameMode.ADVENTURE); player.setAllowFlight(true); player.setFlying(true); player.setGravity(true);
     if (!player.teleport(new Location(world, 128.5, 85, 32.5, 180, 45))) throw new IOException("Lab teleport refused");
     player.sendMessage("Intuition lab: fly with the normal controls. Point and use an empty hand to inspect. Use a component again to perform its action; point at a guide and /intuition ask <topic>. /intuition leave returns with your inventory.");

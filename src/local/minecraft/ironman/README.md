@@ -125,3 +125,14 @@ python3 src/local/minecraft/ironman/render_skin.py src/local/minecraft/ironman/b
 
 This projects the actual UV pixels onto a wide Minecraft model, with front and
 three-quarter views. It does not synthesize or repaint the skin.
+
+## World scope
+
+Iron Man and new Luna calls are active only in `minecraft:dadeto_build` and
+`minecraft:dadeto_tabletop` by default. Use `/world build` for the workshop.
+Survival (including Nether/End) and the hub remain ordinary, without the companion.
+The native follower, teleport callback, chat/build request and decision application
+all honor this scope; context exports `enabled=false` outside it so the brain pauses.
+An already-started inference may finish, but its actions are rejected outside the
+allowed worlds. `allowed-worlds` in the private plugin config controls the scope.
+Existing owner/enabled settings and conversation/build history are preserved.
