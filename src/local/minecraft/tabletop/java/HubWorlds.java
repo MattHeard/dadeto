@@ -29,9 +29,16 @@ final class HubWorlds implements Listener,CommandExecutor,TabCompleter {
     for(String name:List.of("hub","survival","worlds","world")){var command=Objects.requireNonNull(plugin.getCommand(name));command.setExecutor(this);command.setTabCompleter(this);}
     Bukkit.getScheduler().runTask(plugin,()->{try{
       worlds.put("survival",Bukkit.getWorlds().stream().filter(w->w.getKey().equals(NamespacedKey.minecraft("overworld"))).findFirst().orElseThrow());
-      worlds.put("hub",create("dadeto_hub",8));worlds.put("build",create("dadeto_build",32));ready=true;
-      plugin.getLogger().info("Hub/spokes ready: existing survival, hub, workshop and tabletop/lab; isolated player profiles");
+      if(legacyHubExists())worlds.put("hub",create("dadeto_hub",8));
+      worlds.put("build",create("dadeto_build",32));ready=true;
+      plugin.getLogger().info("Hub/spokes ready: existing survival is the hub; workshop and tabletop/lab are spokes");
     }catch(Exception e){plugin.getLogger().log(java.util.logging.Level.SEVERE,"Hub not ready; existing saves preserved",e);}});
+  }
+  private boolean legacyHubExists(){
+    String name="dadeto_hub";File container=Bukkit.getWorldContainer();
+    if(new File(container,name).exists())return true;
+    File[] saves=container.listFiles(File::isDirectory);if(saves!=null)for(File save:saves)if(new File(save,"dimensions/minecraft/"+name).exists())return true;
+    return Bukkit.getWorlds().stream().anyMatch(world->world.getKey().equals(NamespacedKey.minecraft(name)));
   }
   private void requireOwned(File folder,String name) throws IOException {
     if(!folder.exists())return;
@@ -77,6 +84,7 @@ final class HubWorlds implements Listener,CommandExecutor,TabCompleter {
     moving.add(p.getUniqueId());try{old.apply(p,false);Files.delete(pending(p));failed.remove(p.getUniqueId());}finally{moving.remove(p.getUniqueId());}
   }
   void travel(Player p,String destination) throws Exception {
+    if(destination.equals("hub"))destination="survival";
     if(!ready)throw new IOException("Worlds are still preparing; try again shortly");
     if(p.isDead())throw new IOException("Respawn before travelling");
     recover(p);
@@ -86,13 +94,12 @@ final class HubWorlds implements Listener,CommandExecutor,TabCompleter {
       String source=group(p.getWorld());if(source==null)throw new IOException("Return from the current activity first");
       WorldProfile.capture(p,source).save(profile(p,source));p.performCommand(destination.equals("tabletop")?"tabletop":"intuition visit");return;
     }
-    if(!WorldProfile.GROUPS.contains(destination))throw new IOException("Use /world survival, build, tabletop or lab; /hub returns here");
+    if(!WorldProfile.GROUPS.contains(destination))throw new IOException("Use /world survival, build, tabletop or lab; /hub returns to survival");
     String source=group(p.getWorld());if(source==null)throw new IOException("Return from the current activity first");
-    if(source.equals(destination)){if(destination.equals("hub"))p.teleport(worlds.get("hub").getSpawnLocation().add(0.5,0,0.5));p.sendMessage("You are already in "+destination+".");return;}
+    if(source.equals(destination)){p.sendMessage(destination.equals("survival")?"Survival is your hub. /world build | /world tabletop | /world lab":"You are already in "+destination+".");return;}
     WorldProfile old=WorldProfile.capture(p,source);old.save(profile(p,source));p.saveData();
     WorldProfile target=profile(p,destination).exists()?WorldProfile.load(profile(p,destination)):WorldProfile.fresh(destination,worlds.get(destination).getSpawnLocation().add(0.5,0,0.5));
     if(!target.group().equals(destination)||!destination.equals(group(target.view.original.getLocation("return").getWorld())))throw new IOException("Target profile world/group mismatch; saved profile retained");
-    if(destination.equals("hub"))target.view.original.set("return",worlds.get("hub").getSpawnLocation().add(0.5,0,0.5));
     Location location=target.view.original.getLocation("return");
     if(location.getY()<location.getWorld().getMinHeight()+1||location.getY()>=location.getWorld().getMaxHeight()-1||!location.getBlock().isPassable()||!location.clone().add(0,1,0).getBlock().isPassable())target.view.original.set("return",worlds.get(destination).getSpawnLocation().add(0.5,0,0.5));
     target.save(profile(p,destination));old.save(pending(p).toFile());moving.add(p.getUniqueId());
@@ -113,7 +120,7 @@ final class HubWorlds implements Listener,CommandExecutor,TabCompleter {
       if(!sender.hasPermission("dadeto.tabletop.admin")){sender.sendMessage("DM control");return true;}
       try{sender.sendMessage(HubCheck.run(this));}catch(Exception e){plugin.getLogger().log(java.util.logging.Level.SEVERE,"Hub check failed",e);sender.sendMessage("FAIL: "+e.getMessage());}return true;
     }
-    if(command.getName().equals("worlds")||(command.getName().equals("world")&&args.length==0)){sender.sendMessage("Worlds: /hub, /survival, /world build, /world tabletop, /world lab. Inventory and progress stay with their world.");return true;}
+    if(command.getName().equals("worlds")||(command.getName().equals("world")&&args.length==0)){sender.sendMessage("Survival hub: /hub or /survival. Spokes: /world build, /world tabletop, /world lab. Inventory and XP stay with each world.");return true;}
     if(!(sender instanceof Player p)){sender.sendMessage("Use world travel in game");return true;}
     String destination=switch(command.getName()){case "hub"->"hub";case "survival"->"survival";default->args[0].toLowerCase(Locale.ROOT);};
     try{travel(p,destination);}catch(Exception e){sender.sendMessage("Travel: "+e.getMessage());plugin.getLogger().warning("Travel retained state: "+e.getMessage());}return true;

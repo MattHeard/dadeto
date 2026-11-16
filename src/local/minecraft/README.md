@@ -209,8 +209,8 @@ abilities. Actual Switch combat confirmation remains a separate client check.
 
 ## Hub and connected worlds
 
-Join into a safe hub and use `/survival`, `/world build`, `/world tabletop` or
-`/world lab` without disconnecting. `/hub` returns to the hub and `/worlds` lists
+Your existing survival world is the hub. Use `/hub` or `/survival` to return; use `/world build`, `/world tabletop` or
+`/world lab` without disconnecting. `/hub` returns to survival and `/worlds` lists
 destinations. Existing survival/Nether/End stay together; the workshop is creative
 and has a separate inventory/XP profile. Iron Man is available in the workshop
 and tabletop/lab, keeping survival and the hub free of companion activity.

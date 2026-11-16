@@ -5,7 +5,7 @@ api-version: '1.21'
 description: Roofless noble house with controller-friendly bird's-eye cameras.
 commands:
   hub:
-    description: Return to the safe server hub.
+    description: Return to the survival hub.
     usage: /hub
   survival:
     description: Resume your vanilla survival world and inventory.

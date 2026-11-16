@@ -6,14 +6,15 @@ The LAN address, allowlist, Geyser/Floodgate login and world save identity stay 
 
 | Command | Destination |
 | --- | --- |
-| `/hub` | Safe adventure-mode arrival island; signs also respond to Use |
+| `/hub` | Existing survival world: the hub |
 | `/survival` or `/world survival` | Existing vanilla survival, at the last saved position |
 | `/world build` | Separate creative workshop with Iron Man and Luna chat/building |
 | `/world tabletop` | Existing Noble's House overhead views |
 | `/world lab` | Existing Intuition Engine exhibits |
 | `/worlds` | List destinations |
 
-`/world hub` also works. The house and lab are two activities in the same existing
+`/hub`, `/survival` and `/world hub` all select the same survival group. Joining
+returns to survival; there is no separate lobby to visit. The house and lab are two activities in the same existing
 tabletop world. Their normal leave controls return to the world from which they
 were entered; `/hub` or `/survival` can exit either activity directly.
 
@@ -23,18 +24,20 @@ Survival is not regenerated or reset. `/survival` can return to the Nether/End i
 that was the last survival location. Ordinary survival rules and mobs are unchanged.
 Iron Man and the controller are scoped to the workshop/tabletop and pause elsewhere.
 
-The new owned worlds are `minecraft:dadeto_hub` and `minecraft:dadeto_build`. They
-use empty terrain with small permanent platforms; workshop flight/building is
-creative. Neither keeps chunks forcibly loaded. Platforms are initialized once;
-restarts do not overwrite later workshop edits. Unknown existing world folders
-are refused unless their specific ownership marker matches.
+The creative workshop is `minecraft:dadeto_build`, with empty terrain and a
+permanent platform. It keeps no chunks forcibly loaded. The platform initializes
+once; restarts do not overwrite later workshop edits. Unknown existing folders
+are refused unless their ownership marker matches. The earlier `dadeto_hub`
+island and profiles are retained only for backwards-compatible recovery, loaded
+only if already present and never exposed through public travel commands. New
+installations do not generate that island.
 
 ## Player state
 
-Survival, hub and workshop have separate inventories (including armor/offhand),
+Survival and workshop have separate inventories (including armor/offhand),
 ender storage, XP, health, absorption, food/saturation/exhaustion, effects, air/fire
 and respawn locations. Survival and workshop positions/orientations are remembered;
-the hub returns to its central spawn. Leaving survival saves its real current
+the hub is survival, with its existing last position and ordinary gameplay. Leaving survival saves its real current
 state, rather than resurrecting an older pre-death inventory. A dead player must
 respawn before travelling. Open inventories close before capture to settle cursor items.
 
@@ -51,7 +54,7 @@ recovery succeeds. Rejoining recovers pending state before hub arrival. Never de
 an unresolved journal to bypass a failure. Source/target profile group and world
 must match; malformed files are retained and rejected.
 
-Creative/hub portals cannot carry players, dropped items or vehicles into the shared survival dimensions; use the travel
+Workshop/legacy-island portals cannot carry players, dropped items or vehicles into the shared survival dimensions; use the travel
 commands. Other direct cross-group teleports are refused so they cannot bypass
 inventory separation. Operators can still modify the server deliberately; this
 is state separation for normal play, not an anti-cheat system for trusted operators.
@@ -96,10 +99,10 @@ then proves those real player files and semantic state remain unchanged. It read
 archive members without extracting a backup over live data. Do not reset real
 scene progress to make acceptance pass. `MINECRAFT_DATA_DIR` selects nondefault data.
 
-Once acceptance passes, console `worlds join on` enables default hub arrival;
+Once acceptance passes, console `worlds join on` enables default survival-hub arrival;
 `worlds join off` disables that automatic arrival. Both require operator permission.
 They preserve other configuration and do not move an already connected player.
-Normal joins move to the hub on the next tick with transient damage/hunger
+Normal joins return to survival on the next tick with transient damage/hunger
 protection. Existing viewer returns get a protected delay so their scheduled
 recovery finishes before hub travel. Dead players finish respawning first.
 

@@ -48,3 +48,12 @@ existing viewer returns wait for their30/40-tick recovery callbacks; that delay
 is also protected. A pre-existing pending journey blocks player interaction until
 recovery. Hub initialization errors without a journal do not freeze untouched
 survival players.
+
+User correction: survival itself is the hub, not a separate adventure lobby.
+Public /hub and /world hub now canonicalize to survival, and default joins use
+that same route. Do not alias the internal legacy world map entry to the overworld:
+legacy protection/ADVENTURE profiles must not make survival protected or erase its
+inventory. Existing island data remains loaded only when present for old pending
+returns/profile recovery; fresh installations never generate it. The native
+harness now verifies /hub from the workshop restores survival, ordinary survival
+damage stays enabled, and an old island profile can migrate back to survival.

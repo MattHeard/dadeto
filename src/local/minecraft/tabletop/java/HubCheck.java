@@ -51,11 +51,16 @@ final class HubCheck {
     ViewerState full=ViewerState.captureFull(player);java.io.File viewer=route.root.resolve("full-viewer.yml").toFile();full.save(viewer);
     data.put("contents",new ItemStack[41]);data.put("ender",new ItemStack[27]);data.put("health",20.0);data.put("food",20);data.put("level",0);data.put("effects",new ArrayList<>());
     ViewerState.load(viewer).restore(player);assertSurvival(player,data,meta.displayName());Files.delete(viewer.toPath());
-    route.travel(player,"hub");require(player.getWorld().equals(route.worlds.get("hub"))&&player.getGameMode()==GameMode.ADVENTURE,"hub destination/mode");require(route.protectedFromDamage(player),"hub safety");require(((ItemStack[])data.get("contents"))[2]==null&&player.getLevel()==0&&((ItemStack[])data.get("ender"))[4]==null,"hub isolation");
+    route.travel(player,"hub");assertSurvival(player,data,meta.displayName());require(!route.protectedFromDamage(player),"survival hub has ordinary damage");
     route.travel(player,"build");require(player.getGameMode()==GameMode.CREATIVE&&player.getAllowFlight(),"workshop mode");
     ItemStack[] creative=new ItemStack[41];creative[2]=new ItemStack(Material.DIAMOND_BLOCK,64);data.put("contents",creative);data.put("level",3);data.put("effects",new ArrayList<>());
-    route.travel(player,"survival");assertSurvival(player,data,meta.displayName());
+    route.travel(player,"hub");assertSurvival(player,data,meta.displayName());
     route.travel(player,"build");require(((ItemStack[])data.get("contents"))[2].getType()==Material.DIAMOND_BLOCK&&player.getLevel()==3,"workshop persistence");route.travel(player,"survival");assertSurvival(player,data,meta.displayName());
+    if(route.worlds.containsKey("hub")){
+      WorldProfile.fresh("hub",route.worlds.get("hub").getSpawnLocation().add(0.5,0,0.5)).apply(player,true);
+      require(route.protectedFromDamage(player),"legacy island safety during recovery");
+      route.travel(player,"hub");assertSurvival(player,data,meta.displayName());
+    }
     data.put("fail-teleport",1);boolean refused=false;try{route.travel(player,"build");}catch(java.io.IOException expected){refused=true;}require(refused,"teleport cancellation");assertSurvival(player,data,meta.displayName());require(!Files.exists(route.pending(player)),"rollback journal completed");
     data.put("fail-teleport",2);boolean retained=false;try{route.travel(player,"build");}catch(java.io.IOException expected){retained=true;}
     require(retained&&Files.exists(route.pending(player))&&route.failed.contains(player.getUniqueId()),"double-failure retains/freeze journal");
@@ -71,7 +76,7 @@ final class HubCheck {
     route.joining.remove(player.getUniqueId());require(!route.protectedFromDamage(player),"ordinary survival damage remains enabled");
     Path malformed=route.directory(player).resolve("malformed.yml");Files.writeString(malformed,"mode: SURVIVAL\n");boolean invalid=false;try{WorldProfile.load(malformed.toFile());}catch(Exception expected){invalid=true;}require(invalid&&Files.exists(malformed),"invalid state retained");Files.delete(malformed);
     require((int)data.get("saves")>10,"durable player saves");
-    return "PASS Hub: survival/hub/build round trips and full viewer snapshot; named inventory, armor/offhand, ender chest, XP, vitals, effects and respawn isolated; creative state retained; teleport refusal rollback; restart journal recovery; cross-group escape blocked; vanilla Nether shared; arrival protected and ordinary survival damage enabled; invalid profile retained. No real player or original world blocks changed.";
+    return "PASS Hub: survival-as-hub/workshop round trips, legacy island migration and full viewer snapshot; named inventory, armor/offhand, ender chest, XP, vitals, effects and respawn isolated; creative state retained; teleport refusal rollback; restart journal recovery; cross-group escape blocked; vanilla Nether shared; arrival protected and ordinary survival damage enabled; invalid profile retained. No real player or original world blocks changed.";
   }
   private static List<PotionEffect> effects(Map<String,Object> data){return new ArrayList<>(((List<?>)data.get("effects")).stream().map(PotionEffect.class::cast).toList());}
   private static void assertSurvival(Player p,Map<String,Object> data,net.kyori.adventure.text.Component name){
