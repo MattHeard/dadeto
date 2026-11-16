@@ -51,7 +51,7 @@ final class HubCheck {
     ViewerState full=ViewerState.captureFull(player);java.io.File viewer=route.root.resolve("full-viewer.yml").toFile();full.save(viewer);
     data.put("contents",new ItemStack[41]);data.put("ender",new ItemStack[27]);data.put("health",20.0);data.put("food",20);data.put("level",0);data.put("effects",new ArrayList<>());
     ViewerState.load(viewer).restore(player);assertSurvival(player,data,meta.displayName());Files.delete(viewer.toPath());
-    route.travel(player,"hub");require(player.getWorld().equals(route.worlds.get("hub"))&&player.getGameMode()==GameMode.ADVENTURE,"hub destination/mode");require(((ItemStack[])data.get("contents"))[2]==null&&player.getLevel()==0&&((ItemStack[])data.get("ender"))[4]==null,"hub isolation");
+    route.travel(player,"hub");require(player.getWorld().equals(route.worlds.get("hub"))&&player.getGameMode()==GameMode.ADVENTURE,"hub destination/mode");require(route.protectedFromDamage(player),"hub safety");require(((ItemStack[])data.get("contents"))[2]==null&&player.getLevel()==0&&((ItemStack[])data.get("ender"))[4]==null,"hub isolation");
     route.travel(player,"build");require(player.getGameMode()==GameMode.CREATIVE&&player.getAllowFlight(),"workshop mode");
     ItemStack[] creative=new ItemStack[41];creative[2]=new ItemStack(Material.DIAMOND_BLOCK,64);data.put("contents",creative);data.put("level",3);data.put("effects",new ArrayList<>());
     route.travel(player,"survival");assertSurvival(player,data,meta.displayName());
@@ -66,9 +66,11 @@ final class HubCheck {
     var blocked=new PlayerTeleportEvent(player,route.worlds.get("build").getSpawnLocation(),survival.getSpawnLocation(),PlayerTeleportEvent.TeleportCause.COMMAND);route.onTeleport(blocked);require(blocked.isCancelled(),"creative escape blocked");
     World nether=Bukkit.getWorlds().stream().filter(w->w.getKey().toString().equals("minecraft:the_nether")).findFirst().orElseThrow();
     var vanilla=new PlayerTeleportEvent(player,survival.getSpawnLocation(),nether.getSpawnLocation(),PlayerTeleportEvent.TeleportCause.NETHER_PORTAL);route.onTeleport(vanilla);require(!vanilla.isCancelled()&&route.group(nether).equals("survival"),"vanilla Nether shares survival");
+    route.joining.add(player.getUniqueId());require(route.protectedFromDamage(player)==live.plugin.getConfig().getBoolean("hub-on-join",true),"configured arrival protection");
+    route.joining.remove(player.getUniqueId());require(!route.protectedFromDamage(player),"ordinary survival damage remains enabled");
     Path malformed=route.directory(player).resolve("malformed.yml");Files.writeString(malformed,"mode: SURVIVAL\n");boolean invalid=false;try{WorldProfile.load(malformed.toFile());}catch(Exception expected){invalid=true;}require(invalid&&Files.exists(malformed),"invalid state retained");Files.delete(malformed);
     require((int)data.get("saves")>10,"durable player saves");
-    return "PASS Hub: survival/hub/build round trips and full viewer snapshot; named inventory, armor/offhand, ender chest, XP, vitals, effects and respawn isolated; creative state retained; teleport refusal rollback; restart journal recovery; cross-group escape blocked; vanilla Nether shared; invalid profile retained. No real player or original world blocks changed.";
+    return "PASS Hub: survival/hub/build round trips and full viewer snapshot; named inventory, armor/offhand, ender chest, XP, vitals, effects and respawn isolated; creative state retained; teleport refusal rollback; restart journal recovery; cross-group escape blocked; vanilla Nether shared; arrival protected and ordinary survival damage enabled; invalid profile retained. No real player or original world blocks changed.";
   }
   private static List<PotionEffect> effects(Map<String,Object> data){return new ArrayList<>(((List<?>)data.get("effects")).stream().map(PotionEffect.class::cast).toList());}
   private static void assertSurvival(Player p,Map<String,Object> data,net.kyori.adventure.text.Component name){
