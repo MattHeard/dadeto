@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "harbor-demo-5",
+  "revision": 5,
+  "action": "put",
+  "object": {
+    "id": "harbor-pier",
+    "title": "A fixed reference point",
+    "kind": "assumption",
+    "explanation": "The pier is stipulated to remain unchanged while the ship can be revised. A fixed background helps comparison, but does not decide which ship is the original.",
+    "relatesTo": ["harbor-water"],
+    "boxes": [
+      {
+        "from": [112, 66, 20],
+        "to": [115, 66, 43],
+        "material": "spruce_planks"
+      }
+    ]
+  }
+}

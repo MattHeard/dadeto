@@ -1,0 +1,27 @@
+name: DadetoTabletop
+version: '1.2'
+main: net.mattheard.tabletop.TabletopPlugin
+api-version: '1.21'
+description: Roofless noble house with controller-friendly bird's-eye cameras.
+commands:
+  hub:
+    description: Return to the survival hub.
+    usage: /hub
+  survival:
+    description: Resume your vanilla survival world and inventory.
+    usage: /survival
+  worlds:
+    description: List the hub and connected worlds.
+    usage: /worlds
+  world:
+    description: Travel without disconnecting.
+    usage: /world <survival|build|tabletop|lab>
+  intuition:
+    description: Explore live semantic scenes or return to survival.
+    usage: /intuition [visit|leave|inspect|act <action>|ask <topic>]
+  tabletop:
+    description: Visit the noble house tabletop or return to survival.
+    usage: /tabletop [leave|view]
+permissions:
+  dadeto.tabletop.admin:
+    default: op

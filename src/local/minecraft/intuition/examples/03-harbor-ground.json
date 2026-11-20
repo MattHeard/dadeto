@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "harbor-demo-3",
+  "revision": 3,
+  "action": "put",
+  "object": {
+    "id": "harbor-ground",
+    "title": "Intuition harbor",
+    "kind": "metaphor",
+    "explanation": "A small shared stage for spatial thought experiments. It is a representation, not evidence for a philosophical conclusion.",
+    "boxes": [
+      {
+        "from": [108, 64, 12],
+        "to": [147, 64, 51],
+        "material": "stone_bricks"
+      }
+    ]
+  }
+}

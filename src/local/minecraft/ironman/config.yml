@@ -1,0 +1,6 @@
+enabled: true
+owner: '00000000-0000-0000-0009-01fedc9f79f9'
+max-distance: 16
+allowed-worlds:
+  - minecraft:dadeto_build
+  - minecraft:dadeto_tabletop

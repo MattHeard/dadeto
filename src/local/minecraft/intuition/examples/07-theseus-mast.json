@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "harbor-demo-7",
+  "revision": 7,
+  "action": "put",
+  "object": {
+    "id": "theseus-mast",
+    "title": "One distinguishable component",
+    "kind": "metaphor",
+    "explanation": "The mast has its own persistent identity and meaning. Codex can revise its material or location while you stay connected, independently of the hull.",
+    "relatesTo": ["theseus-hull"],
+    "boxes": [
+      {
+        "from": [128, 67, 31],
+        "to": [128, 74, 31],
+        "material": "dark_oak_planks"
+      }
+    ]
+  }
+}

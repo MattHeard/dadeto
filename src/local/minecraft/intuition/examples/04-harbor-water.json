@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "harbor-demo-4",
+  "revision": 4,
+  "action": "put",
+  "object": {
+    "id": "harbor-water",
+    "title": "Harbor water",
+    "kind": "metaphor",
+    "explanation": "Blue blocks stand in for water so you can walk or fly around this thought experiment without currents or drowning.",
+    "boxes": [
+      {
+        "from": [112, 65, 22],
+        "to": [143, 65, 47],
+        "material": "blue_concrete"
+      }
+    ]
+  }
+}

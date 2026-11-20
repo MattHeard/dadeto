@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "harbor-demo-9",
+  "revision": 9,
+  "action": "put",
+  "object": {
+    "id": "harbor-guide",
+    "title": "Start here: what makes the same ship?",
+    "kind": "speculation",
+    "explanation": "Try comparing continuity, original materials and function. Point at the hull, mast or sail to inspect its meaning. This first slice supports live Codex revisions; automatic plank replacement, reconstruction and a conversational philosopher are still to come.",
+    "relatesTo": ["theseus-hull"],
+    "boxes": [
+      {
+        "from": [116, 66, 17],
+        "to": [117, 67, 18],
+        "material": "gold_block"
+      }
+    ]
+  }
+}
