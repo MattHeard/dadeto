@@ -3,6 +3,22 @@
 This file is a **short operating router** for agents in this repo.
 Detailed policy and playbooks live under `docs/`.
 
+## Trunk-based development
+
+Start each slice from current `main`. Keep branches and reviews short. Split
+larger work into independently testable slices and merge each as soon as its
+required checks and reviews pass. Aim to integrate daily during active work.
+Open review early, and take ready slices out of draft promptly. When a check or
+review blocks a merge, resolve it or record the specific blocker in Beads.
+
+Use the Strategy pattern when behavior needs interchangeable implementations.
+Keep callers on one contract, select the implementation at the wiring boundary,
+and omit the abstraction when there is only one straightforward behavior.
+When incomplete behavior needs to land early, put it behind a temporary feature
+flag that defaults to the existing behavior. Verify both paths, record the flag
+owner and removal condition in Beads, and remove the flag and retired strategy
+once rollout is complete.
+
 ## Wiggum Loop Operating Model
 
 Run work as a tight, evidence-driven loop:
