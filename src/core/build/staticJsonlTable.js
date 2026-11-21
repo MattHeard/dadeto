@@ -1,3 +1,21 @@
+import {
+  describeStaticJsonlOpen,
+  renderStaticJsonlHeader,
+  renderStaticJsonlCell,
+  renderStaticJsonlRow,
+  renderStaticJsonlTableMarkup,
+} from '../../logic/core/static-jsonl-table/markup.js';
+import {
+  parseStaticJsonlDefinition,
+  parseStaticJsonlConfinement,
+} from '../../logic/boundary/static-jsonl-table/definition.js';
+import { parseStaticJsonlCell } from '../../logic/boundary/static-jsonl-table/cell.js';
+import { parseStaticJsonlText } from '../../logic/boundary/static-jsonl-table/text.js';
+import {
+  escapeStaticJsonlAttribute,
+  escapeStaticJsonlText,
+} from '../../logic/core/static-jsonl-table/escaping.js';
+import { parseStaticJsonlLine } from '../../logic/boundary/static-jsonl-table/record.js';
 import { compareTableValues as compareValues } from '../tableCore.js';
 
 /** @typedef {{index: number, values: Record<string, string|number>}} StaticTableRow */
@@ -37,13 +55,9 @@ function compareRows(left, right, columns, types) {
  * @returns {string} Escaped attribute.
  */
 function escapeAttribute(value) {
-  const entities = /** @type {Record<string, string>} */ ({
-    '&': '&amp;',
-    '"': '&quot;',
-    '<': '&lt;',
-    '>': '&gt;',
-  });
-  return String(value).replace(/[&"<>]/g, character => entities[character]);
+  const parsed = parseStaticJsonlText(value);
+  if (!parsed.ok) throw parsed.error;
+  return escapeStaticJsonlAttribute(parsed.evidence);
 }
 /**
  * Escape text for an HTML text node.
@@ -51,10 +65,9 @@ function escapeAttribute(value) {
  * @returns {string} Escaped text.
  */
 function escapeText(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  const parsed = parseStaticJsonlText(value);
+  if (!parsed.ok) throw parsed.error;
+  return escapeStaticJsonlText(parsed.evidence);
 }
 
 export { compareValues, compareRows };
@@ -71,20 +84,12 @@ export function createStaticJsonlTable(dependencies) {
    * @returns {void} Throws for an invalid definition.
    */
   function validateDefinition(entry) {
-    if (!entry || typeof entry !== 'object') fail('entry must be an object');
-    if (typeof entry.source !== 'string' || !entry.source.trim())
-      fail('source must be a non-empty string');
-    if (!Array.isArray(entry.columns) || entry.columns.length === 0)
-      fail('columns must be a non-empty array');
-    if (entry.columns.some(column => typeof column !== 'string' || !column))
-      fail('columns must contain non-empty strings');
-    if (new Set(entry.columns).size !== entry.columns.length)
-      fail('columns must be unique');
-    if (
-      dependencies.paths.isAbsolute(entry.source) ||
-      entry.source.split(/[\\/]/).includes('..')
-    )
-      fail('source must stay inside the static data directory');
+    const parsed = parseStaticJsonlDefinition(entry);
+    if (!parsed.ok) throw parsed.error;
+    const confined = parseStaticJsonlConfinement(parsed.evidence, () =>
+      dependencies.paths.isAbsolute(entry.source)
+    );
+    if (!confined.ok) throw confined.error;
   }
 
   /**
@@ -109,33 +114,16 @@ export function createStaticJsonlTable(dependencies) {
     /** @type {StaticTableRow[]} */
     const rows = [];
     source.split(/\r?\n/).forEach((line, lineIndex) => {
-      if (!line.trim()) return;
-      let value;
-      try {
-        value = JSON.parse(line);
-      } catch (error) {
-        throw new Error(
-          `Invalid static JSONL table: malformed JSON on line ${lineIndex + 1}`,
-          { cause: error }
-        );
-      }
-      if (!value || typeof value !== 'object' || Array.isArray(value))
-        fail(`line ${lineIndex + 1} must contain a JSON object`);
-      const record = /** @type {Record<string, unknown>} */ (value);
+      const parsed = parseStaticJsonlLine(line, lineIndex);
+      if (!parsed.ok) throw parsed.error;
+      if (parsed.evidence.kind === 'blank') return;
+      const record = parsed.evidence.record;
       /** @type {Record<string, string|number>} */
       const projected = {};
       entry.columns.forEach(column => {
-        if (!Object.prototype.hasOwnProperty.call(record, column))
-          fail(`line ${lineIndex + 1} is missing column ${column}`);
-        const cell = record[column];
-        if (
-          (typeof cell !== 'number' && typeof cell !== 'string') ||
-          (typeof cell === 'number' && !Number.isFinite(cell))
-        )
-          fail(
-            `column ${column} contains an unsupported value on line ${lineIndex + 1}`
-          );
-        projected[column] = cell;
+        const cell = parseStaticJsonlCell(record, column, lineIndex);
+        if (!cell.ok) throw cell.error;
+        projected[column] = cell.evidence;
       });
       rows.push({ index: rows.length, values: projected });
     });
@@ -168,20 +156,29 @@ export function createStaticJsonlTable(dependencies) {
   function renderStaticJsonlTable(entry, options = {}) {
     const table = parseStaticJsonlTable(entry, options);
     const payload = JSON.stringify(table).replace(/</g, '\\u003c');
-    const open = table.collapsed ? '' : ' open';
+    const open = describeStaticJsonlOpen(table.collapsed);
     const headers = table.columns
-      .map(
-        column =>
-          `<th scope="col"><button type="button" data-static-table-sort="${escapeAttribute(column)}" aria-label="Sort by ${escapeAttribute(column)}">${escapeText(column)} <span data-static-table-indicator="${escapeAttribute(column)}"></span></button></th>`
+      .map(column =>
+        renderStaticJsonlHeader({
+          sortAttribute: escapeAttribute(column),
+          labelAttribute: escapeAttribute(column),
+          text: escapeText(column),
+          indicatorAttribute: escapeAttribute(column),
+        })
       )
       .join('');
     const body = table.rows
-      .map(
-        row =>
-          `<tr>${table.columns.map(column => `<td>${escapeText(row.values[column])}</td>`).join('')}</tr>`
+      .map(row =>
+        renderStaticJsonlRow(
+          table.columns
+            .map(column =>
+              renderStaticJsonlCell(escapeText(row.values[column]))
+            )
+            .join('')
+        )
       )
       .join('');
-    return `<details class="static-jsonl-table" data-static-jsonl-table${open}><summary>Table</summary><table><thead><tr>${headers}</tr></thead><tbody>${body}</tbody></table><script type="application/json" data-static-table-data>${payload}</script></details>`;
+    return renderStaticJsonlTableMarkup({ payload, open, headers, body });
   }
 
   return { parseStaticJsonlTable, renderStaticJsonlTable, validateDefinition };
