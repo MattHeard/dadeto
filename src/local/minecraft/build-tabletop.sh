@@ -9,5 +9,5 @@ podman run --rm --network=none --cgroups=disabled --pids-limit=-1 \
   --userns=keep-id --user "$(id -u):$(id -g)" \
   --cap-drop=all --security-opt=no-new-privileges \
   -v "$HERE/tabletop:/work" -v "$DATA:/data:ro" -w /work "$JAVA_BUILD_IMAGE" \
-  sh -ec 'classpath=$(find /data/libraries -name "*.jar" -printf "%p:")/data/plugins/Geyser-Spigot.jar; mkdir -p build/classes; javac -cp "$classpath" -d build/classes java/*.java; java -cp "build/classes:$classpath" net.mattheard.tabletop.SceneModelCheck; jar --create --file build/DadetoTabletop.jar -C build/classes . -C build house.tsv -C build views.tsv -C build walkthrough.tsv plugin.yml config.yml'
+  sh -ec 'classpath=$(find /data/libraries -name "*.jar" -printf "%p:")/data/plugins/Geyser-Spigot.jar; mkdir -p build/classes; javac -cp "$classpath" -d build/classes java/*.java; java -cp "build/classes:$classpath" net.mattheard.tabletop.SceneModelCheck; jar --create --file build/DadetoTabletop.jar -C build/classes . -C build house.tsv -C build views.tsv -C build walkthrough.tsv -C build walkthrough-v1.tsv plugin.yml config.yml'
 echo "Built $HERE/tabletop/build/DadetoTabletop.jar; install only while the server is stopped."
