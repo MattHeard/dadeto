@@ -131,3 +131,18 @@ and `/world lab`, separate survival/workshop profiles, default hub arrivals and
 the offline native recovery/preservation check. New viewer snapshots also preserve
 ender storage, XP, health, food, active effects and respawn position. Older snapshots
 remain readable; fields that were never captured cannot be invented retroactively.
+
+## Walk through Noble’s House
+
+Use `/tabletop walk` to arrive on the west terrace of the furnished ground floor.
+A path connects it to the overhead board immediately north. The same 2×2 blocks
+still represent each five-foot square. Use `/tabletop view 1` for the overhead
+camera or `/tabletop leave` to restore the previous world and player state.
+
+Use the interact button on Aveline the steward, Bram the cook, or Mira the guard
+to hear their greetings. The original skins are delivered through Geyser to
+Bedrock clients. The characters are stationary and use authored dialogue.
+
+For a ceiling cutaway from the saved walk-through, run
+`HOUSE_VIEW=walkthrough bash src/local/minecraft/render-house.sh walkthrough.png`.
+Console `tabletop verify-walk` verifies placements and lists the resident count.

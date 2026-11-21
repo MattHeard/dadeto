@@ -2,6 +2,7 @@ name: DadetoTabletop
 version: '1.2'
 main: net.mattheard.tabletop.TabletopPlugin
 api-version: '1.21'
+softdepend: [Geyser-Spigot]
 description: Roofless noble house with controller-friendly bird's-eye cameras.
 commands:
   hub:
@@ -21,7 +22,7 @@ commands:
     usage: /intuition [visit|leave|inspect|act <action>|ask <topic>]
   tabletop:
     description: Visit the noble house tabletop or return to survival.
-    usage: /tabletop [leave|view]
+    usage: /tabletop [leave|view|walk]
 permissions:
   dadeto.tabletop.admin:
     default: op

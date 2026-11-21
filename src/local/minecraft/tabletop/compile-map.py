@@ -132,6 +132,61 @@ for item in spec['furniture']:
 rows=['# '+spec['title'], '# 2x2 blocks = 5ft; all ground-floor rooms revealed']
 rows += [f'{x}\t{h}\t{z}\t{state}' for (x,h,z),state in sorted(blocks.items(),key=lambda p:(p[0][1],p[0][0],p[0][2]))]
 plan='\n'.join(rows)+'\n';(out/'house.tsv').write_text(plan)
+# Separate walk-through south of the board. Preserve the original board byte-for-byte.
+walk = {pos: material for pos, material in blocks.items() if material != 'minecraft:air'}
+shell = set()
+for a, b in zip(outline, outline[1:] + outline[:1]):
+    for x, z in line(a, b):
+        shell.add((x, z))
+        for h in range(1, 5):
+            walk[x, y+h, z] = 'minecraft:stone_bricks'
+        if (x+z) % 5 in (0, 1):
+            walk[x, y+2, z] = 'minecraft:glass'
+            walk[x, y+3, z] = 'minecraft:glass'
+for wall in spec['walls']:
+    points = [point(p) for p in wall]
+    for a, b in zip(points, points[1:]):
+        for x, z in line(a, b):
+            for h in range(1, 5):
+                walk[x, y+h, z] = 'minecraft:dark_oak_planks'
+for opening in spec['openings']:
+    for x, z in line(point(opening[:2]), point(opening[2:])):
+        for h in range(1, 4):
+            walk.pop((x, y+h, z), None)
+for x in range(x0, x1+1):
+    for z in range(z0, z1+1):
+        if (x,z) in shell or inside(x+.5,z+.5,outline):
+            walk[x,y+5,z] = 'minecraft:dark_oak_planks'
+            if (x+z) % 9 == 0 and (x,z) not in shell and (x,y+4,z) not in walk:
+                walk[x,y+4,z] = 'minecraft:ochre_froglight'
+for x in (-9,-8,-7):
+    for z in range(-15,-4):
+        walk[x,y,z] = 'minecraft:stone_bricks'
+        if x != -8:
+            walk[x,y+1,z] = 'minecraft:oak_fence'
+# Add doorways where the low presentation walls were previously stepped over.
+for x, z in ((21, 8), (22, 8), (22, 21), (23, 21)):
+    for h in range(1, 4):
+        walk.pop((x, y+h, z), None)
+
+def walkable(x, z):
+    feet = walk.get((x, y+1, z), "minecraft:air")
+    return ((x, y, z) in walk and (x, y+2, z) not in walk
+            and (feet == "minecraft:air" or feet.endswith("_carpet")))
+
+reachable = {(-8, 23)}
+pending = list(reachable)
+while pending:
+    x, z = pending.pop()
+    for neighbor in ((x+1,z), (x-1,z), (x,z+1), (x,z-1)):
+        if neighbor not in reachable and walkable(*neighbor):
+            reachable.add(neighbor)
+            pending.append(neighbor)
+for room in spec['rooms']:
+    x, z = point(room['label'])
+    assert any(abs(a-x)+abs(b-z) <= 2 for a,b in reachable), room['name']
+walk_rows = [f'{x}\t{h}\t{z+72}\t{material}' for (x,h,z),material in sorted(walk.items())]
+(out/'walkthrough.tsv').write_text('\n'.join(walk_rows)+'\n')
 views=[]
 for view in spec['views']:
     x,z=point(view['at']);views.append(f"{view['name']}\t{x+.5}\t{y+view['height']}\t{z+.5}")
