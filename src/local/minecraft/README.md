@@ -215,3 +215,18 @@ destinations. Existing survival/Nether/End stay together; the workshop is creati
 and has a separate inventory/XP profile. Iron Man is available in the workshop
 and tabletop/lab, keeping survival and the hub free of companion activity.
 See [the world-travel runbook](tabletop/worlds.md).
+
+## Headless house screenshot
+
+On Lorandil, install the pinned renderer once and render the saved tabletop:
+
+```sh
+python3 src/local/minecraft/install-chunky.py
+bash src/local/minecraft/render-house.sh ./nobles-house.png
+```
+
+The renderer copies the saved tabletop region files into temporary storage and
+runs with networking disabled, two render threads and a 768 MiB Java heap.
+The Mojang jar supplies vanilla block textures. Only saved edits appear in
+the output. Run after a world save and retry if Paper was writing region files
+during the copy. This preset is an overhead view of Noble’s House.
