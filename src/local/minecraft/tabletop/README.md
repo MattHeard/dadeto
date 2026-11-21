@@ -146,3 +146,9 @@ Bedrock clients. The characters are stationary and use authored dialogue.
 For a ceiling cutaway from the saved walk-through, run
 `HOUSE_VIEW=walkthrough bash src/local/minecraft/render-house.sh walkthrough.png`.
 Console `tabletop verify-walk` verifies placements and lists the resident count.
+
+The walk-through now includes a furnished upper storey. Enter with
+`/tabletop walk`, find the oak stairs off the central hall, and follow them up
+to the landing. Use the same stairs to come back down. For an overhead
+inspection of the saved upper storey, run
+`HOUSE_VIEW=upstairs bash src/local/minecraft/render-house.sh upstairs.png`.

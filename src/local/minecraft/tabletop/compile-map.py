@@ -185,6 +185,99 @@ while pending:
 for room in spec['rooms']:
     x, z = point(room['label'])
     assert any(abs(a-x)+abs(b-z) <= 2 for a,b in reachable), room['name']
+legacy = walk.copy()
+upper = y + 5
+footprint = {(x,z) for x in range(x0,x1+1) for z in range(z0,z1+1)
+             if (x,z) in shell or inside(x+.5,z+.5,outline)}
+for x,z in footprint:
+    walk[x,upper,z] = 'minecraft:dark_oak_planks' if (x,z) in shell else 'minecraft:spruce_planks'
+    walk[x,upper+5,z] = 'minecraft:dark_oak_planks'
+    if (x,z) in shell:
+        for h in range(1,5):
+            walk[x,upper+h,z] = ('minecraft:glass' if h in (2,3) and (x+z)%5 < 2
+                                  else 'minecraft:stone_bricks')
+    elif (x+z)%11 == 0:
+        walk[x,upper+4,z] = 'minecraft:ochre_froglight'
+
+# Room partitions follow the main bands in the upper reference diagram.
+for a,b,doors in (
+    ((12,5),(12,20),{(12,17),(12,18)}),
+    ((29,7),(29,20),{(29,17),(29,18)}),
+    ((30,20),(46,20),{(35,20),(36,20)}),
+    ((3,27),(12,27),{(10,27),(11,27)}),
+    ((13,27),(13,46),{(13,33),(13,34)}),
+    ((13,37),(35,37),{(17,37),(18,37),(26,37),(27,37)}),
+    ((19,37),(19,45),{(19,39),(19,40)}),
+    ((35,29),(35,44),{(35,34),(35,35)}),
+    ((35,29),(49,29),{(40,29),(41,29)}),
+):
+    for x,z in line(a,b):
+        if (x,z) in footprint and (x,z) not in shell:
+            for h in range(1,5):
+                if (x,z) not in doors or h > 3:
+                    walk[x,upper+h,z] = 'minecraft:dark_oak_planks'
+
+def furnish(x,z,material,h=1):
+    assert (x,z) in footprint and (x,z) not in shell
+    assert (x,upper+h,z) not in walk
+    walk[x,upper+h,z] = 'minecraft:' + material
+
+for x,z in ((6,9),(6,15),(37,9),(29,44),(43,39)):
+    furnish(x,z,'red_bed[facing=north,part=head]')
+    furnish(x,z+1,'red_bed[facing=north,part=foot]')
+for x,z in ((8,12),(39,11),(42,23),(7,34),(28,40),(44,35)):
+    furnish(x,z,'dark_oak_planks')
+    furnish(x,z,'flower_pot',2)
+for x in range(15,18):
+    for z in range(40,43):
+        furnish(x,z,'water_cauldron[level=3]' if (x,z)==(16,41) else 'quartz_block')
+for x,z in ((9,13),(38,14),(40,24),(8,37),(27,43),(42,37)):
+    furnish(x,z,'red_carpet')
+
+# Replace the display stair with five contiguous three-wide, full-rise treads.
+# North-facing stairs rise toward the landing at z=13. Clear the old steps and headroom.
+for x in range(17,20):
+    for z in range(9,19):
+        for h in range(1,5):
+            if 'oak_stairs' in walk.get((x,y+h,z),''):
+                walk.pop((x,y+h,z))
+    for index,z in enumerate(range(18,13,-1),1):
+        stair_y = y+index
+        for h in range(stair_y+1,stair_y+3):
+            walk.pop((x,h,z),None)
+        walk[x,stair_y,z] = 'minecraft:oak_stairs[facing=north]'
+    assert walk[x,upper,13] == 'minecraft:spruce_planks'
+    assert all((x,upper+h,13) not in walk for h in (1,2))
+assert any((x,19) in reachable for x in range(17,20)), "Stair base must connect to entrance"
+for z in range(15,19):
+    for x in (16,20):
+        if (x,upper,z) in walk and (x,upper+1,z) not in walk:
+            walk[x,upper+1,z] = 'minecraft:oak_fence'
+for x in range(17,20):
+    if (x,upper+1,19) not in walk:
+        walk[x,upper+1,19] = 'minecraft:oak_fence'
+
+def upper_open(x,z):
+    below = walk.get((x,upper,z),'')
+    feet = walk.get((x,upper+1,z),'')
+    return below == 'minecraft:spruce_planks' and (not feet or feet.endswith('_carpet')) and (x,upper+2,z) not in walk
+
+upstairs = {(18,13)}
+pending = list(upstairs)
+while pending:
+    x,z = pending.pop()
+    for neighbor in ((x+1,z),(x-1,z),(x,z+1),(x,z-1)):
+        if neighbor not in upstairs and upper_open(*neighbor):
+            upstairs.add(neighbor)
+            pending.append(neighbor)
+for room in ((8,13),(38,14),(40,24),(8,37),(17,42),(27,43),(42,37)):
+    assert any(abs(a-room[0])+abs(b-room[1]) <= 2 for a,b in upstairs), room
+
+for position in legacy.keys() - walk.keys():
+    walk[position] = 'minecraft:air'
+(out/'walkthrough-v1.tsv').write_text(''.join(
+    f'{x}\t{h}\t{z+72}\t{material}\n' for (x,h,z),material in sorted(legacy.items())
+    if walk.get((x,h,z)) != material))
 walk_rows = [f'{x}\t{h}\t{z+72}\t{material}' for (x,h,z),material in sorted(walk.items())]
 (out/'walkthrough.tsv').write_text('\n'.join(walk_rows)+'\n')
 views=[]
