@@ -21,7 +21,7 @@ import sys
 
 scene = {
     "name": "house", "width": 800, "height": 720, "sppTarget": 8,
-    "yMin": 58, "yMax": 76,
+    "yClipMin": 58, "yClipMax": 76,
     "world": {"path": "/scene/world", "dimension": "minecraft:overworld"},
     "chunkList": [[x, z] for x in range(-1, 4) for z in range(-1, 4)],
     "camera": {
@@ -33,7 +33,7 @@ scene = {
 if sys.argv[2] == "walkthrough":
     scene["camera"]["position"]["z"] += 72
     scene["chunkList"] = [[x, z] for x in range(-1, 4) for z in range(3, 9)]
-    scene["yMax"] = 68  # Cut away the ceiling for the interior inspection.
+    scene["yClipMax"] = 69  # Cut away the ceiling for the interior inspection.
 elif sys.argv[2] != "tabletop":
     raise SystemExit("HOUSE_VIEW must be tabletop or walkthrough")
 Path(sys.argv[1]).write_text(json.dumps(scene))
