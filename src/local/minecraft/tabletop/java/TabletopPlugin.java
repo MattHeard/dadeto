@@ -28,6 +28,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
   private World world;
   private boolean ready;
   private HubWorlds hub;
+  private Walkthrough walkthrough;
   private int built;
 
   @Override public void onEnable() {
@@ -63,7 +64,9 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
       world.setTime(6000); world.setStorm(false); world.setThundering(false);
       world.setDifficulty(Difficulty.PEACEFUL); world.setPVP(false);
       world.setSpawnLocation(22, 65, 24);
-      world.getWorldBorder().setCenter(72, 26); world.getWorldBorder().setSize(200);
+      world.getWorldBorder().setCenter(72, 26); world.getWorldBorder().setSize(224);
+      walkthrough = new Walkthrough(this, world);
+      walkthrough.start();
       scenes.start(world);
       Path version = new File(getDataFolder(), "built.sha256").toPath();
       if (previouslyOwned && Files.exists(version) && Files.readString(version).trim().equals(plan.hash)) {
@@ -135,6 +138,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
 
   private void show(Player player, int index) throws IOException {
     ViewerState state = viewers.get(player.getUniqueId());
+    player.setAllowFlight(true); player.setFlying(true); player.setGravity(false);
     state.view = index; state.camera = plan.views.get(index).location(world);
     state.save(snapshot(player));
     if (!player.teleport(state.camera)) throw new IOException("Camera teleport refused");
@@ -148,7 +152,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
     if (snapshot(player).exists()) throw new IOException("Tabletop return failed; snapshot retained");
   }
 
-  @Override public void onDisable() { if (scenes != null) scenes.close(); }
+  @Override public void onDisable() { if (scenes != null) scenes.close(); if (walkthrough != null) walkthrough.close(); }
 
   private void leave(Player player) {
     ViewerState state = viewers.remove(player.getUniqueId());
@@ -164,6 +168,16 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
   @Override public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
     if (args.length == 0) { if (sender instanceof Player player) enter(player); else sender.sendMessage("tabletop status | verify | queue <player> | visit <player> | return <player>"); return true; }
     String action = args[0].toLowerCase(Locale.ROOT);
+    if (action.equals("walk") && sender instanceof Player player) {
+      if (walkthrough == null || !walkthrough.ready) { player.sendMessage("The walk-through house is still preparing."); return true; }
+      if (!viewers.containsKey(player.getUniqueId()) && !enter(player)) return true;
+      if (player.teleport(walkthrough.entrance())) {
+        viewers.get(player.getUniqueId()).camera = null;
+        player.setFlying(false); player.setAllowFlight(false); player.setGravity(true);
+        player.sendMessage("Noble's House walk-through. /tabletop view 1 returns overhead, /tabletop leave ends the visit.");
+      }
+      return true;
+    }
     if (action.equals("leave") && sender instanceof Player player) { leave(player); return true; }
     if (action.equals("view") && sender instanceof Player player) {
       if (viewers.containsKey(player.getUniqueId()) && args.length == 2) {
@@ -179,6 +193,7 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
         try { sender.sendMessage(ViewerStateCheck.run(new File(getDataFolder(), "selftest"), Bukkit.getWorlds().getFirst())); }
         catch (Exception e) { getLogger().log(Level.SEVERE, "Viewer-state check failed", e); sender.sendMessage("FAIL: " + e.getMessage()); }
       }
+      case "verify-walk" -> sender.sendMessage(walkthrough != null && walkthrough.ready ? "Walk-through verification: " + walkthrough.mismatches() + " mismatches; " + walkthrough.residents() + " household NPCs" : "Walk-through is not ready");
       case "verify" -> sender.sendMessage(ready ? "Tabletop verification: " + plan.mismatchCount(world) + " mismatches across " + plan.placements.size() + " placements" : "Build not ready");
       case "rebuild" -> { if (ready) build(); else sender.sendMessage("Build already in progress"); }
       case "queue" -> {
@@ -220,7 +235,9 @@ public final class TabletopPlugin extends JavaPlugin implements Listener, Comman
   }
   @EventHandler public void onMove(PlayerMoveEvent event) {
     ViewerState state = viewers.get(event.getPlayer().getUniqueId());
-    if (state != null && state.camera != null && !(event instanceof PlayerTeleportEvent)) event.setTo(state.camera.clone());
+    if (state == null || event instanceof PlayerTeleportEvent) return;
+    if (state.camera != null) event.setTo(state.camera.clone());
+    else if (event.getTo().getY() < 55) event.setTo(walkthrough.entrance());
   }
   @EventHandler public void onBreak(BlockBreakEvent event) { if (event.getBlock().getWorld().equals(world)) event.setCancelled(true); }
   @EventHandler public void onPlace(BlockPlaceEvent event) { if (event.getBlock().getWorld().equals(world)) event.setCancelled(true); }

@@ -13,7 +13,7 @@ trap 'rm -rf -- "$work"' EXIT
 mkdir -p "$work/world/region" "$work/settings"
 cp "$world/level.dat" "$work/world/"
 cp "$world/dimensions/minecraft/dadeto_tabletop/region/"r.*.mca "$work/world/region/"
-python3 - "$work/house.json" <<'PY'
+python3 - "$work/house.json" "${HOUSE_VIEW:-tabletop}" <<'PY'
 import json
 import math
 from pathlib import Path
@@ -30,6 +30,12 @@ scene = {
         "projectionMode": "PARALLEL", "fov": 74,
     },
 }
+if sys.argv[2] == "walkthrough":
+    scene["camera"]["position"]["z"] += 72
+    scene["chunkList"] = [[x, z] for x in range(-1, 4) for z in range(3, 9)]
+    scene["yMax"] = 69  # Cut away the ceiling for the interior inspection.
+elif sys.argv[2] != "tabletop":
+    raise SystemExit("HOUSE_VIEW must be tabletop or walkthrough")
 Path(sys.argv[1]).write_text(json.dumps(scene))
 PY
 podman run --rm --network=none --userns=keep-id --cpus=1.5 \
