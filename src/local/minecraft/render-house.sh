@@ -30,14 +30,28 @@ scene = {
         "projectionMode": "PARALLEL", "fov": 74,
     },
 }
-if sys.argv[2] in ("walkthrough", "upstairs"):
+if sys.argv[2] in ("walkthrough", "upstairs", "manor"):
     scene["camera"]["position"]["z"] += 72
     scene["chunkList"] = [[x, z] for x in range(-1, 4) for z in range(3, 9)]
     scene["yClipMax"] = 69  # Cut away the ceiling for the interior inspection.
     if sys.argv[2] == "upstairs":
         scene.update(yClipMin=69, yClipMax=74)
+    if sys.argv[2] == "manor":
+        eye, target = (-32, 98, 154), (22, 73, 98)
+        dx, dy, dz = (b-a for a,b in zip(eye,target))
+        scene.update(width=1000, height=700, yClipMax=89)
+        scene["camera"] = {
+            "position": dict(zip("xyz", eye)),
+            "orientation": {
+                "yaw": math.atan2(-dz, dx),
+                "pitch": math.acos(-dy / math.hypot(dx,dy,dz)),
+                "roll": math.pi,
+            },
+            "projectionMode": "PINHOLE",
+            "fov": 54,
+        }
 elif sys.argv[2] != "tabletop":
-    raise SystemExit("HOUSE_VIEW must be tabletop, walkthrough or upstairs")
+    raise SystemExit("HOUSE_VIEW must be tabletop, walkthrough, upstairs or manor")
 Path(sys.argv[1]).write_text(json.dumps(scene))
 PY
 podman run --rm --network=none --userns=keep-id --cpus=1.5 \

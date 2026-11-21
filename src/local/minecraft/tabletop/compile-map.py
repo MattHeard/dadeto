@@ -278,6 +278,67 @@ for position in legacy.keys() - walk.keys():
 (out/'walkthrough-v1.tsv').write_text(''.join(
     f'{x}\t{h}\t{z+72}\t{material}\n' for (x,h,z),material in sorted(legacy.items())
     if walk.get((x,h,z)) != material))
+# Manor exterior. Keep the entire v2 interior and its traversal surfaces intact.
+v2 = walk.copy()
+edge_neighbors = ((1,0),(-1,0),(0,1),(0,-1))
+for x,z in sorted(shell):
+    for h in range(y+1,upper+5):
+        position = (x,h,z)
+        material = walk.get(position)
+        if material == 'minecraft:stone_bricks':
+            if h > upper and x % 5 == 0 and z % 5 == 0:
+                walk[position] = 'minecraft:stripped_dark_oak_log[axis=y]'
+            elif h == upper+4 and (x+z)%4 == 0:
+                walk[position] = 'minecraft:spruce_planks'
+            elif (x*13+z*7+h*3)%11 < 2:
+                walk[position] = 'minecraft:cracked_stone_bricks'
+            elif (x*7+z*13+h)%11 == 0:
+                walk[position] = 'minecraft:andesite'
+        if material == 'minecraft:glass' and h in (y+2,upper+2):
+            for dx,dz in edge_neighbors:
+                outside = (x+dx,z+dz)
+                if outside not in footprint:
+                    walk.setdefault((outside[0],h-1,outside[1]), 'minecraft:spruce_slab[type=top]')
+    for dx,dz in edge_neighbors:
+        outside = (x+dx,z+dz)
+        if outside not in footprint:
+            walk.setdefault((outside[0],upper,outside[1]), 'minecraft:spruce_slab[type=top]')
+
+# Hip the slate roof inward from the irregular perimeter and add one-block eaves.
+roof = footprint | {(x+dx,z+dz) for x,z in footprint for dx,dz in edge_neighbors}
+remaining = roof.copy()
+ceiling = upper+5
+for rise in range(11):
+    inner = {p for p in remaining if all((p[0]+dx,p[1]+dz) in remaining for dx,dz in edge_neighbors)}
+    band = remaining-inner if rise < 10 else remaining
+    for x,z in sorted(band):
+        roof_y = ceiling+rise+1
+        walk[x,roof_y,z] = ('minecraft:polished_deepslate' if rise == 0
+                            else 'minecraft:deepslate_tiles')
+        if rise == 0:
+            walk.setdefault((x,ceiling,z), 'minecraft:dark_oak_slab[type=top]')
+    remaining = inner
+    if not remaining:
+        break
+
+# Masonry chimney stacks with projecting caps bring vertical accents to the roof.
+for x,z in ((11,12),(40,33)):
+    for a in (x,x+1):
+        for b in (z,z+1):
+            for h in range(ceiling+1,ceiling+13):
+                walk[a,h,b] = 'minecraft:bricks'
+            walk[a,ceiling+13,b] = 'minecraft:brick_slab[type=top]'
+
+for position in walk.keys() | v2.keys():
+    x,h,z = position
+    changed = walk.get(position) != v2.get(position)
+    if changed and h <= ceiling:
+        assert (x,z) not in footprint or ((x,z) in shell
+                and v2[position] == 'minecraft:stone_bricks'), position
+        assert h >= y+1 and (x,z) != (-8,23), position
+(out/'walkthrough-v2.tsv').write_text(''.join(
+    f'{x}\t{h}\t{z+72}\t{material}\n' for (x,h,z),material in sorted(v2.items())
+    if walk.get((x,h,z)) != material))
 walk_rows = [f'{x}\t{h}\t{z+72}\t{material}' for (x,h,z),material in sorted(walk.items())]
 (out/'walkthrough.tsv').write_text('\n'.join(walk_rows)+'\n')
 views=[]
