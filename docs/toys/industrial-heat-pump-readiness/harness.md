@@ -93,3 +93,39 @@ immutable original seven-module source graph, getter failures/read order, aliase
 frozen presets and 360 additional mutable-getter observations. It does not
 regenerate original receipts during ordinary execution. All four changed-logic
 coverage metrics are recorded under `reports/coverage/heat-pump-domain/`.
+
+
+## Presenter projection migration checks
+
+The comparison, status text and vendor brief now come from typed core
+`src/logic/core/industrial-heat-pump/presentation.js`. Locale construction, DOM
+queries/writes and listener/effect wiring remain integration. The remaining
+form/preset/error parsing is tracked in `dadeto-kvq9`.
+
+```sh
+node --max-old-space-size=512 test/fixtures/typed-logic/heat-pump-presenter-equivalence.js
+node --max-old-space-size=512 test/fixtures/typed-logic/heat-pump-presenter-equivalence.js --format-controls
+node --max-old-space-size=512 test/fixtures/typed-logic/heat-pump-presenter-artifact-equivalence.js public infra/cloud-functions/object-minute-rental-search
+```
+
+These compare original-only fingerprints, including formatter order and partial
+DOM state. Yielding between closed JSDOM cases bounds memory without reducing
+coverage. The site uses its published HTML; the module-only cloud archive is
+exercised with the immutable original HTML fixture. To collect mutation evidence
+for the projection and legacy controller as well as every earlier domain/build
+module, use `docs/quality/heat-pump-presentation.stryker.config.mjs` separately from
+other full mutation workers. This step remains open until that whole run and
+current authoritative CI succeed.
+
+
+The presenter parser/error move adds an independent original DOM-write corpus:
+
+```sh
+node --max-old-space-size=512 test/fixtures/typed-logic/heat-pump-presenter-equivalence.js --write-controls
+```
+
+The artifact harness now includes385normal/format/write cases and5,378states per
+root. Its twenty-module mutation configuration includes the complete prior domain
+and build scope plus the new typed presentation boundary. Preserve the actual
+HTML/app fixtures and defer browser subject imports into test hooks so static
+constructor failures are assertions, not excluded runtime-error mutants.

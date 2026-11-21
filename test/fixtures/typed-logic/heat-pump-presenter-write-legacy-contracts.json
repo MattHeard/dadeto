@@ -1,0 +1,2284 @@
+{
+  "receipt": {
+    "controlKind": "dom-writes",
+    "baseline": "6d2a626b2acfde2719ff5b4dd43966a6ccdd86fa",
+    "sourceFiles": 12,
+    "sourceGraphSha256": "883432bf75284beabf3628f09479562c2232bd2f37ab0e2fc038a29f0388107e",
+    "cases": 37,
+    "snapshots": 518,
+    "outcomesSha256": "23eea72446c0da63d4ed9fc972fd66e3eb9a4ca88a0e004fb400da7215367225"
+  },
+  "sourceHashes": {
+    "src/browser/industrialHeatPump/page.js": "6014d5185861c959f1f4fcf6a7a8ca3acc61f406d1ea6ff24730db8c9506b100",
+    "src/core/browser/industrialHeatPump/page.js": "c8dfde501e5dffc49982b38c0b3c9d4e86b7eb8c72251af108c9ea982656c859",
+    "src/logic/core/industrial-heat-pump/scenarios.js": "f5c3e51ac696be33f5a6d2f5284c19f265b7fc07cdb3e80586e0564282b60a05",
+    "src/browser/industrialHeatPumpReadiness.js": "5af298bcb8ce9cb613e4e0b7088a937559fa37a84e794a20114ea9a2579aa074",
+    "src/logic/core/industrial-heat-pump/industrial-heat-pump.js": "f86f52f8c85aab03c5c9094dc96595eb0e3dd62652f248444841c5c1b87e1808",
+    "src/logic/core/industrial-heat-pump/comparison.js": "9f23b18e9d333176c5cda3e903f5dcb659fa31a7b24803d8a8fd808ddea4c41a",
+    "src/logic/core/industrial-heat-pump/thresholds.js": "2771dd743fd35f4302a436fd091d978035fb63dd16cf8a41e60b9fe393b9ff99",
+    "src/logic/core/industrial-heat-pump/feasibility.js": "8bb76f58487479994a302f1bc7607f258b51210fc8727abff36d1f85d25cb63d",
+    "src/logic/core/industrial-heat-pump/values.js": "e457a86c70433b80e73369e14a251958cce8a48c68cf69791b123f319faea2a6",
+    "src/logic/boundary/industrial-heat-pump/input.js": "dcc0b659cb80d46a8f8605c2a16344257e70da893a69d39e24e71848b31b4508",
+    "src/logic/boundary/local/evidence-result.js": "f74c06c0bc38836c546253baa3b3cdfc22bf76ec7550a0d1fd5d67cddda96c25",
+    "src/content/pages/industrial-heat-pump-readiness/index.html": "fed22ec30f6551d5e21a1992fdf1b1003c94fed6f91870cfae4a2d625247544a"
+  },
+  "observations": [
+    {
+      "name": "writes/base",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "80b6b9752996fc491525aa9ad6eeef68f587693205ea764813329fd0ca493532"
+        },
+        {
+          "step": "1:export",
+          "sha256": "a67876ef9c6d7d0ebc7eb26f13ccd9ac8fd88880fd31b12965d69176c97d18d5"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "10c4a394ed53e85ea1c7ebbd6701b9d47d01710a636cc728af101474e94fef3b"
+        },
+        {
+          "step": "3:print",
+          "sha256": "3fc8907216ce51f60712aa27c5ac5bc29b4faf99a6706859fbd05b0cbed59d16"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "85d5fc56447172eccf8d672f7baa4ea2b6909aa892c0fd0d331387b871f21141"
+        },
+        {
+          "step": "5:export",
+          "sha256": "e62ab5825863ee912565f5e9832a70f9c795a1487fd29425b2d9f13621f6270c"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "c095100bd8c2b7fc43b1c935c51d44cbadf9df8baf5097189906b722a9f78922"
+        },
+        {
+          "step": "7:input",
+          "sha256": "1dbc11020b9cb5d95a39544d3cf8969010566572755ee924dc71249c4ea26092"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "0424dd80410657bae37a840835c8a2c869431191fccf61b6e7231993f39b7da3"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "7a02167c7d4f3791d6d6f7772d6d88debd4d7f3abf1a5692a17ee3a5e0394759"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "821153ea44eda2ab3f360311b9f874f156f7439078641fb3714373c580f31b9e"
+        },
+        {
+          "step": "11:print",
+          "sha256": "6d97fc541d2e95e98d4e8ebb722f01c104dea27463f03a8d6a00e044c2d81ef2"
+        }
+      ]
+    },
+    {
+      "name": "writes/preset-conservative",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:preset",
+          "sha256": "e7d714f34ac0b6644576ee0104a2cbe0c4d816d9369c655757395cfe8a446ed4"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "34f8758a1deaba6cca8393f2a8b06b38c6c8d7e98f82e3819a127ff23061039b"
+        },
+        {
+          "step": "2:export",
+          "sha256": "60aa5f091a3a3b67ec3cb7c539e43fb5312dc0ce6108ced8c5c4287c8ea0be5f"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "83f32b0d24f02cb882a0e104ff034d8e601e80349b2f2173a5de1dfd49d2be84"
+        },
+        {
+          "step": "4:print",
+          "sha256": "c02c942be9658104a69c37ce898ad99d88c83d267125e81cec2c48d065290888"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "d24e0a885cabc7be9785e207ba4ea70e07895482602d532ae742fa3184184f59"
+        },
+        {
+          "step": "6:export",
+          "sha256": "dd9e8b531ab669bcacac73e46eebe6dff7d740e448a1642e3efd84c90c669d03"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "bebafcbdb9211aed05225c1314fe4929051bf78b2c5858537bbb4ff60e15702b"
+        },
+        {
+          "step": "8:input",
+          "sha256": "9f96f3d7bbab9d2b7af23b67550a98476e0ebb33ddb3ca5e35a4d6d85a865477"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "3bcbcf9fa2c360fd311b1ca39a23b9f7c75737ec754de734d53113d29afc346d"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "db1c6f7d3f68939fef2881cda28748e2209170dd2b0bc3de350367e816501dfb"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "d884f0f2e98bf556a91691abb37eedc24efb10b462f4c1d6d72d28d06a6f0914"
+        },
+        {
+          "step": "12:print",
+          "sha256": "07ed0dd5d511be868932a53d6521644118598d627c5c5c5d52902d9bcdabf171"
+        }
+      ]
+    },
+    {
+      "name": "writes/preset-optimistic",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:preset",
+          "sha256": "491e2187282802db1d73a59d2d1da39b43eded366eb829368c5d7f7e01d3ae2e"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "9c12f2e50bbb5d06217d3ee3caeeb811443a04afaceab5f85496ddce27135a8b"
+        },
+        {
+          "step": "2:export",
+          "sha256": "2bf20404887a4c789a96e9b170736fcf2e6ea6d6e35eb941f9da28c93baf127d"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "4335c3943f3a7078856187ddc8cd51104a0ecf80e65af01d20d0f322d182e301"
+        },
+        {
+          "step": "4:print",
+          "sha256": "65b2a12674a124ebb47d5b95239657a3fd1d11cf53bff58a73bd8e2a978c2c39"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "8f145f5eda36916edb6acc3d34bd8157660f2a5073ed0b74c412544b894e4646"
+        },
+        {
+          "step": "6:export",
+          "sha256": "7e4d907e0b227e9d2dd7aa97068b3ed6659cb2e4583350da5de957ae30b1f938"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "2662ceae4d09c75b58c77308f20c4357d0842c151ce20207866b0b5bee77e851"
+        },
+        {
+          "step": "8:input",
+          "sha256": "6dde1941fb13b176c295ff8e7063d2bcdc4999c6a0e061304c4865b9ac595c21"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "585a88bc834b7a033bd550d99ebc59fae4cc059cd8f90c6158e69d78d4e22de6"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "54baf248c4bbb28df6489158c8a2bfa843e359cac34dd9618ceddc9d1674ad16"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "d5a5c3ce5a8e2baebf52a84d50f5d4c4836a17bbd7e836edbc28393cf78d1fe1"
+        },
+        {
+          "step": "12:print",
+          "sha256": "bbff9f80d41af46f2998551fa010815c34b2b3089582b0de6c233f1738c28c87"
+        }
+      ]
+    },
+    {
+      "name": "writes/preset-__proto__",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:preset",
+          "sha256": "b1bd385cc15ceb47b621b8076ca662b9c0cf93f5354cd1be2aec7beeed967853"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "2d7cef46148b663bc9c2c89417c611875d8aa38fc4c613273577c8ee67affbaa"
+        },
+        {
+          "step": "2:export",
+          "sha256": "b610e5489ed548d8917562a62ae17c822665a95133071780d8e6a7a9f4dbed23"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "8a1e3f60244f81b04c251c8a7db29a8d05e803705047a24464325af360567678"
+        },
+        {
+          "step": "4:print",
+          "sha256": "e71b38259bf34cf55b1418880c4df1708e380423e88c9dbf4756f45ce902e740"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "eab7edcd2cbba6562a761c076f009986346ce7f3c9ade91b7cac30f8b8a5293b"
+        },
+        {
+          "step": "6:export",
+          "sha256": "f8f654fefda88e04a9af15da0229ede6de88bc8dba4839323d6af66fbde5deb4"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "1c8ba313bc37a0111402efab165563b205c1395ba4528d559a1db5fe1295f199"
+        },
+        {
+          "step": "8:input",
+          "sha256": "b35e944801b81e4bcd293f71792245c35d2dd9faf10fd1255a9c514d2ddc71ae"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "b2f4d3186c5e5a0489ce2e7e0028a57250f0a4af437029d0d5cfbb66940723f0"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "ed194e905ac7ac13d0a0b612b525a3c3a2874cff8af5a94ddb29b97f09154d4c"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "b1e3433cc69557abf549acd512e8deefdb7b872f1b39295e7cd914245ece6c32"
+        },
+        {
+          "step": "12:print",
+          "sha256": "1f30e8e56b568c6cd594c3b4b2322781d7b2ccc6786f4addd79a48ff12d26ac2"
+        }
+      ]
+    },
+    {
+      "name": "writes/heatPumpCop/",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "0ba886a4afb4a953f78649a6c7ed20787662cabaf62104e6358d3aec743ef234"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "39a079877cdefadb2c4316254d9019fe62061de8140ba020f3f95d99821a0a7b"
+        },
+        {
+          "step": "2:export",
+          "sha256": "f16be8bf7df8f37d013db1fa08c3634cb0bcc5046da3de7dd5447fbe72d8e81e"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "180638a5bbd97bd614843dad43aa396f3003c021c4f4a78b2b41064a53c81d5f"
+        },
+        {
+          "step": "4:print",
+          "sha256": "651930b633bbc607a78807c72ac8753619229fb197e3e77a9fddaa7d08988dfb"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "2bc630c3062bb651ae5e20bfcd4fc596c365e54a8198c1097fe5ace61acf2be7"
+        },
+        {
+          "step": "6:export",
+          "sha256": "73123918e87cd7b050b3cba839b3447040b398ac0f918e0955ac7cfe98a3f03d"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "1e16cb09d58177251658859f54c1e8df0cf4095f749c2e9d22422fc3b69dd07f"
+        },
+        {
+          "step": "8:input",
+          "sha256": "df55e18caa05bac096664321d8ceefbc50ab4c468b9522a97225b9996c2884f7"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "247ea63827e4bd13420f71680f68362321a7bb86f4582c9f648e66066920d7f6"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "dc15c3c14de700a3f0c6e2d852681832617f80cb1084ad96ceb3401ca9f64b05"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "d3ba71bc86ac77b5da6bbe6fb40567f26ee3d3da54c52a4ddfdcbd87541f06c0"
+        },
+        {
+          "step": "12:print",
+          "sha256": "768c6a9deca9d9eaf54519c36ad84c20f581106ff8dd93ebfd33bacce1dee503"
+        }
+      ]
+    },
+    {
+      "name": "writes/heatPumpCop/0",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "fbccef7dc600f42f9462689a2db8005fe36f6ff991e9f96f5429a03efcdc7481"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "ed2b61ed34c219d106bbe5770ec8ebe81ab994734137d242d7fe1b3a2333e9a3"
+        },
+        {
+          "step": "2:export",
+          "sha256": "235bbfa3eab7aa264e1f4aa945fbc804cdcf3b90104e3aca80ffae8196b87258"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "dba5fc87afe6592288398f0bed61351a2686d6a2769df574630d21ad28728e0a"
+        },
+        {
+          "step": "4:print",
+          "sha256": "aa233b2736b5d73dac92fbeea187a93485487d27ef5db58e10633ab31e6f3197"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "e0c7d70ff253201be96e9331f79742cc42257b4e8bd68da1c314848e5064b054"
+        },
+        {
+          "step": "6:export",
+          "sha256": "73123918e87cd7b050b3cba839b3447040b398ac0f918e0955ac7cfe98a3f03d"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "1e16cb09d58177251658859f54c1e8df0cf4095f749c2e9d22422fc3b69dd07f"
+        },
+        {
+          "step": "8:input",
+          "sha256": "df55e18caa05bac096664321d8ceefbc50ab4c468b9522a97225b9996c2884f7"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "247ea63827e4bd13420f71680f68362321a7bb86f4582c9f648e66066920d7f6"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "dc15c3c14de700a3f0c6e2d852681832617f80cb1084ad96ceb3401ca9f64b05"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "d3ba71bc86ac77b5da6bbe6fb40567f26ee3d3da54c52a4ddfdcbd87541f06c0"
+        },
+        {
+          "step": "12:print",
+          "sha256": "768c6a9deca9d9eaf54519c36ad84c20f581106ff8dd93ebfd33bacce1dee503"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-0",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "1e067afb727a6483ff238ad01ede7a965d73171f7900b0e4f51ee4644e53c958"
+        },
+        {
+          "step": "1:input",
+          "sha256": "563fb86ccb858876fd2a36c6b6acbabff07cc9760ff46d47c06414a9b85dc983"
+        },
+        {
+          "step": "2:input",
+          "sha256": "d18ccc70796f42cf05bb3a8cda53d72ed74a4b4129106f65c533214b47ec4fa3"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "3fed367525e0d29b795edc4538fde8a181b51803877d1d65d511d9d262ec2403"
+        },
+        {
+          "step": "4:export",
+          "sha256": "de8cfea2ba09f91f2d491b7a6d7bd6479c9389724f4d03458df8813cc3bd1a2f"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "4110724ded8508d501eeffcdbf1f7b74b93a0c306520e7504027c57fa46cafab"
+        },
+        {
+          "step": "6:print",
+          "sha256": "93e50196cd7c25fab442e9bc8e9aece4fd0229a49b8cc797dc36317be5c381a7"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "be9c478bb94a879ba6426a0d87728b51c7358295523675aad26ebe49e893ff7a"
+        },
+        {
+          "step": "8:export",
+          "sha256": "2245fc9688ae87a18fd9f93eaa874cd32436774d4f3c957cc102ec2fb342684d"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "cec92d17653b07781773fb2091d63af4a33816d97af5cb8d92a984ba8aabe27c"
+        },
+        {
+          "step": "10:input",
+          "sha256": "45e86ad4c0c7201b4a57c11c39015f861a82b75d55b28ab1169e6295546be530"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "740b2f641443d7939c2524c5f1aa1d31711d5c236b979ed3924042a91dc2b518"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "1e84064346d30fb9ea5fc72347ccd2a7b0eab9b64fe79c6292acc628ce0c33c4"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "899c144c3672ce3101790c5eec97a6629a950c877a0420da7af2ebfb1b99407b"
+        },
+        {
+          "step": "14:print",
+          "sha256": "89bb4914c5975bcdd7e1b36dc8478b7fa3620ed285ca252de1532f98bb0d6946"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-1",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "73626dec02549cc79d786aebd900777a9c887c656193791399c9ae146ab6abea"
+        },
+        {
+          "step": "1:input",
+          "sha256": "e12e5c84611ebf926c1c403ab0d70dc0852baf79794b6656ccf0fde32431f5ca"
+        },
+        {
+          "step": "2:input",
+          "sha256": "e8b710fa9b906a342c5f6c35718cda74e1df431a89e55e74f5371d222a3b52d0"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "237c7b39cfedd3f0315134bde917c51ecf5b02f083a1c6742a64c13bd6e0d5b0"
+        },
+        {
+          "step": "4:export",
+          "sha256": "cfa92526d51895e0660aa2d773aae414fc3330442b326fbbdca81a55032418f9"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "24b806067e14530331b8a3eec1cc910eb34316754e2e68e2d3b801acd946419b"
+        },
+        {
+          "step": "6:print",
+          "sha256": "bafcb17c5a48af256875b127f28818ff2c51bf5f8774e5805116b74d60bbda08"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "0cdf0cc9717f0d99732acdda8118154c571e9ce0e5e57fde2c7a32ffdf1b8ea3"
+        },
+        {
+          "step": "8:export",
+          "sha256": "ec6bfc498835cffb2f60e6839532b2836b996827e6f594d499f28764dfd7fa32"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "ee600591b6c3f5e3fda89b3b44a2f1bbba92644ee68a37ff65e635ea1ee021d3"
+        },
+        {
+          "step": "10:input",
+          "sha256": "9cf8f0b33c8ebcd294df26c81b47a21cb912ada83e05db4b144cf6b8928f23f8"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "fa2ea377d28e16caa72b365677e44171652db384deaa04934d9b390be924afbc"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "f8bdd4ec55b55d95abae1898fac1773722444c6da27a88562feaa7c94c105671"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "199d2e90ea534cab8090b29cf5ae73a1fd1d293bbec478b8210a4c97245a084d"
+        },
+        {
+          "step": "14:print",
+          "sha256": "7546b6f292cb181827f67020829ea51bb46b56d4721dfe0675dd7070fc7893c3"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-2",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "1e067afb727a6483ff238ad01ede7a965d73171f7900b0e4f51ee4644e53c958"
+        },
+        {
+          "step": "1:input",
+          "sha256": "de5bab1167b371934581b4b56c4806f102d2ed3d196be76f6000d95930782ab5"
+        },
+        {
+          "step": "2:input",
+          "sha256": "f1d70387b1ddb08ad94849655812255cb82a3f13c68763762de03357f2f1a257"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "d78d5ca3cda235189af105345d75263b7971a79bd86abff752d99eb306d068a1"
+        },
+        {
+          "step": "4:export",
+          "sha256": "b89d6dfd1dab601ab3659903b32202ec61da53f44a9cf42d00101fb06ba8969c"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "9ad013157e7f49443e67322d052a42b58bfefa366b777a7c6262e3e3eac507c8"
+        },
+        {
+          "step": "6:print",
+          "sha256": "70e1f506e3e1b26862d5c962b8707a5c2053741d2bae532477f3b550929be37c"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "9dbbdba208fe417a72ca8462e5cdbfbf7efe108a1025cb424a55810fc8985e43"
+        },
+        {
+          "step": "8:export",
+          "sha256": "630263bb71a1a0498649c9c6506fca2a467b7895f1cadb6589c0a11c04e39350"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "bfb2849633ced35326e27c4f3897411f3e8b35909d24188a1c3556fc5c83fca1"
+        },
+        {
+          "step": "10:input",
+          "sha256": "113425b9db0081c31dd8bd1ab9499e29ef30b5be6d2b90607b19586f10801f21"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "f090bae7be9f5e16086292ab6d05272f3cd264f56390ff8ef23bfd5d8388b188"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "56563fb3ed2f121c674e212f540ab2ef48f488c253fac8f86fed1518ed18c80b"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "024985e5e0ecfa235e7be5af76f7b53bfe1750a4e4ce0423a9e4aedfb65f0da4"
+        },
+        {
+          "step": "14:print",
+          "sha256": "85f8bb9de3c9550f583212da4a2c90ba025b29f83d75a3313e5b4603be258a30"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-3",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "73626dec02549cc79d786aebd900777a9c887c656193791399c9ae146ab6abea"
+        },
+        {
+          "step": "1:input",
+          "sha256": "80d9ce6591e35774684f7cd927d2632cd69b79cbc2c4660975518bd67ce8665a"
+        },
+        {
+          "step": "2:input",
+          "sha256": "ff070db20e063c94dfd0a802a6a76bf891cc598ffa66f5c3007cfa6454bb75fe"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "07dc73f00411fd8b1cfb5e36063aec9eaa316a0cd629ee716768b601b79d2f29"
+        },
+        {
+          "step": "4:export",
+          "sha256": "ba0761eac159db48762c693018e5976bb03080537e8d71be66d4d4a4420de14a"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "701003a73a80d75f8ce93919e6d3d0de9eb376d3c3c8791c002ed5998f379982"
+        },
+        {
+          "step": "6:print",
+          "sha256": "ad056bfdbd3eff018849fce449f545e02760450fb722ef57952d56c866e6539b"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "c63903644d8c654d4f6ae0a48b773bf20c0344fb64f43ab762a3ef9dfec33088"
+        },
+        {
+          "step": "8:export",
+          "sha256": "003b571cab80cda81b705522405011547ddfda93134aef7ff9bc72980b0da33a"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "42a405b3f64c82d4f4fbf3192333cc856d120e8fb8f0a02d877b403f03483dac"
+        },
+        {
+          "step": "10:input",
+          "sha256": "05d9224f6058f9f236e9971725ad3440cbc9074ccfbf4fbbd9fddaefb3bd3605"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "b810a1ed2145627abb6a48b99e558fc721450f333b5398bb186fff897eca5555"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "86faec06622c27012eebe66ac661e5f783cc9891f920c51c0e540bf5e0d3c5fd"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "e466b44f09bfb78bf3b60d21f26e957db3f0c116d03997aa86febe18f546e98b"
+        },
+        {
+          "step": "14:print",
+          "sha256": "613bad3f361abbd57b29553618a81bc84a20bc35f867b988318b1650d2d6102c"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-4",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "1e067afb727a6483ff238ad01ede7a965d73171f7900b0e4f51ee4644e53c958"
+        },
+        {
+          "step": "1:input",
+          "sha256": "563fb86ccb858876fd2a36c6b6acbabff07cc9760ff46d47c06414a9b85dc983"
+        },
+        {
+          "step": "2:input",
+          "sha256": "f27b64ee64c008d4541bf7a9306f65d1cff371a22d39a2127fe6335bbd7a1b9b"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "18e618dce57415398c10ecddb9be3d4f9dee8480b398a6ce0a738bea02265948"
+        },
+        {
+          "step": "4:export",
+          "sha256": "ba51856d6b7a3e52020bab1b3a99a305dd7fa210683e1907e765a1bd941f40ff"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "8cdb42d4b3c6324dd712db393e2e9496f84b2fa84215bbd184ea81ec345811c1"
+        },
+        {
+          "step": "6:print",
+          "sha256": "17b56cde02540cb29d17a06b4223364eba77ef18fbac66df5809ffd23234ef18"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "1418c4aa633bbb578e443fc1ca87b02745264095a2b984b6d6f8f9b298097652"
+        },
+        {
+          "step": "8:export",
+          "sha256": "72be489b6eb046738d15651c3917e1a4c0163944f04d9b2cbb10f7dd07733de1"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "5eeb574a93968264b0d546a6a2c1b20c3c4f36d83c53559896ee7ed642608565"
+        },
+        {
+          "step": "10:input",
+          "sha256": "8962af51eb78e93e495d5ac9d185ac00561c810b861c8c45c1f204498fd8073a"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "407c842ea558eb50bbd7b102bd689368ea8f191a7b913f0272a92d40cf449657"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "34b17062361bf6224897ad0e7e189c620725c927bbb74690bac0e69cef6e27f1"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "fd45d88bc60d9f4906df6b1e585774215b6a7b805b11e631ae4813e0ee73d342"
+        },
+        {
+          "step": "14:print",
+          "sha256": "f708ffec8c0aa2ce5c0311f85de22d41f0b031f90da0beb38269b5f281277543"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-5",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "73626dec02549cc79d786aebd900777a9c887c656193791399c9ae146ab6abea"
+        },
+        {
+          "step": "1:input",
+          "sha256": "e12e5c84611ebf926c1c403ab0d70dc0852baf79794b6656ccf0fde32431f5ca"
+        },
+        {
+          "step": "2:input",
+          "sha256": "ed2ee184ed644102fcf6ed3660de1dbdd25959589baa33c234c3266c5f8ab7be"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "74ab6e2e0752f9160738213270cd956ac35036efa9828adcdc4002413b62c592"
+        },
+        {
+          "step": "4:export",
+          "sha256": "267c308d1f84835a84730ba502670f948e13e41af60f05bba309b419049f03b3"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "c15f485dad3965fe81bb131ee5da3a75ddc4cffb3138408a6aac1fa51799a03c"
+        },
+        {
+          "step": "6:print",
+          "sha256": "389519c2d0bb3d0aaa2b7a22b57fa3abdb2fe15676b33cc242e26b2e05f5db35"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "ee85b028621477550588cc296f4e51856164fe8b6e018e5acb4c15529ee0d80b"
+        },
+        {
+          "step": "8:export",
+          "sha256": "417fcf5f14d1441a05c8651a2797c9472eb4db4e1926ac237f5762c9f59e6592"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "fd2a31b48b6ee4f1c91fc7a1885f2a2985c950c57394b8b434dd0925bc82be74"
+        },
+        {
+          "step": "10:input",
+          "sha256": "c4c8fd51560c0547947bb07b4918860a4e38fb14e498b8f3d57fa8716c579e77"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "0d454808161d97206a1a46b258c53543ecd34da7f201d86ffe86e5f28dc51823"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "bfeebc1958c8392c179dd4eaea4b86ab46e346e8a41b167d01e284ae0ba84cd4"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "f8fbc17deff8dc89d6f475474c4a96bf388641f60ca549c4eca41aabbcc8b6ad"
+        },
+        {
+          "step": "14:print",
+          "sha256": "2fa32d62113ed02e74d9f7000da5822fe13a699c1d7712f07494f00e6f73756e"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-6",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "1e067afb727a6483ff238ad01ede7a965d73171f7900b0e4f51ee4644e53c958"
+        },
+        {
+          "step": "1:input",
+          "sha256": "de5bab1167b371934581b4b56c4806f102d2ed3d196be76f6000d95930782ab5"
+        },
+        {
+          "step": "2:input",
+          "sha256": "f62a09b723e4b7e6a4855e0753f7e3b137d437081aba088745c71b06c1dc4730"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "75bc42ba29dea7b78fd740ad123ec6415c0abd95189fcf61da9d1a66ca8416d1"
+        },
+        {
+          "step": "4:export",
+          "sha256": "12c83a9be70b4d2ca1b438dd66d2cf481926a3642e7e67a82f638abc54bbd6bf"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "cd3b206ac07bfbfb0c0954fc4f71d3af82c5045d06e17a744e0f425e9c595f0a"
+        },
+        {
+          "step": "6:print",
+          "sha256": "94f2d42be03eb0aed551e68cf4e92fbdac30ed7f2402b015845d30a1f31b8dc9"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "5d2b4fe1b74086d2c6ecc570cb2f5e13beedc393d7a40bc4cd5cfd6ecc445d89"
+        },
+        {
+          "step": "8:export",
+          "sha256": "4b64e9a7bb409c8a4b3a7fc2067bdf3d2c059b63f8b9cb69f62ac77df6d8e9ca"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "627758c239562774dc04b861fbebd46f2fa0a986b42f977b7c505315da88e5a8"
+        },
+        {
+          "step": "10:input",
+          "sha256": "a8b4a684ba121e6c61971d51265f5d7ac818a3e24a7c8510e37577bd0ab163ae"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "4373d6247ad312ab4cc47f5a8a8dc715fbf86aeeea7f16047302a4f48ed12e26"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "32ed48f0b40ae047d29a2985c249a520e5c4d376a1668938b96ec50c98c11bcb"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "7aca2bb7e36879bf7cd1201954db373dcd191d458fee3779de4bd8772d21e355"
+        },
+        {
+          "step": "14:print",
+          "sha256": "24bbf9501bb275fb3f8d1b969aaab31e5a371743e13c917a95719869ed8b7550"
+        }
+      ]
+    },
+    {
+      "name": "writes/constraints-7",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "73626dec02549cc79d786aebd900777a9c887c656193791399c9ae146ab6abea"
+        },
+        {
+          "step": "1:input",
+          "sha256": "80d9ce6591e35774684f7cd927d2632cd69b79cbc2c4660975518bd67ce8665a"
+        },
+        {
+          "step": "2:input",
+          "sha256": "2f9c53fee2f3f5bdbde8b6adb542a2cae41068869358257eca1279fb9f717e84"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "c28cb9f25415f856bb2d4a4906ac447397ad2944dc20ae899d2c9ae4c1129fea"
+        },
+        {
+          "step": "4:export",
+          "sha256": "75b77dee061449761ec2ad30a3ff14901ee322019924c1701bd26fe6169d52b5"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "16dcc5208b40a4cf6e02d0240b8919f679b9a3cb31b6f4ab14d56570c549c4d6"
+        },
+        {
+          "step": "6:print",
+          "sha256": "abd26bd22ce0d0ac60c26f5de194f7aedd120face735463420c0af321c6d7583"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "dddd083aac94d8549dd48b9624e50afa621f05a806adc77a16a2fa8e8797d016"
+        },
+        {
+          "step": "8:export",
+          "sha256": "eeb2545d734ebe3e90a3a4514275209c9593cae6f1c11c27aa379a12b5909c8b"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "0303610e87a392afa711716f2f02ebbdcdc9cf903066128b5cbaf869cd062bac"
+        },
+        {
+          "step": "10:input",
+          "sha256": "20a8acd8d1f3c3ed7f335121d851dd16092962cc53af7729ccaecb189d3a8560"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "7c2fbad884d5d517950e2961f4ce3d0e5db0fcad074e1c790970f9126be5f464"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "f8780d705726342067718a31da2ca2f7c7c22ae73e2fc2677a817c6e3493acc3"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "b1bfa3f114e55f25a97d24ceca738300cb7f6730c56319fd5b1da9ef77d99bc7"
+        },
+        {
+          "step": "14:print",
+          "sha256": "7e3bcfcbae8fedb4dd41ee7db0f70129f8720ddc766855f0db9c493822638d8b"
+        }
+      ]
+    },
+    {
+      "name": "writes/payback-100",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "d52738c808936939e506fa66a2f2479a86ca069198c75866b5b5d9e95c05c354"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "53d11bbdfc26e03a2759c38cac6197629997c94b13cb76a66b912495c80c8ef0"
+        },
+        {
+          "step": "2:export",
+          "sha256": "6869030c6714948e991c58e160a319b12cd852829e02f06c7057c6c3e7001df9"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "4380d3b54de5613df0e197fe530daff456edf978e7219bc77263e24a8ba56213"
+        },
+        {
+          "step": "4:print",
+          "sha256": "11861f1f4e9c48f82602a584834254a4f0ca1c7e36b781d3bd61621bfbd6b95e"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "7cf82e5791aac1fb8db19956fe7d74fc48c5c3dcbbe50dc18a2ff0c83e618834"
+        },
+        {
+          "step": "6:export",
+          "sha256": "f976836bba67b7368205057ea1e9f8d68ffe955ac2e2dac8b3e8de0b497c983a"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "8f76509857f12c4fc458f5f73cdd34ff8a562256c0c882558aa7b906ca950903"
+        },
+        {
+          "step": "8:input",
+          "sha256": "8330a41464f824d13cb4e01efedae52f0132096c3ee5ddb01c0d4e27d0ebce45"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "00db73889c99e0463959dfa72d50d2608df3472c05a1996e2b5ab35b3b5defe2"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "31d633b2761c35de8599e0617b20145d4affa6a8631a79e5afe0fc3fcdfd946b"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "bd640ab2b620e93793b6c9f04059da561e6203d121db7f2f6ed17326cc9d5fc2"
+        },
+        {
+          "step": "12:print",
+          "sha256": "3341b8546fc8f08ba0597054989dfb51aff546912c0b1bd4fbc3efcce4bbe36b"
+        }
+      ]
+    },
+    {
+      "name": "writes/multiple-errors",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "fbb61b54aac70beea0d49465755675d194deef4543fa22bb56877a39026f7b2b"
+        },
+        {
+          "step": "1:input",
+          "sha256": "e99389e7495e9d3fcd6b72e62f81ff5dd1e00ae36dcccd3f5fbd83eb0d71d61c"
+        },
+        {
+          "step": "2:input",
+          "sha256": "ec4b3c9222f5479167852493785cef983008a097626494dcb7cdfaa22933e7bb"
+        },
+        {
+          "step": "3:submit",
+          "sha256": "701d23c02379090c5a25b6660f7d1013a1a12e66b6a1dea40cbac66902fc91ce"
+        },
+        {
+          "step": "4:export",
+          "sha256": "904d8314e3e3bcee8d84847a400b8c8f6c3b44d3a81a3f8fa5faab32208276aa"
+        },
+        {
+          "step": "5:force-export",
+          "sha256": "6041c08827e5ccab0493b816e71e92f9d50a8fc48926a0da57774f61f4f2ea27"
+        },
+        {
+          "step": "6:print",
+          "sha256": "222f8ee0359e95bc6e7e286042304938aee4e878876bac570fff754670450930"
+        },
+        {
+          "step": "7:reset",
+          "sha256": "004ab71d860d461860845ec2292e4810b67538668abb0ed03cb178af8905d1f1"
+        },
+        {
+          "step": "8:export",
+          "sha256": "1353a9f6e35d7608405425ef7d4650b1757896078b38a1d0f6fa216fc5de815b"
+        },
+        {
+          "step": "9:dispose",
+          "sha256": "13dd4647b54e8f8c20484f6d98e95bc63e87b0f2cb7c84ef3a71634437aecae8"
+        },
+        {
+          "step": "10:input",
+          "sha256": "cb311fa18037cfd1236c55a6b9a09828239e70a3b746a08f57b9e22246275cf3"
+        },
+        {
+          "step": "11:submit",
+          "sha256": "c2db6373a8b9dd64010c5814ae675bf4196681e45b4391d1e27d69229fdc5afa"
+        },
+        {
+          "step": "12:reset",
+          "sha256": "1b1e68b04ac9a5c74d3bd6f9dce3a1fd37d0de6f603ba1d232b92e24a8c314c4"
+        },
+        {
+          "step": "13:force-export",
+          "sha256": "1849620c5c44bae8d285f25e131508607a87bc0ddf28257edabd59f2543d57f4"
+        },
+        {
+          "step": "14:print",
+          "sha256": "3046a29f974e90549e8825270ad65c8e2d0268247768d4f0943556c17760ab03"
+        }
+      ]
+    },
+    {
+      "name": "writes/zero-savings-hidden-nan",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "ebdb1ca084ff88d6344cc9ba2c47a9877ac25a1d71326619e2a8ff6574ac2fb2"
+        },
+        {
+          "step": "0:input",
+          "sha256": "b9d9d79d306111b7cdcb4b9f6e46fdc0f577f1ef822355a90b04849a7ae29a29"
+        },
+        {
+          "step": "1:input",
+          "sha256": "e80a159939de25d82382a7f7e95840250f57d72254141421a4d71ae67babf97e"
+        },
+        {
+          "step": "2:input",
+          "sha256": "ffa406a72ed9903cdfcd11391bb74b206d15e4cdee382f08d80feacc3d1afc1d"
+        },
+        {
+          "step": "3:input",
+          "sha256": "72f06dcc7a52c12369a5fc68835cd51fbfaf90d85d08b913b178193218c81458"
+        },
+        {
+          "step": "4:submit",
+          "sha256": "18be0dacd1f05aa17929e071467d76567ac8597643b6705211dd3c99aba3fb8b"
+        },
+        {
+          "step": "5:export",
+          "sha256": "a42db9c54edfb959d049679262ae6a1329f51461a90c43e346994d59f0da1c63"
+        },
+        {
+          "step": "6:force-export",
+          "sha256": "95dc05156fec3e1dd4cc1531f42c3c5cc414f58b14a47c586719b2bde4dc5e90"
+        },
+        {
+          "step": "7:print",
+          "sha256": "1bda9a0bd599905587808d42bafb52d5f7944659323bb46364f771078e6d808a"
+        },
+        {
+          "step": "8:reset",
+          "sha256": "b0ebdd216f11dbc303cfc5a1585531387d139ecac4378d67c68499220bf03350"
+        },
+        {
+          "step": "9:export",
+          "sha256": "2031aad85065c7c6d8e723883b761826e2230174297b3e523a701e6b343a064e"
+        },
+        {
+          "step": "10:dispose",
+          "sha256": "d2dd7cc04576e88a39e3a75c3ec26811e3fb8fd09267f648ff752d95e3b62aca"
+        },
+        {
+          "step": "11:input",
+          "sha256": "615392bc3ca0b15b22a2db8a47571bd3a3fc340a68cffbc961683e8ef6f1cbe1"
+        },
+        {
+          "step": "12:submit",
+          "sha256": "defccd6ebd8131b1e18ea61393ec9704f3d511c05b809bbd5c0464482c0b7412"
+        },
+        {
+          "step": "13:reset",
+          "sha256": "559136f986a09504b163f211d904711aab1436a5be35d1fcb4c9d2059e403522"
+        },
+        {
+          "step": "14:force-export",
+          "sha256": "d234c38299b7ad9a488fca9ed0dcc3263776013de82d8dcb7e34acee44744988"
+        },
+        {
+          "step": "15:print",
+          "sha256": "f3f09ea97500f4bac904b4bea823bdb2477424840284bbbe2ea572003bc32d8e"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-trace",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "803ad1f9a11abc924b74f0cb002f52058e8e92a69ed59b03a4cf393d84d3bcb9"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "751507416aa788a5209311c06e0a5830338d5fbecef3b782b8c4e369530a1866"
+        },
+        {
+          "step": "1:export",
+          "sha256": "fef2878934b9d1e2c078f92991be18d3a913f4af38a19f1d680c05aa7c844c09"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "ce5c42dad94e93a34a2d8b3534219add289e67a903e689e3b8f8fcb26c7164f5"
+        },
+        {
+          "step": "3:print",
+          "sha256": "817fc8154409fa9226fcc490106f27ca30914970588689aca11f4df17fc874f3"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "9682e83471fa83d05f818b6d2d3cd84c9d28441358c160952f8879e80fca55ab"
+        },
+        {
+          "step": "5:export",
+          "sha256": "cb4e33c6e6f0dd4af3e9991ef7a4938cee8ce02343276a0c3ba023df75dd1385"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "62c35174e7a00e51fc05136b92842d782499a6121df17366c8f54273969d74ea"
+        },
+        {
+          "step": "7:input",
+          "sha256": "283243ae6cd89a9acff3bef69f4648747274689903f89406894752a57fb42282"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "0d98ade33a79ebc63dde0c84e98e00f1ffe94ceed5211fb20246a135f3ae66e8"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "395e0fa231de5511ba62bf17644926950915fdd35f531227aae7c5aaf995e697"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "53cb7e9caf4986f0f20a57939648689bec46242df57a8d44fa5b544b6bc161b1"
+        },
+        {
+          "step": "11:print",
+          "sha256": "e5bf11a0db29d449561d6d05b4445970230c1aa95f5a39825c22b729997fcf8f"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-1",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "fbfc5482901e3989fee0ee889e2a738c55e19fb4ceed8053d17ea575a71c8f72"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "4f5ca8fc41001e035dd026e912c4a76cc29f465ce65d0b55df4ce2fd89b9becf"
+        },
+        {
+          "step": "1:export",
+          "sha256": "95c9a5d87734aa036e6c6dc0c74de697841ea60ec32eefcf9fee352b4750f373"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "d61b0d0a4e695a982f7f34afe12558a83fbe96fd2932b4589c98f2828faef516"
+        },
+        {
+          "step": "3:print",
+          "sha256": "d07ee9e0da6ba7f53353c4ca0e47cad6f4bbbc58ce20159c81f93185512814c0"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "26ff08bbf6d941d96bf7af988d6994c05c00840781052fb22bb526b70ae4e0aa"
+        },
+        {
+          "step": "5:export",
+          "sha256": "a528dfc0d5c419073a86c168013f507d22782f014af9b078c4d80ab43f04d2cd"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "a2e5dc97ccad64ccb5da95b1e1c29da64b081e2cc4659acbf3bf8fa1f3b7c7d3"
+        },
+        {
+          "step": "7:input",
+          "sha256": "2224a20fa8ea79da3b220231635a0e84a79765d0c69e7f69b24e56e824f5480e"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "c68570a1d91afeb7be6b8ea3e143a37a242059e49a3f1a04ba59d45d401ac117"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "b877fffe4cb783b9408cba5b507b5b98274ff07b65ec749c3795c7d59ba1ea47"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "e21757bc6d07c32adfdc8d700533136476549498d15dd49a12d56f2d63be1490"
+        },
+        {
+          "step": "11:print",
+          "sha256": "bc6320f305e3e8060cee97c84f8e33403d8fd082635f927be939dae5fd302a76"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-2",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "f774b0c5d65a97fcca103bb71c69d9d905e8babf2af140f4cd6df521689c78b5"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "9e40937c0f0e60f8339af7745bbc892f65c87b5b83871dd2c12137f41bdb0441"
+        },
+        {
+          "step": "1:export",
+          "sha256": "3ad3f7ecb8e5f1e32baf1ef731a1d5886ca854b253e259a90238a9dce392234d"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "fdc8717e6fe9bd862fe40b78fe8dd4a284d07bc44aff5bbd899d30efd0aa8181"
+        },
+        {
+          "step": "3:print",
+          "sha256": "1ea121f8a24b4eb732dbb1ce2ad098246854b3c91c64d27b36efa8f12ab4300d"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "f4dd28ad8157beada5e9b3608748cbdd21fe1bc4ac10a4a18a32ba9663555e15"
+        },
+        {
+          "step": "5:export",
+          "sha256": "f454ccd62f1acfbbfe4d540b3ffef1dd95d03d41b0fb22e0330daa216b773a79"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "bec196f3d10074ac5e45bc8dbbaf6370bc81af939e86f80981e74276f9384dcc"
+        },
+        {
+          "step": "7:input",
+          "sha256": "83c973c70a653e5b0c939cb57ed5f0a7e7a3115ee9d084e362a8239d160bfcae"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "440a8f94244c5e773b55fd45b713da9ca08eabf267960586f35c7ba30c913b17"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "f88affc43109ee071b8be2b32a8bf27711376d855fe683b587708def7080a591"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "34b5ed2356f7185b1edf7181c16a7b3595639aa28713ae39845b88ceb1c8308b"
+        },
+        {
+          "step": "11:print",
+          "sha256": "d042c6cf860ff0c361b2d533a07c0f35c61af7c271e47b077bd8c4eb5301dee9"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-3",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "3c4e581ce412fb34971d91ab5d02a25b050b6e50ed2ebcb57f76b1b393a1d2b0"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "3fee517e5b40e5be9d493fe28a71506b8b7ef2eb9e4a17c1e3227be6900d4f9c"
+        },
+        {
+          "step": "1:export",
+          "sha256": "054070f6831e4b04d2af258393684735f9accf244742e25618ec130b75cdda39"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "9745e82ee31500e2770ab40d2f1e01249d0b7b05b4dd39ff2fe13849bd899f59"
+        },
+        {
+          "step": "3:print",
+          "sha256": "e434a5536fb9ba9f32f2a19380ce023034b69e6515a7ff221448c0a70afa8d78"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "0e9784e9c72e4bf4fa86d056653ba62e8a69754745968e8a5626df2c508701b8"
+        },
+        {
+          "step": "5:export",
+          "sha256": "dcf43950964cd5402b422e7e7b801dd2f4c4a2d80323a33b57d3bc693f460986"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "75c25d99030b7ceb37af9559216323e7946d7de02ddf40814627b6c5e013558f"
+        },
+        {
+          "step": "7:input",
+          "sha256": "a758a68c4353e5b3bbd1fe530f7939eed7a8fead59b2875b9dde49573dd4718e"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "0cd3915fb6030c16249ceeeab3f23fa20642059facf13757bee652c175c5a64b"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "7500f6ff002c5d36d7b808cc704c295a64083b9a72961400a427ec6709412b8e"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "7dc8d29bf7f3188b1bd52fdd3661e1c113b14b75124ae8e401d090679bb442e6"
+        },
+        {
+          "step": "11:print",
+          "sha256": "95c9b2499bdac725cc4631231ca0cd766088e4926ddc4344652687ff8ef24fd0"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-4",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "61686661b93708540a9506837aba0d3f36ecdff3fae378af4aa3f3d6c273ce71"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "9fd7365af304a9f3aed00ed4866c8d1abadeb29a5e7ac65d29c1495a2634af2b"
+        },
+        {
+          "step": "1:export",
+          "sha256": "e2e5b5a2ce5b17f506af0139fb99dd23ca3241ddc79846dd911d14d59e63e3ea"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "130b837bbcc72fe71c7b58170ebc8da9f3e09df990757b42e5d892d7c5263c7f"
+        },
+        {
+          "step": "3:print",
+          "sha256": "253eec6eedd258c9275c63bd96b417d47f767e5af9b6e453cb71ecff612bed54"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "a0348f6f00add780ae5faefa3b4c97c08f927ad04e5fa228ab24deed6cfbce2d"
+        },
+        {
+          "step": "5:export",
+          "sha256": "475690bde289d60982a70c88643f55b331a4e4cfdd1729e56d2bfcf381e14203"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "0567305ff04b2c13db9281f767e79c54c1e5b141293a5c00f3479960f4e6b6a5"
+        },
+        {
+          "step": "7:input",
+          "sha256": "e1e46239e38482af9a800a3728de0354b29f727599742bbf330df4d5860ee216"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "fab10ea015f95eebf32b409dae19b147e76ce7870588a812df228a3a2abf3ca9"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "e8f7c13f10076eb24916b261af1841e63c7fc46d85f2449c9c8f5862432a34a1"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "b63a7e072e02e09a92e390310e2cfae497d68cc9a37ed144e11c83484a1bf73f"
+        },
+        {
+          "step": "11:print",
+          "sha256": "65372cd0d73f4260d0c69382a00c470dfd0e586c3a26eeba80542414b4254db2"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-5",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "50bc54d8ee806fe6124fb271f8d9b698f3d89fb3c81fd930dfcbd9699595102c"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "0d07273d62d3334c994edf2b1f08b87caef4134dd1f9ae4b84fdf77bba1f4958"
+        },
+        {
+          "step": "1:export",
+          "sha256": "378f26d1c139b8d1e7359571851114997a0a37f2edbe75309eda1a20e7bbc50e"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "62175e6d84e8bfb923337475201a9bb733ed0dc3a3d2d6708e26e5f57d006920"
+        },
+        {
+          "step": "3:print",
+          "sha256": "aee68969a741062914e0c11dc4ede175dcf25f0c2b077b112747590f9ea29cfb"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "fed82bdcd11744fe5d2c64ad3f043e5431db143604ae1130179b548bb0407026"
+        },
+        {
+          "step": "5:export",
+          "sha256": "901c733c3849ff3b499d4693aabdbbc003059c92c8168f1288cfa5ac5248b046"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "e521f4b61914ab200cbcfab987c3e61e46a7dcb14c49f33090ee4f7ae905219d"
+        },
+        {
+          "step": "7:input",
+          "sha256": "391eca531924232b8f0f2055e2210dadf79f61b3dce17fe0168f13de8f4827d9"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "855c3ed8de86fc2cc6b5a3b0a056404f056a0abf27173c6e7cceb11f3c1411c3"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "6af41c10a51a8b37123b87887607b7618b27283da936236105534cf8885c9118"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "c7372c98ff061e9d5cca7fec943fd23544e04e3b4f5b7674366dc2ff67fc6e02"
+        },
+        {
+          "step": "11:print",
+          "sha256": "c723eddb64191098fc0799787dfde2c597b80c6115feda1b3bd989e13273c236"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-6",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "f91b02541d0e61922e7ce35423e7cead19949e19df8fbacddc8bd39501e9d67e"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "df8b41d772a6fbd430e1617e101a858e078a08e73aceeffb62df02c6cb59cb48"
+        },
+        {
+          "step": "1:export",
+          "sha256": "aa82dd51ee42c1425dbbff30b1aa038fd1471d05bede4916b4d40be0cbf04580"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "9175cbefd19dc5134882f9d08b02e83a8f25990d65dd10cc4a9014f06480d2ab"
+        },
+        {
+          "step": "3:print",
+          "sha256": "a67f73d96de0af241c2ed5e392b2732fef3d567eb08510a974bc33e653a9dae2"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "aee9207e745746263986ba68b798cc5b1a495d0e73c35362bfbee0ed58cfe3a1"
+        },
+        {
+          "step": "5:export",
+          "sha256": "4729576fffa49f5feb7485260ad8310bd9dd2e69d7f37dc928665bb8c03ef623"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "0e374982c24b099db017bcebd3e47061cd337c93980a22bbc79b40979ba85f1b"
+        },
+        {
+          "step": "7:input",
+          "sha256": "70207fabd40672fea92e753b8a02817f7fc525e7614460cfd40c69890b4e26f3"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "3b0aedc901ca9a858522367bef2cd635ceee2e208d664a2aeede4eb6f613ca6e"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "986f1b78ef6430a225d7e4b7c2a292867f51fa6b266a93ee4eb014f2b7900a09"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "b33bb08395e699eb4f36a3a62ea53cf18222ce09cf40d083683802fa1d769ee8"
+        },
+        {
+          "step": "11:print",
+          "sha256": "acd03a628fb883bfaae1ab34feaaa67e6383ec08f5bf454dbda00ec17be6ab81"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-7",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "9dc4991a25134275fa4dee3ae15b5843f5f70b1b65807ba9753fa9120ba0a22d"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "731d9d13f8ce183224f9289b4f3b715eaae2a738861458d7be410ba16833d5b0"
+        },
+        {
+          "step": "1:export",
+          "sha256": "103382cf7a1d67487842a98b93f0f51cf397478258cf74b3d21d42553f0f4bfd"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "a6fcb46e37a6779fb5259d16c92d0102b78f323715fb16760f8d69002f983e83"
+        },
+        {
+          "step": "3:print",
+          "sha256": "5d21ba12df2eb1eefa6ce470fa4648e1b613e6d21442c2e520f4323425c18211"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "b6e1262a935d11c7a730335488a04f8080e164cfd4e364da7ae9a39b35594fed"
+        },
+        {
+          "step": "5:export",
+          "sha256": "f09c64a2db951e2f954f9bf40a02b4cec6b815eaddc9aee72230643e73e7f9b2"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "ec126eff36bb117aea6130441f2e269fb78811119c2d7add25c76537e4705e9c"
+        },
+        {
+          "step": "7:input",
+          "sha256": "5309e9423c25ab6d370514b7698482843d4059d13faa2acd35e8b25da35d0dfc"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "038b92af7f56ae16b8ab59394739d81d2c624ec856e567297ed5ca1768efad33"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "1303c73736e19d5d0194efe3b426fe6a81eab11ab2b1fdb2b9baf6ddd75ceb51"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "0d293d782854df7ef9b489b99876a659b581133a0acbb8693f819934ca9ae367"
+        },
+        {
+          "step": "11:print",
+          "sha256": "b84b6df0b2e54832507598f2df722eb73f3546e5eac2ef040ab1cafe67fa3e2a"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-8",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "aaf3793f638b55ce9a763a91877c9a603c6e2399f6b0de9ea4f2d244ba20b719"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "15233675081334686b3e7adde193dcc40c1e017ec44719bb88b4ae5eb7343e34"
+        },
+        {
+          "step": "1:export",
+          "sha256": "b5093a7291c400c4e5f8af72a46af8f0cd0cae11917acc87e3dc2f9b407b6127"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "1efa8107ebf019ee4fab52370e063b2e7a3004a4e75f797077674e8edf9c293d"
+        },
+        {
+          "step": "3:print",
+          "sha256": "793ec80a9e8ced6c52eea958119f9ebc23770fe2a709ebc7f236ad92388c29a6"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "091ca3fb1e1a7934bc18089dee8a5edc3548a728b247a542b0cf648e8760804f"
+        },
+        {
+          "step": "5:export",
+          "sha256": "7894e98609068e209aebf6cd039db294e377d2e3c824143a414144e6b0bab18a"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "a8718be78a20e3f93800186b2cb6c7665f755ed2a324f22c5c3651b24599c2d9"
+        },
+        {
+          "step": "7:input",
+          "sha256": "02c3881b419f4d2a07008f7506bcb03efd748e664753b74bc4a3fa8d8e4f1ebb"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "92949857f93fba87f3e3a15cb1fb57b5ba29801dd985005980f1389e819349a9"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "79e37241885aa91e672b29ee4f4120bdf95782571bb29e461ef306eacd9333e1"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "867c1c5a4f21892089aeb7b282e9eab5810a0527b438df1b716d943cb6084d19"
+        },
+        {
+          "step": "11:print",
+          "sha256": "c8d40c4d904b90ebb6579a9e25f16c65cce5d0037e741773b68d3f191f6706ab"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-9",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "34efdd01455b4f7d076a07a72dce5f0d09de98062468cd47f5a2ffe086b575cd"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "ee6dc0dac53c90f0a3cd75f85c2a5a5f496c5f83357b169e1a23022ef45920c9"
+        },
+        {
+          "step": "1:export",
+          "sha256": "c513a7d8c857018399d037b8cdacaecad034bb8634fdb546b35bfdea0ef267ec"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "6e334fb85bf3a84ee8a6dfc950463c579822bff1b09c0901e72f7ae499ad4c64"
+        },
+        {
+          "step": "3:print",
+          "sha256": "90cfb44fde83df3e7f39772cecfcf4ed0a05578068341a0ed795b9ba709871f3"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "276a5baaa5eb5421861964ba695cf09943fbf4fe72fe22ad1abff31d86018b63"
+        },
+        {
+          "step": "5:export",
+          "sha256": "3ecd09765d811e303b1fd5ebda732b1665ce5b01b711d022d0d9df9f2fab5442"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "2a80f331afefbce72c33665e7fd8c53eb79ea110819c24c61106d651864f3c4f"
+        },
+        {
+          "step": "7:input",
+          "sha256": "fa1b355686a5c3984cba42a4ab917afaed5ac86c82157aef40445935684395c5"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "77e086a3b5312958f5b662b68911135c653c6956a36b2f1696ac9e59bd19dd94"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "daf17061412efcb031d696212c0fec06ea05d27fe5076f3a491258141885be4d"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "b4feb687cd9534a64e71c3dea0232ff6add072139ffa5aea1ff47d9988dbd744"
+        },
+        {
+          "step": "11:print",
+          "sha256": "facc1db5fa77513d41819644ddb170b405eb5fc49a25d57651b6fbb416605f5a"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-10",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "d782601eb77d4531d2b1b6bb2af1525b4a927022fb170d0e58dd54b26a1baa66"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "a40bce314a51831319c2e23c990b30ee7e778dfc5b09b7368989337970257bfe"
+        },
+        {
+          "step": "1:export",
+          "sha256": "be338c5ae8acc701b63e5c9ba13c85fb63189a35339cac557d24a0b75078e709"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "36f78f6912e94ed41bd259d12dacf0c72675ab8e63f0c0fc6788f602f5a1b6cf"
+        },
+        {
+          "step": "3:print",
+          "sha256": "3eddb5ac2d6a2252a9aa4b7629fa0c5f759d484a4ebc79b08c4df553bc459453"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "3754df0952204c42e724207ea7dabc6890bd8dcc2a0bc555439ca72ddec54d70"
+        },
+        {
+          "step": "5:export",
+          "sha256": "26a681999ffd4726b694491acf926de4fde33022d06eaaca66f45d3c01d41d07"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "7cb08fd970323442cf1ef52086c42758b5e51c367b86912e70355539dd11cd82"
+        },
+        {
+          "step": "7:input",
+          "sha256": "44d120d2fb749e0bf50378364a7944304c45f7b146eb3accb7f4280947697527"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "764a300ceef5e1cbb7ce3d976c2037d1fe8275173b7287d1ff7c4d598b4b4438"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "894104aa157fa28c96614fc462c8640d2d6029ceb1e684e9e10d161338ce8eac"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "fbb19aee621f997fd430cb134193b68a409153601576885ec26cefb09dd29006"
+        },
+        {
+          "step": "11:print",
+          "sha256": "2ab651933fe6236e81dde5f18aa5965b42238356a4b5b82c5586b5b436c6289c"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-11",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "2e2363ea3c6a0ebd9b4ff232019b67007497c8e0c000f4942e2292350665bba1"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "6a601140ec2c180140633e240819eda785f56a0e31d6a50f66740dca242e2f81"
+        },
+        {
+          "step": "1:export",
+          "sha256": "c56972d13c8e893b0415728c3131431e9a51e9655353036366f85ce7a4f33630"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "dc482e0322b231e81f44019b0d87aa2aa3c4efe3474d9ebea4f1fa10ef5ee9ca"
+        },
+        {
+          "step": "3:print",
+          "sha256": "30929f1df365bbab28a164a2fa3f798a255df30a391e525df333cca09899610f"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "9da3f2d6f4144c485f901da150315c08d58805fbdd43dc41d5eda0105d7c05a5"
+        },
+        {
+          "step": "5:export",
+          "sha256": "67e827846ef009bf85b1143c5a1f72d8d798597c7d7521482ab3db27c5bd4ef1"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "45d443ae017c8692f5bd0424d35072f10c88acda654dbd2d300a4cb24e9af711"
+        },
+        {
+          "step": "7:input",
+          "sha256": "f595a4602c6e0a8020c2e7ae6d30c33a3d82e4dcdcb54f551c8dce318a8b609c"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "f7056924fa4968bb5fc2875eb6679ed24c75ffdd43485c7b6d69774f87e850d2"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "2db728319a2b9db63e2867106bdc960c0d695056184bc304ad224f30d248f747"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "8b7845b4baddaee1d722af7e78d323e8325c95b19a66ff0532513b9b7a502482"
+        },
+        {
+          "step": "11:print",
+          "sha256": "8885f4a6dad17ef3777a96f4b2a81f8e14a98f03e9fbcee34b9611f137d6368b"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-12",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "4793dfe154899b904924f47881eda57a81bfd30afd182e1e48347d3f99105639"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "e5ac74b7e5d04f6d5f1f8ac9de6c5504d8ebe3917f0843332bc67a291b70276f"
+        },
+        {
+          "step": "1:export",
+          "sha256": "3bfbce0c3cf939e9290c3e6c5598056717268ddcb021605e434621cdb5275c0a"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "63086bc329feac2971cba3316f87968b7a70176ba4883591944d7d09602222a3"
+        },
+        {
+          "step": "3:print",
+          "sha256": "3ae6f52660c24d87efa70fa1066fb8bb589bf4c2aa74af2e3be48649db0e872a"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "61755cac5e744077c21539ad7f19796bc3a8aa525f9eb21469b0a53bef29e330"
+        },
+        {
+          "step": "5:export",
+          "sha256": "bc8ad11731017294f1a5e4cf3184e4e1fbd0768d93aa54437c1e411ed8869ced"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "093c103004814dbb05442779a8a717b207fb6b0375818b252ef094dd09e547f2"
+        },
+        {
+          "step": "7:input",
+          "sha256": "f7ad037860dd3dc5e57bdb9aacb25e8240277e289b5c25cf8240a2022e978984"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "004ea1e44d8d243d82dfe64c3d63331dc4a273dbfc21813b6538c664718f05de"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "73a5e7af952126de1404a2c51f242ba83ef4a05e4ffd2ba49caff0e4e8a5f168"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "9ea20a659aa4ba88ac012b27ae9b2d55c78ac100a3ca66689befeaa4565425cb"
+        },
+        {
+          "step": "11:print",
+          "sha256": "faef21c652dd82bd48b80546826460f1dadfbde6bc0613ba8b408e199ad0b283"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-13",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "3da8d1c959a6db44f3b81439dc0daf0ca9a4716347f4ad3f9cbff5277fb03453"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "9792b7cd7b18dca3a2c7a2ee1b7cff62ee1d7dfe63c09a4263a1bead277c710a"
+        },
+        {
+          "step": "1:export",
+          "sha256": "b40a68eba842e379fb96a276a026d2eb650cfecd63122dbeb20add31f5278b2c"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "5ac97af64c7429b8f06090a98da67fb4fa61422dee6cbe2036bae4a8616a3f93"
+        },
+        {
+          "step": "3:print",
+          "sha256": "7491b09856a71690348c04c438567f3d6e082f0a46df841fdb9ba5e2193f7472"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "0e37d4948d74286f8df143be1f58ca34afe37f994bd058cd8aa1f16f4721a096"
+        },
+        {
+          "step": "5:export",
+          "sha256": "d56248724ed4599ad4b3d088cfa0cc0bb0017a0f1677d268b4e8367182c871d1"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "1976f8ce15f5f94bbb50237495067a6b65358431d4da453dfe19a77f6512c03a"
+        },
+        {
+          "step": "7:input",
+          "sha256": "18de38f2657662fc81e905b02d4a312f6dfcc55f70d3351d88ae194d4985e6e4"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "dedea12e7e1d8330db5dddc84daed236f18a6dec30e8cb97b815de912512b8ab"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "8c3fd489b4b29a5ecbf667a57a3c9bc4eff710776fe911ad739bcb5216bab224"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "67e3cb8736a75d6853499f74891820a99d393108c1f4faa0ee8e239cfed32030"
+        },
+        {
+          "step": "11:print",
+          "sha256": "7440ebb02f2ff0a715689b94c0347e05beb24db0d737bae43e0c4b7ed2ddf4af"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-14",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "bf802d790366ac771b48242bc2a7d0931864c6b227f0fa5a350f343ab786bb62"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "a83c114abf65464cfef33ccb2510d55303cf920441ba403d1d630142f97899aa"
+        },
+        {
+          "step": "1:export",
+          "sha256": "e23d433831e5967a89f24f89a5c70f422d02eff8b651b9ac3798977a77bfa73c"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "bc8f8a2c4a03d2ee4d05731ea7b451097927b452d4839a674c2733784bddcb3d"
+        },
+        {
+          "step": "3:print",
+          "sha256": "0ddd5f054574a53936667e10691ce0d3a89e0eab4bad3bbd7dd3920884c0a953"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "86fc2d46d5c93eed4401b1da8703a27e79c52def645ad1e33898ba70c923dbaf"
+        },
+        {
+          "step": "5:export",
+          "sha256": "59c58e13cde5ba6313abeecb355068bf0b6d78992997be60bf7dd640bfd2e5d9"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "adfebd601ee5f08d801dd0de7b3b67c7b0d835824616d9383d5f899f2b0100aa"
+        },
+        {
+          "step": "7:input",
+          "sha256": "4ddf8937240b045d6e836530378c0374f213f6c09b958a5c45a76abbbdec4628"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "964aea0574edc65e817f674c3b0723611142c8656a0b026ce0e49c639c532de9"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "dbf130f6dbf4592badc0c043f028a8c2a6c361f93a856008230b4ed1390c255f"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "cbd6f26335a9f122a714dce210a71789314e3271e4702c7418a95f9d0275f4c6"
+        },
+        {
+          "step": "11:print",
+          "sha256": "d456a9a0d03f2fa5dfd21854d32d8596454dfb7424d250a721f39ec3c316a90f"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-15",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "b7f7499fefb7de51a88ba41d48eafe0c15d03db758cc52dbb9f86623d0c11853"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "1abfd1ef962de00c87d57e67ea2ae8917c4488807c21bf1abb061fa6469d7b6e"
+        },
+        {
+          "step": "1:export",
+          "sha256": "dc92ddb60df4390f356fecd251fc096d0b8e3e51686af7694d39c01364912c8f"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "cf404beba20655bebdd69855cdfe0383a146099fd1795e0d1d4b4d6c1e2a7080"
+        },
+        {
+          "step": "3:print",
+          "sha256": "9a6e89b6497b9864f68857852a258d2fafee9862ac51df06f51f867f8c26a626"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "8f85b73f3e274d0e5e13d172f11694cc17ef646a05683a20855ac4794801840e"
+        },
+        {
+          "step": "5:export",
+          "sha256": "846e623cd46ce453d5a6e0c3f9a535362b454aad71d61775f6b36498f8abce03"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "1fb780f9c5b5784f4f03671c908424fe787a9e2d53c74c98dbaa47faaab9c645"
+        },
+        {
+          "step": "7:input",
+          "sha256": "bab9e1d6848b177dd191139d0dc3b2b9b01a94383eeeec33fa10fdd198d8b65e"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "3de81d7bcb9040e8d701d5c069971c1122a1aafb1d345dee9daed1426e0f85f5"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "0be9992f5750cde123d8051433160d31a006ffa296f4275fca1fb8cccaa95e7f"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "5be1464abb9f5b8a50099329972912b28dc2f43f0af44125467ceb72dc3b1ee4"
+        },
+        {
+          "step": "11:print",
+          "sha256": "4d65ec6303714991151510c2974e8acaef0ffc12c5e943f3df26cceb02f64972"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-16",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "0027c6d91b609c38d2e075e9efd3fdc1b9e43212d648b3a6edebbebccb7cc8c2"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "61bc94f2890281fe1b60ff363d4a86391e2896142a0475067b4becc1b334e2d0"
+        },
+        {
+          "step": "1:export",
+          "sha256": "73ef90d45374e6b922c430e569a44e6acbec127bc58f533fe515474d6da120ea"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "d54400879d615bc0a38b6a91232dce15dbe330b68c86905178885e2cf55fae6a"
+        },
+        {
+          "step": "3:print",
+          "sha256": "9e9a74634838c219240d9d90abe8cf04e25a42547670e0472b346d75df07026e"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "601b99e1dfcd9134f219af150c9fc6d2093537ff21b3c9662f7269d27fb9a9ac"
+        },
+        {
+          "step": "5:export",
+          "sha256": "0e7b23f28ff0c413fdd215074270b67c9e45b3e3d6d111487407691609398294"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "0eea5219f8e6e139a9b88f81c90eaaa6b021970f721fa265a4ead55549430130"
+        },
+        {
+          "step": "7:input",
+          "sha256": "07a0d87b7baa622210c1fa5bb04c65759b78141c4644ae9dc00f7028d8cf75db"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "1a6f4f0e2fbce04744a1213a2321861b881ebb3d5022ca62d21ac9ceb16517ea"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "4c217f009e772e00417cd60fb024c99a5946cccdf9220b6ea93218daf2f3d90d"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "3d316dc84a9a48caa791efaf53e70e41cc0f30c03d62f13a82a7bc9affcfbbfd"
+        },
+        {
+          "step": "11:print",
+          "sha256": "9c25c94e03aaacca11447474ce8b63bb2378ca041f18fd4ca8ab0325728fa8a9"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-17",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "707ffbe5066f3732c4c568f576d73898cd38ffd99e2ab1c6e430f709767ff999"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "415d2fe158494bf6b6592692aaa548e73ff8d675fbd2517824f15e058d4dc0d9"
+        },
+        {
+          "step": "1:export",
+          "sha256": "0d1c3c4c2bdabaf574615580c1cd96b2286ca34b2baae91210a8e782a332c673"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "9198a081f30c455532a0b02cd9b36dce183ca9457558913156e13830178ba7d4"
+        },
+        {
+          "step": "3:print",
+          "sha256": "da308701558494df7ac0e81a95c7f243ee956927b01f2ca3824b1796fc76e7a6"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "e15f9167296003f6300092fb233a131810e8c9c3b258bbd83d4f678c5cf80ea4"
+        },
+        {
+          "step": "5:export",
+          "sha256": "12adb2032e4f07cb91afc44843cb7a15d9f78b6c6973df8d045c0836be1d9cc3"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "d68d6fbde1da742eb7654710d95ca12665daf26d4a3fc7f151df6da9805c7576"
+        },
+        {
+          "step": "7:input",
+          "sha256": "a742ecc43765343f7141159696eddf2cf41ae530273a302404f0ddc7d07a1d13"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "95eab4b19d13670447d88f5f8c33f17dfbf87306e27c41c3cfe7f8636d58f8b9"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "e6de577142ff5460fe4f37014ba4cc129fa8651520d33ff103bf7c50de9458f4"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "224c7295ea38959bc4c340144facdf9e58de368a040ac6ade9307a2578e3d52d"
+        },
+        {
+          "step": "11:print",
+          "sha256": "93c0030ab28a87381134ba99b661ba98a3f8a84f5b104f052aedfad38b2abc9b"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-18",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "78e0f3db8fee2a4b7c3c674fc02971b9d1b53395ad9d5eeb8e801213d945a05f"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "ae74f466af5f3f9ef9040e4cae81cec386d2dbf1d64e26776625cf29cb5c658b"
+        },
+        {
+          "step": "1:export",
+          "sha256": "bd6420708202b0b8d1312ea52054241bafc22ed3113a422d3bb526d132393553"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "d5bed9d05f4edbb48f1dbdf70b8a2fd410767456d91ae4adaa25d3a24c542cd3"
+        },
+        {
+          "step": "3:print",
+          "sha256": "29b302fd76893649d803279e9ac894d725ef25c7d07ec9011625d812247102e6"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "0b7b18b8d6f05a2f8ee989f947b94c358c86c9e35dbdea581ecfbad5bf8065d0"
+        },
+        {
+          "step": "5:export",
+          "sha256": "b1c55eaa18cf07380a370928bd2794010aef8d48676038449708c88d53ccaf97"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "cf636dc1301947e5f7c4ffbcf78ca13910b29340129c03ae1eccc2820e78ca43"
+        },
+        {
+          "step": "7:input",
+          "sha256": "48ac5286473ca61ff297771558031d1ee53df2eb9a8ae28d007084b9e0ac3c6c"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "e88f4cbd3da06c4123e4b3b7f7b9a0288928b1969a464db3bf9c552370713fcb"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "8820de3c95b7a0535b5d43132cf7ffd76eb0fd1898128dbbd16ff50499e4b800"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "1c79f5de979657a5bf382aa8504b592834ba1b3d5c364c69fc7c6bd9980b2f11"
+        },
+        {
+          "step": "11:print",
+          "sha256": "21dcb7a6e2e10d2021aaee0ef96a38485ddcbd5fdf2f4e63e60d9721699cb174"
+        }
+      ]
+    },
+    {
+      "name": "writes/format-failure-19",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "fa484596d5f11d85ef53582a624bd3aea27c03957a4a5ecbb5afb1548d979f13"
+        },
+        {
+          "step": "0:submit",
+          "sha256": "a8ffc0781873ab2e74f0649730e23adc9075cab8288d0b3be66eea709455ee79"
+        },
+        {
+          "step": "1:export",
+          "sha256": "94b1f2da1f5fed4ec3f079df685dbc61922f340338df9cefac05f6d3035755fe"
+        },
+        {
+          "step": "2:force-export",
+          "sha256": "4d50000f70913fd34b55c0b36b787a502211b28189461dcda9657c81ffe4e416"
+        },
+        {
+          "step": "3:print",
+          "sha256": "318a73fd8ebb8b82562b7a92935a374f20d29f1d74acbf7db3e6ee546cc2511c"
+        },
+        {
+          "step": "4:reset",
+          "sha256": "77c07f45c39dc4da9fdf70dc251785bd497d0ce27db09e7476cde2fbd59d0327"
+        },
+        {
+          "step": "5:export",
+          "sha256": "981009542c1a2346e19b00a4cfbb0c6a62903729d194fead3540da9ab0979bfd"
+        },
+        {
+          "step": "6:dispose",
+          "sha256": "7eedce4ca50b4ddbe44b89ec6ef1c975306da1a49cad3e115123c9adf1026c52"
+        },
+        {
+          "step": "7:input",
+          "sha256": "a5ea9bb44534134c54860d1b838e423166eb0757ed4b1739d034e1b22f0e9a47"
+        },
+        {
+          "step": "8:submit",
+          "sha256": "ccb33ec61aa29c8588143ba7f2fb33908afd9fd6a6dfb3aaa0bae35670285763"
+        },
+        {
+          "step": "9:reset",
+          "sha256": "df8210fad1afb7aacd729dec66184fd643910847637d01874c95790e1c2e690e"
+        },
+        {
+          "step": "10:force-export",
+          "sha256": "7cf4bae3274e4dc45b26a76be9c154de5ac600397b3cc1c17885e49718adbea6"
+        },
+        {
+          "step": "11:print",
+          "sha256": "30fc4506a7eacb31a77c2affe8fa25f7a37b4b71ddc244af55736347f22f7264"
+        }
+      ]
+    }
+  ]
+}

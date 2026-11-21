@@ -1,0 +1,218 @@
+{
+  "receipt": {
+    "controlKind": "native-events",
+    "baseline": "6d2a626b2acfde2719ff5b4dd43966a6ccdd86fa",
+    "sourceFiles": 12,
+    "sourceGraphSha256": "883432bf75284beabf3628f09479562c2232bd2f37ab0e2fc038a29f0388107e",
+    "cases": 3,
+    "snapshots": 44,
+    "outcomesSha256": "8c3c7ed847931b5ddbd88d8b206616a5394427633ed4e3f71d0bd8ffa8e84006"
+  },
+  "sourceHashes": {
+    "src/browser/industrialHeatPump/page.js": "6014d5185861c959f1f4fcf6a7a8ca3acc61f406d1ea6ff24730db8c9506b100",
+    "src/core/browser/industrialHeatPump/page.js": "c8dfde501e5dffc49982b38c0b3c9d4e86b7eb8c72251af108c9ea982656c859",
+    "src/logic/core/industrial-heat-pump/scenarios.js": "f5c3e51ac696be33f5a6d2f5284c19f265b7fc07cdb3e80586e0564282b60a05",
+    "src/browser/industrialHeatPumpReadiness.js": "5af298bcb8ce9cb613e4e0b7088a937559fa37a84e794a20114ea9a2579aa074",
+    "src/logic/core/industrial-heat-pump/industrial-heat-pump.js": "f86f52f8c85aab03c5c9094dc96595eb0e3dd62652f248444841c5c1b87e1808",
+    "src/logic/core/industrial-heat-pump/comparison.js": "9f23b18e9d333176c5cda3e903f5dcb659fa31a7b24803d8a8fd808ddea4c41a",
+    "src/logic/core/industrial-heat-pump/thresholds.js": "2771dd743fd35f4302a436fd091d978035fb63dd16cf8a41e60b9fe393b9ff99",
+    "src/logic/core/industrial-heat-pump/feasibility.js": "8bb76f58487479994a302f1bc7607f258b51210fc8727abff36d1f85d25cb63d",
+    "src/logic/core/industrial-heat-pump/values.js": "e457a86c70433b80e73369e14a251958cce8a48c68cf69791b123f319faea2a6",
+    "src/logic/boundary/industrial-heat-pump/input.js": "dcc0b659cb80d46a8f8605c2a16344257e70da893a69d39e24e71848b31b4508",
+    "src/logic/boundary/local/evidence-result.js": "f74c06c0bc38836c546253baa3b3cdfc22bf76ec7550a0d1fd5d67cddda96c25",
+    "src/content/pages/industrial-heat-pump-readiness/index.html": "fed22ec30f6551d5e21a1992fdf1b1003c94fed6f91870cfae4a2d625247544a"
+  },
+  "observations": [
+    {
+      "name": "native-event-field-change",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "69dca07966d20090cafd3c664027cd6dc7fe54fdbf4ca08b0c7faa4798ee1222"
+        },
+        {
+          "step": "0:change",
+          "sha256": "00650e4e4f15a6b969f8431b4f2f7996ef1642bf46cd91ea3cf4256f0dde88de"
+        },
+        {
+          "step": "1:submit",
+          "sha256": "ff206a1ca9b59dc527be13a32f966b5a19dfa56bfde6bdaade3de8b218490b47"
+        },
+        {
+          "step": "2:export",
+          "sha256": "ce1eadfb3f7bbdce51f7f18723356c2062d3dfe0ff4782d5c3c3d5a0e7381334"
+        },
+        {
+          "step": "3:force-export",
+          "sha256": "883170dafa94fd5761d5d983ae3a0432cfbd1cdce2274de2af40683a6d6498bb"
+        },
+        {
+          "step": "4:print",
+          "sha256": "555c6df6020a8cdc9341a7bdf32583266f20a24fb093d6aea422986a1c320a4a"
+        },
+        {
+          "step": "5:reset",
+          "sha256": "875b03c901fb11d1bb803556534ba2888e0e678bb3d17d491ab662331aeb8d19"
+        },
+        {
+          "step": "6:export",
+          "sha256": "f64a77a2e148a14637ffeb072d6fa68c1ee8c3509f695aee121188fcf9bff192"
+        },
+        {
+          "step": "7:dispose",
+          "sha256": "c7ce7003d70ba71bff801b1d77181472f464f2cadba52adf463a7bc42d6fc857"
+        },
+        {
+          "step": "8:input",
+          "sha256": "7b46fd916139ee733d3c385ad33153d42a8c35184dd9b06763ae0f69179d0647"
+        },
+        {
+          "step": "9:submit",
+          "sha256": "8e4ef86cce571cbe0dabca492725ec234b09c60239b7f2cc620feca91abc8228"
+        },
+        {
+          "step": "10:reset",
+          "sha256": "6dd1a14617332135963423e5afa2d6237ae22d34597e980e30306395aa03efe4"
+        },
+        {
+          "step": "11:force-export",
+          "sha256": "acd61670ecc74737f74715e1c49d804ec88434966d83ea7e428f2f8c8af886ac"
+        },
+        {
+          "step": "12:print",
+          "sha256": "6a66ae4b7faa6ad9142d6b1cb76d216bcb23ab763b99cb80dd65f08ce2108541"
+        }
+      ]
+    },
+    {
+      "name": "native-event-disposed-field-change",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "69dca07966d20090cafd3c664027cd6dc7fe54fdbf4ca08b0c7faa4798ee1222"
+        },
+        {
+          "step": "0:dispose",
+          "sha256": "607201a0a6a6bb3c20ee70449d3e8072657fe3cfe44fcfc67b8b344d318921a7"
+        },
+        {
+          "step": "1:change",
+          "sha256": "9dbbc98c85be847d1a4265bc4b2ee0292e14b3c3c95441bb4e6639ca6b1b152b"
+        },
+        {
+          "step": "2:submit",
+          "sha256": "eb6c31e8571cc916a9c24a61e535f5d76cd1a9f9afb543734b62aaa1bee8547a"
+        },
+        {
+          "step": "3:export",
+          "sha256": "01e3742b520577dcd68ca808b479c1560abc50251f51007bd8d7d9abe3ae078e"
+        },
+        {
+          "step": "4:force-export",
+          "sha256": "f95977924450b110b0fd6661d60f246fd50ab0e52e76ae259fa4baa7dc5f8e10"
+        },
+        {
+          "step": "5:print",
+          "sha256": "c7b3ede37a660a04da1a411df566c0efa784160d3f2f125c482c627ae2c60eef"
+        },
+        {
+          "step": "6:reset",
+          "sha256": "ed2d7a2fd2ea4fbd6574ccaaf9681dca473c21eb047f9057b7d422b2373cb1d2"
+        },
+        {
+          "step": "7:export",
+          "sha256": "7334fe31b995531b43a5326c771aee5af28f85e387242793e0121bedc6aa9863"
+        },
+        {
+          "step": "8:dispose",
+          "sha256": "39138c185a1509354a5d25ed3c97986884107e89c4a7b641a6b04b580843b5cc"
+        },
+        {
+          "step": "9:input",
+          "sha256": "d75e4be9db01fe136382a1c5c48016714483238fcda07e91242e469f81ce9c2c"
+        },
+        {
+          "step": "10:submit",
+          "sha256": "8fdd507812279e6169382db53eb24d763b366d4821fea30867c6f94044619e7b"
+        },
+        {
+          "step": "11:reset",
+          "sha256": "dcacdf3fb133c126546c1f38524f407b9f25d96a7f499405f08de8f8a348583b"
+        },
+        {
+          "step": "12:force-export",
+          "sha256": "7058ba73e27331d2f86661a5436614aeaeecf830f4ea6526c0933a909ab3a162"
+        },
+        {
+          "step": "13:print",
+          "sha256": "8ee10474b522d343d800172887cc78779e8e3bd0aa481aee258fe723d1acdb4b"
+        }
+      ]
+    },
+    {
+      "name": "native-event-disposed-preset-change",
+      "snapshots": [
+        {
+          "step": "started",
+          "sha256": "69dca07966d20090cafd3c664027cd6dc7fe54fdbf4ca08b0c7faa4798ee1222"
+        },
+        {
+          "step": "0:dispose",
+          "sha256": "607201a0a6a6bb3c20ee70449d3e8072657fe3cfe44fcfc67b8b344d318921a7"
+        },
+        {
+          "step": "1:preset",
+          "sha256": "a44ce14bc1ff7231c11ed7f50cacbedac272843d0925397a669a38ea5d0639da"
+        },
+        {
+          "step": "2:submit",
+          "sha256": "5a3c6b9e19ccef8bce37b682bd237d30650c517b9d1d3b65cf35f23c58326b62"
+        },
+        {
+          "step": "3:export",
+          "sha256": "bb209df5a8083fe09b3b6ab1f9a252e9f41981b30e883ab099d6b6b38dc916fe"
+        },
+        {
+          "step": "4:force-export",
+          "sha256": "2abc65960c74aab36fbe90c43241d1d38120f237953bda6f776ac3f63d711c1d"
+        },
+        {
+          "step": "5:print",
+          "sha256": "1a8a755329cf49ed0a2283d58bce96d2019f6157394a3ab18a719c36da95eb71"
+        },
+        {
+          "step": "6:reset",
+          "sha256": "67e119c84f9adbb7222f9c5d8f722e25bd72bd554b6158cc1df243eb2b4f8251"
+        },
+        {
+          "step": "7:export",
+          "sha256": "8f802961b8879c341b035116f938792a24b3f6e59248e6f7db9d1378e3dcf6e3"
+        },
+        {
+          "step": "8:dispose",
+          "sha256": "bc4c9067f254afaa17e8892cff11bde13abfa1b1617f39ace16788ab731d55ae"
+        },
+        {
+          "step": "9:input",
+          "sha256": "21772f1682290f100597449adb87a6e2898a604101adf28f6b4d12472402bccf"
+        },
+        {
+          "step": "10:submit",
+          "sha256": "f37d0ddacf206101606c1e8b90d279b399037d24abcfa51cb621ebfdcec352b9"
+        },
+        {
+          "step": "11:reset",
+          "sha256": "21d340abf33d8e31a8d466057afdcec932294f3b1b09b9d882e7eeaea0b898cb"
+        },
+        {
+          "step": "12:force-export",
+          "sha256": "3e072236d17a2613956e00bb8fe488431e0cc43082407db278af8e26c2e84aa7"
+        },
+        {
+          "step": "13:print",
+          "sha256": "bf0971a2f7f509e14bb874abbe3c2491123c897a2d51153853295a5dd9c835e4"
+        }
+      ]
+    }
+  ]
+}
