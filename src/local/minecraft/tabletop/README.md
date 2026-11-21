@@ -157,3 +157,9 @@ The walk-through exterior uses a stepped slate roof, projecting eaves, brick
 chimneys, layered timber trim and mixed stone. Room geometry and player routes
 are checked against the previous walk-through. Render the exterior with
 `HOUSE_VIEW=manor bash src/local/minecraft/render-house.sh manor.png`.
+
+The walk-through interiors use darker timber floors, light limestone-colored
+plaster above timber dados, and purple carpets. The refinish swaps materials
+at existing coordinates and preserves the room layout, doors, stairs and
+furnishing positions. Inspect each floor with the walkthrough and upstairs
+render presets.

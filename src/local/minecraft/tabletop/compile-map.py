@@ -339,6 +339,50 @@ for position in walk.keys() | v2.keys():
 (out/'walkthrough-v2.tsv').write_text(''.join(
     f'{x}\t{h}\t{z+72}\t{material}\n' for (x,h,z),material in sorted(v2.items())
     if walk.get((x,h,z)) != material))
+# Refinish only existing surfaces. The rooms, furnishings and collision geometry
+# keep their exact coordinates. Use the old states as guarded migration inputs.
+v3 = walk.copy()
+finishes = {
+    'minecraft:smooth_sandstone': 'minecraft:polished_diorite',
+    'minecraft:birch_planks': 'minecraft:spruce_planks',
+    'minecraft:oak_planks': 'minecraft:dark_oak_planks',
+    'minecraft:spruce_planks': 'minecraft:dark_oak_planks',
+    'minecraft:polished_andesite': 'minecraft:polished_tuff',
+    'minecraft:polished_diorite': 'minecraft:calcite',
+    'minecraft:smooth_quartz': 'minecraft:polished_diorite',
+}
+for (x,h,z), material in v3.items():
+    if (x,z) not in footprint or (x,z) in shell:
+        continue
+    if h in (y,upper) and material in finishes:
+        # Retain a narrow border where a room meets another floor finish.
+        border = any(v3.get((x+dx,h,z+dz)) != material for dx,dz in edge_neighbors)
+        if border and material.endswith('_planks'):
+            walk[x,h,z] = 'minecraft:stripped_spruce_wood'
+        else:
+            walk[x,h,z] = finishes[material]
+    elif h in (y+2,y+3,upper+2,upper+3) and material == 'minecraft:dark_oak_planks':
+        # Leave a dark timber dado and top band on existing partitions.
+        walk[x,h,z] = 'minecraft:smooth_sandstone'
+    elif h in (y+1,upper+1) and material == 'minecraft:red_carpet':
+        walk[x,h,z] = 'minecraft:purple_carpet'
+    elif h in (y+4,upper+4) and material == 'minecraft:ochre_froglight':
+        walk[x,h,z] = 'minecraft:shroomlight'
+
+changes = {(x,h,z): old for (x,h,z),old in v3.items() if walk[x,h,z] != old}
+assert walk.keys() == v3.keys()
+full_blocks = set(finishes) | set(finishes.values()) | {
+    'minecraft:stripped_spruce_wood', 'minecraft:dark_oak_planks',
+    'minecraft:ochre_froglight', 'minecraft:shroomlight',
+}
+for (x,h,z), old in changes.items():
+    new = walk[x,h,z]
+    assert (x,z) in footprint-shell and y <= h <= upper+4
+    assert ((old in full_blocks and new in full_blocks)
+            or (old == 'minecraft:red_carpet' and new == 'minecraft:purple_carpet'))
+assert all(any(h == floor for _,h,_ in changes) for floor in (y,upper))
+(out/'walkthrough-v3.tsv').write_text(''.join(
+    f'{x}\t{h}\t{z+72}\t{old}\n' for (x,h,z),old in sorted(changes.items())))
 walk_rows = [f'{x}\t{h}\t{z+72}\t{material}' for (x,h,z),material in sorted(walk.items())]
 (out/'walkthrough.tsv').write_text('\n'.join(walk_rows)+'\n')
 views=[]

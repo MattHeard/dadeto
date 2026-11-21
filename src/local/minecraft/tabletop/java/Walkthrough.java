@@ -18,7 +18,7 @@ final class Walkthrough {
   Walkthrough(TabletopPlugin plugin, World world) throws IOException {
     this.plugin = plugin;
     this.world = world;
-    for (String version : List.of("v1", "v2")) {
+    for (String version : List.of("v1", "v2", "v3")) {
       try (var input = Objects.requireNonNull(plugin.getResource("walkthrough-" + version + ".tsv"))) {
         for (String line : new String(input.readAllBytes(), StandardCharsets.UTF_8).lines().toList()) {
           String[] row = line.split("\t");
@@ -41,7 +41,7 @@ final class Walkthrough {
   Location entrance() { return new Location(world, -7.5, 65, 95.5, -90, 0); }
 
   void start() {
-    Path marker = plugin.getDataFolder().toPath().resolve("walkthrough-v3.ready");
+    Path marker = plugin.getDataFolder().toPath().resolve("walkthrough-v4.ready");
     if (Files.exists(marker)) { finish(); return; }
     new BukkitRunnable() {
       int next;
@@ -63,7 +63,7 @@ final class Walkthrough {
             next = 0;
           } else if (next == blocks.size()) {
             world.save();
-            Files.writeString(marker, "v3\n");
+            Files.writeString(marker, "v4\n");
             finish();
             plugin.getLogger().info("Walk-through Noble's House ready: " + next + " blocks");
             cancel();
