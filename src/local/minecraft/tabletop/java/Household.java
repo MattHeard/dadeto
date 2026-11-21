@@ -40,8 +40,14 @@ final class Household implements Listener, EventRegistrar {
     }
     for (Role role : ROLES) {
       Skin skin = new Skin("dadeto-house-" + role.name(), texture(role));
-      world.spawn(new Location(world, role.x()+.5, 65, role.z()+.5), Mannequin.class, entity -> {
-        entity.setPersistent(false);
+      Location station = new Location(world, role.x()+.5, 65, role.z()+.5);
+      String tag = "dadeto_household_" + role.name().toLowerCase(Locale.ROOT);
+      for (var old : station.getChunk().getEntities()) {
+        if (old instanceof Mannequin && old.getScoreboardTags().contains(tag)) old.remove();
+      }
+      world.spawn(station, Mannequin.class, entity -> {
+        entity.addScoreboardTag(tag);
+        entity.setPersistent(true);
         entity.setInvulnerable(true);
         entity.setImmovable(true);
         entity.setCollidable(false);
@@ -56,11 +62,10 @@ final class Household implements Listener, EventRegistrar {
     }
   }
 
-  int count() { return (int) people.values().stream().filter(p -> p.entity().isValid()).count(); }
+  int count() { return (int) people.values().stream().filter(p -> !p.entity().isDead()).count(); }
 
   void close() {
     if (subscribed) GeyserApi.api().eventBus().unregisterAll(this);
-    people.values().forEach(p -> p.entity().remove());
     people.clear();
   }
 
