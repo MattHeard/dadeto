@@ -152,3 +152,8 @@ The walk-through now includes a furnished upper storey. Enter with
 to the landing. Use the same stairs to come back down. For an overhead
 inspection of the saved upper storey, run
 `HOUSE_VIEW=upstairs bash src/local/minecraft/render-house.sh upstairs.png`.
+
+The walk-through exterior uses a stepped slate roof, projecting eaves, brick
+chimneys, layered timber trim and mixed stone. Room geometry and player routes
+are checked against the previous walk-through. Render the exterior with
+`HOUSE_VIEW=manor bash src/local/minecraft/render-house.sh manor.png`.
