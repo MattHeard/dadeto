@@ -136,3 +136,23 @@ all honor this scope; context exports `enabled=false` outside it so the brain pa
 An already-started inference may finish, but its actions are rejected outside the
 allowed worlds. `allowed-worlds` in the private plugin config controls the scope.
 Existing owner/enabled settings and conversation/build history are preserved.
+
+### Survival hub companion
+
+Enable `survival-companion: true` in the server's Iron Man configuration and
+restart. As the assigned owner in Survival, use `/ironman summon` (or
+`/ironman on`) on clear ground. The red-and-gold armored mob follows on foot,
+takes damage, eats from finite provisions, and stays within 16 blocks. He
+dismisses outside that range or when you leave the hub. His health, hunger,
+provisions, and suit charge carry over between summons.
+
+- `/ironman feed` takes one supported food item from your main hand.
+- `/ironman boost` uses a short powered leap in the direction you face.
+- `/ironman repulse` requires you to aim at a nearby visible hostile mob.
+- `/ironman status`, `/ironman dismiss`, and `/ironman respawn` show status,
+  dismiss him, or bring him back after death respectively.
+
+The Survival strategy currently supports following, provisions and suit actions.
+General inventory, gathering, crafting, resource-backed building and Luna
+conversation remain workshop/future work. Survival suit charge regenerates
+slowly on the ground while fed. Boost and repulse share a cooldown.
