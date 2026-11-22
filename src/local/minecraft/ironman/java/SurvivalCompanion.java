@@ -10,6 +10,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.util.Vector;
 
 /** The hub companion uses native mob movement and damage, with bounded suit actions. */
 final class SurvivalCompanion implements Listener {
@@ -152,22 +153,52 @@ final class SurvivalCompanion implements Listener {
       mob.getPathfinder().stopPathfinding();
       mob.setVelocity(player.getLocation().getDirection().setY(0).multiply(.65).setY(.65));
       mob.getWorld().spawnParticle(Particle.SMALL_FLAME,mob.getLocation(),8);
-    } else {
-      Entity target = player.getTargetEntity(8);
-      if (!(target instanceof Monster enemy)
-          || enemy.getLocation().distanceSquared(mob.getLocation()) > 36 || !mob.hasLineOfSight(enemy)) {
-        player.sendMessage("Aim at a nearby hostile mob in Iron Man’s line of sight.");
-        return;
-      }
-      enemy.damage(4,mob);
-      var force = enemy.getLocation().toVector().subtract(mob.getLocation().toVector());
-      if (force.lengthSquared() > .01) enemy.setVelocity(force.normalize().multiply(.8).setY(.25));
-      enemy.getWorld().spawnParticle(Particle.ELECTRIC_SPARK,enemy.getLocation().add(0,1,0),12);
+    } else if (!repulse(player)) {
+      return;
     }
     charge -= cost;
     food--;
     nextAbility = System.currentTimeMillis()+4000;
     save();
+  }
+
+  private boolean repulse(Player player) {
+    if (!(player.getTargetEntity(8) instanceof Monster enemy)
+        || enemy.getLocation().distanceSquared(mob.getLocation()) > 36
+        || !mob.hasLineOfSight(enemy)) {
+      player.sendMessage("Aim at a nearby hostile mob in Iron Man’s line of sight.");
+      return false;
+    }
+
+    var world = mob.getWorld();
+    var body = mob.getLocation();
+    var impact = enemy.getBoundingBox().getCenter();
+    Vector force = enemy.getLocation().toVector().subtract(body.toVector());
+    var facing = body.clone().setDirection(impact.clone().subtract(mob.getEyeLocation().toVector()));
+    double yaw = Math.toRadians(facing.getYaw());
+    var palm = body.clone().add(-Math.cos(yaw) * .23, 1.05, -Math.sin(yaw) * .23);
+    Vector beam = impact.clone().subtract(palm.toVector());
+    double length = beam.length();
+    if (length > 0 && world.rayTraceBlocks(palm, beam, length, FluidCollisionMode.NEVER, true) != null) {
+      player.sendMessage("Iron Man’s shot is blocked.");
+      return false;
+    }
+
+    mob.setRotation(facing.getYaw(), facing.getPitch());
+    world.spawnParticle(Particle.ELECTRIC_SPARK, palm, 8, .08, .08, .08, .03);
+    world.playSound(palm, Sound.ENTITY_BLAZE_SHOOT, SoundCategory.NEUTRAL, .65f, 1.7f);
+    int steps = Math.max(1, (int)Math.ceil(length / .2));
+    for (int step = 0; step < steps; step++) {
+      var point = palm.clone().add(beam.clone().multiply((double)step / steps));
+      world.spawnParticle(Particle.END_ROD, point, 1, 0, 0, 0, 0);
+    }
+
+    var hit = impact.toLocation(world);
+    world.spawnParticle(Particle.ELECTRIC_SPARK, hit, 12, .15, .15, .15, .12);
+    world.playSound(hit, Sound.BLOCK_AMETHYST_BLOCK_HIT, SoundCategory.NEUTRAL, .75f, 1.3f);
+    enemy.damage(4, mob);
+    if (force.lengthSquared() > .01) enemy.setVelocity(force.normalize().multiply(.8).setY(.25));
+    return true;
   }
 
   private void save() {
