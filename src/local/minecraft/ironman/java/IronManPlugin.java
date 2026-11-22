@@ -87,7 +87,17 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
         try {cleanup();construction.recover();ready=true;}catch(Exception e){getLogger().log(java.util.logging.Level.SEVERE,"Construction recovery needs attention; journal retained",e);}
       });
       Bukkit.getScheduler().runTaskTimer(this,this::tick,2,2);
-      if (getConfig().getBoolean("survival-companion", false)) survival = new SurvivalCompanion(this, ownerId);
+      if (getConfig().getBoolean("survival-companion", false)) {
+        SurvivalSuit suit = null;
+        if (getConfig().getBoolean("survival-bedrock-suit", false)) {
+          try {
+            suit = new SurvivalSuit(this);
+          } catch (Exception | LinkageError error) {
+            getLogger().log(java.util.logging.Level.WARNING, "Survival suit unavailable; using villager appearance", error);
+          }
+        }
+        survival = new SurvivalCompanion(this, ownerId, suit);
+      }
     }catch(Exception e){getLogger().log(java.util.logging.Level.SEVERE,"Iron Man did not enable",e);Bukkit.getPluginManager().disablePlugin(this);}
   }
   private void cleanup() {

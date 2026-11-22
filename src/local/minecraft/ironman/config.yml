@@ -6,3 +6,4 @@ allowed-worlds:
   - minecraft:dadeto_tabletop
 
 survival-companion: false
+survival-bedrock-suit: false
