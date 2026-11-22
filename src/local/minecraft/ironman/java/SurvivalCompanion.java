@@ -7,6 +7,7 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
@@ -16,7 +17,7 @@ final class SurvivalCompanion implements Listener {
       Material.COOKED_CHICKEN, Material.BAKED_POTATO, Material.CARROT);
   private final IronManPlugin plugin;
   private final UUID owner;
-  private Husk mob;
+  private Villager mob;
   private boolean summoned;
   private int food, provisions, charge, seconds;
   private double health;
@@ -32,7 +33,7 @@ final class SurvivalCompanion implements Listener {
     health = Math.clamp(config.getDouble("survival-state.health",20),0,20);
     Bukkit.getPluginManager().registerEvents(this,plugin);
     Bukkit.getScheduler().runTaskTimer(plugin,this::tick,20,20);
-    plugin.getLogger().info("Survival Iron Man mob enabled in the overworld");
+    plugin.getLogger().info("Survival Iron Man villager enabled in the overworld");
   }
 
   static boolean inHub(Player player) {
@@ -73,7 +74,8 @@ final class SurvivalCompanion implements Listener {
       var base = feet.getRelative(face);
       if (!base.isPassable() || base.isLiquid() || !base.getRelative(0,1,0).isPassable()
           || !base.getRelative(0,-1,0).getType().isSolid()) continue;
-      mob = player.getWorld().spawn(base.getLocation().add(.5,0,.5),Husk.class, entity -> {
+      mob = player.getWorld().spawn(base.getLocation().add(.5,0,.5),Villager.class, entity -> {
+        entity.setProfession(Villager.Profession.ARMORER);
         entity.customName(Component.text("Iron Man"));
         entity.setCustomNameVisible(true);
         entity.setPersistent(false);
@@ -152,7 +154,7 @@ final class SurvivalCompanion implements Listener {
       mob.getWorld().spawnParticle(Particle.SMALL_FLAME,mob.getLocation(),8);
     } else {
       Entity target = player.getTargetEntity(8);
-      if (!(target instanceof Monster enemy) || enemy.equals(mob)
+      if (!(target instanceof Monster enemy)
           || enemy.getLocation().distanceSquared(mob.getLocation()) > 36 || !mob.hasLineOfSight(enemy)) {
         player.sendMessage("Aim at a nearby hostile mob in Iron Man’s line of sight.");
         return;
@@ -184,6 +186,10 @@ final class SurvivalCompanion implements Listener {
     save();
     mob.remove();
     mob = null;
+  }
+
+  @EventHandler public void trade(PlayerInteractEntityEvent event) {
+    if (event.getRightClicked().equals(mob)) event.setCancelled(true);
   }
 
   @EventHandler public void target(EntityTargetEvent event) {
