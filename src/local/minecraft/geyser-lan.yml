@@ -18,6 +18,7 @@ gameplay:
 advanced:
   bedrock:
     validate-bedrock-login: true
+    nethernet-debug: true
 motd:
   primary-motd: lorandil
   secondary-motd: "dadeto's world"
