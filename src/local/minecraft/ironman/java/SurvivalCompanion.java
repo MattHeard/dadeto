@@ -18,15 +18,17 @@ final class SurvivalCompanion implements Listener {
       Material.COOKED_CHICKEN, Material.BAKED_POTATO, Material.CARROT);
   private final IronManPlugin plugin;
   private final UUID owner;
+  private final SurvivalSuit suit;
   private Villager mob;
   private boolean summoned;
   private int food, provisions, charge, seconds;
   private double health;
   private long nextAbility;
 
-  SurvivalCompanion(IronManPlugin plugin, UUID owner) {
+  SurvivalCompanion(IronManPlugin plugin, UUID owner, SurvivalSuit suit) {
     this.plugin = plugin;
     this.owner = owner;
+    this.suit = suit;
     var config = plugin.getConfig();
     food = Math.clamp(config.getInt("survival-state.food",20),0,20);
     provisions = Math.clamp(config.getInt("survival-state.provisions",0),0,64);
@@ -92,6 +94,8 @@ final class SurvivalCompanion implements Listener {
             entity.getEquipment().setDropChance(slot,0);
         }
         entity.setHealth(health);
+        // The spawn consumer runs before Paper sends the entity to Geyser.
+        if (suit != null) suit.track(entity.getUniqueId());
       });
       return;
     }
@@ -217,6 +221,7 @@ final class SurvivalCompanion implements Listener {
     save();
     mob.remove();
     mob = null;
+    if (suit != null) suit.track(null);
   }
 
   @EventHandler public void trade(PlayerInteractEntityEvent event) {
@@ -238,6 +243,7 @@ final class SurvivalCompanion implements Listener {
     health = 0;
     summoned = false;
     mob = null;
+    if (suit != null) suit.track(null);
     save();
   }
 }

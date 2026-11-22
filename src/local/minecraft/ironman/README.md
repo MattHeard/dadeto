@@ -156,3 +156,16 @@ The Survival strategy currently supports following, provisions and suit actions.
 General inventory, gathering, crafting, resource-backed building and Luna
 conversation remain workshop/future work. Survival suit charge regenerates
 slowly on the ground while fed. Boost and repulse share a cooldown.
+
+### Survival suit on Bedrock
+
+Set `survival-bedrock-suit: true` alongside `survival-companion: true` in
+the live DadetoIronMan config, then restart Paper. The plugin registers its
+bundled Bedrock resource pack and uses the suit only for the active Survival
+companion's entity UUID. The underlying mob is still a villager. Java players
+see the villager, and Bedrock players receive the suit pack on joining.
+
+To check it on Switch, accept the server pack if prompted, summon Iron Man,
+and verify the red-and-gold suit from the front and while he walks. Check an
+ordinary villager nearby as well. Set the visual option to false and restart
+to restore the villager appearance on Bedrock.
