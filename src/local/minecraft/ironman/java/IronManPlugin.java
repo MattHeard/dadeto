@@ -32,6 +32,7 @@ import net.kyori.adventure.text.Component;
 public final class IronManPlugin extends JavaPlugin implements Listener,CommandExecutor,EventRegistrar {
   static final UUID PROFILE=UUID.fromString("daded000-1a01-2000-8000-000000000001");
   private UUID ownerId;
+  private SurvivalCompanion survival;
   private Set<String> allowedWorlds=Set.of();
   private volatile UUID npcId;
   private Mannequin npc;
@@ -86,6 +87,7 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
         try {cleanup();construction.recover();ready=true;}catch(Exception e){getLogger().log(java.util.logging.Level.SEVERE,"Construction recovery needs attention; journal retained",e);}
       });
       Bukkit.getScheduler().runTaskTimer(this,this::tick,2,2);
+      if (getConfig().getBoolean("survival-companion", false)) survival = new SurvivalCompanion(this, ownerId);
     }catch(Exception e){getLogger().log(java.util.logging.Level.SEVERE,"Iron Man did not enable",e);Bukkit.getPluginManager().disablePlugin(this);}
   }
   private void cleanup() {
@@ -225,6 +227,11 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
     if(p!=null&&!p.getUniqueId().equals(ownerId)&&!p.isOp()){sender.sendMessage("Iron Man follows his assigned building partner.");return true;}
     String action=args.length==0?"status":args[0].toLowerCase(Locale.ROOT);
     try {
+      if (SurvivalCompanion.inHub(p) && Set.of("on","off","summon","dismiss","respawn","feed","boost","repulse","status").contains(action)) {
+        if (survival == null) sender.sendMessage("The survival companion is disabled.");
+        else survival.command(p, action.equals("on") ? "summon" : action.equals("off") ? "dismiss" : action);
+        return true;
+      }
       switch(action) {
         case "build","preview","revise","chat"->{if(p==null)throw new IllegalArgumentException("A player must point at the worksite");request(p,action,String.join(" ",Arrays.copyOfRange(args,1,args.length)));}
         case "confirm"->construction.confirm();
@@ -247,5 +254,5 @@ public final class IronManPlugin extends JavaPlugin implements Listener,CommandE
   }
   @EventHandler public void onQuit(PlayerQuitEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))remove();}
   @EventHandler public void onTeleport(PlayerTeleportEvent event){if(event.getPlayer().getUniqueId().equals(ownerId))Bukkit.getScheduler().runTask(this,()->{Player p=owner();if(p!=null&&enabled&&permitted(p))ensure(p);else remove();});}
-  @Override public void onDisable(){closing=true;remove();try{GeyserApi.api().eventBus().unregisterAll(this);}catch(Exception ignored){}disk.shutdown();try{disk.awaitTermination(10,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}}
+  @Override public void onDisable(){closing=true;if(survival!=null)survival.close();remove();try{GeyserApi.api().eventBus().unregisterAll(this);}catch(Exception ignored){}disk.shutdown();try{disk.awaitTermination(10,TimeUnit.SECONDS);}catch(InterruptedException e){Thread.currentThread().interrupt();}}
 }

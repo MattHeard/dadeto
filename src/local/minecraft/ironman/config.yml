@@ -4,3 +4,5 @@ max-distance: 16
 allowed-worlds:
   - minecraft:dadeto_build
   - minecraft:dadeto_tabletop
+
+survival-companion: false
