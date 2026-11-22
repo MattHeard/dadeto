@@ -113,6 +113,22 @@ restored access. Refresh the client this way if a cached LAN entry fails after a
 restart; the exact internal cause is unproven. The user verified a placed block
 survived this restart/rejoin. Inventory persistence was not tested.
 
+## LAN disconnect diagnostics
+
+The LAN template enables `advanced.bedrock.nethernet-debug` to capture
+NetherNet and libdatachannel diagnostics around drops. For an already
+installed server, change that key in `plugins/Geyser-Spigot/config.yml`
+and restart when the server is empty. Leave general Geyser debug logging
+off.
+
+Correlate the Switch error's UTC timestamp with `logs/latest.log` or a
+rotated log. Read the transport lines leading up to `CONNECTION_LOST`,
+especially ICE connectivity, candidate selection and data channel state.
+A transport timeout alone cannot identify whether Wi-Fi, the client or
+another network component stopped delivering packets. Keep raw debug logs
+local because they can contain network addresses. Set the key to
+`false` and restart to restore normal log volume.
+
 ## Allowlisting and profile lookup
 
 ```bash
